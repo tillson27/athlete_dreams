@@ -1,0 +1,458 @@
+// FAD Network — primary data model.
+//
+// Account model: User → Team (individual + team support). No workspace tier.
+// Every athlete has exactly one User and exactly one personal Team (auto-created on sign-up).
+// Multi-member teams (e.g., an athlete + their manager/coach) join via TeamMembership rows.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Identity
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique @db.Citext
+  passwordHash    String
+  displayName     String
+  avatarUrl       String?
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  athleteProfile     AthleteProfile?
+  teamMemberships    TeamMembership[]
+  teamInvitations    TeamInvitation[] @relation("InvitedBy")
+  sessions           AuthSession[]
+  donations          Donation[]
+  brandMemberships   BrandMembership[]
+  platformRoleAssignments PlatformRoleAssignment[]
+
+  @@map("users")
+}
+
+model AuthSession {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @db.Uuid
+  refreshTokenHash    String
+  userAgent           String?
+  ipAddress           String?
+  expiresAt           DateTime
+  revokedAt           DateTime?
+  createdAt           DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+enum PlatformRole {
+  ATHLETE
+  SUPPORTER
+  BRAND
+  ADMIN
+}
+
+model PlatformRoleAssignment {
+  id     String        @id @default(uuid()) @db.Uuid
+  userId String        @db.Uuid
+  role   PlatformRole
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@map("platform_role_assignments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Team membership (no workspace tier)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Team {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  isPersonal  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  memberships TeamMembership[]
+  invitations TeamInvitation[]
+
+  @@map("teams")
+}
+
+enum TeamRole {
+  OWNER
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
+model TeamMembership {
+  id        String   @id @default(uuid()) @db.Uuid
+  teamId    String   @db.Uuid
+  userId    String   @db.Uuid
+  teamRole  TeamRole
+  joinedAt  DateTime @default(now())
+  leftAt    DateTime?
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@map("team_memberships")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  DECLINED
+  EXPIRED
+}
+
+model TeamInvitation {
+  id                  String           @id @default(uuid()) @db.Uuid
+  teamId              String           @db.Uuid
+  invitedByUserId     String           @db.Uuid
+  inviteeEmail        String
+  invitedTeamRole     TeamRole
+  invitationStatus    InvitationStatus @default(PENDING)
+  invitationTokenHash String           @unique
+  invitationExpiresAt DateTime
+  createdAt           DateTime         @default(now())
+  acceptedAt          DateTime?
+
+  team        Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  invitedBy   User @relation("InvitedBy", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([inviteeEmail])
+  @@map("team_invitations")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Athlete domain
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum SportCategory {
+  RUNNING
+  TRIATHLON
+  CYCLING
+  SWIMMING
+  CLIMBING
+  SKIING
+  SNOWBOARDING
+  HOCKEY
+  SOCCER
+  BASKETBALL
+  TRACK_AND_FIELD
+  CROSS_COUNTRY_SKIING
+  OTHER
+}
+
+model AthleteProfile {
+  id                    String        @id @default(uuid()) @db.Uuid
+  userId                String        @unique @db.Uuid
+  athleteSlug           String        @unique
+  fullName              String
+  headline              String?
+  bio                   String?
+  primarySport          SportCategory
+  secondarySports       SportCategory[]
+  hometown              String?
+  countryCode           String?       @db.VarChar(2)
+  values                String[]
+  socialInstagramHandle String?
+  socialTwitterHandle   String?
+  socialStravaUrl       String?
+  heroMediaUrl          String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  deletedAt             DateTime?
+
+  user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accomplishments AthleteAccomplishment[]
+  media           AthleteMedia[]
+  events          AthleteEvent[]
+  campaigns       Campaign[]
+  sponsorshipInquiries SponsorshipInquiry[]
+
+  @@index([primarySport])
+  @@map("athlete_profiles")
+}
+
+model AthleteAccomplishment {
+  id          String   @id @default(uuid()) @db.Uuid
+  athleteId   String   @db.Uuid
+  title       String
+  description String?
+  occurredOn  DateTime? @db.Date
+  createdAt   DateTime @default(now())
+
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId])
+  @@map("athlete_accomplishments")
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
+model AthleteMedia {
+  id        String    @id @default(uuid()) @db.Uuid
+  athleteId String    @db.Uuid
+  mediaUrl  String
+  mediaKind MediaKind
+  caption   String?
+  createdAt DateTime  @default(now())
+
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId])
+  @@map("athlete_media")
+}
+
+model AthleteEvent {
+  id               String    @id @default(uuid()) @db.Uuid
+  athleteId        String    @db.Uuid
+  eventName        String
+  eventLocation    String?
+  eventStartDate   DateTime  @db.Date
+  eventEndDate     DateTime? @db.Date
+  eventDescription String?
+  createdAt        DateTime  @default(now())
+
+  athlete   AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  campaigns Campaign[]
+
+  @@index([athleteId, eventStartDate])
+  @@map("athlete_events")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Campaigns & Donations
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  FUNDED
+  COMPLETED
+  ARCHIVED
+}
+
+enum CampaignType {
+  EVENT
+  SEASON
+  GEAR
+  TRAVEL
+  TRAINING
+  GENERAL
+}
+
+model Campaign {
+  id                 String         @id @default(uuid()) @db.Uuid
+  campaignSlug       String         @unique
+  athleteId          String         @db.Uuid
+  athleteEventId     String?        @db.Uuid
+  campaignTitle      String
+  campaignType       CampaignType
+  campaignStatus     CampaignStatus @default(DRAFT)
+  campaignStory      String
+  targetAmountCents  Int
+  raisedAmountCents  Int            @default(0)
+  supporterCount     Int            @default(0)
+  closesAt           DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
+
+  athlete      AthleteProfile     @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  athleteEvent AthleteEvent?      @relation(fields: [athleteEventId], references: [id], onDelete: SetNull)
+  costLines    CampaignCostLine[]
+  donations    Donation[]
+  updates      CampaignUpdate[]
+
+  @@index([athleteId])
+  @@index([campaignStatus])
+  @@map("campaigns")
+}
+
+model CampaignCostLine {
+  id          String @id @default(uuid()) @db.Uuid
+  campaignId  String @db.Uuid
+  label       String
+  amountCents Int
+  notes       String?
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("campaign_cost_lines")
+}
+
+model CampaignUpdate {
+  id           String   @id @default(uuid()) @db.Uuid
+  campaignId   String   @db.Uuid
+  updateTitle  String
+  updateBody   String
+  createdAt    DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, createdAt])
+  @@map("campaign_updates")
+}
+
+enum DonationStatus {
+  PENDING
+  SUCCEEDED
+  REFUNDED
+  FAILED
+}
+
+model Donation {
+  id                    String         @id @default(uuid()) @db.Uuid
+  campaignId            String         @db.Uuid
+  supporterUserId       String?        @db.Uuid
+  supporterDisplayName  String
+  supporterEmail        String?
+  donationAmountCents   Int
+  donationMessage       String?
+  donationStatus        DonationStatus @default(PENDING)
+  isAnonymous           Boolean        @default(false)
+  paymentProviderRef    String?        @unique
+  createdAt             DateTime       @default(now())
+
+  campaign      Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  supporterUser User?    @relation(fields: [supporterUserId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId, donationStatus])
+  @@index([supporterUserId])
+  @@map("donations")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Brands & Ambassador Programs
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Brand {
+  id           String   @id @default(uuid()) @db.Uuid
+  brandSlug    String   @unique
+  brandName    String
+  brandWebsite String?
+  brandLogoUrl String?
+  brandBio     String?
+  brandValues  String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  memberships          BrandMembership[]
+  sponsorshipInquiries SponsorshipInquiry[]
+  ambassadorPrograms   AmbassadorProgram[]
+
+  @@map("brands")
+}
+
+enum BrandRole {
+  OWNER
+  MARKETING
+  VIEWER
+}
+
+model BrandMembership {
+  id        String    @id @default(uuid()) @db.Uuid
+  brandId   String    @db.Uuid
+  userId    String    @db.Uuid
+  brandRole BrandRole
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, userId])
+  @@map("brand_memberships")
+}
+
+enum SponsorshipStatus {
+  INQUIRY
+  NEGOTIATING
+  ACTIVE
+  ENDED
+  DECLINED
+}
+
+model SponsorshipInquiry {
+  id                String            @id @default(uuid()) @db.Uuid
+  brandId           String            @db.Uuid
+  athleteId         String            @db.Uuid
+  sponsorshipStatus SponsorshipStatus @default(INQUIRY)
+  inquiryMessage    String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  brand   Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([brandId])
+  @@index([athleteId])
+  @@map("sponsorship_inquiries")
+}
+
+model AmbassadorProgram {
+  id                  String   @id @default(uuid()) @db.Uuid
+  brandId             String   @db.Uuid
+  programName         String
+  programDescription  String?
+  isFadManaged        Boolean  @default(false)
+  intakeFormConfig    Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  brand        Brand                       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  applications AmbassadorApplication[]
+
+  @@index([brandId])
+  @@map("ambassador_programs")
+}
+
+enum AmbassadorApplicationStatus {
+  SUBMITTED
+  IN_REVIEW
+  SHORTLISTED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+model AmbassadorApplication {
+  id                          String                       @id @default(uuid()) @db.Uuid
+  ambassadorProgramId         String                       @db.Uuid
+  applicantAthleteId          String                       @db.Uuid
+  ambassadorApplicationStatus AmbassadorApplicationStatus @default(SUBMITTED)
+  applicationPayload          Json
+  reviewNotes                 String?
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+
+  program AmbassadorProgram @relation(fields: [ambassadorProgramId], references: [id], onDelete: Cascade)
+
+  @@index([ambassadorProgramId, ambassadorApplicationStatus])
+  @@map("ambassador_applications")
+}

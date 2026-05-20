@@ -1,0 +1,41 @@
+{
+  "name": "fad-app",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "npm run build-client && tsc -p tsconfig.json",
+    "build-client": "prisma generate",
+    "start": "node dist/index.js",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint --fix \"src/**/*.{ts,tsx}\"",
+    "migrate:create": "prisma migrate dev --create-only"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "argon2": "^0.41.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.1",
+    "fad-common": "file:../common",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.3.0",
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.8.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.7.5",
+    "eslint": "^9.13.0",
+    "prisma": "^5.20.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

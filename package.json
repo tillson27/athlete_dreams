@@ -1,0 +1,31 @@
+{
+  "name": "fad-network",
+  "private": true,
+  "description": "Fund an Athlete's Dream (FAD) — the world's most transparent athlete funding network.",
+  "scripts": {
+    "=": "===============================<RUNTIME>================================",
+    "dev": "concurrently \"npm run dev --prefix app\" \"npm run dev --prefix client\"",
+    "dev:client": "npm run dev --prefix client",
+    "dev:app": "npm run dev --prefix app",
+
+    "==": "==========================<BUILD & VALIDATION>==========================",
+    "build": "npm run script:rules:check && npm run script:sync:all && npm run build --prefix common && npm run build --prefix app && npm run build --prefix client",
+    "type-check": "npm run type-check --prefix common && npm run type-check --prefix app && npm run type-check --prefix client",
+    "lint": "npm run lint --prefix app && npm run lint --prefix client",
+    "lint:fix": "npm run lint:fix --prefix app && npm run lint:fix --prefix client",
+    "ci": "npm run type-check && npm run lint:fix && npm run build",
+
+    "===": "==========================<WORKSPACE INSTALL>===========================",
+    "postinstall": "echo '\\nInstalling common...' && npm --prefix common install && echo '\\nInstalling app...' && npm --prefix app install && echo '\\nInstalling client...' && npm --prefix client install",
+
+    "====": "==========================<REPO SYNC & CHECKS>==========================",
+    "script:sync:all": "npm run script:agents:sync && npm run script:skills:sync && npm run script:skills:check",
+    "script:agents:sync": "node scripts/sync-agents-instructions.js",
+    "script:skills:sync": "node scripts/sync-skills-folders.js",
+    "script:skills:check": "node scripts/enforce-skill-length.js",
+    "script:rules:check": "node scripts/check-expired-rules.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

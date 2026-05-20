@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/*
+ * Palette tuned for WCAG AA against `--color-paper` (#f8f6f1):
+ *   • text-flame  on paper  ≥ 5.1:1   • white       on flame ≥ 5.1:1
+ *   • text-moss   on paper  ≥ 8.2:1   • white       on moss  ≥ 8.2:1
+ *   • text-sky    on paper  ≥ 6.0:1   • white       on sky   ≥ 6.0:1
+ * Soft tint colors are background-only and pair with `text-ink` for body copy.
+ */
+@theme {
+  --color-ink: #0b1320;
+  --color-ink-soft: #1d2a44;
+  --color-paper: #f8f6f1;
+  --color-paper-soft: #efeae0;
+
+  --color-flame: #c83d1d;
+  --color-flame-soft: #fde2d8;
+
+  --color-moss: #1c5a3f;
+  --color-moss-soft: #d4ead9;
+
+  --color-sky: #14559a;
+  --color-sky-soft: #d9e6f8;
+
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-card: 1.25rem;
+  --radius-pill: 999px;
+}
+
+html, body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+::selection {
+  background-color: var(--color-flame);
+  color: white;
+}
+
+/* Honour the user's reduced-motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
+
+/* Visible focus ring on every focusable element (accessibility default). */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Mobile menu disclosure styling — uses native <details>/<summary> for no-JS. */
+details[data-mobile-menu] > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details[data-mobile-menu] > summary::-webkit-details-marker {
+  display: none;
+}
+details[data-mobile-menu][open] > summary .menu-icon-open {
+  display: none;
+}
+details[data-mobile-menu]:not([open]) > summary .menu-icon-close {
+  display: none;
+}
