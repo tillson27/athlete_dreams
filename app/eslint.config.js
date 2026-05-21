@@ -1,7 +1,16 @@
-// Minimal flat config so `npm run lint` succeeds on a fresh install.
-// Expand with typescript-eslint + project-specific rules when needed.
+import typescriptParser from '@typescript-eslint/parser';
+
 export default [
   {
     ignores: ['dist/**', 'node_modules/**'],
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        sourceType: 'module',
+      },
+    },
   },
 ];

@@ -4,8 +4,6 @@ import { JwtService } from '../services/infrastructure/JwtService';
 import { UnauthorizedError } from '../shared/errors';
 
 declare global {
-  // Augment Express Request with authentication context.
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       authenticatedUserId?: string;
@@ -45,7 +43,6 @@ export class AuthenticationMiddleware {
       req.authenticatedUserId = claims.sub;
       req.authenticatedUserEmail = claims.email;
     } catch {
-      // ignore — endpoint is optional auth.
     }
     next();
   };

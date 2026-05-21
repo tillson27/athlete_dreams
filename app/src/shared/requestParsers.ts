@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import { ZodError, type ZodType } from 'zod';
+import { z, ZodError, type ZodTypeAny } from 'zod';
 import { ValidationError } from './errors';
 
 function flattenZod(error: ZodError): { path: string; message: string }[] {
@@ -9,7 +9,10 @@ function flattenZod(error: ZodError): { path: string; message: string }[] {
   }));
 }
 
-export function parseRequestBody<T>(schema: ZodType<T>, req: Request): T {
+export function parseRequestBody<TSchema extends ZodTypeAny>(
+  schema: TSchema,
+  req: Request
+): z.output<TSchema> {
   const result = schema.safeParse(req.body);
   if (!result.success) {
     throw new ValidationError('Invalid request body', flattenZod(result.error));
@@ -17,7 +20,10 @@ export function parseRequestBody<T>(schema: ZodType<T>, req: Request): T {
   return result.data;
 }
 
-export function parseRequestQuery<T>(schema: ZodType<T>, req: Request): T {
+export function parseRequestQuery<TSchema extends ZodTypeAny>(
+  schema: TSchema,
+  req: Request
+): z.output<TSchema> {
   const result = schema.safeParse(req.query);
   if (!result.success) {
     throw new ValidationError('Invalid request query', flattenZod(result.error));
@@ -25,7 +31,10 @@ export function parseRequestQuery<T>(schema: ZodType<T>, req: Request): T {
   return result.data;
 }
 
-export function parseRequestParams<T>(schema: ZodType<T>, req: Request): T {
+export function parseRequestParams<TSchema extends ZodTypeAny>(
+  schema: TSchema,
+  req: Request
+): z.output<TSchema> {
   const result = schema.safeParse(req.params);
   if (!result.success) {
     throw new ValidationError('Invalid request params', flattenZod(result.error));
