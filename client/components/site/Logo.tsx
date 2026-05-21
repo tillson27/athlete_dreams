@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 function ShoeMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 160 88" aria-hidden="true" className={className}>
+    <svg viewBox="-6 0 170 104" aria-hidden="true" className={className}>
       <path
         fill="#f13a1f"
         d="M54 18c8 20 22 27 42 18 6-3 13 1 16 8l4 12c5 16 18 24 34 27 3 .6 5 3 5 6 0 4-3 7-7 7H57c-8 0-14-2-20-7L18 73c-4-4-4-10 0-14 12-10 22-23 30-40 1-3 5-4 6-1Z"
@@ -47,12 +47,11 @@ function ShoeMark({ className }: { className?: string }) {
 
 export function Logo({ size = 'md', full = false }: { size?: 'sm' | 'md' | 'lg'; full?: boolean }) {
   const heights: Record<string, string> = { sm: 'h-6', md: 'h-8', lg: 'h-10' };
-  const markWidths: Record<string, string> = { sm: 'w-11', md: 'w-16', lg: 'w-20' };
   const textSizes: Record<string, string> = { sm: 'text-xl', md: 'text-2xl', lg: 'text-3xl' };
 
   return (
     <Link href="/" aria-label="Fund an Athlete's Dream home" className="flex items-center gap-2.5 select-none">
-      <ShoeMark className={`${heights[size]} ${markWidths[size]}`} />
+      <ShoeMark className={`${heights[size]} w-auto shrink-0`} />
       <span className={`font-display font-bold leading-none text-ink ${textSizes[size]}`}>
         {full ? "Fund an Athlete's Dream" : 'FAD'}
       </span>
