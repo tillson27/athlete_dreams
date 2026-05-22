@@ -20,7 +20,7 @@ const athleteSteps = [
   },
   {
     title: 'Share it with your network',
-    body: 'Drop the link in your Strava, your Instagram, your team group chat. We provide social preview cards and email templates that don\'t embarrass you.',
+    body: "Drop the link in your Strava, your Instagram, your team group chat. We provide social preview cards and email templates that don't embarrass you.",
   },
   {
     title: 'Race. Then close the loop',
@@ -61,7 +61,7 @@ const brandSteps = [
 export default function HowItWorksPage() {
   return (
     <>
-      <Section>
+      <Section tone="surface" pad="lg">
         <SectionHeading
           eyebrow="How FAD works"
           title="The same playbook, written for three audiences."
@@ -70,21 +70,20 @@ export default function HowItWorksPage() {
         />
       </Section>
 
-      <Section className="!pt-0">
+      <Section tone="surface-bright" pad="md">
         <Persona
-          tone="flame"
+          tone="primary"
           tag="For Athletes"
           title="From profile to post-race update"
           steps={athleteSteps}
           ctaLabel="Create a profile"
           ctaHref="/sign-up"
-          ctaTone="flame"
         />
       </Section>
 
-      <Section className="bg-paper-soft border-y border-ink/5">
+      <Section tone="surface-low" pad="md" className="border-y border-outline-variant">
         <Persona
-          tone="moss"
+          tone="secondary"
           tag="For Supporters"
           title="Donate to a specific dream — and see it land"
           steps={supporterSteps}
@@ -93,9 +92,9 @@ export default function HowItWorksPage() {
         />
       </Section>
 
-      <Section>
+      <Section tone="surface-bright" pad="md">
         <Persona
-          tone="sky"
+          tone="secondary"
           tag="For Brands & Enterprises"
           title="Find aligned athletes. Run an ambassador program that works."
           steps={brandSteps}
@@ -114,35 +113,38 @@ function Persona({
   steps,
   ctaLabel,
   ctaHref,
-  ctaTone = 'primary',
 }: {
-  tone: 'flame' | 'moss' | 'sky';
+  tone: 'primary' | 'secondary';
   tag: string;
   title: string;
   steps: { title: string; body: string }[];
   ctaLabel: string;
   ctaHref: string;
-  ctaTone?: 'primary' | 'flame';
 }) {
+  const badgeTone = tone === 'primary' ? 'primary-soft' : 'secondary-soft';
   return (
     <div className="grid gap-10 md:grid-cols-[1fr_1.4fr]">
       <div className="space-y-5">
-        <Badge tone={tone}>{tag}</Badge>
-        <h2 className="font-display text-balance text-4xl leading-tight md:text-5xl">{title}</h2>
-        <LinkButton href={ctaHref} tone={ctaTone} size="lg">
+        <Badge tone={badgeTone}>{tag}</Badge>
+        <h2 className="font-display text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
+          {title}
+        </h2>
+        <LinkButton href={ctaHref} tone="primary" size="lg">
           {ctaLabel}
         </LinkButton>
       </div>
-      <ol className="space-y-5">
+      <ol className="space-y-4">
         {steps.map((step, index) => (
           <li
             key={step.title}
-            className="flex gap-5 rounded-[var(--radius-card)] bg-white p-6 ring-1 ring-inset ring-ink/5"
+            className="card-lift flex gap-5 rounded-card border border-outline-variant bg-surface-container-lowest p-6"
           >
-            <span className="font-display text-3xl text-ink/30">0{index + 1}</span>
+            <span className="font-display text-3xl font-extrabold text-on-surface-variant/40">
+              0{index + 1}
+            </span>
             <div>
-              <h3 className="font-display text-xl leading-tight">{step.title}</h3>
-              <p className="mt-2 text-sm text-ink/75">{step.body}</p>
+              <h3 className="font-display text-xl font-bold leading-tight">{step.title}</h3>
+              <p className="mt-2 text-on-surface-variant">{step.body}</p>
             </div>
           </li>
         ))}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LinkButton } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 
 export const metadata: Metadata = {
@@ -9,59 +9,75 @@ export const metadata: Metadata = {
 
 export default function SignUpPage() {
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-6 py-16">
-      <div className="rounded-[var(--radius-card)] bg-white p-8 ring-1 ring-inset ring-ink/5">
-        <Badge tone="flame">Pilot cohort — limited spots</Badge>
-        <h1 className="mt-4 font-display text-3xl">Tell your story.</h1>
-        <p className="mt-2 text-sm text-ink/70">
-          Create your athlete profile in 15 minutes. Add photos, accomplishments, and the events you want to fund. We'll help you launch your first campaign.
+    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+        <Badge tone="primary-soft">Pilot Cohort — Limited Spots</Badge>
+        <h1 className="mt-4 font-display text-3xl font-extrabold leading-tight">
+          Tell your story.
+        </h1>
+        <p className="mt-2 text-sm text-on-surface-variant">
+          Create your athlete profile in 15 minutes. Add photos, accomplishments, and the events you want to fund. We&rsquo;ll help you launch your first campaign.
         </p>
-        <form className="mt-8 space-y-4" action="/sign-up" method="post">
-          <label className="block space-y-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink/60">Full name</span>
-            <input
-              name="displayName"
-              required
-              maxLength={80}
-              className="w-full rounded-2xl border border-ink/15 bg-paper px-4 py-3 text-base outline-none transition-colors focus:border-ink focus:bg-white"
-              placeholder="Maya Okafor"
-            />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink/60">Email</span>
-            <input
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="w-full rounded-2xl border border-ink/15 bg-paper px-4 py-3 text-base outline-none transition-colors focus:border-ink focus:bg-white"
-              placeholder="you@athleteclub.com"
-            />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink/60">Password</span>
-            <input
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              className="w-full rounded-2xl border border-ink/15 bg-paper px-4 py-3 text-base outline-none transition-colors focus:border-ink focus:bg-white"
-              placeholder="At least 8 characters"
-            />
-          </label>
-          <LinkButton href="/sign-up" tone="flame" size="lg" className="w-full justify-center">
-            Create my profile
-          </LinkButton>
+        <form className="mt-8 space-y-5" action="/sign-up" method="post">
+          <Field name="displayName" type="text" label="Full Name" placeholder="Maya Okafor" />
+          <Field
+            name="email"
+            type="email"
+            autoComplete="email"
+            label="Email"
+            placeholder="you@athleteclub.com"
+          />
+          <Field
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            label="Password"
+            placeholder="At least 8 characters"
+            minLength={8}
+          />
+          <Button tone="primary" size="lg" className="w-full" type="submit">
+            Create My Profile
+          </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-ink/65">
+        <p className="mt-6 text-center text-sm text-on-surface-variant">
           Already have an account?{' '}
-          <Link href="/sign-in" className="font-semibold text-flame hover:underline">
+          <Link href="/sign-in" className="font-semibold text-primary hover:underline">
             Sign in
           </Link>
           .
         </p>
       </div>
     </div>
+  );
+}
+
+function Field({
+  name,
+  type,
+  label,
+  placeholder,
+  autoComplete,
+  minLength,
+}: {
+  name: string;
+  type: string;
+  label: string;
+  placeholder?: string;
+  autoComplete?: string;
+  minLength?: number;
+}) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="label-bold text-on-surface">{label}</span>
+      <input
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        required
+        minLength={minLength}
+        placeholder={placeholder}
+        className="w-full rounded-input border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-secondary focus:bg-surface-container-lowest focus:ring-2 focus:ring-secondary/25"
+      />
+    </label>
   );
 }

@@ -1,52 +1,52 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
-import { ArrowGlyph, LinkButton } from '../ui/Button';
+import { LinkButton } from '../ui/Button';
 
-const nav = [
-  { href: '/athletes', label: 'Athletes' },
-  { href: '/brands', label: 'For Brands' },
-  { href: '/ambassadors', label: 'Ambassador Programs' },
+const nav: Array<{ href: string; label: string }> = [
+  { href: '/athletes', label: 'Discover' },
+  { href: '/brands', label: 'Brand Hub' },
+  { href: '/ambassadors', label: 'Ambassadors' },
   { href: '/how-it-works', label: 'How It Works' },
-  { href: '/about', label: 'About' },
 ];
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-ink/10 bg-paper/90 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Logo size="md" />
+    <header className="sticky top-0 z-40 w-full border-b border-outline-variant/60 bg-surface/90 backdrop-blur">
+      <div className="mx-auto flex h-16 w-full max-w-[var(--spacing-container-max)] items-center justify-between gap-3 px-5 md:px-16">
+        <div className="flex items-center gap-3">
+          <Logo size="md" variant="full" />
+        </div>
 
         <nav
           aria-label="Primary"
-          className="hidden items-center gap-7 text-sm font-medium text-ink/80 md:flex"
+          className="hidden items-center gap-8 md:flex"
         >
           {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="hover:text-flame transition-colors"
+              className="label-bold text-on-surface transition-colors hover:text-primary"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-1 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/sign-in"
-            className="hidden rounded-full px-3 py-2 text-sm font-medium text-ink hover:bg-ink/5 md:inline-flex"
+            className="hidden label-bold rounded-pill px-3 py-2 text-on-surface-variant hover:text-primary md:inline-flex"
           >
-            Sign in
+            Sign In
           </Link>
-          <LinkButton href="/sign-up" tone="flame" size="sm" className="group">
-            <span>Start a profile</span>
-            <ArrowGlyph className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+          <LinkButton href="/sign-up" tone="primary" size="sm">
+            Donate
           </LinkButton>
 
           <details data-mobile-menu className="relative md:hidden">
             <summary
               aria-label="Open menu"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-ink/5"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-pill text-on-surface hover:bg-surface-container"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -78,13 +78,13 @@ export function SiteHeader() {
                 <line x1="6" y1="18" x2="18" y2="6" />
               </svg>
             </summary>
-            <div className="absolute right-0 top-12 w-64 overflow-hidden rounded-2xl border border-ink/10 bg-paper shadow-xl">
-              <ul className="divide-y divide-ink/5 py-2">
+            <div className="absolute right-0 top-12 w-64 overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest shadow-xl">
+              <ul className="divide-y divide-outline-variant/60 py-2">
                 {nav.map((item) => (
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className="block px-5 py-3 text-base font-medium text-ink hover:bg-ink/5"
+                      className="block px-5 py-3 text-base font-semibold text-on-surface hover:bg-surface-container"
                     >
                       {item.label}
                     </Link>
@@ -93,9 +93,9 @@ export function SiteHeader() {
                 <li>
                   <Link
                     href="/sign-in"
-                    className="block px-5 py-3 text-base font-medium text-ink hover:bg-ink/5"
+                    className="block px-5 py-3 text-base font-semibold text-on-surface hover:bg-surface-container"
                   >
-                    Sign in
+                    Sign In
                   </Link>
                 </li>
               </ul>

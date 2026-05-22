@@ -27,3 +27,12 @@ export function formatSport(sport: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+// Calendar-day delta between now and an ISO timestamp; clamps at 0 once elapsed.
+// Using a fixed reference for SSR/build determinism is the caller's responsibility.
+export function daysUntil(isoDateTime: string, now: Date = new Date()): number {
+  const target = new Date(isoDateTime).getTime();
+  if (Number.isNaN(target)) return 0;
+  const diffMs = target - now.getTime();
+  return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+}

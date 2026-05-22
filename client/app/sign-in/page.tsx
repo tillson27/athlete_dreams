@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LinkButton } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'Sign in',
@@ -8,47 +8,65 @@ export const metadata: Metadata = {
 
 export default function SignInPage() {
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-6 py-16">
-      <div className="rounded-[var(--radius-card)] bg-white p-8 ring-1 ring-inset ring-ink/5">
-        <h1 className="font-display text-3xl">Welcome back</h1>
-        <p className="mt-2 text-sm text-ink/70">
+    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+        <h1 className="font-display text-3xl font-extrabold leading-tight">Welcome back</h1>
+        <p className="mt-2 text-sm text-on-surface-variant">
           Sign in to manage your profile, post campaign updates, or back an athlete.
         </p>
-        <form className="mt-8 space-y-4" action="/sign-in" method="post">
-          <label className="block space-y-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink/60">Email</span>
-            <input
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="w-full rounded-2xl border border-ink/15 bg-paper px-4 py-3 text-base outline-none transition-colors focus:border-ink focus:bg-white"
-              placeholder="you@athleteclub.com"
-            />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink/60">Password</span>
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="w-full rounded-2xl border border-ink/15 bg-paper px-4 py-3 text-base outline-none transition-colors focus:border-ink focus:bg-white"
-              placeholder="••••••••"
-            />
-          </label>
-          <LinkButton href="/sign-in" tone="primary" size="lg" className="w-full justify-center">
-            Sign in
-          </LinkButton>
+        <form className="mt-8 space-y-5" action="/sign-in" method="post">
+          <Field name="email" type="email" autoComplete="email" label="Email" placeholder="you@athleteclub.com" />
+          <Field
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            label="Password"
+            placeholder="••••••••"
+            minLength={8}
+          />
+          <Button tone="primary" size="lg" className="w-full" type="submit">
+            Sign In
+          </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-ink/65">
+        <p className="mt-6 text-center text-sm text-on-surface-variant">
           New here?{' '}
-          <Link href="/sign-up" className="font-semibold text-flame hover:underline">
+          <Link href="/sign-up" className="font-semibold text-primary hover:underline">
             Create an athlete profile
           </Link>
           .
         </p>
       </div>
     </div>
+  );
+}
+
+function Field({
+  name,
+  type,
+  label,
+  placeholder,
+  autoComplete,
+  minLength,
+}: {
+  name: string;
+  type: string;
+  label: string;
+  placeholder?: string;
+  autoComplete?: string;
+  minLength?: number;
+}) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="label-bold text-on-surface">{label}</span>
+      <input
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        required
+        minLength={minLength}
+        placeholder={placeholder}
+        className="w-full rounded-input border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-secondary focus:bg-surface-container-lowest focus:ring-2 focus:ring-secondary/25"
+      />
+    </label>
   );
 }

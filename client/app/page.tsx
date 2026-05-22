@@ -1,215 +1,407 @@
-import Link from 'next/link';
 import Image from 'next/image';
 import { Section, SectionHeading } from '@/components/site/Section';
 import { LinkButton, ArrowGlyph } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Badge, LiveDot } from '@/components/ui/Badge';
 import { AthleteCard } from '@/components/site/AthleteCard';
 import { mockAthletes } from '@/lib/mockAthletes';
-import { formatCents, formatProgress } from '@/lib/format';
+import { formatCents } from '@/lib/format';
 
-const pillars = [
-  {
-    eyebrow: 'Pillar 1',
-    title: 'Crowdfund the dream',
-    body: 'Athletes raise money from the people who already believe in them — family, training partners, the hometown fan club — for specific events, travel, gear, or training blocks. Every dollar shows where it goes.',
-    cta: { href: '/athletes', label: 'Discover athletes' },
-    tone: 'flame' as const,
-  },
-  {
-    eyebrow: 'Pillar 2',
-    title: 'Brands meet aligned athletes',
-    body: 'Search a directory built on values, not follower counts. Reach out, sponsor a single event, or sign a season — without funding an agent in the middle.',
-    cta: { href: '/brands', label: 'Sponsor an athlete' },
-    tone: 'moss' as const,
-  },
-  {
-    eyebrow: 'Pillar 3',
-    title: 'Managed ambassador programs',
-    body: 'Hand us your ambassador funnel. We replace the spreadsheet, the Instagram DMs, and the unstructured intake forms with a real pipeline — and the relationships to feed it.',
-    cta: { href: '/ambassadors', label: 'See how it works' },
-    tone: 'sky' as const,
-  },
+const trendingStats: Array<{ value: string; label: string; icon: 'trophy' | 'cash' | 'group' }> = [
+  { value: '142', label: 'Dreams Funded', icon: 'trophy' },
+  { value: '$2.4M+', label: 'Total Raised', icon: 'cash' },
+  { value: '15,000+', label: 'Global Backers', icon: 'group' },
 ];
 
-const transparencyPoints = [
+const whyFadPoints = [
   {
-    title: 'Money goes to the athlete',
-    body: 'Donations move directly to the athlete after platform fees — never frozen, never re-routed. We publish the cost breakdown the athlete entered themselves.',
+    title: 'Total Transparency',
+    body: 'See exactly where your funds are allocated — from travel and coaching to equipment and recovery.',
+    tone: 'secondary' as const,
+    icon: 'eye' as const,
   },
   {
-    title: 'Every campaign shows the math',
-    body: 'Flights, accommodation, race entry, gear, coaching — itemized. Supporters fund the line they care about.',
+    title: 'Direct Connection',
+    body: 'Access exclusive athlete content, progress updates, and post-event recaps as a verified backer.',
+    tone: 'primary' as const,
+    icon: 'link' as const,
   },
   {
-    title: 'Updates close the loop',
-    body: 'After the event, the athlete posts an update: how the race went, photos from the line, what is next. Backers see their funding land.',
+    title: 'Verified Talent',
+    body: 'Every athlete undergoes a rigorous background and performance verification before launching a campaign.',
+    tone: 'tertiary' as const,
+    icon: 'check' as const,
   },
 ];
 
 export default function HomePage() {
   const featured = mockAthletes.slice(0, 4);
+  const sampleLedger = mockAthletes[0]?.campaigns[0];
 
   return (
     <>
-      <Section className="!pt-16 md:!pt-24">
-        <div className="grid items-center gap-12 md:grid-cols-[1.1fr_1fr]">
-          <div className="space-y-7">
-            <Badge tone="flame">Now onboarding the first 20 athletes</Badge>
-            <h1 className="font-display text-balance text-4xl leading-[1.08] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              The world's most transparent athlete funding network.
+      {/* HERO */}
+      <section className="relative flex w-full items-center overflow-hidden bg-inverse-surface">
+        <div className="absolute inset-0 opacity-55">
+          <Image
+            src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=2000&q=80"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-inverse-surface via-inverse-surface/70 to-transparent" />
+        </div>
+        <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-24 md:px-16 md:py-40">
+          <div className="max-w-3xl">
+            <Badge tone="live" className="mb-6">
+              <LiveDot tone="on-primary" />
+              Live Funding
+            </Badge>
+            <h1 className="font-display text-balance text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+              The world&rsquo;s most{' '}
+              <span className="text-primary-container">transparent</span> athlete funding network.
             </h1>
-            <p className="max-w-xl text-lg leading-relaxed text-ink/70">
-              FAD connects athletes with the people, sponsors, and brands who want to back them — without losing the story along the way. Donate to a specific race. Sponsor an aligned ambassador. Watch the dream come together.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/80">
+              Fueling the dreams of elite athletes through direct, trackable financial backing. Every dollar move is visible. Every milestone is celebrated.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-10 flex flex-wrap gap-3">
               <LinkButton tone="primary" size="lg" href="/athletes" className="group">
-                Discover athletes
+                Back an Athlete
                 <ArrowGlyph className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
               </LinkButton>
-              <LinkButton tone="flame" size="lg" href="/sign-up">
-                Create an athlete profile
+              <LinkButton
+                tone="ghost"
+                size="lg"
+                href="/how-it-works"
+                className="!text-white !bg-white/10 hover:!bg-white/20 backdrop-blur-md ring-1 ring-inset ring-white/20"
+              >
+                Watch Mission Video
               </LinkButton>
             </div>
-            <dl className="flex flex-wrap gap-x-10 gap-y-4 pt-2 text-sm text-ink/65">
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-ink/65">Athletes onboarding</dt>
-                <dd className="font-display text-3xl text-ink">20</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-ink/65">Sports represented</dt>
-                <dd className="font-display text-3xl text-ink">12</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-ink/65">Platform fees</dt>
-                <dd className="font-display text-3xl text-ink">3%</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-[var(--radius-card)] bg-ink/10 shadow-2xl md:ml-auto">
-            <Image
-              src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=1200&q=70"
-              alt="Athlete running on a track at dawn"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 500px"
-              className="object-cover"
-            />
-            <div className="absolute inset-x-5 bottom-5 rounded-2xl bg-paper/95 p-5 shadow-lg backdrop-blur">
-              <p className="text-xs font-semibold uppercase tracking-wide text-flame">
-                Live · Tokyo Marathon 2026
-              </p>
-              <p className="mt-1 font-display text-xl">Maya Okafor</p>
-              <p className="mt-1 text-sm text-ink/70">
-                {formatCents(1_840_000)} raised of {formatCents(4_200_000)}
-              </p>
-              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
-                <div
-                  className="h-full rounded-full bg-flame"
-                  style={{ width: `${formatProgress(1_840_000, 4_200_000)}%` }}
-                />
-              </div>
-            </div>
           </div>
         </div>
-      </Section>
+      </section>
 
-      <Section className="!py-16 bg-paper-soft border-y border-ink/5">
-        <div className="grid gap-10 md:grid-cols-3">
-          {pillars.map((pillar) => (
-            <div key={pillar.title} className="space-y-4 rounded-[var(--radius-card)] bg-white p-7 ring-1 ring-inset ring-ink/5">
-              <Badge tone={pillar.tone}>{pillar.eyebrow}</Badge>
-              <h3 className="font-display text-2xl leading-tight">{pillar.title}</h3>
-              <p className="text-sm text-ink/70">{pillar.body}</p>
-              <Link
-                href={pillar.cta.href}
-                className="inline-flex text-sm font-semibold text-ink hover:text-flame"
-              >
-                {pillar.cta.label} →
-              </Link>
+      {/* TRENDING STRIP */}
+      <section className="border-b border-outline-variant bg-surface-container-low py-6 md:py-8">
+        <div className="mx-auto grid w-full max-w-[var(--spacing-container-max)] grid-cols-3 gap-4 px-5 md:gap-12 md:px-16">
+          {trendingStats.map((stat, i) => (
+            <div
+              key={stat.label}
+              className={`flex flex-col items-center gap-2 md:flex-row md:justify-center md:gap-4 ${
+                i === 1 ? 'border-x border-outline-variant px-2' : ''
+              }`}
+            >
+              <TrendingIcon name={stat.icon} className="h-6 w-6 text-primary md:h-7 md:w-7" />
+              <div className="text-center md:text-left">
+                <p className="font-display text-lg font-bold text-on-surface md:text-2xl">
+                  {stat.value}
+                </p>
+                <p className="label-bold text-on-surface-variant text-[10px] md:text-xs">
+                  {stat.label}
+                </p>
+              </div>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      <Section>
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+      {/* TRENDING ATHLETES — horizontal scroll */}
+      <Section tone="surface" pad="lg">
+        <div className="mb-12 flex items-end justify-between gap-4">
           <SectionHeading
-            eyebrow="Athletes raising right now"
-            title="Real stories. Real costs. Real receipts."
-            description="Every athlete on FAD writes their own story and itemizes what they need. Pick a campaign and fund a line."
+            eyebrow="This Week"
+            title="Trending athletes"
+            description="Profiles gaining significant momentum this week."
           />
-          <LinkButton tone="ghost" href="/athletes">
-            See the full directory →
+        </div>
+        <div className="-mx-5 flex gap-6 overflow-x-auto px-5 pb-6 no-scrollbar md:-mx-16 md:px-16">
+          {featured.map((athlete) => (
+            <div key={athlete.athleteSlug} className="w-[320px] shrink-0 md:w-[380px]">
+              <AthleteCard athlete={athlete} />
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end">
+          <LinkButton tone="ghost" href="/athletes" className="group">
+            See the full directory
+            <ArrowGlyph className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </LinkButton>
         </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((athlete) => (
-            <AthleteCard key={athlete.athleteSlug} athlete={athlete} />
-          ))}
-        </div>
       </Section>
 
-      <Section className="bg-ink text-paper">
-        <div className="grid gap-12 md:grid-cols-[1fr_1.2fr]">
-          <div className="space-y-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-paper/90">
-              Why FAD
-            </p>
-            <h2 className="font-display text-balance text-4xl leading-tight md:text-5xl">
-              Transparency is the product.
+      {/* WHY FAD NETWORK */}
+      <Section tone="surface-bright" pad="xl">
+        <div className="grid items-center gap-16 md:grid-cols-2">
+          <div>
+            <h2 className="font-display text-balance text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
+              Why FAD Network?
             </h2>
-            <p className="text-base leading-relaxed text-paper/90">
-              Other platforms ask you to trust them. FAD is built so you don't have to. Every campaign shows the cost breakdown. Every dollar is traced to the athlete. Every event closes with an update so backers can see the trip they paid for.
+            <p className="mt-6 text-lg leading-relaxed text-on-surface-variant">
+              Traditional funding is opaque and bureaucratic. We built FAD to create a direct line between the fans who care and the athletes who inspire.
             </p>
+            <div className="mt-12 space-y-8">
+              {whyFadPoints.map((point) => (
+                <div key={point.title} className="flex gap-6">
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+                      point.tone === 'secondary'
+                        ? 'bg-secondary-soft text-secondary'
+                        : point.tone === 'primary'
+                          ? 'bg-primary-soft text-primary'
+                          : 'bg-surface-container text-tertiary'
+                    }`}
+                  >
+                    <WhyIcon name={point.icon} className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h5 className="label-bold text-on-surface">{point.title}</h5>
+                    <p className="mt-2 text-on-surface-variant">{point.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid gap-5">
-            {transparencyPoints.map((point) => (
-              <div key={point.title} className="rounded-2xl bg-paper/5 p-6 ring-1 ring-inset ring-paper/10">
-                <h3 className="font-display text-xl">{point.title}</h3>
-                <p className="mt-2 text-sm text-paper/90">{point.body}</p>
+          <div className="relative">
+            <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-primary/5 blur-3xl" />
+            <div className="absolute -bottom-10 -right-10 h-60 w-60 rounded-full bg-secondary/10 blur-3xl" />
+            <div className="relative grid grid-cols-2 gap-4">
+              <div className="space-y-4 pt-12">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-card card-lift">
+                  <Image
+                    src="https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=900&q=80"
+                    alt="Athlete training"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 300px"
+                    className="object-cover"
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      <Section>
-        <div className="rounded-[var(--radius-card)] bg-flame px-6 py-10 text-paper sm:px-8 sm:py-14 md:px-14 md:py-20">
-          <div className="grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
-            <div className="space-y-5">
-              <h2 className="font-display text-balance text-4xl leading-tight md:text-5xl">
-                Are you the athlete?
-              </h2>
-              <p className="max-w-xl text-base leading-relaxed text-paper/90">
-                Spend 15 minutes creating a profile. Tell your story, list your accomplishments, and itemize the season ahead. We'll do the rest — and we won't sell your data to anyone.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <LinkButton href="/sign-up" tone="primary" size="lg" className="group">
-                  Start a profile
-                  <ArrowGlyph className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                </LinkButton>
-                <LinkButton href="/how-it-works" tone="ghost" size="lg" className="!text-paper hover:!bg-paper/15">
-                  See the playbook
-                </LinkButton>
+              <div className="space-y-4">
+                <div className="rounded-card bg-secondary p-6 text-white card-lift">
+                  <p className="font-display text-3xl font-bold">150+</p>
+                  <p className="label-bold mt-1 text-white/80">Active Athletes</p>
+                </div>
+                <div className="relative aspect-[3/4] overflow-hidden rounded-card card-lift">
+                  <Image
+                    src="https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&w=900&q=80"
+                    alt="Athlete portrait"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 300px"
+                    className="object-cover"
+                  />
+                </div>
               </div>
             </div>
-            <ul className="space-y-3 text-sm text-paper/90">
-              {[
-                'No upfront cost. 3% platform fee on successful donations.',
-                'Bring your own audience or get matched with aligned brands.',
-                'Post-event updates are built in — your story keeps living.',
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-3 rounded-2xl bg-paper/10 p-4 ring-1 ring-inset ring-paper/10">
-                  <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-paper text-flame text-xs font-bold">
-                    ✓
+          </div>
+        </div>
+      </Section>
+
+      {/* THE FAD DIFFERENCE — 2x2 mosaic */}
+      <Section tone="surface-low" pad="xl" className="border-y border-outline-variant">
+        <div className="text-center">
+          <SectionHeading
+            eyebrow="The FAD Difference"
+            title="Rejecting opaque models for a data-driven future of athletic support."
+            align="center"
+          />
+        </div>
+        <div className="mt-16 grid gap-8 md:grid-cols-2">
+          {/* Radical Transparency w/ mock ledger */}
+          <article className="card-lift flex flex-col gap-6 rounded-card border border-outline-variant bg-surface-container-lowest p-8 md:flex-row md:items-start">
+            <div className="flex-1">
+              <BarChartIcon className="mb-4 h-8 w-8 text-secondary" />
+              <h4 className="font-display text-xl font-bold leading-tight">
+                Radical Transparency
+              </h4>
+              <p className="mt-3 text-on-surface-variant">
+                Every dollar tracked. Every expense audited. See exactly how your contribution fuels the athlete&rsquo;s journey through real-time expense ledgers.
+              </p>
+            </div>
+            <div className="w-full rounded-card bg-surface-container-low p-4 text-xs md:w-64">
+              <div className="mb-2 flex justify-between border-b border-outline-variant pb-2">
+                <span className="font-bold text-on-surface">Item</span>
+                <span className="font-bold text-on-surface">Amount</span>
+              </div>
+              {(sampleLedger?.costLines ?? []).slice(0, 3).map((line) => (
+                <div key={line.label} className="flex justify-between py-1">
+                  <span className="text-on-surface-variant">{line.label}</span>
+                  <span className="font-semibold text-secondary">
+                    -{formatCents(line.amountCents)}
                   </span>
-                  <span>{item}</span>
-                </li>
+                </div>
               ))}
-            </ul>
+              <div className="mt-2 flex justify-between border-t border-outline-variant pt-2">
+                <span className="font-bold text-on-surface">Remaining</span>
+                <span className="font-bold text-on-surface">
+                  {sampleLedger
+                    ? formatCents(sampleLedger.targetAmountCents - sampleLedger.raisedAmountCents)
+                    : '$0'}
+                </span>
+              </div>
+            </div>
+          </article>
+
+          {/* Direct Connection — secondary fill */}
+          <article className="card-lift rounded-card border border-secondary bg-secondary p-8 text-white">
+            <HubIcon className="mb-6 h-10 w-10" />
+            <h4 className="font-display text-xl font-bold leading-tight">Direct Connection</h4>
+            <p className="mt-3 text-lg leading-relaxed text-white/90">
+              Bypass the middleman. Your support goes directly to the athlete, creating a measurable impact you can follow from training to the podium.
+            </p>
+          </article>
+
+          {/* Measurable Impact */}
+          <article className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+            <InsightsIcon className="mb-4 h-8 w-8 text-primary" />
+            <h4 className="font-display text-xl font-bold leading-tight">Measurable Impact</h4>
+            <p className="mt-3 text-on-surface-variant">
+              We track performance metrics alongside funding. Witness the correlation between financial stability and athletic breakthroughs — race results, podium finishes, sponsorship pickups.
+            </p>
+          </article>
+
+          {/* Professional Momentum */}
+          <article className="card-lift flex items-center gap-6 rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+            <div className="flex-1">
+              <h4 className="font-display text-xl font-bold leading-tight">
+                Professional Momentum
+              </h4>
+              <p className="mt-3 text-on-surface-variant">
+                A disciplined environment that mirrors the precision of elite sports. No clutter — just performance, signed off in receipts and updates.
+              </p>
+            </div>
+            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-xl border-4 border-secondary">
+              <span className="label-bold text-secondary text-base">LIVE</span>
+            </div>
+          </article>
+        </div>
+      </Section>
+
+      {/* DARK CTA BANNER */}
+      <Section tone="surface" pad="lg">
+        <div className="relative overflow-hidden rounded-card bg-inverse-surface px-6 py-14 text-center md:px-20 md:py-20">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at center, #ff5f1f 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
+          <div className="relative z-10 mx-auto max-w-2xl">
+            <h2 className="font-display text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
+              Ready to back the next champion?
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-white/70">
+              Join thousands of backers who are changing the landscape of professional sports through radical transparency.
+            </p>
+            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+              <LinkButton tone="inverse" size="lg" href="/athletes">
+                Explore Athletes
+              </LinkButton>
+              <LinkButton tone="primary" size="lg" href="/sign-up">
+                Apply as Athlete
+              </LinkButton>
+            </div>
           </div>
         </div>
       </Section>
     </>
+  );
+}
+
+/* ----- Inline icons (avoids loading Material Symbols web font) ----- */
+function TrendingIcon({
+  name,
+  className,
+}: {
+  name: 'trophy' | 'cash' | 'group';
+  className?: string;
+}) {
+  if (name === 'trophy') {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+        <path d="M17 4V2H7v2H2v4a5 5 0 0 0 5 5 5 5 0 0 0 4 4.9V20H7v2h10v-2h-4v-2.1A5 5 0 0 0 17 13a5 5 0 0 0 5-5V4h-5ZM4 8V6h3v4a3 3 0 0 1-3-2Zm16 0a3 3 0 0 1-3 2V6h3v2Z" />
+      </svg>
+    );
+  }
+  if (name === 'cash') {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+        <path d="M2 5h20v14H2V5Zm2 2v10h16V7H4Zm8 1.5A3.5 3.5 0 1 0 12 15.5 3.5 3.5 0 0 0 12 8.5Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-8 8a8 8 0 0 1 16 0Z" />
+    </svg>
+  );
+}
+
+function WhyIcon({
+  name,
+  className,
+}: {
+  name: 'eye' | 'link' | 'check';
+  className?: string;
+}) {
+  if (name === 'eye') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    );
+  }
+  if (name === 'link') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+        <path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" />
+        <path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <path d="M9 12l2 2 4-4" />
+      <circle cx="12" cy="12" r="10" />
+    </svg>
+  );
+}
+
+function BarChartIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M3 3h2v18H3V3Zm4 10h3v8H7v-8Zm5-7h3v15h-3V6Zm5 4h3v11h-3V10Z" />
+    </svg>
+  );
+}
+
+function HubIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <circle cx="4" cy="6" r="2" />
+      <circle cx="20" cy="6" r="2" />
+      <circle cx="4" cy="18" r="2" />
+      <circle cx="20" cy="18" r="2" />
+      <path
+        d="M6 7 10 11M18 7 14 11M6 17 10 13M18 17 14 13"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
+function InsightsIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M3 20h18v2H3v-2Zm3-6 4-4 4 4 6-7V5l-6 7-4-4-6 6v3Z" />
+    </svg>
   );
 }

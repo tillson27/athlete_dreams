@@ -1,39 +1,81 @@
 @import "tailwindcss";
 
 /*
- * Palette tuned for WCAG AA against `--color-paper` (#f8f6f1):
- *   • text-flame  on paper  ≥ 5.1:1   • white       on flame ≥ 5.1:1
- *   • text-moss   on paper  ≥ 8.2:1   • white       on moss  ≥ 8.2:1
- *   • text-sky    on paper  ≥ 6.0:1   • white       on sky   ≥ 6.0:1
- * Soft tint colors are background-only and pair with `text-ink` for body copy.
+ * FAD Network — Champion Flow design system.
+ *
+ * Palette: Champion Orange primary + Olympic Blue secondary + Stadium Charcoal text
+ * on a cool surface (#f7fafc). Tokens are exposed as Tailwind v4 theme vars so
+ * utilities like `bg-primary`, `text-on-surface`, `ring-outline-variant` work.
  */
 @theme {
-  --color-ink: #0b1320;
-  --color-ink-soft: #1d2a44;
-  --color-paper: #f8f6f1;
-  --color-paper-soft: #efeae0;
+  /* Surface tiers */
+  --color-surface: #f7fafc;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f1f4f6;
+  --color-surface-container: #ebeef0;
+  --color-surface-container-high: #e5e9eb;
+  --color-surface-container-highest: #e0e3e5;
+  --color-surface-dim: #d7dadc;
+  --color-on-surface: #181c1e;
+  --color-on-surface-variant: #5b4138;
 
-  --color-flame: #c83d1d;
-  --color-flame-soft: #fde2d8;
+  /* Inverse / dark sections */
+  --color-inverse-surface: #2d3133;
+  --color-inverse-on-surface: #eef1f3;
+  --color-background: #f7fafc;
+  --color-on-background: #181c1e;
 
-  --color-moss: #1c5a3f;
-  --color-moss-soft: #d4ead9;
+  /* Outlines */
+  --color-outline: #8f7066;
+  --color-outline-variant: #e3bfb3;
 
-  --color-sky: #14559a;
-  --color-sky-soft: #d9e6f8;
+  /* Champion Orange */
+  --color-primary: #ab3600;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #ff5f1f;
+  --color-on-primary-container: #561700;
+  --color-primary-soft: #ffdbcf;
 
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Olympic Blue */
+  --color-secondary: #0453cd;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #356ee7;
+  --color-on-secondary-container: #fefcff;
+  --color-secondary-soft: #dae2ff;
 
-  --radius-card: 1.25rem;
-  --radius-pill: 999px;
+  /* Tertiary / neutral accent */
+  --color-tertiary: #5d5e61;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #939496;
+
+  /* Status */
+  --color-success: #1b8e2d;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+
+  /* Type stack — uses next/font CSS vars from layout.tsx (Montserrat + Inter). */
+  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Shape */
+  --radius-card: 1rem;
+  --radius-button: 0.5rem;
+  --radius-input: 0.75rem;
+  --radius-pill: 9999px;
+
+  /* Layout */
+  --spacing-margin-mobile: 1.25rem;
+  --spacing-margin-desktop: 4rem;
+  --spacing-container-max: 80rem;
 }
 
 html, body {
-  background-color: var(--color-paper);
-  color: var(--color-ink);
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 @layer base {
@@ -41,11 +83,16 @@ html, body {
     color: inherit;
     text-decoration: none;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
 }
 
 ::selection {
-  background-color: var(--color-flame);
-  color: white;
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary);
 }
 
 /* Honour the user's reduced-motion preference. */
@@ -56,11 +103,72 @@ html, body {
   }
 }
 
-/* Visible focus ring on every focusable element (accessibility default). */
+/* Visible focus ring on every focusable element. */
 :focus-visible {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid var(--color-secondary);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ---------- Champion Flow component helpers ---------- */
+
+/* Gradient progress fill: Olympic Blue → Champion Orange (path to glory). */
+.progress-gradient {
+  background: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-primary-container) 100%);
+}
+
+/* Glass chips that sit on top of athlete photography. */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-effect-dark {
+  background: rgba(24, 28, 30, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* Ambient card lift — soft, diffuse, no clutter. */
+.card-lift {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.card-lift-hover:hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  transition: all 280ms ease;
+}
+
+/* Used for label-bold style across components. */
+.label-bold {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Hide native scrollbars on horizontal-scroll carousels. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Live-funding pulse (used on status dots). */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+.pulse-live {
+  animation: pulse-live 1.6s ease-in-out infinite;
 }
 
 /* Mobile menu disclosure styling — uses native <details>/<summary> for no-JS. */

@@ -4,7 +4,7 @@ import { LinkButton } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 
 export const metadata: Metadata = {
-  title: 'For brands',
+  title: 'Brand Hub',
   description:
     'Discover athletes who fit your brand values, sponsor specific events, or sign full season deals — without paying an agent in the middle.',
 };
@@ -28,17 +28,24 @@ const valueProps = [
   },
 ];
 
+const dashboardPreview = [
+  { label: 'Active Sponsorships', value: '12', delta: '+3 this quarter' },
+  { label: 'Athletes in Pipeline', value: '38', delta: 'Across 6 sports' },
+  { label: 'Total Investment', value: '$184K', delta: 'YTD' },
+  { label: 'Content Output', value: '247', delta: 'Posts shipped' },
+];
+
 export default function BrandsPage() {
   return (
     <>
-      <Section>
+      <Section tone="surface" pad="lg">
         <div className="grid items-center gap-12 md:grid-cols-[1.1fr_1fr]">
           <div className="space-y-6">
-            <Badge tone="moss">For brands & corporate partners</Badge>
-            <h1 className="font-display text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
+            <Badge tone="secondary-soft">For Brands & Corporate Partners</Badge>
+            <h1 className="font-display text-balance text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
               Sponsor athletes who fit your story.
             </h1>
-            <p className="max-w-xl text-lg text-ink/75">
+            <p className="max-w-xl text-lg leading-relaxed text-on-surface-variant">
               FAD is a working directory of athletes with verified accomplishments, current campaigns, and stated values. Find the athlete you want to back — and skip the agent gauntlet.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -50,57 +57,79 @@ export default function BrandsPage() {
               </LinkButton>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { stat: '20', label: 'Athletes in pilot cohort' },
-              { stat: '12', label: 'Sports represented' },
-              { stat: '3%', label: 'Platform fee — that is it' },
-              { stat: '48h', label: 'Avg. brand-to-athlete reply time' },
-            ].map((item) => (
-              <div key={item.label} className="rounded-[var(--radius-card)] bg-paper-soft p-6 ring-1 ring-inset ring-ink/5">
-                <p className="font-display text-4xl">{item.stat}</p>
-                <p className="mt-2 text-sm text-ink/70">{item.label}</p>
+          <div className="relative">
+            {/* Brand Hub dashboard tease */}
+            <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
+              <div className="flex items-center justify-between border-b border-outline-variant pb-4">
+                <span className="font-display text-lg font-bold">Brand Hub</span>
+                <Badge tone="success">Live</Badge>
               </div>
-            ))}
+              <div className="mt-5 grid grid-cols-2 gap-4">
+                {dashboardPreview.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-card bg-surface-container-low p-4 ring-1 ring-inset ring-outline-variant/60"
+                  >
+                    <p className="label-bold text-on-surface-variant">{stat.label}</p>
+                    <p className="mt-2 font-display text-2xl font-extrabold text-on-surface">
+                      {stat.value}
+                    </p>
+                    <p className="mt-1 text-xs text-on-surface-variant">{stat.delta}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 rounded-card bg-secondary p-4 text-white">
+                <p className="label-bold text-white/75">Avg. brand-to-athlete reply</p>
+                <p className="mt-1 font-display text-2xl font-extrabold">48 hours</p>
+              </div>
+            </div>
           </div>
         </div>
       </Section>
 
-      <Section className="bg-paper-soft border-y border-ink/5">
+      <Section tone="surface-low" pad="xl" className="border-y border-outline-variant">
         <SectionHeading
           eyebrow="Why brands use FAD"
           title="Built for marketing teams that hate the agent dance."
         />
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {valueProps.map((prop) => (
-            <div key={prop.title} className="rounded-[var(--radius-card)] bg-white p-7 ring-1 ring-inset ring-ink/5">
-              <h3 className="font-display text-2xl leading-tight">{prop.title}</h3>
-              <p className="mt-3 text-sm text-ink/70">{prop.body}</p>
+            <div
+              key={prop.title}
+              className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-7"
+            >
+              <h3 className="font-display text-2xl font-bold leading-tight">{prop.title}</h3>
+              <p className="mt-3 text-on-surface-variant">{prop.body}</p>
             </div>
           ))}
         </div>
       </Section>
 
-      <Section>
-        <div className="rounded-[var(--radius-card)] bg-moss px-6 py-10 text-paper sm:px-8 sm:py-14 md:px-14 md:py-20">
+      <Section tone="surface" pad="lg">
+        <div className="rounded-card bg-secondary px-6 py-12 text-white md:px-14 md:py-20">
           <div className="grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
             <div className="space-y-5">
-              <h2 className="font-display text-4xl leading-tight md:text-5xl">
-                Tell us what you're looking for.
+              <h2 className="font-display text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
+                Tell us what you&rsquo;re looking for.
               </h2>
-              <p className="max-w-xl text-base text-paper/90">
-                Sport, region, demographic, value alignment, budget. We'll send a shortlist of athletes whose profiles fit — within 48 hours, with no contract required.
+              <p className="max-w-xl text-base leading-relaxed text-white/85">
+                Sport, region, demographic, value alignment, budget. We&rsquo;ll send a shortlist of athletes whose profiles fit — within 48 hours, with no contract required.
               </p>
               <div className="flex flex-wrap gap-3">
-                <LinkButton href="/about#contact" tone="primary" size="lg">
+                <LinkButton href="/about#contact" tone="inverse" size="lg">
                   Request a shortlist
                 </LinkButton>
-                <LinkButton href="/ambassadors" tone="ghost" size="lg" className="!text-paper hover:!bg-paper/15">
+                <LinkButton
+                  href="/ambassadors"
+                  tone="ghost"
+                  size="lg"
+                  className="!text-white hover:!bg-white/15"
+                >
                   See ambassador programs →
                 </LinkButton>
               </div>
             </div>
-            <ul className="space-y-3 text-sm text-paper/90">
+            <ul className="space-y-3 text-sm text-white/90">
               {[
                 'Match on values, sport, and audience — not follower count.',
                 'Single-event sponsorships from $500. Season deals scoped per athlete.',
@@ -108,9 +137,9 @@ export default function BrandsPage() {
               ].map((item) => (
                 <li
                   key={item}
-                  className="flex items-start gap-3 rounded-2xl bg-paper/10 p-4 ring-1 ring-inset ring-paper/10"
+                  className="flex items-start gap-3 rounded-card bg-white/10 p-4 ring-1 ring-inset ring-white/15"
                 >
-                  <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-paper text-moss text-xs font-bold">
+                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-pill bg-primary-container text-xs font-bold text-on-primary">
                     ✓
                   </span>
                   <span>{item}</span>
