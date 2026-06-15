@@ -74,7 +74,7 @@ export const patronLadderSlide: Slide = {
       <div className="mt-5 grid grid-cols-3 gap-3">
         <StatCard value="84%" label="Tier-to-tier retention conversion across the ladder" />
         <StatCard value="$28" label="Avg first donation · grows 4.6x by Elite Patron" tone="primary" />
-        <StatCard value="14 mo" label="Median active supporter lifecycle on FAD" />
+        <StatCard value="14 mo" label="Median active supporter lifecycle on ARC" />
       </div>
     </SlideShell>
   ),

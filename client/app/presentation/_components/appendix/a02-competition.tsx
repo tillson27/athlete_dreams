@@ -3,7 +3,7 @@ import { Check, X } from '../icons';
 
 const competitors = [
   {
-    name: 'FAD Network',
+    name: 'ARC Network',
     sport: 'Yes',
     transparency: 'Yes',
     sponsorship: 'Yes',
@@ -72,7 +72,7 @@ export const a02Competition: Slide = {
         No one does athlete-vertical crowdfunding + sponsorship on a transparent payout rail.
       </h2>
       <p className="mt-2 max-w-4xl text-[14px] leading-snug text-on-surface-variant">
-        Each adjacent player owns one slice; none own the verified-profile substrate that FAD uses to compound
+        Each adjacent player owns one slice; none own the verified-profile substrate that ARC uses to compound
         across three revenue products.
       </p>
 

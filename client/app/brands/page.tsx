@@ -24,7 +24,7 @@ const valueProps = [
   },
   {
     title: 'No agency middle-man',
-    body: 'Reach out to athletes directly through their FAD profile. We facilitate the contract; you keep the relationship.',
+    body: 'Reach out to athletes directly through their ARC profile. We facilitate the contract; you keep the relationship.',
   },
 ];
 
@@ -46,7 +46,7 @@ export default function BrandsPage() {
               Sponsor athletes who fit your story.
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-on-surface-variant">
-              FAD is a working directory of athletes with verified accomplishments, current campaigns, and stated values. Find the athlete you want to back — and skip the agent gauntlet.
+              ARC is a working directory of athletes with verified accomplishments, current campaigns, and stated values. Find the athlete you want to back — and skip the agent gauntlet.
             </p>
             <div className="flex flex-wrap gap-3">
               <LinkButton href="/athletes" tone="primary" size="lg">
@@ -89,7 +89,7 @@ export default function BrandsPage() {
 
       <Section tone="surface-low" pad="xl" className="border-y border-outline-variant">
         <SectionHeading
-          eyebrow="Why brands use FAD"
+          eyebrow="Why brands use ARC"
           title="Built for marketing teams that hate the agent dance."
         />
         <div className="mt-12 grid gap-6 md:grid-cols-2">

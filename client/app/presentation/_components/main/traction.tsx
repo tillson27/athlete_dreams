@@ -65,7 +65,7 @@ export const tractionSlide: Slide = {
           </ul>
           <div className="mt-auto rounded-card bg-white/60 p-3 text-[11px] italic text-on-surface">
             &ldquo;I have never felt comfortable asking. The receipt page lets me share the math, not myself.
-            That changed everything.&rdquo; &mdash; Maya Okafor, FAD beta athlete
+            That changed everything.&rdquo; &mdash; Maya Okafor, ARC beta athlete
           </div>
         </div>
       </div>

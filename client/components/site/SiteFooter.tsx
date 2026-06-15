@@ -54,7 +54,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="mx-auto mt-12 flex w-full max-w-[var(--spacing-container-max)] flex-col items-start justify-between gap-3 border-t border-outline-variant/60 px-16 pt-6 text-xs text-on-surface-variant md:flex-row md:items-center">
-        <span>© {new Date().getFullYear()} FAD Network. All rights reserved.</span>
+        <span>© {new Date().getFullYear()} ARC. All rights reserved.</span>
         <span>Built in Canada · Designed for athletes everywhere.</span>
       </div>
     </footer>

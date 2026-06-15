@@ -22,8 +22,8 @@ import {
   X,
 } from './icons';
 
-const DECK_PASSWORD: string = 'fadnetwork';
-const SESSION_KEY: string = 'fad:presentation:auth:v1';
+const DECK_PASSWORD: string = 'arcnetwork';
+const SESSION_KEY: string = 'arc:presentation:auth:v1';
 
 const CANVAS_WIDTH: number = 1280;
 const CANVAS_HEIGHT: number = 720;
@@ -106,13 +106,13 @@ function PasswordGate({ onAuthenticated }: { onAuthenticated: () => void }) {
             <Lock className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/55">FAD Network</p>
-            <h1 className="text-lg font-bold text-white">Investor Brief</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/55">ARC</p>
+            <h1 className="text-lg font-bold text-white">The Story</h1>
           </div>
         </div>
 
         <p className="mb-6 text-sm text-white/70">
-          This deck is confidential. Enter the access code shared with you to continue.
+          Enter the access code to view the deck.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -152,15 +152,15 @@ function PasswordGate({ onAuthenticated }: { onAuthenticated: () => void }) {
 
         <p className="mt-6 text-xs text-white/55">
           Need access? Email{' '}
-          <a href="mailto:hello@fad.network" className="font-semibold text-primary-container hover:underline">
-            hello@fad.network
+          <a href="mailto:hello@arc.network" className="font-semibold text-primary-container hover:underline">
+            hello@arc.network
           </a>
           .
         </p>
 
         <div className="mt-8 border-t border-white/10 pt-6 text-xs text-white/50">
           <LinkButton href="/mission" tone="ghost" size="sm" className="!text-white/70 hover:!bg-white/10">
-            ← Back to FAD Mission
+            ← Back to ARC
           </LinkButton>
         </div>
       </div>
@@ -366,12 +366,12 @@ function PitchDeck({
       <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between gap-2 px-3 pt-3 sm:px-5 sm:pt-4 lg:relative lg:gap-3 lg:px-10 lg:pt-6">
         <div className="flex min-w-0 items-center gap-2 rounded-pill bg-black/35 px-2 py-1.5 text-white/85 shadow-[0_4px_18px_-6px_rgba(0,0,0,0.6)] ring-1 ring-white/10 backdrop-blur-xl lg:rounded-none lg:bg-transparent lg:px-0 lg:py-0 lg:text-white/80 lg:shadow-none lg:ring-0 lg:backdrop-blur-none">
           <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-primary-container text-[11px] font-extrabold tracking-tight text-on-primary lg:h-8 lg:w-8 lg:rounded-lg lg:text-sm">
-            F
+            A
           </span>
           <div className="hidden min-w-0 flex-col leading-tight sm:flex lg:flex">
-            <span className="truncate text-[12px] font-bold text-white lg:text-sm">FAD Network</span>
+            <span className="truncate text-[12px] font-bold text-white lg:text-sm">ARC</span>
             <span className="hidden truncate text-[10px] uppercase tracking-[0.18em] text-white/55 sm:inline lg:text-[11px] lg:text-white/50">
-              Investor Brief · Confidential
+              The Story
             </span>
           </div>
           <span className="ml-1.5 mr-1 rounded-pill bg-white/10 px-2 py-0.5 text-[10px] font-bold tabular-nums text-white/85 lg:hidden">

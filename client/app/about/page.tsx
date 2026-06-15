@@ -6,7 +6,7 @@ import { LinkButton } from '@/components/ui/Button';
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Why we built FAD, where existing platforms fall short, and how to get in touch.',
+    'Why we built ARC, where existing platforms fall short, and how to get in touch.',
 };
 
 const principles = [
@@ -20,7 +20,7 @@ const principles = [
   },
   {
     title: 'Transparency is the product.',
-    body: 'Cost breakdowns by default. Post-event updates by default. If a campaign cannot show the math, it does not belong on FAD.',
+    body: 'Cost breakdowns by default. Post-event updates by default. If a campaign cannot show the math, it does not belong on ARC.',
   },
   {
     title: 'No agent middlemen.',
@@ -31,15 +31,15 @@ const principles = [
 const competitors = [
   {
     name: 'Makeachamp',
-    delta: 'Funds get held back. Athletes wait — sometimes for months — to see money they raised. FAD pays out as donations clear.',
+    delta: 'Funds get held back. Athletes wait — sometimes for months — to see money they raised. ARC pays out as donations clear.',
   },
   {
     name: 'Sportfunder',
-    delta: 'Sport-specific and feature-thin. FAD is cross-sport with a real directory and brand integration.',
+    delta: 'Sport-specific and feature-thin. ARC is cross-sport with a real directory and brand integration.',
   },
   {
     name: 'OpenSponsorship',
-    delta: 'Brand-first marketplace where athletes are search results. FAD leads with athlete stories; sponsorships layer on top.',
+    delta: 'Brand-first marketplace where athletes are search results. ARC leads with athlete stories; sponsorships layer on top.',
   },
 ];
 
@@ -48,9 +48,9 @@ export default function AboutPage() {
     <>
       <Section tone="surface" pad="lg">
         <SectionHeading
-          eyebrow="About FAD Network"
+          eyebrow="About ARC"
           title="A funding platform where the athlete comes first."
-          description="We started FAD because every existing tool treats athletes like inventory. Crowdfunding sites freeze payouts. Sponsorship marketplaces sort by follower count. Ambassador programs run out of Google Forms. We thought we could do better — and we are starting with 20 athletes to prove it."
+          description="We started ARC because every existing tool treats athletes like inventory. Crowdfunding sites freeze payouts. Sponsorship marketplaces sort by follower count. Ambassador programs run out of Google Forms. We thought we could do better — and we are starting with 20 athletes to prove it."
           align="center"
         />
       </Section>
@@ -96,8 +96,8 @@ export default function AboutPage() {
             </p>
             <p className="text-sm text-on-surface-variant">
               For now, email us directly:{' '}
-              <a className="font-semibold text-primary underline" href="mailto:hello@fad.network">
-                hello@fad.network
+              <a className="font-semibold text-primary underline" href="mailto:hello@arc.network">
+                hello@arc.network
               </a>
             </p>
             <div className="flex flex-wrap gap-3">

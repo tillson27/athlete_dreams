@@ -3,7 +3,7 @@ import { Megaphone, Receipt, ShieldCheck, Trophy, Users, Wallet } from '../icons
 
 export const solutionSlide: Slide = {
   id: 'solution',
-  title: 'The FAD solution',
+  title: 'The ARC solution',
   section: 'story',
   render: () => (
     <SlideShell eyebrow="The Solution">
@@ -11,7 +11,7 @@ export const solutionSlide: Slide = {
         One network. Three pillars. Built on a single verified athlete profile.
       </h2>
       <p className="mt-2 max-w-5xl text-[15px] leading-snug text-on-surface-variant">
-        Every athlete on FAD passes through a four-step verification protocol. From that single source of
+        Every athlete on ARC passes through a four-step verification protocol. From that single source of
         truth, three revenue products operate &mdash; in priority order &mdash; with shared trust and shared data.
       </p>
 
@@ -65,7 +65,7 @@ export const solutionSlide: Slide = {
           </div>
           <h3 className="font-display text-lg font-bold text-on-surface">Ambassador programs</h3>
           <p className="text-[12px] leading-relaxed text-on-surface-variant">
-            FAD operates ambassador discovery, intake, contracting, and compliance for enterprise rosters.
+            ARC operates ambassador discovery, intake, contracting, and compliance for enterprise rosters.
             Brand teams focus on the storytelling. We handle the operational floor underneath.
           </p>
           <ul className="mt-2 space-y-1.5 text-[11px] text-on-surface-variant">

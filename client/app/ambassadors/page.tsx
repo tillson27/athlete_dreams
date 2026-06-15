@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 export const metadata: Metadata = {
   title: 'Managed Ambassador Programs',
   description:
-    'Hand FAD your ambassador funnel. We replace the spreadsheet, the Instagram DMs, and the unstructured intake forms with a real pipeline.',
+    'Hand ARC your ambassador funnel. We replace the spreadsheet, the Instagram DMs, and the unstructured intake forms with a real pipeline.',
 };
 
 const problems = [
@@ -15,7 +15,7 @@ const problems = [
     body: 'One person on your marketing team scraping race results, scrolling Instagram, and filling a spreadsheet. Athletes apply through a Google Form. Nobody answers.',
   },
   {
-    label: 'With FAD',
+    label: 'With ARC',
     body: 'A pre-vetted directory of athletes who already filled out a structured profile. We surface the ones who fit your brief and handle the back-and-forth until contract.',
   },
 ];
@@ -50,7 +50,7 @@ export default function AmbassadorsPage() {
               Stop running your ambassador program out of a spreadsheet.
             </h1>
             <p className="max-w-2xl text-lg leading-relaxed text-on-surface-variant">
-              Enterprise sports brands tell us the same story: an internal team of one, scraping Strava and Instagram, with applications piling up in a Google Form nobody reads. FAD takes that whole flow off your plate.
+              Enterprise sports brands tell us the same story: an internal team of one, scraping Strava and Instagram, with applications piling up in a Google Form nobody reads. ARC takes that whole flow off your plate.
             </p>
           </div>
           <LinkButton href="/about#contact" tone="primary" size="lg">

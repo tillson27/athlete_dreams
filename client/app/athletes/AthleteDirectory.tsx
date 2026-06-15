@@ -185,7 +185,7 @@ export function AthleteDirectory() {
           <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-12 text-center">
             <Badge tone="soft">No matching athletes</Badge>
             <p className="mt-4 text-on-surface-variant">
-              We&rsquo;re still onboarding athletes that fit these filters. Check back soon — or forward FAD to someone who fits.
+              We&rsquo;re still onboarding athletes that fit these filters. Check back soon — or forward ARC to someone who fits.
             </p>
             <div className="mt-6">
               <LinkButton tone="secondary" size="md" href="/sign-up">

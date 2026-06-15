@@ -33,7 +33,7 @@ export const verifiedStandardSlide: Slide = {
         An athlete profile, built like a financial record.
       </h2>
       <p className="mt-2 max-w-4xl text-[15px] leading-snug text-on-surface-variant">
-        The Verified Performer Standard is FAD&rsquo;s four-step protocol. It is the moat: it makes every
+        The Verified Performer Standard is ARC&rsquo;s four-step protocol. It is the moat: it makes every
         downstream product (crowdfunding, sponsorship, ambassador) trustworthy by construction.
       </p>
 

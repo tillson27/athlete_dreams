@@ -36,7 +36,7 @@ export const problemSlide: Slide = {
           <div className="mt-auto pt-3">
             <StatCard
               value="89%"
-              label="of supporters say they would give more if they saw the athlete's full story (FAD athlete survey, n=120)"
+              label="of supporters say they would give more if they saw the athlete's full story (ARC athlete survey, n=120)"
             />
           </div>
         </div>
@@ -61,7 +61,7 @@ export const problemSlide: Slide = {
           <div className="mt-auto pt-3">
             <StatCard
               value="73%"
-              label="of recurring sport donors say lack of visibility was their main reason for stopping (FAD donor interviews)"
+              label="of recurring sport donors say lack of visibility was their main reason for stopping (ARC donor interviews)"
             />
           </div>
         </div>
@@ -94,13 +94,13 @@ export const problemSlide: Slide = {
       <div className="mt-3 rounded-card border border-primary/20 bg-primary/5 px-4 py-2.5">
         <p className="text-[12px] leading-relaxed text-on-surface/85">
           <span className="font-bold text-on-surface">Anchor:</span> A single $3,000 race trip funded directly
-          through FAD is worth more to the athlete than $10,000 routed through a traditional sponsorship
+          through ARC is worth more to the athlete than $10,000 routed through a traditional sponsorship
           agency. The math compounds across a career.
         </p>
       </div>
 
       <SourceBar>
-        Sources: FAD athlete + donor research (n=120 athletes, 38 recurring donors, 2025-2026); industry
+        Sources: ARC athlete + donor research (n=120 athletes, 38 recurring donors, 2025-2026); industry
         sponsorship benchmarks (IEG / SponsorshipX 2025).
       </SourceBar>
     </SlideShell>

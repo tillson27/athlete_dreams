@@ -5,8 +5,7 @@ export type SlideSectionKey =
   | 'product'
   | 'market'
   | 'vision'
-  | 'team'
-  | 'ask'
+  | 'close'
   | 'appendix';
 
 export type Slide = {
@@ -18,11 +17,10 @@ export type Slide = {
 
 export const slideSections: ReadonlyArray<{ key: SlideSectionKey; label: string }> = [
   { key: 'story', label: 'Story' },
-  { key: 'product', label: 'Product & Moat' },
-  { key: 'market', label: 'Market & Traction' },
+  { key: 'product', label: 'Product' },
+  { key: 'market', label: 'Market' },
   { key: 'vision', label: 'Vision' },
-  { key: 'team', label: 'Team' },
-  { key: 'ask', label: 'The Ask' },
+  { key: 'close', label: 'Close' },
   { key: 'appendix', label: 'Appendix' },
 ];
 

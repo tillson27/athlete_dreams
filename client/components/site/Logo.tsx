@@ -1,16 +1,15 @@
 import Link from 'next/link';
 
-// Compact mark — abstract "FAD" lockup: a chevron path-to-glory arrow.
-function FadMark({ className }: { className?: string }) {
+function ArcMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 36 36" aria-hidden="true" className={className}>
       <rect width="36" height="36" rx="10" fill="var(--color-primary)" />
       <path
-        d="M9 25 18 11l9 14h-5.6l-3.4-5.4L14.6 25H9Z"
+        d="M8.5 26 18 9.5 27.5 26h-5.4L18 18.4 13.9 26H8.5Z"
         fill="#fff"
       />
       <path
-        d="M21.4 19.6 27 25"
+        d="M11 21.5h14"
         stroke="var(--color-primary-container)"
         strokeWidth="2.4"
         strokeLinecap="round"
@@ -35,12 +34,12 @@ export function Logo({
   return (
     <Link
       href="/"
-      aria-label="FAD Network home"
+      aria-label="ARC home"
       className="flex items-center gap-2.5 select-none"
     >
-      <FadMark className={`${markSize[size]} shrink-0`} />
+      <ArcMark className={`${markSize[size]} shrink-0`} />
       <span className={`font-display font-extrabold leading-none tracking-tight ${textSize[size]} ${textTone}`}>
-        {variant === 'full' ? 'FAD Network' : 'FAD'}
+        {variant === 'full' ? 'ARC Network' : 'ARC'}
       </span>
     </Link>
   );

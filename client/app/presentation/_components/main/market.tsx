@@ -42,14 +42,14 @@ export const marketSlide: Slide = {
 
       <div className="mt-6 grid grid-cols-4 gap-3">
         <StatCard value="2.4M" label="Endurance + Olympic-sport athletes in NA/EU competing 2+ events / yr" />
-        <StatCard value="38%" label="Self-fund 100% of travel + entry · primary FAD persona" tone="primary" />
+        <StatCard value="38%" label="Self-fund 100% of travel + entry · primary ARC persona" tone="primary" />
         <StatCard value="$1,200" label="Average annual athlete out-of-pocket sport spend" />
         <StatCard value="9.1%" label="Annual growth in sport sponsorship spend (IEG 2025)" />
       </div>
 
       <SourceBar>
         Sources: IEG / SponsorshipX 2025; USOPC, Canadian Sport Institute, World Athletics participation
-        reports; FAD bottoms-up athlete model.
+        reports; ARC bottoms-up athlete model.
       </SourceBar>
     </SlideShell>
   ),

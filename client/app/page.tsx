@@ -84,7 +84,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-8 max-w-xl text-lg leading-relaxed text-on-surface-variant md:text-xl">
-              FAD routes your support directly to verified athletes — for a specific race, a specific
+              ARC routes your support directly to verified athletes — for a specific race, a specific
               flight, a specific pair of skis. You see the receipt. You see the result.
             </p>
 
@@ -246,7 +246,7 @@ export default function HomePage() {
               has a job.
             </h2>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-on-surface-variant">
-              Traditional sport funding is a black box. FAD itemizes the campaign before it goes
+              Traditional sport funding is a black box. ARC itemizes the campaign before it goes
               live — flights, lodging, coaching, gear, recovery. You back the specific line, and the
               athlete reports back when it&rsquo;s spent.
             </p>
@@ -354,7 +354,7 @@ export default function HomePage() {
                   </div>
 
                   <p className="mt-6 text-center text-xs text-on-surface-variant">
-                    Thank you to {featuredCampaign.supporterCount} backers · Verified by FAD
+                    Thank you to {featuredCampaign.supporterCount} backers · Verified by ARC
                   </p>
                 </article>
               </div>

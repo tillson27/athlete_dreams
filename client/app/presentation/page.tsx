@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { DeckClient } from './_components/DeckClient';
 
 export const metadata: Metadata = {
-  title: 'Investor Brief',
-  description: 'FAD Network investor brief — confidential.',
+  title: 'The ARC Story',
+  description: 'ARC — the idea, in slides.',
   robots: {
     index: false,
     follow: false,

@@ -92,7 +92,7 @@ export const transparencySlide: Slide = {
             </p>
             <ul className="space-y-2">
               {[
-                'Pre-launch budget review by FAD ops',
+                'Pre-launch budget review by ARC ops',
                 'OCR-verified receipts on every itemized line',
                 'Stripe Connect direct-to-athlete (no float)',
                 'Post-event recap, signed by the athlete',

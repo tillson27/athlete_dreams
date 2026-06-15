@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 export const metadata: Metadata = {
   title: 'How it works',
   description:
-    'How athletes, supporters, and brands use FAD — from creating a profile to closing the loop after the event.',
+    'How athletes, supporters, and brands use ARC — from creating a profile to closing the loop after the event.',
 };
 
 const athleteSteps = [
@@ -63,9 +63,9 @@ export default function HowItWorksPage() {
     <>
       <Section tone="surface" pad="lg">
         <SectionHeading
-          eyebrow="How FAD works"
+          eyebrow="How ARC works"
           title="The same playbook, written for three audiences."
-          description="FAD is one network with three jobs to do. Pick your role — the path is straightforward."
+          description="ARC is one network with three jobs to do. Pick your role — the path is straightforward."
           align="center"
         />
       </Section>

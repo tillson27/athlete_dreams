@@ -56,7 +56,7 @@ export const crowdfundingReimaginedSlide: Slide = {
         Three pillars that make athlete crowdfunding actually work.
       </h2>
       <p className="mt-2 max-w-4xl text-[15px] leading-snug text-on-surface-variant">
-        Legacy crowdfunding platforms optimize for the first donation. FAD optimizes for the second, third, and
+        Legacy crowdfunding platforms optimize for the first donation. ARC optimizes for the second, third, and
         tenth &mdash; the repeat backer is where the unit economics live.
       </p>
 

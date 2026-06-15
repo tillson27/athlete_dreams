@@ -23,11 +23,11 @@ const sources = [
   },
   {
     id: 'S6',
-    label: 'FAD primary research — athlete survey (n=120, 2025-2026)',
+    label: 'ARC primary research — athlete survey (n=120, 2025-2026)',
   },
   {
     id: 'S7',
-    label: 'FAD primary research — recurring donor interviews (n=38, 2026)',
+    label: 'ARC primary research — recurring donor interviews (n=38, 2026)',
   },
   {
     id: 'S8',
@@ -49,7 +49,7 @@ export const a03Sources: Slide = {
         Citations for every stat in the deck.
       </h2>
       <p className="mt-2 max-w-4xl text-[14px] leading-snug text-on-surface-variant">
-        Public benchmarks, federation reports, and FAD primary research. Detailed write-ups available on
+        Public benchmarks, federation reports, and ARC primary research. Detailed write-ups available on
         request.
       </p>
 
