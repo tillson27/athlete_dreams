@@ -8,11 +8,12 @@ export const solutionSlide: Slide = {
   render: () => (
     <SlideShell eyebrow="The Solution">
       <h2 className="max-w-5xl font-display text-3xl font-bold tracking-tight text-on-surface">
-        One network. Three pillars. Built on a single verified athlete profile.
+        A storytelling network for athletes &mdash; with funding, sponsorship, and ambassador rails on top.
       </h2>
       <p className="mt-2 max-w-5xl text-[15px] leading-snug text-on-surface-variant">
-        Every athlete on ARC passes through a four-step verification protocol. From that single source of
-        truth, three revenue products operate &mdash; in priority order &mdash; with shared trust and shared data.
+        Core mission: be the best place for athletes to showcase past accomplishments, announce future
+        competitions, and tell a real, heart-filled story. Three revenue products sit on top of that
+        verified story &mdash; in priority order &mdash; with shared trust and shared data.
       </p>
 
       <div className="mt-5 grid flex-1 grid-cols-3 gap-4">
@@ -35,7 +36,7 @@ export const solutionSlide: Slide = {
           </ul>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-secondary/30 bg-secondary-soft/40 p-5">
+        <div className="flex flex-col gap-3 rounded-2xl border border-secondary/40 bg-secondary-soft/50 p-5">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-on-secondary">
               <Trophy className="h-4 w-4" />
@@ -43,11 +44,11 @@ export const solutionSlide: Slide = {
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary">Pillar 02 · Margin</p>
           </div>
           <h3 className="font-display text-lg font-bold text-on-surface">Corporate sponsorship</h3>
-          <p className="text-[12px] leading-relaxed text-on-secondary-container">
+          <p className="text-[12px] leading-relaxed text-on-surface">
             Brand-side discovery on the same verified profiles. Search by sport, region, audience, values.
             Connect directly with no agency middleman. Contract and report in-platform.
           </p>
-          <ul className="mt-2 space-y-1.5 text-[11px] text-on-secondary-container/85">
+          <ul className="mt-2 space-y-1.5 text-[11px] text-on-surface/85">
             <li>· Brand-safety review per athlete</li>
             <li>· In-platform contracting workflow</li>
             <li>· Performance + content ROI tracking</li>
@@ -91,7 +92,7 @@ export const solutionSlide: Slide = {
         <FeatureTile
           icon={<ShieldCheck className="h-4 w-4" />}
           title="Verified Performer Standard"
-          description="Identity + results + training data + post-event recap."
+          description="Identity, results, training data, athlete story, and post-event recap."
         />
       </div>
     </SlideShell>

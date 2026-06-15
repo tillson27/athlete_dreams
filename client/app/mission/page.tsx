@@ -5,29 +5,29 @@ import { LinkButton, ArrowGlyph } from '@/components/ui/Button';
 export const metadata: Metadata = {
   title: 'The MVP',
   description:
-    'ARC in one screen: what we do, how it works, and why the receipt is the product.',
+    'ARC is the storytelling network for athletes — past accomplishments, future competitions, real stories. Funding is the second pillar.',
   openGraph: {
     title: 'The MVP · ARC',
     description:
-      'Crowdfund a verified athlete on a transparent ledger. Every dollar named. Every receipt posted.',
+      'Tell a real story. Showcase past accomplishments and future competitions. Then crowdfund the next race on a transparent ledger.',
   },
 };
 
 const pillars = [
   {
     step: '01',
-    title: 'Itemized ask',
-    body: 'Flights, entry, lodging, gear — each line is its own number.',
+    title: 'Tell the real story',
+    body: 'Past accomplishments, future competitions, the heart behind the sport — verified and told well.',
   },
   {
     step: '02',
-    title: 'Direct payout',
-    body: 'Stripe Connect to the athlete in under 24 hours. No platform float.',
+    title: 'Itemized ask',
+    body: 'Flights, entry, lodging, gear — each line is its own number, attached to a specific event.',
   },
   {
     step: '03',
-    title: 'Post-event receipt',
-    body: 'Actual spend, OCR-verified, named back to the backer who covered it.',
+    title: 'Direct payout + receipt',
+    body: 'Stripe Connect to the athlete in under 24 hours. Post-event receipts named back to the backer who covered it.',
   },
 ];
 
@@ -51,14 +51,15 @@ export default function MissionPage() {
           </span>
 
           <h1 className="mt-6 font-display text-balance text-4xl font-extrabold leading-[0.95] tracking-tight text-white sm:text-5xl md:text-6xl">
-            Back a real athlete.
+            Tell the real story.
             <br />
-            <span className="text-primary-container">See every dollar work.</span>
+            <span className="text-primary-container">Fund the next race.</span>
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-            ARC is event-based crowdfunding for verified athletes. Pick a campaign, fund a specific
-            line item, and get an itemized receipt when the race is done. That&rsquo;s it.
+            ARC is the storytelling network for athletes &mdash; past accomplishments, future
+            competitions, the heart behind the sport. Funding comes next: pick a campaign, back a
+            specific line item, and get an itemized receipt when the race is done.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -96,8 +97,8 @@ export default function MissionPage() {
       </div>
 
       <p className="relative mx-auto mt-10 max-w-[1200px] text-xs text-white/55">
-        Verified athlete · itemized campaign · sub-24h payout · post-event receipt.
-        The receipt is the product.
+        Verified story · itemized campaign · sub-24h payout · post-event receipt.
+        Story first, funding second.
       </p>
     </section>
   );
