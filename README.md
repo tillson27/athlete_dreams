@@ -1,4 +1,4 @@
-# Fund an ARC Network
+# ARC Network
 
 > The world's most transparent athlete funding network.
 
