@@ -1,8 +1,8 @@
-# Fund an Athlete's Dream (FAD) Network
+# Fund an ARC Network
 
 > The world's most transparent athlete funding network.
 
-FAD connects athletes with the people, sponsors, and brands who want to back them. Three pillars:
+ARC connects athletes with the people, sponsors, and brands who want to back them. Three pillars:
 
 1. **Crowdfunding** — athletes build a transparent profile with accomplishments, upcoming events, and cost breakdowns. Family, friends, and fans donate to specific events, gear, or travel — and get post-event updates.
 2. **Corporate sponsorships** — companies discover athletes who align with their brand values and partner directly through the platform.
