@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Montserrat } from 'next/font/google';
 import '../styles/globals.css';
-import { SiteHeader } from '../components/site/SiteHeader';
-import { SiteFooter } from '../components/site/SiteFooter';
-import { MobileBottomNav } from '../components/site/MobileBottomNav';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -40,10 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
       <body className="min-h-dvh flex flex-col bg-surface text-on-surface antialiased">
-        <SiteHeader />
-        <main className="flex-1 pb-20 md:pb-0">{children}</main>
-        <SiteFooter />
-        <MobileBottomNav />
+        {children}
       </body>
     </html>
   );

@@ -36,11 +36,11 @@ export default function MissionPage() {
     <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center overflow-hidden bg-inverse-surface px-5 py-12 text-white md:px-12 md:py-16">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-40 top-1/4 h-[420px] w-[420px] rounded-full bg-primary-container/25 blur-3xl"
+        className="pointer-events-none absolute -left-40 top-1/4 h-[336px] w-[420px] rounded-full bg-primary-container/25 blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-40 bottom-0 h-[420px] w-[420px] rounded-full bg-secondary-container/20 blur-3xl"
+        className="pointer-events-none absolute -right-40 bottom-0 h-[336px] w-[420px] rounded-full bg-secondary-container/20 blur-3xl"
       />
 
       <div className="relative mx-auto grid w-full max-w-[1200px] gap-12 md:grid-cols-[1.2fr_1fr] md:items-center">

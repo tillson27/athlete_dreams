@@ -202,6 +202,46 @@ export const mockAthletes: MockAthlete[] = [
       { title: 'NCAA Division II All-American', year: 2021 },
     ],
   },
+  {
+    athleteSlug: 'cassandra-de-winter',
+    fullName: 'Cassandra de Winter',
+    headline: 'Mother of three and ultra course-record holder chasing the Lost Soul 100-miler',
+    bio: 'Mother of three, endurance athlete, and former national rugby player. In 2025 I returned to sport through endurance racing after a few years focused on my family — a quiet comeback that quickly turned into course records and podiums. My background in national-level rugby gave me a foundation, but stepping into the ultra world has felt like starting fresh in the most humbling way. My journey is about balancing high-level training with motherhood, and showing my kids — and other mothers — that there is still space for their own big goals.',
+    primarySport: 'RUNNING',
+    hometown: 'Lethbridge, AB',
+    countryCode: 'CA',
+    heroMediaUrl:
+      'https://images.unsplash.com/photo-1502904550040-7534597429ae?auto=format&fit=crop&w=1400&q=70',
+    values: ['Resilience', 'Sustainability', 'Community', 'Excellence'],
+    activeCampaignCount: 1,
+    totalRaisedCents: 945000,
+    campaigns: [
+      {
+        campaignSlug: 'lost-soul-2026-season',
+        campaignTitle: 'Fund my 2026 ultra season — Lost Soul 100-miler',
+        campaignType: 'SEASON',
+        campaignStory:
+          'My 2026 build peaks at the Lost Soul 100-miler in September, with the Edmonton Half and Toronto Waterfront Marathon along the way. Entries, travel, coaching, and recovery for a full season of racing add up fast — every dollar keeps a mom of three on the start line.',
+        targetAmountCents: 1500000,
+        raisedAmountCents: 945000,
+        supporterCount: 124,
+        closesAt: '2026-09-11T23:59:59Z',
+        costLines: [
+          { label: 'Race entries — Edmonton, Lost Soul, Toronto', amountCents: 150000 },
+          { label: 'Travel + accommodation', amountCents: 600000 },
+          { label: 'Coaching + strength programming', amountCents: 350000 },
+          { label: 'Trail shoes + race gear', amountCents: 200000 },
+          { label: 'Physio + recovery', amountCents: 200000 },
+        ],
+      },
+    ],
+    accomplishments: [
+      { title: '1st Canadian Female, Boston Marathon — 2:34:43 PB', year: 2026 },
+      { title: '1st Overall & course record, Lost Soul Ultra 100km', year: 2025 },
+      { title: '1st Female, Royal Victoria Marathon — 2:39:50', year: 2025 },
+      { title: '1st Female & course record, Black Spur Ultra 54km', year: 2025 },
+    ],
+  },
 ];
 
 export function findMockAthlete(slug: string): MockAthlete | undefined {

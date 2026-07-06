@@ -36,7 +36,7 @@ export function AthleteCard({ athlete }: { athlete: MockAthlete }) {
   return (
     <Link
       href={`/athletes/${athlete.athleteSlug}`}
-      className="card-lift card-lift-hover group relative flex w-full min-w-[300px] flex-col overflow-hidden rounded-card bg-surface-container-lowest ring-1 ring-inset ring-outline-variant/60"
+      className="card-lift card-lift-hover group relative flex w-full min-w-[240px] flex-col overflow-hidden rounded-card bg-surface-container-lowest ring-1 ring-inset ring-outline-variant/60"
     >
       <div className="relative h-64 w-full overflow-hidden bg-surface-container">
         <Image

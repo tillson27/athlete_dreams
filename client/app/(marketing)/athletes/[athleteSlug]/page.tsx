@@ -8,6 +8,7 @@ import { Badge, LiveDot, VerifiedChip } from '@/components/ui/Badge';
 import { LinkButton, Button, ArrowGlyph } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { formatCents, formatSport, daysUntil } from '@/lib/format';
+import { CassandraProfile } from './CassandraProfile';
 
 export async function generateStaticParams() {
   return mockAthletes.map((athlete) => ({ athleteSlug: athlete.athleteSlug }));
@@ -35,6 +36,10 @@ export default async function AthleteProfilePage({
   const { athleteSlug } = await params;
   const athlete = findMockAthlete(athleteSlug);
   if (!athlete) notFound();
+
+  if (athlete.athleteSlug === 'cassandra-de-winter') {
+    return <CassandraProfile athlete={athlete} />;
+  }
 
   return (
     <>
