@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { MockAthlete } from '@/lib/mockAthletes';
 import { formatCents, formatProgress } from '@/lib/format';
 import { ArrowGlyph } from '@/components/ui/Button';
+import { ShareCard, type ShareResume } from './ShareCard';
 
 // Faithful reproduction of the Stitch "Cassandra de Winter" athlete profile
 // (athlete_profile_previous_races_with_photo_galleries). Data specific to this
@@ -138,6 +139,35 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
   const percent = formatProgress(raisedCents, targetCents);
   const remainingCents = Math.max(0, targetCents - raisedCents);
 
+  const shareResume: ShareResume = {
+    name: athlete.fullName,
+    tagline: 'Elite Endurance & Trail',
+    location: athlete.hometown,
+    photo: athlete.heroMediaUrl,
+    highlights: [
+      '1st Canadian Female — Boston Marathon (2:34:43)',
+      '1st Female — Royal Victoria Marathon (2:39:50)',
+      '1st Overall, CR — Lost Soul Ultra 100km',
+      '1st Female, CR — Black Spur Ultra 54km',
+    ],
+    previousRaces: [
+      'Boston Marathon — 1st Canadian Female (2:34:43)',
+      'Moonlight Run 10K — 1st Female, CR (35:26)',
+      'Mesa Half Marathon — 4th Female (1:12:54)',
+      'Royal Victoria Marathon — 1st Female (2:39:50)',
+      'Lost Soul Ultra 100km — 1st Overall, CR (10:03:12)',
+      'Black Spur Ultra 54km — 1st Female, CR (5:26:00)',
+    ],
+    stats: [
+      { label: 'Marathon PB', value: '2:34:43' },
+      { label: '100km', value: '10:03:12' },
+      { label: 'Backers', value: String(campaign?.supporterCount ?? 0) },
+      { label: '10km PB', value: '35:26' },
+      { label: 'Half Marathon', value: '1:12:54' },
+    ],
+    url: `arc.network/athletes/${athlete.athleteSlug}`,
+  };
+
   return (
     <div className="pb-16">
       {/* HERO */}
@@ -220,13 +250,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
               >
                 BACK THIS ATHLETE
               </Link>
-              <button
-                type="button"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold tracking-[0.05em] text-primary transition-colors hover:bg-surface-container-low active:scale-95"
-              >
-                <Icon name="share" className="h-4 w-4" />
-                SHARE
-              </button>
+              <ShareCard resume={shareResume} />
               <Link
                 href={`/athletes/${athlete.athleteSlug}/manage`}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold tracking-[0.05em] text-secondary transition-colors hover:bg-surface-container-low active:scale-95"
