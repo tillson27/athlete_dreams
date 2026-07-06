@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { formatCents } from '@/lib/format';
 import { TrendingAthletes, type TrendingAthlete } from '@/components/site/TrendingAthletes';
+import { Reveal } from '@/components/site/Reveal';
 
 const img = (id: string, width = 1200) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=70`;
@@ -107,39 +108,59 @@ const successQuote =
   'Arc bridged the gap between my training milestones and competition entry fees. I finally felt professional.';
 
 const whyToneClasses: Record<'primary' | 'secondary' | 'tertiary', string> = {
-  primary: 'bg-primary/10 text-primary',
-  secondary: 'bg-secondary/10 text-secondary',
-  tertiary: 'bg-tertiary-container/20 text-tertiary',
+  primary: 'bg-primary-container/15 text-primary-container',
+  secondary: 'bg-secondary/20 text-secondary-fixed-dim',
+  tertiary: 'bg-white/10 text-white',
 };
 
 export default function HomePage() {
   return (
     <>
       {/* HERO */}
-      <section className="relative flex h-[512px] w-full items-center overflow-hidden bg-inverse-surface md:h-[600px]">
-        <div className="absolute inset-0 opacity-60">
+      <section className="relative flex h-[540px] w-full items-center overflow-hidden bg-inverse-surface md:h-[640px]">
+        <div className="absolute inset-0 overflow-hidden">
           <Image
             src={img('1571008887538-b36bb32f4571', 1920)}
             alt="Elite athlete running a marathon"
             fill
             priority
             sizes="100vw"
-            className="object-cover"
+            className="ken-burns object-cover"
           />
         </div>
+        {/* warm directional wash for legibility */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-[#140b08]/90 via-[#160d09]/60 to-[#160d09]/20"
+        />
+        {/* vignette to focus the frame */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(120% 105% at 50% 32%, transparent 42%, rgba(9,5,3,0.78) 100%)',
+          }}
+        />
+        <div aria-hidden="true" className="grain pointer-events-none absolute inset-0" />
+
         <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <div className="max-w-3xl">
-            <h2 className="font-display text-4xl font-extrabold leading-tight text-white md:text-6xl">
+            <span className="mb-6 inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.05em] text-white backdrop-blur">
+              <span className="pulse-live inline-block h-1.5 w-1.5 rounded-full bg-primary-container" />
+              4 athletes training right now
+            </span>
+            <h1 className="font-display text-4xl font-extrabold leading-[0.98] tracking-tight text-white drop-shadow-sm md:text-6xl">
               Your <span className="text-primary-container">athletic</span> journey. Your{' '}
               <span className="text-primary-container">Arc</span>. Told in one place.
-            </h2>
-            <p className="mb-10 mt-6 max-w-xl text-2xl font-bold text-white md:text-3xl">
+            </h1>
+            <p className="mb-10 mt-6 max-w-xl text-2xl font-bold text-white/90 md:text-3xl">
               Because finish lines are only part of the story&hellip;
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-button bg-primary-container px-8 py-4 text-lg font-bold tracking-[0.05em] text-on-primary transition-all hover:bg-primary active:scale-95"
+                className="inline-flex items-center justify-center rounded-button bg-primary-container px-8 py-4 text-lg font-bold tracking-[0.05em] text-on-primary shadow-lg shadow-primary-container/25 transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
               >
                 Build Your Story
               </Link>
@@ -152,6 +173,21 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* scroll cue */}
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-5 z-10 flex justify-center">
+          <span className="scroll-cue flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-white/80">
+            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+              <path
+                d="M7 10l5 5 5-5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
       </section>
 
       {/* TELL YOUR ARC */}
@@ -161,33 +197,34 @@ export default function HomePage() {
           className="pointer-events-none absolute inset-0 opacity-5 [background-image:radial-gradient(circle_at_center,_var(--color-primary)_1px,_transparent_1px)] [background-size:32px_32px]"
         />
         <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-6 font-display text-3xl font-bold text-on-surface md:text-5xl">
-              Tell Your Arc
-            </h2>
-            <p className="text-lg leading-relaxed text-on-surface-variant">
-              Your athletic career deserves a professional home. Launch your athlete profile in three
-              simple steps designed for elite performance.
-            </p>
-          </div>
+          <Reveal>
+            <div className="mx-auto mb-12 max-w-2xl text-center">
+              <h2 className="mb-6 font-display text-3xl font-bold text-on-surface md:text-5xl">
+                Tell Your Arc
+              </h2>
+              <p className="text-lg leading-relaxed text-on-surface-variant">
+                Your athletic career deserves a professional home. Launch your athlete profile in
+                three simple steps designed for elite performance.
+              </p>
+            </div>
+          </Reveal>
 
           <div className="mx-auto mb-12 grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
-            {arcSteps.map((step) => (
-              <div
-                key={step.number}
-                className="flex flex-col items-center rounded-card border border-outline-variant/30 bg-white/50 p-6 text-center"
-              >
-                <div className="relative mb-6">
-                  <span className="absolute -left-4 -top-4 font-display text-2xl font-extrabold text-primary/20">
-                    {step.number}
-                  </span>
-                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-on-primary shadow-lg shadow-primary/20">
-                    <Icon name={step.icon} className="h-8 w-8" />
+            {arcSteps.map((step, index) => (
+              <Reveal key={step.number} delay={index * 90} className="h-full">
+                <div className="group flex h-full flex-col items-center rounded-card border border-outline-variant/30 bg-white/60 p-6 text-center transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_26px_50px_-24px_rgba(171,54,0,0.4)]">
+                  <div className="relative mb-6">
+                    <span className="absolute -left-4 -top-4 font-display text-2xl font-extrabold text-primary/20">
+                      {step.number}
+                    </span>
+                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-on-primary shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110">
+                      <Icon name={step.icon} className="h-8 w-8" />
+                    </div>
                   </div>
+                  <h4 className="mb-3 font-display text-xl font-bold text-on-surface">{step.title}</h4>
+                  <p className="text-on-surface-variant">{step.body}</p>
                 </div>
-                <h4 className="mb-3 font-display text-xl font-bold text-on-surface">{step.title}</h4>
-                <p className="text-on-surface-variant">{step.body}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
 
@@ -205,32 +242,38 @@ export default function HomePage() {
       {/* TRENDING ATHLETES */}
       <TrendingAthletes athletes={trendingAthletes} />
 
-      {/* WHY ARC */}
-      <section className="border-y border-outline-variant/30 bg-surface-container-lowest py-24">
-        <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-6 font-display text-3xl font-bold text-on-surface md:text-5xl">
-              Why Arc?
-            </h2>
-            <p className="text-lg leading-relaxed text-on-surface-variant">
-              Traditional funding is opaque and bureaucratic. We built Arc to create a direct line
-              between the fans who care and the athletes who inspire.
-            </p>
-          </div>
+      {/* WHY ARC — dark band for rhythm */}
+      <section className="relative overflow-hidden border-y border-white/5 bg-inverse-surface py-24">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(circle_at_center,_var(--color-primary-container)_1px,_transparent_1px)] [background-size:34px_34px]"
+        />
+        <div className="relative mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
+          <Reveal>
+            <div className="mx-auto mb-16 max-w-3xl text-center">
+              <p className="mb-3 label-bold text-primary-container">Why Arc</p>
+              <h2 className="mb-6 font-display text-3xl font-bold text-white md:text-5xl">
+                A direct line between fans and athletes.
+              </h2>
+              <p className="text-lg leading-relaxed text-white/70">
+                Traditional funding is opaque and bureaucratic. We built Arc to create a direct line
+                between the fans who care and the athletes who inspire.
+              </p>
+            </div>
+          </Reveal>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-8">
-            {whyArc.map((item) => (
-              <div
-                key={item.title}
-                className="flex flex-col items-center rounded-card border border-outline-variant/50 bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-md md:items-start md:text-left"
-              >
-                <div
-                  className={`mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${whyToneClasses[item.tone]}`}
-                >
-                  <Icon name={item.icon} className="h-7 w-7" />
+            {whyArc.map((item, index) => (
+              <Reveal key={item.title} delay={index * 90} className="h-full">
+                <div className="group flex h-full flex-col items-center rounded-card border border-white/10 bg-white/[0.04] p-8 text-center transition-all duration-300 hover:-translate-y-1.5 hover:bg-white/[0.07] hover:shadow-[0_28px_55px_-22px_rgba(255,95,31,0.4)] md:items-start md:text-left">
+                  <div
+                    className={`mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${whyToneClasses[item.tone]}`}
+                  >
+                    <Icon name={item.icon} className="h-7 w-7" />
+                  </div>
+                  <h5 className="mb-3 font-display text-xl font-bold text-white">{item.title}</h5>
+                  <p className="leading-relaxed text-white/70">{item.body}</p>
                 </div>
-                <h5 className="mb-3 font-display text-xl font-bold text-on-surface">{item.title}</h5>
-                <p className="leading-relaxed text-on-surface-variant">{item.body}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -238,15 +281,17 @@ export default function HomePage() {
 
       {/* TRANSPARENCY BENTO */}
       <section className="border-y border-outline-variant bg-surface-container-low py-24">
-        <div className="mx-auto mb-16 w-full max-w-[var(--spacing-container-max)] px-5 text-center md:px-16">
-          <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
-            World&rsquo;s most transparent crowdfunding platform
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
-            We&rsquo;re building the future of athletic support through data-driven transparency and
-            next-generation community tools.
-          </p>
-        </div>
+        <Reveal>
+          <div className="mx-auto mb-16 w-full max-w-[var(--spacing-container-max)] px-5 text-center md:px-16">
+            <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
+              World&rsquo;s most transparent crowdfunding platform
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
+              We&rsquo;re building the future of athletic support through data-driven transparency
+              and next-generation community tools.
+            </p>
+          </div>
+        </Reveal>
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <div className="grid gap-8 md:grid-cols-2">
             {/* Radical Transparency */}
@@ -323,29 +368,29 @@ export default function HomePage() {
       {/* SUCCESS STORIES */}
       <section className="bg-surface py-24">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
-              Success Stories
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
-              Witness the real-world impact of radical transparency and direct fan support.
-            </p>
-          </div>
+          <Reveal>
+            <div className="mb-16 text-center">
+              <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
+                Success Stories
+              </h2>
+              <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
+                Witness the real-world impact of radical transparency and direct fan support.
+              </p>
+            </div>
+          </Reveal>
           <div className="grid gap-8 md:grid-cols-2">
-            {successStories.map((story) => (
-              <div
-                key={story.name}
-                className="overflow-hidden rounded-card border border-outline-variant bg-white shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div className="relative h-64">
-                  <Image
-                    src={story.image}
-                    alt={story.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 600px"
-                    className="object-cover"
-                  />
-                </div>
+            {successStories.map((story, index) => (
+              <Reveal key={story.name} delay={index * 100} className="h-full">
+                <div className="group h-full overflow-hidden rounded-card border border-outline-variant bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_55px_-24px_rgba(0,0,0,0.28)]">
+                  <div className="relative h-64 overflow-hidden">
+                    <Image
+                      src={story.image}
+                      alt={story.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 600px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
                 <div className="p-8">
                   <div className="mb-4 flex items-start justify-between">
                     <div>
@@ -373,8 +418,9 @@ export default function HomePage() {
                     Read Story
                     <Icon name="arrow" className="h-4 w-4" />
                   </Link>
+                  </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -382,6 +428,7 @@ export default function HomePage() {
 
       {/* CTA */}
       <section className="bg-surface-bright px-5 py-20 md:px-16">
+        <Reveal>
         <div className="relative overflow-hidden rounded-[2rem] bg-inverse-surface p-12 text-center md:p-20">
           <div
             aria-hidden="true"
@@ -411,6 +458,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        </Reveal>
       </section>
     </>
   );
