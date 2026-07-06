@@ -6,7 +6,6 @@ import { findMockAthlete, mockAthletes } from '@/lib/mockAthletes';
 import { Section, SectionHeading } from '@/components/site/Section';
 import { Badge, LiveDot, VerifiedChip } from '@/components/ui/Badge';
 import { LinkButton, Button, ArrowGlyph } from '@/components/ui/Button';
-import { ProgressBar } from '@/components/ui/ProgressBar';
 import { formatCents, formatSport, daysUntil } from '@/lib/format';
 import { CassandraProfile } from './CassandraProfile';
 
@@ -100,8 +99,7 @@ export default async function AthleteProfilePage({
 
       {/* SUMMARY STAT STRIP */}
       <section className="border-b border-outline-variant bg-surface-container-low py-6">
-        <div className="mx-auto grid w-full max-w-[var(--spacing-container-max)] grid-cols-2 gap-4 px-5 md:grid-cols-4 md:gap-12 md:px-16">
-          <StripStat label="Total Raised" value={formatCents(athlete.totalRaisedCents)} />
+        <div className="mx-auto grid w-full max-w-[var(--spacing-container-max)] grid-cols-2 gap-4 px-5 md:grid-cols-3 md:gap-12 md:px-16">
           <StripStat label="Active Campaigns" value={String(athlete.activeCampaignCount)} />
           <StripStat
             label="Backers"
@@ -155,10 +153,6 @@ export default async function AthleteProfilePage({
         />
         <div className="mt-12 grid gap-8 lg:grid-cols-2">
           {athlete.campaigns.map((campaign) => {
-            const totalLines = campaign.costLines.reduce(
-              (sum, line) => sum + line.amountCents,
-              0
-            );
             const days = campaign.closesAt ? daysUntil(campaign.closesAt) : null;
             return (
               <article
@@ -179,12 +173,6 @@ export default async function AthleteProfilePage({
                   </h3>
                   <p className="text-on-surface-variant">{campaign.campaignStory}</p>
                 </header>
-                <ProgressBar
-                  raisedAmountCents={campaign.raisedAmountCents}
-                  targetAmountCents={campaign.targetAmountCents}
-                  supporterCount={campaign.supporterCount}
-                  daysLeft={days ?? undefined}
-                />
                 <div>
                   <p className="label-bold text-on-surface">Cost Breakdown</p>
                   <ul className="mt-4 divide-y divide-outline-variant/60 rounded-card border border-outline-variant bg-surface-container-low">
@@ -199,12 +187,6 @@ export default async function AthleteProfilePage({
                         </span>
                       </li>
                     ))}
-                    <li className="flex items-center justify-between border-t border-outline-variant px-5 py-3">
-                      <span className="label-bold text-on-surface">Total Target</span>
-                      <span className="font-display text-lg font-bold text-on-surface">
-                        {formatCents(totalLines)}
-                      </span>
-                    </li>
                   </ul>
                 </div>
                 <div className="flex flex-wrap gap-3 pt-2">

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { MockAthlete } from '@/lib/mockAthletes';
-import { formatCents, formatProgress } from '@/lib/format';
+import { formatCents } from '@/lib/format';
 import { ArrowGlyph } from '@/components/ui/Button';
 import { ShareCard, type ShareResume } from './ShareCard';
 
@@ -105,12 +105,7 @@ const coreValues = [
 const roadmap = [
   { name: 'Edmonton Half Marathon', date: 'August 16, 2026' },
   { name: 'Lost Soul 100-miler', date: 'Sept 11, 2026' },
-  {
-    name: 'Toronto Waterfront Marathon',
-    date: 'Oct 17-18, 2026',
-    raisedCents: 20000,
-    targetCents: 200000,
-  },
+  { name: 'Toronto Waterfront Marathon', date: 'Oct 17-18, 2026' },
 ];
 
 const instagramPosts = [
@@ -134,10 +129,6 @@ const galleryPhotos = [
 
 export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
   const campaign = athlete.campaigns[0];
-  const targetCents = campaign?.targetAmountCents ?? 0;
-  const raisedCents = campaign?.raisedAmountCents ?? 0;
-  const percent = formatProgress(raisedCents, targetCents);
-  const remainingCents = Math.max(0, targetCents - raisedCents);
 
   const shareResume: ShareResume = {
     name: athlete.fullName,
@@ -204,45 +195,9 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
       </section>
 
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
-        {/* STATS BAR & QUICK ACTIONS */}
+        {/* QUICK ACTIONS */}
         <section className="relative z-10 -mt-12">
-          <div className="card-lift flex flex-col items-center justify-between gap-8 rounded-card bg-surface-container-lowest p-6 md:flex-row md:p-8">
-            <div className="grid w-full grid-cols-2 gap-8 border-b border-surface-container-high pb-6 text-center md:w-auto md:border-b-0 md:pb-0 md:text-left">
-              <div>
-                <p className="label-bold mb-1 text-on-surface-variant">Goal</p>
-                <p className="font-display text-2xl font-bold text-on-surface">
-                  {formatCents(targetCents)}
-                </p>
-              </div>
-              <div>
-                <p className="label-bold mb-1 text-on-surface-variant">Raised</p>
-                <p className="font-display text-2xl font-bold text-secondary">
-                  {formatCents(raisedCents)}
-                </p>
-              </div>
-            </div>
-
-            <div className="w-full space-y-2 md:w-1/4">
-              <div className="flex items-center gap-1">
-                <span className="inline-flex items-center gap-1 rounded bg-success/10 px-2 py-0.5 text-[10px] font-bold tracking-[0.05em] text-success">
-                  <Icon name="shield" className="h-3.5 w-3.5" />
-                  Transparency Score: 100%
-                </span>
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="label-bold text-on-surface">{percent}% Funded</span>
-                <span className="label-bold text-on-surface-variant">
-                  {formatCents(remainingCents)} Remaining
-                </span>
-              </div>
-              <div className="h-3 w-full overflow-hidden rounded-pill bg-surface-container">
-                <div
-                  className="progress-gradient h-full rounded-pill"
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-            </div>
-
+          <div className="card-lift flex flex-col items-center justify-center gap-4 rounded-card bg-surface-container-lowest p-6 md:flex-row md:justify-end md:p-8">
             <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row">
               <Link
                 href="#back"
@@ -456,36 +411,12 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             <div className="card-lift rounded-card border border-surface-container bg-surface-container-lowest p-6">
               <h3 className="mb-6 font-display text-xl font-bold text-on-surface">2026 Roadmap</h3>
               <div className="space-y-6">
-                {roadmap.map((event) => {
-                  if (event.targetCents) {
-                    const eventPercent = formatProgress(event.raisedCents, event.targetCents);
-                    return (
-                      <div key={event.name} className="-m-2 block rounded-input p-2">
-                        <div className="mb-2 flex items-start justify-between">
-                          <div>
-                            <p className="label-bold text-on-surface">{event.name}</p>
-                            <p className="text-xs text-on-surface-variant">{event.date}</p>
-                          </div>
-                          <span className="label-bold shrink-0 text-secondary">
-                            {formatCents(event.raisedCents)} / {formatCents(event.targetCents)}
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-pill bg-surface-container">
-                          <div
-                            className="progress-gradient h-full"
-                            style={{ width: `${eventPercent}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div key={event.name}>
-                      <p className="label-bold text-on-surface">{event.name}</p>
-                      <p className="text-xs text-on-surface-variant">{event.date}</p>
-                    </div>
-                  );
-                })}
+                {roadmap.map((event) => (
+                  <div key={event.name}>
+                    <p className="label-bold text-on-surface">{event.name}</p>
+                    <p className="text-xs text-on-surface-variant">{event.date}</p>
+                  </div>
+                ))}
               </div>
             </div>
 

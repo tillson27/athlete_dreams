@@ -4,8 +4,6 @@ import { LinkButton } from '../ui/Button';
 
 const nav: Array<{ href: string; label: string }> = [
   { href: '/athletes', label: 'Discover' },
-  { href: '/brands', label: 'Brand Hub' },
-  { href: '/ambassadors', label: 'Ambassadors' },
   { href: '/mission', label: 'Mission' },
   { href: '/how-it-works', label: 'How It Works' },
 ];
