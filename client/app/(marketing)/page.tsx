@@ -151,10 +151,6 @@ export default function HomePage() {
 
         <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <div className="max-w-3xl">
-            <span className="mb-6 inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.05em] text-white backdrop-blur">
-              <span className="pulse-live inline-block h-1.5 w-1.5 rounded-full bg-primary-container" />
-              4 athletes training right now
-            </span>
             <h1 className="font-display text-4xl font-extrabold leading-[0.98] tracking-tight text-white drop-shadow-sm md:text-6xl">
               Your <span className="text-primary-container">athletic</span> journey. Your{' '}
               <span className="text-primary-container">Arc</span>. Told in one place.
@@ -217,11 +213,11 @@ export default function HomePage() {
           <div className="mx-auto mb-12 grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
             {arcSteps.map((step, index) => (
               <Reveal key={step.number} delay={index * 90} className="h-full">
-                <div className="group flex h-full flex-col items-center rounded-card border border-outline-variant/30 bg-white/60 p-6 text-center transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_26px_50px_-24px_rgba(171,54,0,0.4)]">
-                  <div className="relative mb-6">
-                    <span className="absolute -left-4 -top-4 font-display text-2xl font-extrabold text-primary/20">
-                      {step.number}
-                    </span>
+                <div className="group relative flex h-full flex-col items-center rounded-card border border-outline-variant/30 bg-white/60 p-6 text-center transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_26px_50px_-24px_rgba(171,54,0,0.4)]">
+                  <span className="absolute left-5 top-4 font-display text-2xl font-extrabold text-primary/20">
+                    {step.number}
+                  </span>
+                  <div className="mb-6">
                     <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-on-primary shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110">
                       <Icon name={step.icon} className="h-8 w-8" />
                     </div>
