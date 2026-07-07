@@ -135,6 +135,12 @@ const profileTabs = [
   { label: 'Gallery', href: '#gallery' },
 ];
 
+const verifiedProofs = [
+  { title: 'Official results', body: 'Race times confirmed against official databases.' },
+  { title: 'Strava synced', body: 'Training verified from a connected Strava account.' },
+  { title: 'Identity confirmed', body: 'A real athlete — checked before going live.' },
+];
+
 // Narrative timeline — the athlete's journey told as chapters, in her voice.
 type ArcChapter = {
   era: string;
@@ -325,6 +331,42 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
           </div>
         </section>
+
+        {/* VERIFIED — the badge, with proof behind it */}
+        <details className="group mt-6 overflow-hidden rounded-card border border-success/30 bg-success/5">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 md:p-5">
+            <span className="flex items-center gap-2.5 text-sm font-semibold text-on-surface">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success text-white">
+                <Icon name="check" className="h-4 w-4" />
+              </span>
+              <span>
+                Verified by ARC
+                <span className="hidden font-normal text-on-surface-variant sm:inline">
+                  {' '}
+                  · results, training &amp; identity confirmed
+                </span>
+              </span>
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-secondary">
+              How we verify
+              <Icon name="chevron" className="h-4 w-4 transition-transform group-open:rotate-180" />
+            </span>
+          </summary>
+          <div className="grid gap-3 border-t border-success/20 p-4 sm:grid-cols-3 md:p-5">
+            {verifiedProofs.map((proof) => (
+              <div
+                key={proof.title}
+                className="flex items-start gap-2.5 rounded-input bg-surface-container-lowest p-3"
+              >
+                <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                <div>
+                  <p className="label-bold text-on-surface">{proof.title}</p>
+                  <p className="mt-0.5 text-xs text-on-surface-variant">{proof.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </details>
 
         {/* THE ARC — collapsible narrative timeline */}
         <details id="arc" open className="group mt-8 scroll-mt-32 md:mt-16">
