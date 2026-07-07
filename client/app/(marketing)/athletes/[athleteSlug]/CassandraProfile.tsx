@@ -234,15 +234,27 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center"
+          className="ken-burns object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent md:from-black/60 md:via-transparent" />
+        {/* warm bottom-up wash + vignette + grain for an editorial feel */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-[#140b08]/88 via-[#160d09]/35 to-[#160d09]/5 md:from-[#140b08]/78 md:via-[#160d09]/20"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(120% 100% at 50% 30%, transparent 45%, rgba(9,5,3,0.6) 100%)',
+          }}
+        />
+        <div aria-hidden="true" className="grain pointer-events-none absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-8 text-white md:px-16 md:py-12">
           <span className="mb-3 inline-flex items-center gap-1 rounded-pill bg-success px-3 py-1 text-xs font-bold tracking-[0.05em] text-white">
             <Icon name="check" className="h-4 w-4" />
             Verified Athlete
           </span>
-          <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
+          <h1 className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight drop-shadow-sm md:text-6xl lg:text-7xl">
             {athlete.fullName}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-white/90">
