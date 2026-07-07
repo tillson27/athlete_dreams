@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { AthleteDirectory } from './AthleteDirectory';
 
 export const metadata: Metadata = {
-  title: 'Athlete Directory',
+  title: 'Discover Runners',
   description:
-    'Browse the ARC directory by sport, region, and funding stage. Find the athlete you want to back.',
+    'Browse verified runners on ARC by discipline, level, and region. Follow the athletes whose journey you want to be part of.',
 };
 
 export default function AthletesIndexPage() {

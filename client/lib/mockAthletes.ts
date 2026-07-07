@@ -8,6 +8,7 @@ export type MockAthlete = {
   headline: string;
   bio: string;
   primarySport: 'RUNNING' | 'TRACK_AND_FIELD';
+  runnerLevel: 'ELITE' | 'COMPETITIVE' | 'EVERYDAY';
   hometown: string;
   countryCode: 'CA' | 'US';
   heroMediaUrl: string;
@@ -35,6 +36,7 @@ export const mockAthletes: MockAthlete[] = [
     headline: 'Marathoner chasing a sub-2:30 in Tokyo',
     bio: 'I started running to stay sane during med school. Five years later, I am one race away from a podium finish in a World Marathon Major. I run to show kids in my Lagos neighbourhood that bodies move and minds heal.',
     primarySport: 'RUNNING',
+    runnerLevel: 'ELITE',
     hometown: 'Toronto, ON',
     countryCode: 'CA',
     heroMediaUrl:
@@ -74,6 +76,7 @@ export const mockAthletes: MockAthlete[] = [
     headline: 'Para road racer chasing the Boston Marathon para division',
     bio: 'I lost my left leg in a snowmobile accident at 17. Six years later, I race marathons on a running blade — a 3:04 in Montréal and a para 5000m national title so far. I run for every kid sitting in a hospital wondering what is next.',
     primarySport: 'RUNNING',
+    runnerLevel: 'COMPETITIVE',
     hometown: 'Saguenay, QC',
     countryCode: 'CA',
     heroMediaUrl:
@@ -127,6 +130,7 @@ export const mockAthletes: MockAthlete[] = [
     headline: 'Middle-distance runner chasing the Canadian 1500m standard',
     bio: 'I learned to race on a gravel oval behind my school in northeast Calgary. Now I hold a U Sports 1500m title and a 4:11.38 PB — four seconds from the national standard, and closing.',
     primarySport: 'TRACK_AND_FIELD',
+    runnerLevel: 'COMPETITIVE',
     hometown: 'Calgary, AB',
     countryCode: 'CA',
     heroMediaUrl:
@@ -165,6 +169,7 @@ export const mockAthletes: MockAthlete[] = [
     headline: 'Trail ultrarunner with a golden ticket to Western States',
     bio: 'I grew up on the Navajo Nation, where my grandfather woke me before dawn to run east toward the sunrise. Now I race 100-kilometre trails — 2nd overall at Black Canyon earned me a Western States spot, and I am carrying every rez kid who runs dirt roads at 5 a.m. with me.',
     primarySport: 'RUNNING',
+    runnerLevel: 'ELITE',
     hometown: 'Flagstaff, AZ',
     countryCode: 'US',
     heroMediaUrl:
@@ -203,6 +208,7 @@ export const mockAthletes: MockAthlete[] = [
     headline: 'Mother of three and ultra course-record holder chasing the Lost Soul 100-miler',
     bio: 'Mother of three, endurance athlete, and former national rugby player. In 2025 I returned to sport through endurance racing after a few years focused on my family — a quiet comeback that quickly turned into course records and podiums. My background in national-level rugby gave me a foundation, but stepping into the ultra world has felt like starting fresh in the most humbling way. My journey is about balancing high-level training with motherhood, and showing my kids — and other mothers — that there is still space for their own big goals.',
     primarySport: 'RUNNING',
+    runnerLevel: 'ELITE',
     hometown: 'Lethbridge, AB',
     countryCode: 'CA',
     heroMediaUrl:
@@ -243,6 +249,7 @@ export const mockAthletes: MockAthlete[] = [
     headline: 'Run-club captain training for her first marathon',
     bio: 'Two years ago I could not run to the end of my block. A couch-to-5K plan, one very supportive Tuesday run club, and a 1:47 half marathon later — I am training for my first marathon. Proof that the person who starts from zero gets a story too.',
     primarySport: 'RUNNING',
+    runnerLevel: 'EVERYDAY',
     hometown: 'Vancouver, BC',
     countryCode: 'CA',
     heroMediaUrl:

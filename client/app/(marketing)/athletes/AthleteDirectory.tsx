@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AthleteRow } from '@/components/site/AthleteCard';
-import { LinkButton, Button } from '@/components/ui/Button';
+import { LinkButton } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { mockAthletes, type MockAthlete } from '@/lib/mockAthletes';
 
@@ -12,45 +12,44 @@ const SPORTS: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }>
   { key: 'TRACK_AND_FIELD', label: 'Track & Field' },
 ];
 
+const LEVELS: Array<{ key: MockAthlete['runnerLevel'] | 'ALL'; label: string }> = [
+  { key: 'ALL', label: 'Every Level' },
+  { key: 'ELITE', label: 'Pro & Elite' },
+  { key: 'COMPETITIVE', label: 'Competitive' },
+  { key: 'EVERYDAY', label: 'Everyday' },
+];
+
 const COUNTRIES: Array<{ code: MockAthlete['countryCode'] | 'ALL'; label: string }> = [
   { code: 'ALL', label: 'Anywhere' },
   { code: 'CA', label: 'Canada' },
   { code: 'US', label: 'United States' },
 ];
 
-const STAGES = [
-  { key: 'ALL', label: 'All Stages' },
-  { key: 'LIVE', label: 'Live Funding' },
-  { key: 'CLOSING', label: 'Closing Soon' },
-  { key: 'NEW', label: 'Newly Onboarded' },
-] as const;
-
-type StageKey = (typeof STAGES)[number]['key'];
-
 type Filters = {
   sport: MockAthlete['primarySport'] | 'ALL';
+  level: MockAthlete['runnerLevel'] | 'ALL';
   country: MockAthlete['countryCode'] | 'ALL';
-  stage: StageKey;
   search: string;
 };
 
 const initialFilters: Filters = {
   sport: 'ALL',
+  level: 'ALL',
   country: 'ALL',
-  stage: 'ALL',
   search: '',
 };
 
 export function AthleteDirectory() {
   const [filters, setFilters] = useState<Filters>(initialFilters);
 
-  // Sync initial state from URL (?sport=RUNNING etc.) for deep-linkability.
+  // Sync initial state from URL (?sport=RUNNING&level=EVERYDAY) for deep-linkability.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     setFilters((current) => ({
       ...current,
       sport: (params.get('sport') as Filters['sport']) ?? current.sport,
+      level: (params.get('level') as Filters['level']) ?? current.level,
       country: (params.get('country') as Filters['country']) ?? current.country,
     }));
   }, []);
@@ -58,11 +57,11 @@ export function AthleteDirectory() {
   const filtered = useMemo(() => {
     return mockAthletes.filter((athlete) => {
       if (filters.sport !== 'ALL' && athlete.primarySport !== filters.sport) return false;
+      if (filters.level !== 'ALL' && athlete.runnerLevel !== filters.level) return false;
       if (filters.country !== 'ALL' && athlete.countryCode !== filters.country) return false;
-      if (filters.stage === 'LIVE' && athlete.activeCampaignCount === 0) return false;
       if (filters.search) {
         const needle = filters.search.toLowerCase();
-        const hay = `${athlete.fullName} ${athlete.hometown} ${athlete.primarySport}`.toLowerCase();
+        const hay = `${athlete.fullName} ${athlete.hometown} ${athlete.headline}`.toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       return true;
@@ -70,6 +69,7 @@ export function AthleteDirectory() {
   }, [filters]);
 
   const clear = () => setFilters(initialFilters);
+  const isFiltered = filtered.length !== mockAthletes.length;
 
   return (
     <div className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-col md:flex-row">
@@ -79,7 +79,7 @@ export function AthleteDirectory() {
           <h2 className="font-display text-lg font-bold text-on-surface">Filters</h2>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
-          <FilterGroup title="Sport">
+          <FilterGroup title="Discipline">
             {SPORTS.map((sport) => (
               <RadioOption
                 key={sport.key}
@@ -87,6 +87,17 @@ export function AthleteDirectory() {
                 checked={filters.sport === sport.key}
                 onChange={() => setFilters((prev) => ({ ...prev, sport: sport.key }))}
                 label={sport.label}
+              />
+            ))}
+          </FilterGroup>
+          <FilterGroup title="Level">
+            {LEVELS.map((level) => (
+              <RadioOption
+                key={level.key}
+                name="level"
+                checked={filters.level === level.key}
+                onChange={() => setFilters((prev) => ({ ...prev, level: level.key }))}
+                label={level.label}
               />
             ))}
           </FilterGroup>
@@ -101,29 +112,21 @@ export function AthleteDirectory() {
               />
             ))}
           </FilterGroup>
-          <FilterGroup title="Funding Stage">
-            {STAGES.map((stage) => (
-              <RadioOption
-                key={stage.key}
-                name="stage"
-                checked={filters.stage === stage.key}
-                onChange={() => setFilters((prev) => ({ ...prev, stage: stage.key }))}
-                label={stage.label}
-              />
-            ))}
-          </FilterGroup>
         </div>
         <div className="border-t border-outline-variant bg-surface-container-low p-6">
-          <Button tone="primary" size="md" className="w-full" onClick={() => undefined}>
-            Update Results
-          </Button>
-          <button
-            type="button"
-            onClick={clear}
-            className="mt-3 w-full text-xs font-semibold uppercase tracking-wider text-on-surface-variant transition-colors hover:text-primary"
-          >
-            Clear all filters
-          </button>
+          <p className="text-sm text-on-surface-variant">
+            <strong className="text-on-surface">{filtered.length}</strong>{' '}
+            {filtered.length === 1 ? 'runner' : 'runners'}
+          </p>
+          {isFiltered ? (
+            <button
+              type="button"
+              onClick={clear}
+              className="mt-3 w-full text-xs font-semibold uppercase tracking-wider text-on-surface-variant transition-colors hover:text-primary"
+            >
+              Clear all filters
+            </button>
+          ) : null}
         </div>
       </aside>
 
@@ -131,10 +134,11 @@ export function AthleteDirectory() {
       <main className="flex-1 px-5 py-10 md:px-8 md:py-12">
         <header className="mb-8">
           <h1 className="font-display text-3xl font-extrabold leading-tight text-on-surface md:text-5xl">
-            Athlete Directory
+            Discover runners
           </h1>
           <p className="mt-3 max-w-2xl text-lg text-on-surface-variant">
-            Fueling the next generation of champions through transparent, direct-to-athlete financial support.
+            Verified runners telling the whole story — from first finish lines to podiums. Follow the
+            ones whose journey you want to be part of.
           </p>
         </header>
 
@@ -146,10 +150,8 @@ export function AthleteDirectory() {
             <input
               type="text"
               value={filters.search}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, search: event.target.value }))
-              }
-              placeholder="Search by name, sport, or region…"
+              onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
+              placeholder="Search by name, discipline, or city…"
               className="w-full rounded-input border border-outline-variant bg-surface-container-lowest px-12 py-4 text-base text-on-surface shadow-sm transition-all placeholder:text-on-surface-variant focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
             />
           </label>
@@ -175,16 +177,38 @@ export function AthleteDirectory() {
           </div>
         </div>
 
+        {/* Mobile level pills */}
+        <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar md:hidden">
+          {LEVELS.map((level) => {
+            const active = filters.level === level.key;
+            return (
+              <button
+                key={level.key}
+                type="button"
+                onClick={() => setFilters((prev) => ({ ...prev, level: level.key }))}
+                className={`label-bold whitespace-nowrap rounded-pill px-4 py-2 transition-colors ${
+                  active
+                    ? 'bg-secondary text-on-secondary'
+                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                }`}
+              >
+                {level.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* RESULTS */}
         {filtered.length === 0 ? (
           <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-12 text-center">
-            <Badge tone="soft">No matching athletes</Badge>
+            <Badge tone="soft">No matching runners</Badge>
             <p className="mt-4 text-on-surface-variant">
-              We&rsquo;re still onboarding athletes that fit these filters. Check back soon — or forward ARC to someone who fits.
+              We&rsquo;re still onboarding runners that fit these filters. Check back soon — or forward
+              ARC to someone who fits.
             </p>
             <div className="mt-6">
               <LinkButton tone="secondary" size="md" href="/sign-up">
-                Apply as an athlete
+                Start your profile
               </LinkButton>
             </div>
           </div>
@@ -200,13 +224,7 @@ export function AthleteDirectory() {
   );
 }
 
-function FilterGroup({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-8 last:mb-0">
       <p className="label-bold mb-4 text-on-surface">{title}</p>
