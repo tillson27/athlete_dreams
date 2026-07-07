@@ -7,6 +7,7 @@ import { Icon } from '../_components/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { findMockAthlete } from '@/lib/mockAthletes';
+import { markPublished } from '@/lib/session';
 
 type Status = 'idle' | 'publishing' | 'published';
 
@@ -54,7 +55,10 @@ export function PublishPanel() {
       return;
     }
     setStatus('publishing');
-    setTimeout(() => setStatus('published'), 1500);
+    setTimeout(() => {
+      markPublished();
+      setStatus('published');
+    }, 1500);
   };
 
   const copyLink = async () => {
@@ -135,17 +139,17 @@ export function PublishPanel() {
 
           <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
             <Link
-              href={profileHref}
+              href="/dashboard"
               className="label-bold flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-4 text-on-primary transition-all hover:bg-[#832700] active:scale-95"
             >
-              View your profile
+              Go to your dashboard
               <Icon name="arrow-forward" className="h-5 w-5" />
             </Link>
             <Link
-              href="/athletes"
+              href={profileHref}
               className="label-bold flex flex-1 items-center justify-center rounded-lg border-2 border-outline px-6 py-4 text-on-surface transition-all hover:bg-surface-container"
             >
-              Explore the network
+              View your profile
             </Link>
           </div>
         </div>

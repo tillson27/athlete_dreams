@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
-import { LinkButton } from '../ui/Button';
+import { HeaderAuth } from './HeaderAuth';
 
 const nav: Array<{ href: string; label: string }> = [
   { href: '/athletes', label: 'Discover' },
@@ -37,15 +37,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/sign-in"
-            className="hidden label-bold rounded-pill px-3 py-2 text-on-surface-variant hover:text-primary md:inline-flex"
-          >
-            Sign In
-          </Link>
-          <LinkButton href="/sign-up" tone="primary" size="sm">
-            Donate
-          </LinkButton>
+          <HeaderAuth />
 
           <details data-mobile-menu className="relative md:hidden">
             <summary
@@ -94,14 +86,7 @@ export function SiteHeader() {
                     </Link>
                   </li>
                 ))}
-                <li>
-                  <Link
-                    href="/sign-in"
-                    className="block px-5 py-3 text-base font-semibold text-on-surface hover:bg-surface-container"
-                  >
-                    Sign In
-                  </Link>
-                </li>
+                <HeaderAuth variant="mobile" />
               </ul>
             </div>
           </details>
