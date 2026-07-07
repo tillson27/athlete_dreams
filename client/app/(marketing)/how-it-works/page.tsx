@@ -6,55 +6,40 @@ import { Badge } from '@/components/ui/Badge';
 export const metadata: Metadata = {
   title: 'How it works',
   description:
-    'How athletes, supporters, and brands use ARC — from creating a profile to closing the loop after the event.',
+    'How runners and their supporters use ARC — from building a verified profile to following the whole journey.',
 };
 
 const athleteSteps = [
   {
-    title: 'Create your profile',
-    body: 'Photos, videos, accomplishments, the values you stand for, and the sports you compete in. 15 minutes from sign-up to live profile.',
+    title: 'Build your profile',
+    body: 'Your story, photos, personal bests, and the values you run by. About 15 minutes from sign-up to a live, verified profile.',
   },
   {
-    title: 'List your upcoming events',
-    body: 'Each event gets a cost breakdown — flights, race entry, accommodation, gear, coaching. You decide what to make fundable.',
+    title: 'Get verified',
+    body: 'Connect Strava and link your official results. ARC confirms your times and identity so your badge carries real weight.',
   },
   {
-    title: 'Share it with your network',
-    body: "Drop the link in your Strava, your Instagram, your team group chat. We provide social preview cards and email templates that don't embarrass you.",
+    title: 'Share it with your world',
+    body: "Drop the link in your Strava, your Instagram, your run-club chat. We generate social cards that make your résumé look the part.",
   },
   {
-    title: 'Race. Then close the loop',
-    body: 'After the event, post an update with photos and results. Backers see exactly what they paid for and stay around for next season.',
+    title: 'Race. Then keep the story going',
+    body: 'Post race results and training updates. Your profile grows with every season — a living record instead of a lost highlight.',
   },
 ];
 
 const supporterSteps = [
   {
-    title: 'Find an athlete',
-    body: 'Browse by sport, region, or values. Read their story. See the breakdown of what they need.',
+    title: 'Discover runners',
+    body: 'Browse by discipline, level, or region — from everyday run-club captains to amateur-elites. Read the whole story, not just the stats.',
   },
   {
-    title: 'Fund a line item or the whole thing',
-    body: 'Cover the race entry. Cover a hotel night. Cover the entire trip. The math is on the page.',
+    title: 'Follow the journey',
+    body: 'Follow the runners you believe in and watch the arc unfold — the build-up, the setbacks, the breakthroughs, race by race.',
   },
   {
-    title: 'Get receipts and updates',
-    body: 'A donation receipt at the moment of the gift, and an athlete-written update after the event closes.',
-  },
-];
-
-const brandSteps = [
-  {
-    title: 'Tell us what you need',
-    body: 'Sport, region, demographic, value alignment, budget. We build a shortlist of athletes whose profiles fit.',
-  },
-  {
-    title: 'Connect directly',
-    body: 'Reach out through the platform. We facilitate the introduction; you own the relationship.',
-  },
-  {
-    title: 'Run the partnership',
-    body: 'Single event, multi-race, or season-long. Track athlete performance and content output without leaving the dashboard.',
+    title: 'Show up on race day',
+    body: 'Some runners open their season to support. When they do, you can chip in toward a specific goal — and see exactly where it went.',
   },
 ];
 
@@ -64,8 +49,8 @@ export default function HowItWorksPage() {
       <Section tone="surface" pad="lg">
         <SectionHeading
           eyebrow="How ARC works"
-          title="The same playbook, written for three audiences."
-          description="ARC is one network with three jobs to do. Pick your role — the path is straightforward."
+          title="A home for runners, and the people who follow them."
+          description="ARC is one network with two jobs: give runners a verified home for their whole story, and give their people a front-row seat. Pick your role — the path is straightforward."
           align="center"
         />
       </Section>
@@ -73,10 +58,10 @@ export default function HowItWorksPage() {
       <Section tone="surface-bright" pad="md">
         <Persona
           tone="primary"
-          tag="For Athletes"
-          title="From profile to post-race update"
+          tag="For Runners"
+          title="From profile to a living race record"
           steps={athleteSteps}
-          ctaLabel="Create a profile"
+          ctaLabel="Build your profile"
           ctaHref="/sign-up"
         />
       </Section>
@@ -84,22 +69,11 @@ export default function HowItWorksPage() {
       <Section tone="surface-low" pad="md" className="border-y border-outline-variant">
         <Persona
           tone="secondary"
-          tag="For Supporters"
-          title="Donate to a specific dream — and see it land"
+          tag="For Followers"
+          title="Find runners worth following — and watch the arc unfold"
           steps={supporterSteps}
-          ctaLabel="Browse athletes"
+          ctaLabel="Discover runners"
           ctaHref="/athletes"
-        />
-      </Section>
-
-      <Section tone="surface-bright" pad="md">
-        <Persona
-          tone="secondary"
-          tag="For Brands & Enterprises"
-          title="Find aligned athletes. Run an ambassador program that works."
-          steps={brandSteps}
-          ctaLabel="Talk to partnerships"
-          ctaHref="/about#contact"
         />
       </Section>
     </>

@@ -3,27 +3,27 @@ import { Logo } from './Logo';
 
 const columns = [
   {
-    title: 'Platform',
+    title: 'Explore',
     links: [
+      { href: '/athletes', label: 'Discover Runners' },
+      { href: '/community', label: 'Community' },
       { href: '/how-it-works', label: 'How It Works' },
-      { href: '/athletes', label: 'Verified Athletes' },
-      { href: '/about', label: 'Success Stories' },
     ],
   },
   {
-    title: 'Support',
+    title: 'For Runners',
     links: [
-      { href: '/how-it-works', label: 'Backer FAQs' },
-      { href: '/sign-up', label: 'Athlete Hub' },
-      { href: '/about', label: 'Transparency Reports' },
+      { href: '/for-athletes', label: 'Why ARC' },
+      { href: '/sign-up', label: 'Start Your Profile' },
+      { href: '/sign-in', label: 'Sign In' },
     ],
   },
   {
-    title: 'Brands',
+    title: 'Company',
     links: [
-      { href: '/brands', label: 'Sponsor an Athlete' },
-      { href: '/ambassadors', label: 'Ambassador Programs' },
-      { href: '/about#contact', label: 'Contact Partnerships' },
+      { href: '/mission', label: 'Mission' },
+      { href: '/about', label: 'About' },
+      { href: '/about#contact', label: 'Contact' },
     ],
   },
 ];
@@ -35,7 +35,8 @@ export function SiteFooter() {
         <div className="space-y-4">
           <Logo size="lg" variant="full" />
           <p className="max-w-md text-sm leading-relaxed text-on-surface-variant">
-            Empowering athletes through radical transparency and direct fan support. Every dollar tracked, every milestone celebrated.
+            A verified home for a runner&rsquo;s whole story — the results, the journey behind them,
+            and the community that carries you forward.
           </p>
         </div>
         {columns.map((column) => (

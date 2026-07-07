@@ -6,40 +6,40 @@ import { LinkButton } from '@/components/ui/Button';
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Why we built ARC, where existing platforms fall short, and how to get in touch.',
+    'Why we built ARC — a verified home for a runner’s whole story, where existing tools fall short, and how to get in touch.',
 };
 
 const principles = [
   {
-    title: 'The athlete owns the story.',
-    body: 'They write the profile. They choose the photos. They decide what to make fundable. Our job is to host the page and clear the wire.',
+    title: 'The runner owns the story.',
+    body: 'You write the profile. You choose the photos. You decide what to share. Our job is to host the page and make it look the part.',
   },
   {
-    title: 'Money moves directly.',
-    body: "Donations land in the athlete's account, minus a 3% platform fee. We do not warehouse funds. We do not freeze payouts pending review.",
+    title: 'Verification is the product.',
+    body: 'Results checked against official databases, training synced from Strava, identity confirmed. A verified badge that actually means something.',
   },
   {
-    title: 'Transparency is the product.',
-    body: 'Cost breakdowns by default. Post-event updates by default. If a campaign cannot show the math, it does not belong on ARC.',
+    title: 'Story before numbers.',
+    body: 'The comeback, the reason you lace up, the arc behind the athlete — that comes first. Metrics support the story; they don’t replace it.',
   },
   {
-    title: 'No agent middlemen.',
-    body: "Brand-to-athlete conversations happen through the athlete's profile, not through a gated salesperson. We facilitate; we do not gatekeep.",
+    title: 'Community over vanity.',
+    body: 'Followers, run clubs, and people who show up on race day — not a leaderboard sorted by follower count.',
   },
 ];
 
-const competitors = [
+const alternatives = [
   {
-    name: 'Makeachamp',
-    delta: 'Funds get held back. Athletes wait — sometimes for months — to see money they raised. ARC pays out as donations clear.',
+    name: 'Instagram',
+    delta: 'A highlight reel with no context. A race photo gets 200 likes and disappears. ARC keeps the whole arc in one place — verified and lasting.',
   },
   {
-    name: 'Sportfunder',
-    delta: 'Sport-specific and feature-thin. ARC is cross-sport with a real directory and brand integration.',
+    name: 'Strava',
+    delta: 'Great for training data, but it buries your story under splits and segments. ARC leads with who you are, then backs it with the numbers.',
   },
   {
-    name: 'OpenSponsorship',
-    delta: 'Brand-first marketplace where athletes are search results. ARC leads with athlete stories; sponsorships layer on top.',
+    name: 'A link-in-bio',
+    delta: 'A list of links says nothing about the runner behind them. ARC is the destination that link should point to.',
   },
 ];
 
@@ -49,8 +49,8 @@ export default function AboutPage() {
       <Section tone="surface" pad="lg">
         <SectionHeading
           eyebrow="About ARC"
-          title="A funding platform where the athlete comes first."
-          description="We started ARC because every existing tool treats athletes like inventory. Crowdfunding sites freeze payouts. Sponsorship marketplaces sort by follower count. Ambassador programs run out of Google Forms. We thought we could do better — and we are starting with 20 athletes to prove it."
+          title="A verified home for a runner’s whole story."
+          description="We started ARC because every existing tool flattens running into something smaller than it is — a highlight reel, a wall of data, a list of links. Every runner deserves a real home for the whole arc. We’re starting with a small cohort of runners to prove it."
           align="center"
         />
       </Section>
@@ -70,13 +70,10 @@ export default function AboutPage() {
       </Section>
 
       <Section tone="inverse" pad="xl">
-        <SectionHeading eyebrow="Why not them" title="What's wrong with the alternatives." onDark />
+        <SectionHeading eyebrow="Why not them" title="More than a bio link." onDark />
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {competitors.map((c) => (
-            <div
-              key={c.name}
-              className="rounded-card bg-white/5 p-7 ring-1 ring-inset ring-white/10"
-            >
+          {alternatives.map((c) => (
+            <div key={c.name} className="rounded-card bg-white/5 p-7 ring-1 ring-inset ring-white/10">
               <Badge tone="primary-soft">{c.name}</Badge>
               <p className="mt-4 text-sm text-white/80">{c.delta}</p>
             </div>
@@ -92,7 +89,9 @@ export default function AboutPage() {
               We answer every email.
             </h2>
             <p className="max-w-xl text-base leading-relaxed text-on-surface-variant">
-              Whether you&rsquo;re an athlete who wants to join the pilot cohort, a brand looking for a shortlist, or an enterprise scoping an ambassador program — write us a few sentences and we&rsquo;ll reply within 48 hours.
+              Whether you&rsquo;re a runner who wants to join the pilot cohort, a run club that wants
+              its members on ARC, or just have a question &mdash; write us a few sentences and
+              we&rsquo;ll reply within 48 hours.
             </p>
             <p className="text-sm text-on-surface-variant">
               For now, email us directly:{' '}
@@ -102,18 +101,18 @@ export default function AboutPage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <LinkButton href="/sign-up" tone="primary" size="lg">
-                Apply as an athlete
+                Start your profile
               </LinkButton>
-              <LinkButton href="/brands" tone="secondary" size="lg">
-                Talk partnerships
+              <LinkButton href="/athletes" tone="secondary" size="lg">
+                Discover runners
               </LinkButton>
             </div>
           </div>
           <ul className="space-y-3 text-sm">
             {[
-              'Athlete cohort: now onboarding through 2026 Q2.',
-              'Brand partnerships: rolling — first cohort live by summer 2026.',
-              'Managed ambassador programs: scoping for 2026 Q3 launch.',
+              'Runner cohort: now onboarding through 2026 Q2.',
+              'Every discipline welcome: road, trail, ultra, and track.',
+              'From first-time half-marathoners to amateur-elites.',
             ].map((line) => (
               <li
                 key={line}
