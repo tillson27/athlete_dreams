@@ -127,6 +127,13 @@ const galleryPhotos = [
   '1552674605-db6ffd4facb5',
 ];
 
+const profileTabs = [
+  { label: 'Story', href: '#story' },
+  { label: 'Results', href: '#results' },
+  { label: 'Training', href: '#training' },
+  { label: 'Gallery', href: '#gallery' },
+];
+
 export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
   const campaign = athlete.campaigns[0];
 
@@ -160,9 +167,9 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
   };
 
   return (
-    <div className="pb-16">
+    <div className="pb-40 md:pb-16">
       {/* HERO */}
-      <section className="relative h-[60vh] w-full overflow-hidden md:h-[70vh]">
+      <section className="relative h-[46vh] min-h-[360px] w-full overflow-hidden md:h-[70vh] md:min-h-0">
         <Image
           src={athlete.heroMediaUrl}
           alt={`${athlete.fullName} trail running`}
@@ -171,7 +178,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           sizes="100vw"
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent md:from-black/60 md:via-transparent" />
         <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-8 text-white md:px-16 md:py-12">
           <span className="mb-3 inline-flex items-center gap-1 rounded-pill bg-success px-3 py-1 text-xs font-bold tracking-[0.05em] text-white">
             <Icon name="check" className="h-4 w-4" />
@@ -195,8 +202,21 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
       </section>
 
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
-        {/* QUICK ACTIONS */}
-        <section className="relative z-10 -mt-12">
+        {/* IN-PAGE TAB NAV (mobile) */}
+        <nav className="no-scrollbar sticky top-16 z-30 -mx-5 flex gap-1 overflow-x-auto border-b border-outline-variant bg-surface/95 px-5 py-2 backdrop-blur md:hidden">
+          {profileTabs.map((tab) => (
+            <a
+              key={tab.href}
+              href={tab.href}
+              className="flex min-h-11 shrink-0 items-center rounded-pill px-4 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container active:bg-surface-container"
+            >
+              {tab.label}
+            </a>
+          ))}
+        </nav>
+
+        {/* QUICK ACTIONS (desktop — mobile uses the sticky bottom bar) */}
+        <section className="relative z-10 -mt-12 hidden md:block">
           <div className="card-lift flex flex-col items-center justify-center gap-4 rounded-card bg-surface-container-lowest p-6 md:flex-row md:justify-end md:p-8">
             <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row">
               <Link
@@ -217,12 +237,12 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           </div>
         </section>
 
-        {/* MAIN GRID */}
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-12">
+        {/* MAIN GRID — flat/interleaved on mobile (via order), two columns on desktop */}
+        <div className="mt-6 flex flex-col gap-6 md:grid md:grid-cols-12">
           {/* LEFT COLUMN */}
-          <div className="space-y-6 md:col-span-8">
+          <div className="contents md:col-span-8 md:block md:space-y-6">
             {/* Featured Video */}
-            <section className="card-lift rounded-card bg-surface-container-lowest p-8">
+            <section className="card-lift order-2 rounded-card bg-surface-container-lowest p-8 md:order-none">
               <CardHeading icon="play">Featured Video</CardHeading>
               <div className="group relative mt-6 aspect-video cursor-pointer overflow-hidden rounded-input">
                 <Image
@@ -244,7 +264,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </section>
 
             {/* My Story */}
-            <article className="card-lift rounded-card bg-surface-container-lowest p-8">
+            <article id="story" className="card-lift order-1 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none">
               <CardHeading icon="book">My Story</CardHeading>
               <div className="mt-4 text-lg leading-relaxed text-on-surface">
                 <p className="mb-4">
@@ -292,7 +312,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </article>
 
             {/* Personal Bests */}
-            <div className="card-lift rounded-card bg-surface-container-lowest p-8">
+            <div id="results" className="card-lift order-3 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none">
               <CardHeading icon="timer">Personal Bests</CardHeading>
               <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
                 {personalBests.map((best) => (
@@ -305,7 +325,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Career Highlights */}
-            <div className="card-lift rounded-card bg-surface-container-lowest p-8">
+            <div className="card-lift order-4 rounded-card bg-surface-container-lowest p-8 md:order-none">
               <CardHeading icon="medal">Career Highlights</CardHeading>
               <div className="mt-6 space-y-4">
                 {careerHighlights.map((highlight) => (
@@ -333,7 +353,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Previous Races */}
-            <section className="card-lift rounded-card bg-surface-container-lowest p-8">
+            <section className="card-lift order-8 rounded-card bg-surface-container-lowest p-8 md:order-none">
               <CardHeading icon="history">Previous Races</CardHeading>
               <div className="mt-6 space-y-6">
                 {previousRaces.map((race) => (
@@ -362,7 +382,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </section>
 
             {/* Core Values */}
-            <div className="card-lift rounded-card bg-inverse-surface p-8 text-white">
+            <div className="card-lift order-11 rounded-card bg-inverse-surface p-8 text-white md:order-none">
               <h3 className="mb-6 flex items-center gap-2 font-display text-xl font-bold text-primary-container">
                 <Icon name="diamond" className="h-6 w-6" />
                 Core Values
@@ -382,9 +402,9 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           </div>
 
           {/* RIGHT COLUMN */}
-          <aside className="space-y-6 md:col-span-4">
+          <aside className="contents md:col-span-4 md:block md:space-y-6">
             {/* Community */}
-            <div className="card-lift space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6">
+            <div className="card-lift order-6 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
               <CardHeading icon="groups">Community</CardHeading>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -408,7 +428,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* 2026 Roadmap */}
-            <div className="card-lift rounded-card border border-surface-container bg-surface-container-lowest p-6">
+            <div className="card-lift order-5 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
               <h3 className="mb-6 font-display text-xl font-bold text-on-surface">2026 Roadmap</h3>
               <div className="space-y-6">
                 {roadmap.map((event) => (
@@ -421,7 +441,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Instagram */}
-            <div className="card-lift space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6">
+            <div className="card-lift order-9 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Icon name="instagram" className="h-5 w-5 text-primary" />
@@ -457,7 +477,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Live Training Feed */}
-            <div className="card-lift space-y-6 rounded-card border border-surface-container bg-surface-container-lowest p-6">
+            <div id="training" className="card-lift order-7 scroll-mt-32 space-y-6 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-xl font-bold text-on-surface">
                   Live Training Feed
@@ -494,7 +514,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Recent Backers */}
-            <div className="card-lift space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6">
+            <div className="card-lift order-10 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
               <h3 className="font-display text-xl font-bold text-on-surface">Recent Backers</h3>
               <div className="space-y-4">
                 {recentBackers.map((backer) => (
@@ -526,7 +546,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Photo Gallery */}
-            <div className="card-lift space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6">
+            <div id="gallery" className="card-lift order-12 scroll-mt-32 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
               <CardHeading icon="gallery">Photo Gallery</CardHeading>
               <div className="grid grid-cols-2 gap-2">
                 {galleryPhotos.map((photo, index) => (
@@ -580,6 +600,22 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </Link>
           </div>
         </section>
+      </div>
+
+      {/* STICKY ACTION BAR (mobile) — sits above the site bottom nav */}
+      <div
+        className="fixed inset-x-0 z-40 border-t border-outline-variant bg-surface-container-lowest/95 px-4 py-3 backdrop-blur md:hidden"
+        style={{ bottom: 'calc(3.75rem + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="mx-auto flex max-w-[var(--spacing-container-max)] items-center gap-3">
+          <Link
+            href="#back"
+            className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+          >
+            Back this athlete
+          </Link>
+          <ShareCard resume={shareResume} compact />
+        </div>
       </div>
     </div>
   );

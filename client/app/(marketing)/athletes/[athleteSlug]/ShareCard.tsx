@@ -32,7 +32,13 @@ const PLATFORMS: Platform[] = [
   { key: 'x', label: 'X', w: 1200, h: 675, icon: <XGlyph /> },
 ];
 
-export function ShareCard({ resume }: { resume: ShareResume }) {
+export function ShareCard({
+  resume,
+  compact = false,
+}: {
+  resume: ShareResume;
+  compact?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [platform, setPlatform] = useState<PlatformKey>('instagram-story');
   const [imageTick, setImageTick] = useState(0);
@@ -151,14 +157,25 @@ export function ShareCard({ resume }: { resume: ShareResume }) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold tracking-[0.05em] text-primary transition-colors hover:bg-surface-container-low active:scale-95"
-      >
-        <ShareGlyph />
-        SHARE
-      </button>
+      {compact ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Share"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-button border border-outline text-primary transition-colors hover:bg-surface-container-low active:scale-95"
+        >
+          <ShareGlyph />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold tracking-[0.05em] text-primary transition-colors hover:bg-surface-container-low active:scale-95"
+        >
+          <ShareGlyph />
+          SHARE
+        </button>
+      )}
 
       {open ? (
         <div
