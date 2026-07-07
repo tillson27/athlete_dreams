@@ -256,6 +256,25 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
               {athlete.hometown}
             </p>
           </div>
+
+          {/* Social status row — handle · followers · follow */}
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <div className="flex items-center gap-4">
+              <span className="label-bold text-white/80">@cassandradewinter</span>
+              <span className="hidden h-1 w-1 rounded-full bg-white/40 sm:block" />
+              <p className="text-white/70">
+                <span className="font-display text-lg font-bold text-white">12.4k</span>{' '}
+                <span className="label-bold">followers</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-pill bg-white px-6 py-2 text-sm font-bold tracking-[0.05em] text-inverse-surface transition-all hover:bg-white/90 active:scale-95"
+            >
+              <Icon name="person-add" className="h-4 w-4" />
+              Follow
+            </button>
+          </div>
         </div>
       </section>
 
@@ -727,6 +746,28 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
               BACK THIS ATHLETE
             </Link>
           </div>
+        </section>
+
+        {/* GROWTH LOOP — every profile is a recruiting billboard */}
+        <section className="mt-6 flex flex-col items-center justify-between gap-5 rounded-card border border-outline-variant bg-surface-container-low p-6 text-center md:flex-row md:p-8 md:text-left">
+          <div>
+            <p className="label-bold text-primary">
+              Runners like {athlete.fullName.split(' ')[0]} call ARC home
+            </p>
+            <h3 className="mt-1 font-display text-xl font-bold text-on-surface md:text-2xl">
+              Like what you see? Build your own.
+            </h3>
+            <p className="mt-1 text-on-surface-variant">
+              A professional home for your running story — free while we&rsquo;re in pilot.
+            </p>
+          </div>
+          <Link
+            href="/register"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
+          >
+            Create your free profile
+            <ArrowGlyph className="h-4 w-4" />
+          </Link>
         </section>
       </div>
 
