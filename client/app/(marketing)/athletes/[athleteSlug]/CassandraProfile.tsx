@@ -816,10 +816,10 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </p>
           </div>
           <Link
-            href="/register"
+            href="/for-athletes"
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
           >
-            Create your free profile
+            Get your own ARC profile
             <ArrowGlyph className="h-4 w-4" />
           </Link>
         </section>
