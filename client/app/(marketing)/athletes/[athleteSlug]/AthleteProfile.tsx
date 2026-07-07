@@ -5,6 +5,7 @@ import type { RichAthleteProfile } from '@/lib/athleteProfiles';
 import { deriveEdits } from '@/lib/athleteEdits';
 import { formatCents } from '@/lib/format';
 import { ArrowGlyph } from '@/components/ui/Button';
+import { FollowButton } from '@/components/site/FollowButton';
 import { ShareCard, type ShareResume } from './ShareCard';
 import { Icon, img, type IconName } from './profileParts';
 import {
@@ -122,13 +123,7 @@ export function AthleteProfile({
                 <span className="label-bold">followers</span>
               </p>
             </div>
-            <button
-              type="button"
-              className="inline-flex min-h-10 items-center gap-1.5 rounded-pill bg-white px-6 py-2 text-sm font-bold tracking-[0.05em] text-inverse-surface transition-all hover:bg-white/90 active:scale-95"
-            >
-              <Icon name="person-add" className="h-4 w-4" />
-              Follow
-            </button>
+            <FollowButton slug={athlete.athleteSlug} variant="hero" />
           </div>
         </div>
       </section>
@@ -406,13 +401,7 @@ export function AthleteProfile({
                   </div>
                 ) : null}
               </div>
-              <button
-                type="button"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-button bg-primary-container py-3 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-colors hover:bg-primary active:scale-95"
-              >
-                <Icon name="person-add" className="h-5 w-5" />
-                FOLLOW
-              </button>
+              <FollowButton slug={athlete.athleteSlug} variant="block" />
             </div>
 
             {/* Roadmap */}
