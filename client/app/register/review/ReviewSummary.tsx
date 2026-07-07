@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Icon, type RegIconName } from '../_components/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
+import { StartOverButton } from '../_components/StartOverButton';
 import { PublishPanel } from './PublishPanel';
 
 export function ReviewSummary() {
@@ -14,17 +15,22 @@ export function ReviewSummary() {
   return (
     <>
       {/* Milestone header */}
-      <header className="mb-12 text-center md:text-left">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-secondary-container px-4 py-2 text-on-secondary-container">
-          <Icon name="verified" className="h-4 w-4" />
-          <span className="label-bold">FINAL STEP</span>
+      <header className="mb-12">
+        <div className="flex flex-col gap-4 text-center md:flex-row md:items-start md:justify-between md:text-left">
+          <div>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-secondary-container px-4 py-2 text-on-secondary-container">
+              <Icon name="verified" className="h-4 w-4" />
+              <span className="label-bold">FINAL STEP</span>
+            </div>
+            <h1 className="mb-4 font-display text-4xl font-extrabold text-on-surface">
+              You&rsquo;re one tap away, {firstName}.
+            </h1>
+            <p className="max-w-2xl text-lg text-on-surface-variant">
+              Here&rsquo;s the profile you just built. Give it a last look, then make it live.
+            </p>
+          </div>
+          <StartOverButton className="label-bold inline-flex shrink-0 items-center justify-center gap-1.5 self-center rounded-lg border border-outline-variant px-4 py-2.5 text-on-surface-variant transition-colors hover:border-error hover:text-error md:self-start" />
         </div>
-        <h1 className="mb-4 font-display text-4xl font-extrabold text-on-surface">
-          You&rsquo;re one tap away, {firstName}.
-        </h1>
-        <p className="max-w-2xl text-lg text-on-surface-variant">
-          Here&rsquo;s the profile you just built. Give it a last look, then make it live.
-        </p>
       </header>
 
       {/* Completion bar */}
@@ -41,7 +47,7 @@ export function ReviewSummary() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left: review */}
         <div className="space-y-6 lg:col-span-8">
-          <ReviewCard icon="person" title="Basics" editHref="/register/personal-basics">
+          <ReviewCard icon="person" title="Basics" editHref="/register/personal-basics?from=review">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               <Detail label="Name" value={profile.name} />
               <Detail label="Discipline" value={profile.discipline} />
@@ -49,7 +55,7 @@ export function ReviewSummary() {
             </div>
           </ReviewCard>
 
-          <ReviewCard icon="star" title="Your story" editHref="/register/personal-basics">
+          <ReviewCard icon="star" title="Your story" editHref="/register/personal-basics?from=review">
             {profile.bio ? (
               <p className="leading-relaxed text-on-surface">{profile.bio}</p>
             ) : (
@@ -57,7 +63,7 @@ export function ReviewSummary() {
             )}
           </ReviewCard>
 
-          <ReviewCard icon="trophy" title="Personal bests" editHref="/register/athletics">
+          <ReviewCard icon="trophy" title="Personal bests" editHref="/register/athletics?from=review">
             {filledBests.length > 0 ? (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {filledBests.map((best) => (
@@ -74,7 +80,7 @@ export function ReviewSummary() {
             )}
           </ReviewCard>
 
-          <ReviewCard icon="hub" title="Values & voice" editHref="/register/values-social">
+          <ReviewCard icon="hub" title="Values & voice" editHref="/register/values-social?from=review">
             <div className="space-y-6">
               <div>
                 <p className="mb-2 text-xs font-bold uppercase tracking-wider text-on-surface-variant">

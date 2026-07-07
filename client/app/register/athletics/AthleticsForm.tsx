@@ -11,7 +11,7 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 const inputClass =
   'w-full rounded-lg border border-outline-variant bg-[#F8FAFC] p-3 text-base outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary';
 
-export function AthleticsForm() {
+export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) {
   const { profile, update } = useOnboarding();
   const bests = profile.personalBests;
 
@@ -127,11 +127,11 @@ export function AthleticsForm() {
             Back
           </Link>
           <Link
-            href="/register/values-social"
+            href={fromReview ? '/register/review' : '/register/values-social'}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-12 py-4 font-display text-lg font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:brightness-90 active:scale-95 sm:w-auto"
           >
-            Next: Values
-            <Icon name="arrow-forward" className="h-6 w-6" />
+            {fromReview ? 'Save & return to review' : 'Next: Values'}
+            <Icon name={fromReview ? 'check' : 'arrow-forward'} className="h-6 w-6" />
           </Link>
         </div>
       </div>

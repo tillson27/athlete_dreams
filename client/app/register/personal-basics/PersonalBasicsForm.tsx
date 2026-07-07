@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
 import { Icon } from '../_components/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
@@ -10,8 +11,34 @@ const inputClass =
 
 const sports = ['Road running', 'Trail & ultra', 'Track & field', 'Marathon', 'Other'];
 
-export function PersonalBasicsForm() {
+const storyPrompts = [
+  { label: 'What got you started?', scaffold: 'What got me started: ' },
+  { label: 'A race that changed you', scaffold: 'A race that changed me: ' },
+  { label: "What you're chasing now", scaffold: "What I'm chasing now: " },
+  { label: 'The hardest part', scaffold: 'The hardest part has been: ' },
+  { label: "Who's in your corner", scaffold: 'In my corner: ' },
+];
+
+export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolean }) {
   const { profile, update } = useOnboarding();
+  const bioRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertPrompt = (scaffold: string) => {
+    const current = profile.bio;
+    if (current.includes(scaffold.trim())) {
+      bioRef.current?.focus();
+      return;
+    }
+    const separator = current.trim().length === 0 ? '' : current.endsWith('\n') ? '' : '\n\n';
+    const next = `${current}${separator}${scaffold}`;
+    update({ bio: next });
+    requestAnimationFrame(() => {
+      const element = bioRef.current;
+      if (!element) return;
+      element.focus();
+      element.setSelectionRange(next.length, next.length);
+    });
+  };
 
   return (
     <div className="grid gap-10 md:grid-cols-2 md:items-start">
@@ -99,21 +126,35 @@ export function PersonalBasicsForm() {
             </div>
             <textarea
               id="bio"
+              ref={bioRef}
               rows={4}
               value={profile.bio}
               onChange={(event) => update({ bio: event.target.value })}
               placeholder="What got you started? What are you chasing? Write it in your own voice — we'll help you polish it later."
               className={inputClass}
             />
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-xs font-bold text-tertiary">Need a spark?</span>
+              {storyPrompts.map((prompt) => (
+                <button
+                  key={prompt.label}
+                  type="button"
+                  onClick={() => insertPrompt(prompt.scaffold)}
+                  className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1.5 text-xs font-semibold text-on-surface-variant transition-all hover:border-secondary hover:text-secondary active:scale-95"
+                >
+                  {prompt.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="pt-4">
             <Link
-              href="/register/athletics"
+              href={fromReview ? '/register/review' : '/register/athletics'}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 text-sm font-bold uppercase tracking-[0.05em] text-on-primary transition-all hover:bg-[#832700] active:scale-[0.98]"
             >
-              Next: Achievements
-              <Icon name="arrow-forward" className="h-5 w-5" />
+              {fromReview ? 'Save & return to review' : 'Next: Achievements'}
+              <Icon name={fromReview ? 'check' : 'arrow-forward'} className="h-5 w-5" />
             </Link>
             <p className="mt-4 text-center text-xs text-tertiary">
               By continuing, you agree to Arc&rsquo;s{' '}

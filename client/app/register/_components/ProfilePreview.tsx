@@ -7,7 +7,13 @@ import { useOnboarding } from './OnboardingContext';
 const previewPhoto =
   'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=1000&q=70';
 
-export function ProfilePreview({ sticky = true }: { sticky?: boolean }) {
+export function ProfilePreview({
+  sticky = true,
+  showMeta = true,
+}: {
+  sticky?: boolean;
+  showMeta?: boolean;
+}) {
   const { profile } = useOnboarding();
   const { name, discipline, location, bio, mission, values, personalBests } = profile;
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'your-name';
@@ -15,10 +21,12 @@ export function ProfilePreview({ sticky = true }: { sticky?: boolean }) {
 
   return (
     <div className={sticky ? 'md:sticky md:top-24' : ''}>
-      <p className="label-bold mb-3 flex items-center gap-2 text-primary">
-        <Sparkle className="h-4 w-4" />
-        Live preview
-      </p>
+      {showMeta ? (
+        <p className="label-bold mb-3 flex items-center gap-2 text-primary">
+          <Sparkle className="h-4 w-4" />
+          Live preview
+        </p>
+      ) : null}
       <div className="overflow-hidden rounded-[1.25rem] border border-outline-variant bg-surface-container-lowest shadow-2xl">
         {/* browser chrome */}
         <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container px-4 py-3">
@@ -108,9 +116,11 @@ export function ProfilePreview({ sticky = true }: { sticky?: boolean }) {
           ) : null}
         </div>
       </div>
-      <p className="mt-3 text-center text-xs text-on-surface-variant">
-        Your public profile — it fills in as you go.
-      </p>
+      {showMeta ? (
+        <p className="mt-3 text-center text-xs text-on-surface-variant">
+          Your public profile — it fills in as you go.
+        </p>
+      ) : null}
     </div>
   );
 }

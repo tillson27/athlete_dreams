@@ -55,7 +55,7 @@ const connections: Connection[] = [
   },
 ];
 
-export function ValuesSocialForm() {
+export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean }) {
   const { profile, update } = useOnboarding();
 
   const toggleValue = (value: string) => {
@@ -189,7 +189,7 @@ export function ValuesSocialForm() {
             href="/register/review"
             className="w-full rounded-lg bg-primary px-12 py-4 text-center font-bold text-white shadow-lg transition-all hover:bg-[#832700] active:scale-95 sm:w-auto"
           >
-            Next: Final Review
+            {fromReview ? 'Save & return to review' : 'Next: Final Review'}
           </Link>
         </div>
       </div>
