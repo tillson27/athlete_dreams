@@ -3,16 +3,14 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatCents } from '@/lib/format';
 import { VerifiedChip } from '@/components/ui/Badge';
 
 export type TrendingAthlete = {
   name: string;
   sport: string;
   image: string;
-  percent: number;
-  raisedCents: number;
-  backers: number;
+  highlight: string;
+  followers: string;
   href: string;
 };
 
@@ -85,32 +83,18 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
                   {athlete.sport}
                 </span>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="label-bold text-on-surface-variant">Funding Goal</span>
-                    <span className="label-bold text-primary">{athlete.percent}%</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-pill bg-surface-container">
-                    <div
-                      className="progress-gradient h-full"
-                      style={{ width: `${athlete.percent}%` }}
-                    />
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5 rounded-lg bg-surface-container-low px-3 py-2.5">
+                  <MedalIcon className="h-5 w-5 shrink-0 text-primary" />
+                  <span className="label-bold text-on-surface">{athlete.highlight}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div>
-                    <p className="label-bold text-on-surface-variant">Raised</p>
-                    <p className="font-display text-xl font-bold text-on-surface">
-                      {formatCents(athlete.raisedCents)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="label-bold text-on-surface-variant">Backers</p>
-                    <p className="font-display text-xl font-bold text-on-surface">
-                      {athlete.backers}
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2 pt-1 text-sm text-on-surface-variant">
+                  <PeopleIcon className="h-4 w-4 shrink-0" />
+                  <span>
+                    <strong className="text-on-surface">{athlete.followers}</strong> followers
+                  </span>
+                  <span className="text-on-surface-variant/40">•</span>
+                  <span className="label-bold text-secondary">Trending this week</span>
                 </div>
               </div>
             </div>
@@ -134,6 +118,22 @@ function Chevron({ className }: { className?: string }) {
       className={className}
     >
       <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+function MedalIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M12 2 8 8h8l-4-6Zm0 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm0 3 1.2 2.4 2.6.4-1.9 1.8.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.8 2.6-.4L12 11Z" />
+    </svg>
+  );
+}
+
+function PeopleIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2c-2.7 0-6 1.3-6 4v2h12v-2c0-2.7-3.3-4-6-4Zm8 0c-.4 0-.9 0-1.3.1 1.4.9 2.3 2.1 2.3 3.9v2h5v-2c0-2.7-3.3-4-6-4Z" />
     </svg>
   );
 }

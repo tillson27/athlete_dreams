@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { findMockAthlete, mockAthletes } from '@/lib/mockAthletes';
 import { Section, SectionHeading } from '@/components/site/Section';
-import { Badge, LiveDot, VerifiedChip } from '@/components/ui/Badge';
-import { LinkButton, Button, ArrowGlyph } from '@/components/ui/Button';
-import { formatCents, formatSport, daysUntil } from '@/lib/format';
+import { Badge, VerifiedChip } from '@/components/ui/Badge';
+import { LinkButton, ArrowGlyph } from '@/components/ui/Button';
+import { formatSport } from '@/lib/format';
 import { CassandraProfile } from './CassandraProfile';
 
 export async function generateStaticParams() {
@@ -65,12 +65,6 @@ export default async function AthleteProfilePage({
           </Link>
           <div className="mt-6 max-w-3xl space-y-5">
             <div className="flex flex-wrap gap-2">
-              {athlete.activeCampaignCount > 0 ? (
-                <Badge tone="live">
-                  <LiveDot />
-                  Live Funding
-                </Badge>
-              ) : null}
               <VerifiedChip label="Verified Athlete" />
             </div>
             <h1 className="font-display text-balance text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
@@ -81,16 +75,16 @@ export default async function AthleteProfilePage({
             </p>
             <p className="max-w-2xl text-lg leading-relaxed text-white/85">{athlete.headline}</p>
             <div className="flex flex-wrap gap-3 pt-2">
-              <LinkButton tone="primary" size="lg" href="#donate">
-                Back this athlete
+              <LinkButton tone="primary" size="lg" href="#story">
+                Read the story
               </LinkButton>
               <LinkButton
                 tone="ghost"
                 size="lg"
-                href="#story"
+                href="/athletes"
                 className="!text-white !bg-white/10 hover:!bg-white/20 backdrop-blur-md ring-1 ring-inset ring-white/20"
               >
-                Read the story
+                Explore athletes
               </LinkButton>
             </div>
           </div>
@@ -100,14 +94,9 @@ export default async function AthleteProfilePage({
       {/* SUMMARY STAT STRIP */}
       <section className="border-b border-outline-variant bg-surface-container-low py-6">
         <div className="mx-auto grid w-full max-w-[var(--spacing-container-max)] grid-cols-2 gap-4 px-5 md:grid-cols-3 md:gap-12 md:px-16">
-          <StripStat label="Active Campaigns" value={String(athlete.activeCampaignCount)} />
-          <StripStat
-            label="Backers"
-            value={String(
-              athlete.campaigns.reduce((sum, campaign) => sum + campaign.supporterCount, 0)
-            )}
-          />
-          <StripStat label="Open to Brands" value="Yes — aligned" />
+          <StripStat label="Discipline" value={formatSport(athlete.primarySport)} />
+          <StripStat label="Based in" value={athlete.hometown} />
+          <StripStat label="Career highlights" value={String(athlete.accomplishments.length)} />
         </div>
       </section>
 
@@ -144,65 +133,8 @@ export default async function AthleteProfilePage({
         </div>
       </Section>
 
-      {/* CAMPAIGNS — transparency ledger */}
-      <Section tone="surface-low" pad="lg" className="border-y border-outline-variant">
-        <SectionHeading
-          eyebrow="Active campaigns"
-          title="Fund a specific dream"
-          description="Every campaign is itemized by the athlete. Donate to the line you care about most, or back the whole thing."
-        />
-        <div className="mt-12 grid gap-8 lg:grid-cols-2">
-          {athlete.campaigns.map((campaign) => {
-            const days = campaign.closesAt ? daysUntil(campaign.closesAt) : null;
-            return (
-              <article
-                key={campaign.campaignSlug}
-                className="card-lift flex flex-col gap-6 rounded-card border border-outline-variant bg-surface-container-lowest p-7 md:p-8"
-              >
-                <header className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Badge tone="primary-soft">{formatSport(campaign.campaignType)}</Badge>
-                    {days !== null ? (
-                      <span className="label-bold text-on-surface-variant">
-                        {days >= 0 ? `${days} days left` : 'Closed'}
-                      </span>
-                    ) : null}
-                  </div>
-                  <h3 className="font-display text-2xl font-bold leading-tight">
-                    {campaign.campaignTitle}
-                  </h3>
-                  <p className="text-on-surface-variant">{campaign.campaignStory}</p>
-                </header>
-                <div>
-                  <p className="label-bold text-on-surface">Cost Breakdown</p>
-                  <ul className="mt-4 divide-y divide-outline-variant/60 rounded-card border border-outline-variant bg-surface-container-low">
-                    {campaign.costLines.map((line) => (
-                      <li
-                        key={line.label}
-                        className="flex items-center justify-between px-5 py-3 text-sm"
-                      >
-                        <span className="text-on-surface">{line.label}</span>
-                        <span className="font-semibold text-secondary">
-                          {formatCents(line.amountCents)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex flex-wrap gap-3 pt-2">
-                  <LinkButton tone="primary" href={`#donate`}>
-                    Back this campaign
-                  </LinkButton>
-                  <Button tone="secondary">Share</Button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </Section>
-
-      {/* DONATE CTA */}
-      <Section id="donate" tone="surface" pad="lg">
+      {/* GROWTH BAND — invite athletes to build their own profile */}
+      <Section tone="surface" pad="lg">
         <div className="relative overflow-hidden rounded-card bg-inverse-surface px-6 py-14 text-white md:px-20 md:py-20">
           <div
             aria-hidden="true"
@@ -213,46 +145,28 @@ export default async function AthleteProfilePage({
               backgroundSize: '40px 40px',
             }}
           />
-          <div className="relative z-10 grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
-            <div className="space-y-4">
-              <Badge tone="primary-soft">Direct to athlete</Badge>
-              <h2 className="font-display text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
-                Back {athlete.fullName.split(' ')[0]}&rsquo;s next race.
-              </h2>
-              <p className="max-w-xl text-base leading-relaxed text-white/80">
-                Donations move directly to {athlete.fullName.split(' ')[0]} after a 3% platform fee. You&rsquo;ll get a receipt, a thank-you note, and a post-event update with photos and results.
-              </p>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <LinkButton href="/sign-in" tone="primary" size="lg">
-                  Donate
-                </LinkButton>
-                <LinkButton
-                  href="/brands"
-                  tone="ghost"
-                  size="lg"
-                  className="!text-white hover:!bg-white/15"
-                >
-                  I&rsquo;m a brand — let&rsquo;s talk →
-                </LinkButton>
-              </div>
+          <div className="relative z-10 max-w-2xl space-y-4">
+            <Badge tone="primary-soft">For athletes</Badge>
+            <h2 className="font-display text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
+              Your story deserves a page like this.
+            </h2>
+            <p className="max-w-xl text-base leading-relaxed text-white/80">
+              Build a verified profile that shows your whole journey — results, milestones, and the
+              values you run by. It takes about 15 minutes.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <LinkButton href="/sign-up" tone="primary" size="lg">
+                Start your profile
+              </LinkButton>
+              <LinkButton
+                href="/for-athletes"
+                tone="ghost"
+                size="lg"
+                className="!text-white hover:!bg-white/15"
+              >
+                See how it works →
+              </LinkButton>
             </div>
-            <ul className="space-y-3 text-sm">
-              {[
-                '3% platform fee. No payout freezes.',
-                'Itemized cost breakdown the athlete wrote.',
-                'Post-event recap so you see your gift land.',
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 rounded-card bg-white/8 p-4 ring-1 ring-inset ring-white/15"
-                >
-                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-pill bg-primary-container text-xs font-bold text-on-primary">
-                    ✓
-                  </span>
-                  <span className="text-white/85">{item}</span>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </Section>
