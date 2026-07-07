@@ -1,131 +1,17 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { MockAthlete } from '@/lib/mockAthletes';
+import type { RichAthleteProfile } from '@/lib/athleteProfiles';
 import { formatCents } from '@/lib/format';
 import { ArrowGlyph } from '@/components/ui/Button';
 import { ShareCard, type ShareResume } from './ShareCard';
 
-// Faithful reproduction of the Stitch "Cassandra de Winter" athlete profile
-// (athlete_profile_previous_races_with_photo_galleries). Data specific to this
-// mock lives here rather than polluting the shared MockAthlete schema.
+// Data-driven athlete profile — the Stitch "Cassandra" layout, generalized so
+// every athlete in the runner-launch roster gets the same flagship treatment.
+// Rich per-athlete content lives in lib/athleteProfiles.ts.
 
 const img = (id: string, width = 800) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=70`;
-
-const personalBests = [
-  { label: '10km', value: '35:26' },
-  { label: 'Half Marathon', value: '1:12:54' },
-  { label: 'Marathon', value: '2:34:43' },
-  { label: '100km', value: '10:03:12' },
-];
-
-const careerHighlights = [
-  {
-    title: '2026 Boston Marathon',
-    detail: '1st Canadian Female (27th Overall) — 2:34:43',
-    tone: 'secondary' as const,
-    images: ['1552674605-db6ffd4facb5', '1461896836934-ffe607ba8211'],
-  },
-  {
-    title: '2025 Lost Soul Ultra 100km',
-    detail: '1st Overall (Course Record) — 10:03',
-    tone: 'primary' as const,
-    images: ['1476480862126-209bfaa8edc8', '1519750157634-b6d493a0f77c'],
-  },
-];
-
-const moreResults = [
-  {
-    title: '2025 Royal Victoria Marathon',
-    detail: '1st Place Female — 2:39:50',
-    images: ['1508973379184-7517410fb0bc', '1530143311094-34d807799e8f'],
-  },
-  {
-    title: '2025 Black Spur Ultra 54km',
-    detail: '1st Place Female (Course Record) — 5:26:00',
-    images: ['1517637633369-e4cc28755e01', '1486218119243-13883505764c'],
-  },
-];
-
-const previousRaces = [
-  {
-    name: 'Boston Marathon (Pro Start)',
-    date: 'Monday, April 20, 2026',
-    result: '1st Canadian Female — 2:34:43 (PB)',
-    tone: 'secondary' as const,
-    links: ['Official B.A.A. Results', 'Running Magazine Recap', 'CBC Article'],
-    images: ['1540539234-c14a20fb7c7b'],
-  },
-  {
-    name: 'Moonlight Run 10K',
-    date: 'Saturday, March 21, 2026',
-    result: '1st Female, CR — 35:26',
-    tone: 'primary' as const,
-    links: ['10K Results', 'Timing Page'],
-    images: ['1486739985386-d4fae04ca6f7'],
-  },
-  {
-    name: 'Mesa Half Marathon',
-    date: 'Saturday, February 14, 2026',
-    result: '4th Female — 1:12:54',
-    tone: 'secondary' as const,
-    links: ['World Athletics Results', 'Official Mesa Marathon Results'],
-    images: ['1596727147705-61a532a659bd', '1533560904424-a0c61dc306fc'],
-  },
-];
-
-const morePreviousRaces = [
-  {
-    name: 'Royal Victoria Marathon',
-    date: 'Oct 12, 2025',
-    result: '1st Female — 2:39:50',
-    images: ['1530143311094-34d807799e8f', '1508973379184-7517410fb0bc'],
-  },
-  {
-    name: 'Lost Soul Ultra 100km',
-    date: 'Sept 5–6, 2025',
-    result: '1st Overall, CR — 10:03:12',
-    images: ['1476480862126-209bfaa8edc8', '1519750157634-b6d493a0f77c'],
-  },
-  {
-    name: 'Black Spur Ultra 54km',
-    date: 'Aug 22–23, 2025',
-    result: '1st Female, CR — 5:26:00',
-    images: ['1533560904424-a0c61dc306fc', '1596727147705-61a532a659bd'],
-  },
-];
-
-const coreValues = [
-  { title: 'Resilience', body: 'Pushing beyond limits.' },
-  { title: 'Sustainability', body: 'Earth-first athletics.' },
-  { title: 'Community', body: 'Growing the trail scene.' },
-  { title: 'Excellence', body: 'Uncompromising quality.' },
-];
-
-const roadmap = [
-  { name: 'Edmonton Half Marathon', date: 'August 16, 2026' },
-  { name: 'Lost Soul 100-miler', date: 'Sept 11, 2026' },
-  { name: 'Toronto Waterfront Marathon', date: 'Oct 17-18, 2026' },
-];
-
-const instagramPosts = [
-  { id: '1502904550040-7534597429ae', likes: '1.2k' },
-  { id: '1486218119243-13883505764c', likes: '856' },
-  { id: '1517637633369-e4cc28755e01', likes: '2.3k' },
-];
-
-const recentBackers = [
-  { name: 'Sarah M.', when: '2 days ago', amountCents: 5000, initials: 'SM' },
-  { name: 'RunClub Toronto', when: '3 days ago', amountCents: 20000, icon: 'groups' as const },
-  { name: 'Anonymous', when: '5 days ago', amountCents: 2500, icon: 'person' as const },
-];
-
-const galleryPhotos = [
-  '1508973379184-7517410fb0bc',
-  '1530143311094-34d807799e8f',
-  '1596727147705-61a532a659bd',
-  '1552674605-db6ffd4facb5',
-];
 
 const profileTabs = [
   { label: 'Story', href: '#story' },
@@ -141,92 +27,34 @@ const verifiedProofs = [
   { title: 'Identity confirmed', body: 'A real athlete — checked before going live.' },
 ];
 
-// Narrative timeline — the athlete's journey told as chapters, in her voice.
-type ArcChapter = {
-  era: string;
-  title: string;
-  icon: IconName;
-  tone: 'secondary' | 'tertiary' | 'primary';
-  body: string;
-  image?: string;
-  current?: boolean;
-};
-
-const arcChapters: ArcChapter[] = [
-  {
-    era: 'Before Arc',
-    title: 'National rugby',
-    icon: 'medal',
-    tone: 'secondary',
-    body: 'Before endurance, sport meant rugby — at the national level. Competition has always been part of who I am.',
-  },
-  {
-    era: '2020 – 2024',
-    title: 'Motherhood',
-    icon: 'heart',
-    tone: 'tertiary',
-    body: 'Three kids in a few short years. My mornings became early wake-ups and little ones finding their way into my bed. I stepped back from the start line — but never from the drive.',
-  },
-  {
-    era: '2025',
-    title: 'The return',
-    icon: 'history',
-    tone: 'primary',
-    image: '1502904550040-7534597429ae',
-    body: 'A quiet comeback through endurance racing. What began as a way to reconnect with myself quickly turned into something far bigger.',
-  },
-  {
-    era: '2025 – 2026',
-    title: 'The breakthrough',
-    icon: 'trophy',
-    tone: 'primary',
-    body: '1st Overall and a course record at the Lost Soul 100 km. 1st Canadian Female at Boston. The comeback became a breakthrough.',
-  },
-  {
-    era: 'Now',
-    title: 'What I’m chasing',
-    icon: 'flag',
-    tone: 'primary',
-    current: true,
-    body: 'The Lost Soul 100-miler this September — my biggest goal yet. I’m running it to show my kids what chasing something wholeheartedly looks like.',
-  },
-];
-
 const chapterTone: Record<'secondary' | 'tertiary' | 'primary', string> = {
   secondary: 'bg-secondary',
   tertiary: 'bg-tertiary',
   primary: 'bg-primary',
 };
 
-export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
-  const campaign = athlete.campaigns[0];
+export function AthleteProfile({
+  athlete,
+  profile,
+}: {
+  athlete: MockAthlete;
+  profile: RichAthleteProfile;
+}) {
+  const firstName = athlete.fullName.split(' ')[0];
+  const supportersCount = profile.supporterCount ?? 0;
 
   const shareResume: ShareResume = {
     name: athlete.fullName,
-    tagline: 'Elite Endurance & Trail',
+    tagline: profile.disciplineLabel,
     location: athlete.hometown,
     photo: athlete.heroMediaUrl,
-    highlights: [
-      '1st Canadian Female — Boston Marathon (2:34:43)',
-      '1st Female — Royal Victoria Marathon (2:39:50)',
-      '1st Overall, CR — Lost Soul Ultra 100km',
-      '1st Female, CR — Black Spur Ultra 54km',
-    ],
-    previousRaces: [
-      'Boston Marathon — 1st Canadian Female (2:34:43)',
-      'Moonlight Run 10K — 1st Female, CR (35:26)',
-      'Mesa Half Marathon — 4th Female (1:12:54)',
-      'Royal Victoria Marathon — 1st Female (2:39:50)',
-      'Lost Soul Ultra 100km — 1st Overall, CR (10:03:12)',
-      'Black Spur Ultra 54km — 1st Female, CR (5:26:00)',
-    ],
-    stats: [
-      { label: 'Marathon PB', value: '2:34:43' },
-      { label: '100km', value: '10:03:12' },
-      { label: 'Backers', value: String(campaign?.supporterCount ?? 0) },
-      { label: '10km PB', value: '35:26' },
-      { label: 'Half Marathon', value: '1:12:54' },
-    ],
+    highlights: [...profile.careerHighlights, ...profile.moreResults].map(
+      (highlight) => `${highlight.title} — ${highlight.detail}`,
+    ),
+    previousRaces: [...profile.previousRaces, ...profile.morePreviousRaces].map(
+      (race) => `${race.name} — ${race.result}`,
+    ),
+    stats: profile.personalBests.map((best) => ({ label: best.label, value: best.value })),
     url: `arc.network/athletes/${athlete.athleteSlug}`,
   };
 
@@ -236,7 +64,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
       <section className="relative h-[46vh] min-h-[360px] w-full overflow-hidden md:h-[70vh] md:min-h-0">
         <Image
           src={athlete.heroMediaUrl}
-          alt={`${athlete.fullName} trail running`}
+          alt={`${athlete.fullName} running`}
           fill
           priority
           sizes="100vw"
@@ -266,7 +94,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           <div className="mt-2 flex flex-wrap items-center gap-4 text-white/90">
             <p className="label-bold inline-flex items-center gap-1">
               <Icon name="trail" className="h-4 w-4" />
-              Elite Endurance &amp; Trail
+              {profile.disciplineLabel}
             </p>
             <span className="hidden h-1 w-1 rounded-full bg-white/50 md:block" />
             <p className="label-bold inline-flex items-center gap-1">
@@ -278,10 +106,12 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           {/* Social status row — handle · followers · follow */}
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
             <div className="flex items-center gap-4">
-              <span className="label-bold text-white/80">@cassandradewinter</span>
+              <span className="label-bold text-white/80">{profile.handle}</span>
               <span className="hidden h-1 w-1 rounded-full bg-white/40 sm:block" />
               <p className="text-white/70">
-                <span className="font-display text-lg font-bold text-white">12.4k</span>{' '}
+                <span className="font-display text-lg font-bold text-white">
+                  {profile.followers}
+                </span>{' '}
                 <span className="label-bold">followers</span>
               </p>
             </div>
@@ -314,12 +144,22 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
         <section className="relative z-10 -mt-12 hidden md:block">
           <div className="card-lift flex flex-col items-center justify-center gap-4 rounded-card bg-surface-container-lowest p-6 md:flex-row md:justify-end md:p-8">
             <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row">
-              <Link
-                href="#back"
-                className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-              >
-                BACK THIS ATHLETE
-              </Link>
+              {profile.supportEnabled ? (
+                <Link
+                  href="#back"
+                  className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+                >
+                  BACK THIS ATHLETE
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+                >
+                  <Icon name="person-add" className="h-4 w-4" />
+                  FOLLOW
+                </button>
+              )}
               <ShareCard resume={shareResume} />
               <Link
                 href={`/athletes/${athlete.athleteSlug}/manage`}
@@ -374,12 +214,9 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             <div className="max-w-3xl">
               <p className="label-bold text-primary">The Arc</p>
               <h2 className="mt-2 font-display text-3xl font-bold text-on-surface md:text-4xl">
-                {athlete.fullName.split(' ')[0]}&rsquo;s journey
+                {firstName}&rsquo;s journey
               </h2>
-              <p className="mt-3 text-on-surface-variant">
-                From the rugby pitch to the podium — the chapters behind the athlete, in her own
-                words.
-              </p>
+              <p className="mt-3 text-on-surface-variant">{profile.arcSubtitle}</p>
             </div>
             <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-transform group-open:rotate-180">
               <Icon name="chevron" className="h-5 w-5" />
@@ -391,7 +228,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
               aria-hidden="true"
               className="absolute bottom-8 left-[19px] top-3 w-0.5 rounded-full bg-gradient-to-b from-secondary via-primary to-primary-container"
             />
-            {arcChapters.map((chapter) => (
+            {profile.arcChapters.map((chapter) => (
               <li key={chapter.title} className="relative flex gap-5 pb-8 last:pb-0">
                 <span
                   className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ring-4 ring-surface ${chapterTone[chapter.tone]} ${
@@ -443,80 +280,59 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           {/* LEFT COLUMN */}
           <div className="contents md:col-span-8 md:block md:space-y-6">
             {/* Featured Video */}
-            <section className="card-lift order-2 rounded-card bg-surface-container-lowest p-8 md:order-none">
-              <CardHeading icon="play">Featured Video</CardHeading>
-              <div className="group relative mt-6 aspect-video cursor-pointer overflow-hidden rounded-input">
-                <Image
-                  src={img('1461896836934-ffe607ba8211', 1200)}
-                  alt="Featured video thumbnail"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 800px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/30">
-                  <span className="flex h-20 w-20 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
-                    <Icon name="play" className="h-9 w-9 text-white" />
+            {profile.featuredVideo ? (
+              <section className="card-lift order-2 rounded-card bg-surface-container-lowest p-8 md:order-none">
+                <CardHeading icon="play">Featured Video</CardHeading>
+                <div className="group relative mt-6 aspect-video cursor-pointer overflow-hidden rounded-input">
+                  <Image
+                    src={img(profile.featuredVideo.image, 1200)}
+                    alt="Featured video thumbnail"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/30">
+                    <span className="flex h-20 w-20 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
+                      <Icon name="play" className="h-9 w-9 text-white" />
+                    </span>
+                  </div>
+                  <span className="absolute bottom-4 left-4 rounded bg-primary px-3 py-1 text-xs font-bold text-on-primary">
+                    {profile.featuredVideo.duration}
                   </span>
                 </div>
-                <span className="absolute bottom-4 left-4 rounded bg-primary px-3 py-1 text-xs font-bold text-on-primary">
-                  2:45
-                </span>
-              </div>
-            </section>
+              </section>
+            ) : null}
 
             {/* My Story */}
-            <article id="story" className="card-lift order-1 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none">
+            <article
+              id="story"
+              className="card-lift order-1 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none"
+            >
               <CardHeading icon="book">My Story</CardHeading>
               <div className="mt-4 text-lg leading-relaxed text-on-surface">
-                <p className="mb-4">
-                  Mother of three, endurance athlete, and former national rugby player. My journey
-                  is about movement, competition, and showing my children what it looks like to
-                  chase big goals&hellip;
-                </p>
+                <p className="mb-4">{profile.storyIntro}</p>
                 <details className="group">
                   <summary className="label-bold inline-flex cursor-pointer list-none items-center gap-1 text-primary transition-all hover:underline group-open:hidden">
                     See more
                     <Icon name="chevron" className="h-4 w-4" />
                   </summary>
                   <div className="space-y-4">
-                    <p>
-                      My name is Cassandra de Winter, and before anything else, I&rsquo;m a mom to
-                      three young kids. My mornings begin early, balancing training with the
-                      familiar rhythm of little ones waking before the sun and finding their way
-                      into my bedroom. However, in the midst of motherhood, I&rsquo;ve found my way
-                      back to something that has always been part of who I am: movement,
-                      competition, and the drive to push my limits.
-                    </p>
-                    <p>
-                      In 2025, after a few years focused on growing my family, I returned to sport
-                      through endurance racing. What started as a quiet comeback quickly turned into
-                      something much bigger. Running became more than just training&mdash;it became a
-                      way to reconnect with myself, to rediscover strength, and to show my children
-                      what it looks like to chase something wholeheartedly.
-                    </p>
-                    <p>
-                      My background in national-level rugby and strength sport gave me a foundation,
-                      but stepping into the endurance world has felt like starting fresh in the most
-                      humbling and exciting way. I&rsquo;m new to this space, which means I bring a
-                      different kind of perspective&mdash;one rooted in gratitude, curiosity, and a
-                      deep respect for the process.
-                    </p>
-                    <p>
-                      My journey is about more than performance&mdash;it&rsquo;s about the life
-                      around it. Balancing high-level training with motherhood, finding purpose in
-                      both, and inviting others&mdash;especially women and mothers&mdash;to believe
-                      that there is still space for their own ambitions.
-                    </p>
+                    {profile.storyBody.map((paragraph) => (
+                      <p key={paragraph.slice(0, 32)}>{paragraph}</p>
+                    ))}
                   </div>
                 </details>
               </div>
             </article>
 
             {/* Personal Bests */}
-            <div id="results" className="card-lift order-3 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none">
+            <div
+              id="results"
+              className="card-lift order-3 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none"
+            >
               <CardHeading icon="timer">Personal Bests</CardHeading>
               <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-                {personalBests.map((best) => (
+                {profile.personalBests.map((best) => (
                   <div key={best.label} className="rounded-input bg-surface-container-low p-4">
                     <p className="label-bold text-on-surface-variant">{best.label}</p>
                     <p className="font-display text-xl font-bold text-on-surface">{best.value}</p>
@@ -529,27 +345,32 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             <div className="card-lift order-4 rounded-card bg-surface-container-lowest p-8 md:order-none">
               <CardHeading icon="medal">Career Highlights</CardHeading>
               <div className="mt-6 space-y-4">
-                {careerHighlights.map((highlight) => (
+                {profile.careerHighlights.map((highlight) => (
                   <HighlightDropdown key={highlight.title} {...highlight} />
                 ))}
 
-                <details className="group">
-                  <summary className="label-bold flex cursor-pointer list-none items-center justify-center gap-2 py-3 text-primary hover:underline">
-                    SEE MORE RESULTS
-                    <Icon name="chevron" className="h-5 w-5 transition-transform group-open:rotate-180" />
-                  </summary>
-                  <div className="mt-4 space-y-4">
-                    {moreResults.map((result) => (
-                      <HighlightDropdown
-                        key={result.title}
-                        title={result.title}
-                        detail={result.detail}
-                        tone="primary"
-                        images={result.images}
+                {profile.moreResults.length > 0 ? (
+                  <details className="group">
+                    <summary className="label-bold flex cursor-pointer list-none items-center justify-center gap-2 py-3 text-primary hover:underline">
+                      {profile.moreResultsLabel}
+                      <Icon
+                        name="chevron"
+                        className="h-5 w-5 transition-transform group-open:rotate-180"
                       />
-                    ))}
-                  </div>
-                </details>
+                    </summary>
+                    <div className="mt-4 space-y-4">
+                      {profile.moreResults.map((result) => (
+                        <HighlightDropdown
+                          key={result.title}
+                          title={result.title}
+                          detail={result.detail}
+                          tone="primary"
+                          images={result.images}
+                        />
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
               </div>
             </div>
 
@@ -557,28 +378,33 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             <section className="card-lift order-8 rounded-card bg-surface-container-lowest p-8 md:order-none">
               <CardHeading icon="history">Previous Races</CardHeading>
               <div className="mt-6 space-y-6">
-                {previousRaces.map((race) => (
+                {profile.previousRaces.map((race) => (
                   <RaceDropdown key={race.name} {...race} />
                 ))}
 
-                <details className="group mt-2">
-                  <summary className="label-bold flex cursor-pointer list-none items-center justify-center gap-2 py-3 text-primary hover:underline">
-                    SEE MORE RACES (2025 &amp; PRIOR)
-                    <Icon name="chevron" className="h-5 w-5 transition-transform group-open:rotate-180" />
-                  </summary>
-                  <div className="mt-4 space-y-6">
-                    {morePreviousRaces.map((race) => (
-                      <RaceDropdown
-                        key={race.name}
-                        name={race.name}
-                        date={race.date}
-                        result={race.result}
-                        tone="primary"
-                        images={race.images}
+                {profile.morePreviousRaces.length > 0 ? (
+                  <details className="group mt-2">
+                    <summary className="label-bold flex cursor-pointer list-none items-center justify-center gap-2 py-3 text-primary hover:underline">
+                      {profile.moreRacesLabel}
+                      <Icon
+                        name="chevron"
+                        className="h-5 w-5 transition-transform group-open:rotate-180"
                       />
-                    ))}
-                  </div>
-                </details>
+                    </summary>
+                    <div className="mt-4 space-y-6">
+                      {profile.morePreviousRaces.map((race) => (
+                        <RaceDropdown
+                          key={race.name}
+                          name={race.name}
+                          date={race.date}
+                          result={race.result}
+                          tone="primary"
+                          images={race.images}
+                        />
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
               </div>
             </section>
 
@@ -589,11 +415,8 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
                 Core Values
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                {coreValues.map((value) => (
-                  <div
-                    key={value.title}
-                    className="rounded-input border border-white/15 p-4"
-                  >
+                {profile.coreValues.map((value) => (
+                  <div key={value.title} className="rounded-input border border-white/15 p-4">
                     <p className="label-bold mb-1 text-primary-container">{value.title}</p>
                     <p className="text-xs text-white/70">{value.body}</p>
                   </div>
@@ -607,17 +430,21 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             {/* Community */}
             <div className="card-lift order-6 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
               <CardHeading icon="groups">Community</CardHeading>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="font-display text-3xl font-bold text-on-surface">12.4k</p>
-                  <p className="label-bold text-on-surface-variant">Followers</p>
-                </div>
+              <div className={`grid gap-4 ${profile.supportEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <div>
                   <p className="font-display text-3xl font-bold text-on-surface">
-                    {campaign?.supporterCount ?? 0}
+                    {profile.followers}
                   </p>
-                  <p className="label-bold text-on-surface-variant">Backers</p>
+                  <p className="label-bold text-on-surface-variant">Followers</p>
                 </div>
+                {profile.supportEnabled ? (
+                  <div>
+                    <p className="font-display text-3xl font-bold text-on-surface">
+                      {supportersCount}
+                    </p>
+                    <p className="label-bold text-on-surface-variant">Backers</p>
+                  </div>
+                ) : null}
               </div>
               <button
                 type="button"
@@ -628,11 +455,13 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
               </button>
             </div>
 
-            {/* 2026 Roadmap */}
+            {/* Roadmap */}
             <div className="card-lift order-5 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
-              <h3 className="mb-6 font-display text-xl font-bold text-on-surface">2026 Roadmap</h3>
+              <h3 className="mb-6 font-display text-xl font-bold text-on-surface">
+                {profile.roadmapTitle}
+              </h3>
               <div className="space-y-6">
-                {roadmap.map((event) => (
+                {profile.roadmap.map((event) => (
                   <div key={event.name}>
                     <p className="label-bold text-on-surface">{event.name}</p>
                     <p className="text-xs text-on-surface-variant">{event.date}</p>
@@ -646,7 +475,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Icon name="instagram" className="h-5 w-5 text-primary" />
-                  <h3 className="label-bold text-on-surface">@cassandradewinter</h3>
+                  <h3 className="label-bold text-on-surface">{profile.handle}</h3>
                 </div>
                 <button
                   type="button"
@@ -656,7 +485,7 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {instagramPosts.map((post, index) => (
+                {profile.instagramPosts.map((post, index) => (
                   <div
                     key={post.id}
                     className="group relative aspect-square cursor-pointer overflow-hidden rounded"
@@ -678,7 +507,10 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Live Training Feed */}
-            <div id="training" className="card-lift order-7 scroll-mt-32 space-y-6 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
+            <div
+              id="training"
+              className="card-lift order-7 scroll-mt-32 space-y-6 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none"
+            >
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-xl font-bold text-on-surface">
                   Live Training Feed
@@ -690,20 +522,20 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
               <div className="grid grid-cols-3 gap-2 rounded-input border-t-2 border-[#FC4C02] bg-surface-container-low p-3">
                 <div className="text-center">
                   <p className="text-[10px] font-bold uppercase tracking-[0.05em]">Weekly KM</p>
-                  <p className="font-bold">84.2</p>
+                  <p className="font-bold">{profile.training.weeklyKm}</p>
                 </div>
                 <div className="border-x border-outline-variant text-center">
                   <p className="text-[10px] font-bold uppercase tracking-[0.05em]">Time</p>
-                  <p className="font-bold">12h 15m</p>
+                  <p className="font-bold">{profile.training.weeklyTime}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-[10px] font-bold uppercase tracking-[0.05em]">Gain</p>
-                  <p className="font-bold">2,450m</p>
+                  <p className="font-bold">{profile.training.weeklyGain}</p>
                 </div>
               </div>
               <div className="cursor-pointer">
-                <p className="label-bold text-on-surface">Interval Session: Speed Work</p>
-                <p className="text-xs text-on-surface-variant">Yesterday • 12.0 km • 52:10</p>
+                <p className="label-bold text-on-surface">{profile.training.latestTitle}</p>
+                <p className="text-xs text-on-surface-variant">{profile.training.latestMeta}</p>
               </div>
               <button
                 type="button"
@@ -715,42 +547,47 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
             </div>
 
             {/* Recent Backers */}
-            <div className="card-lift order-10 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
-              <h3 className="font-display text-xl font-bold text-on-surface">Recent Backers</h3>
-              <div className="space-y-4">
-                {recentBackers.map((backer) => (
-                  <div key={backer.name} className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container-highest text-sm font-bold text-on-surface-variant">
-                      {backer.initials ? (
-                        backer.initials
-                      ) : (
-                        <Icon name={backer.icon ?? 'person'} className="h-5 w-5" />
-                      )}
+            {profile.supportEnabled && profile.recentBackers ? (
+              <div className="card-lift order-10 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
+                <h3 className="font-display text-xl font-bold text-on-surface">Recent Backers</h3>
+                <div className="space-y-4">
+                  {profile.recentBackers.map((backer) => (
+                    <div key={backer.name} className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container-highest text-sm font-bold text-on-surface-variant">
+                        {backer.initials ? (
+                          backer.initials
+                        ) : (
+                          <Icon name={backer.icon ?? 'person'} className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="flex-1 truncate">
+                        <p className="label-bold text-on-surface">{backer.name}</p>
+                        <p className="text-xs text-on-surface-variant">{backer.when}</p>
+                      </div>
+                      <div className="font-bold text-secondary">
+                        {formatCents(backer.amountCents)}
+                      </div>
                     </div>
-                    <div className="flex-1 truncate">
-                      <p className="label-bold text-on-surface">{backer.name}</p>
-                      <p className="text-xs text-on-surface-variant">{backer.when}</p>
-                    </div>
-                    <div className="font-bold text-secondary">
-                      {formatCents(backer.amountCents)}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="label-bold inline-flex w-full items-center justify-center gap-1 py-2 text-primary hover:underline"
+                >
+                  See all backers
+                  <ArrowGlyph className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                className="label-bold inline-flex w-full items-center justify-center gap-1 py-2 text-primary hover:underline"
-              >
-                See all backers
-                <ArrowGlyph className="h-4 w-4" />
-              </button>
-            </div>
+            ) : null}
 
             {/* Photo Gallery */}
-            <div id="gallery" className="card-lift order-12 scroll-mt-32 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
+            <div
+              id="gallery"
+              className="card-lift order-12 scroll-mt-32 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none"
+            >
               <CardHeading icon="gallery">Photo Gallery</CardHeading>
               <div className="grid grid-cols-2 gap-2">
-                {galleryPhotos.map((photo, index) => (
+                {profile.galleryPhotos.map((photo, index) => (
                   <div
                     key={photo}
                     className="relative aspect-square cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-90"
@@ -777,37 +614,37 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
         </div>
 
         {/* BACK CTA anchor target */}
-        <section
-          id="back"
-          className="relative mt-8 overflow-hidden rounded-card bg-inverse-surface px-6 py-12 text-center text-white md:px-16"
-        >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_center,_var(--color-primary-container)_1px,_transparent_1px)] [background-size:40px_40px]"
-          />
-          <div className="relative z-10 mx-auto max-w-xl">
-            <h2 className="font-display text-2xl font-bold md:text-3xl">
-              Back {athlete.fullName.split(' ')[0]}&rsquo;s 2026 season.
-            </h2>
-            <p className="mt-3 text-white/75">
-              Donations move directly to {athlete.fullName.split(' ')[0]} after a 3% platform fee —
-              with a receipt, a thank-you, and a post-event recap.
-            </p>
-            <Link
-              href="/sign-in"
-              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-            >
-              BACK THIS ATHLETE
-            </Link>
-          </div>
-        </section>
+        {profile.supportEnabled ? (
+          <section
+            id="back"
+            className="relative mt-8 overflow-hidden rounded-card bg-inverse-surface px-6 py-12 text-center text-white md:px-16"
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_center,_var(--color-primary-container)_1px,_transparent_1px)] [background-size:40px_40px]"
+            />
+            <div className="relative z-10 mx-auto max-w-xl">
+              <h2 className="font-display text-2xl font-bold md:text-3xl">
+                {profile.backCtaBlurb ?? `Back ${firstName}’s season.`}
+              </h2>
+              <p className="mt-3 text-white/75">
+                Donations move directly to {firstName} after a 3% platform fee — with a receipt, a
+                thank-you, and a post-event recap.
+              </p>
+              <Link
+                href="/sign-in"
+                className="mt-6 inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+              >
+                BACK THIS ATHLETE
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
         {/* GROWTH LOOP — every profile is a recruiting billboard */}
         <section className="mt-6 flex flex-col items-center justify-between gap-5 rounded-card border border-outline-variant bg-surface-container-low p-6 text-center md:flex-row md:p-8 md:text-left">
           <div>
-            <p className="label-bold text-primary">
-              Runners like {athlete.fullName.split(' ')[0]} call ARC home
-            </p>
+            <p className="label-bold text-primary">Runners like {firstName} call ARC home</p>
             <h3 className="mt-1 font-display text-xl font-bold text-on-surface md:text-2xl">
               Like what you see? Build your own.
             </h3>
@@ -831,12 +668,22 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
         style={{ bottom: 'calc(3.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="mx-auto flex max-w-[var(--spacing-container-max)] items-center gap-3">
-          <Link
-            href="#back"
-            className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-          >
-            Back this athlete
-          </Link>
+          {profile.supportEnabled ? (
+            <Link
+              href="#back"
+              className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+            >
+              Back this athlete
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+            >
+              <Icon name="person-add" className="h-4 w-4" />
+              Follow {firstName}
+            </button>
+          )}
           <ShareCard resume={shareResume} compact />
         </div>
       </div>
@@ -971,13 +818,7 @@ function RaceDropdown({
   );
 }
 
-function CardHeading({
-  icon,
-  children,
-}: {
-  icon: IconName;
-  children: React.ReactNode;
-}) {
+function CardHeading({ icon, children }: { icon: IconName; children: React.ReactNode }) {
   return (
     <h3 className="flex items-center gap-2 font-display text-xl font-bold text-on-surface">
       <Icon name={icon} className="h-6 w-6 text-primary" />

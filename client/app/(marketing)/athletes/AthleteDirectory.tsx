@@ -7,14 +7,9 @@ import { Badge } from '@/components/ui/Badge';
 import { mockAthletes, type MockAthlete } from '@/lib/mockAthletes';
 
 const SPORTS: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
-  { key: 'ALL', label: 'All Sports' },
-  { key: 'RUNNING', label: 'Running' },
-  { key: 'TRIATHLON', label: 'Triathlon' },
-  { key: 'CYCLING', label: 'Cycling' },
-  { key: 'CLIMBING', label: 'Climbing' },
-  { key: 'SKIING', label: 'Skiing' },
+  { key: 'ALL', label: 'All Runners' },
+  { key: 'RUNNING', label: 'Road, Trail & Ultra' },
   { key: 'TRACK_AND_FIELD', label: 'Track & Field' },
-  { key: 'SWIMMING', label: 'Swimming' },
 ];
 
 const COUNTRIES: Array<{ code: MockAthlete['countryCode'] | 'ALL'; label: string }> = [

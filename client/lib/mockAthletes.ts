@@ -1,19 +1,13 @@
 // Placeholder data used while the API is being wired up. The shapes mirror
 // what `fad-common`'s `athleteDirectoryItemSchema` will return.
+// Launch roster is runners-only; rich profile content lives in athleteProfiles.ts.
 
 export type MockAthlete = {
   athleteSlug: string;
   fullName: string;
   headline: string;
   bio: string;
-  primarySport:
-    | 'RUNNING'
-    | 'TRIATHLON'
-    | 'CYCLING'
-    | 'CLIMBING'
-    | 'SKIING'
-    | 'TRACK_AND_FIELD'
-    | 'SWIMMING';
+  primarySport: 'RUNNING' | 'TRACK_AND_FIELD';
   hometown: string;
   countryCode: 'CA' | 'US';
   heroMediaUrl: string;
@@ -69,6 +63,7 @@ export const mockAthletes: MockAthlete[] = [
     ],
     accomplishments: [
       { title: '2:34:11 — Boston Marathon', year: 2025 },
+      { title: '1:11:58 — Houston Half Marathon', year: 2026 },
       { title: 'Canadian 10K silver', year: 2024 },
       { title: 'NCAA Cross-Country All-American', year: 2022 },
     ],
@@ -76,130 +71,130 @@ export const mockAthletes: MockAthlete[] = [
   {
     athleteSlug: 'felix-tremblay',
     fullName: 'Félix Tremblay',
-    headline: 'Para-Nordic skier targeting Milano Cortina 2026',
-    bio: 'I lost my left leg in a snowmobile accident at 17. Five seasons later, I am two World Cup races away from clinching a Milano Cortina spot. I race for every kid sitting in a hospital wondering what is next.',
-    primarySport: 'CROSS_COUNTRY_SKIING' as unknown as 'SKIING',
+    headline: 'Para road racer chasing the Boston Marathon para division',
+    bio: 'I lost my left leg in a snowmobile accident at 17. Six years later, I race marathons on a running blade — a 3:04 in Montréal and a para 5000m national title so far. I run for every kid sitting in a hospital wondering what is next.',
+    primarySport: 'RUNNING',
     hometown: 'Saguenay, QC',
     countryCode: 'CA',
     heroMediaUrl:
-      'https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=1400&q=70',
+      'https://images.unsplash.com/photo-1508973379184-7517410fb0bc?auto=format&fit=crop&w=1400&q=70',
     values: ['Adaptive sport', 'Resilience', 'Bilingual outreach'],
     activeCampaignCount: 2,
     totalRaisedCents: 2475000,
     campaigns: [
       {
-        campaignSlug: 'world-cup-europe-block',
-        campaignTitle: 'Three-week World Cup tour — Norway, Sweden, Finland',
-        campaignType: 'TRAVEL',
+        campaignSlug: 'boston-para-2026',
+        campaignTitle: 'Boston Marathon — Para Division 2026',
+        campaignType: 'EVENT',
         campaignStory:
-          'Three races, three countries, three weeks. Hauling my sit-ski and bikes across Scandinavia is the most expensive part of the season — and it is where Olympic spots get won.',
+          'Boston has a para division and I have the qualifying time. Getting an athlete, a guide, and a spare running blade from Saguenay to Boylston Street is the expensive part.',
         targetAmountCents: 3600000,
         raisedAmountCents: 2100000,
         supporterCount: 67,
-        closesAt: '2025-11-30T23:59:59Z',
+        closesAt: '2026-03-15T23:59:59Z',
         costLines: [
-          { label: 'Flights + sit-ski cargo fees', amountCents: 1500000 },
-          { label: '3 weeks accommodation', amountCents: 1200000 },
-          { label: 'Wax tech + service team', amountCents: 600000 },
-          { label: 'Ground transport', amountCents: 300000 },
+          { label: 'Flights + travel for athlete and guide', amountCents: 1400000 },
+          { label: 'Race-week accommodation', amountCents: 1100000 },
+          { label: 'Prosthetist support + blade servicing', amountCents: 700000 },
+          { label: 'Physio + recovery block', amountCents: 400000 },
         ],
       },
       {
-        campaignSlug: 'new-sit-ski',
-        campaignTitle: 'New race sit-ski',
+        campaignSlug: 'new-running-blade',
+        campaignTitle: 'New carbon running blade',
         campaignType: 'GEAR',
         campaignStory:
-          'My current ski is four seasons old. The new carbon model is 2.1 kg lighter and the difference at the top of a 5 km climb is enormous.',
+          'My current blade is three seasons and 8,000 km old. The new model returns more energy per stride — over a marathon, that is minutes.',
         targetAmountCents: 1200000,
         raisedAmountCents: 375000,
         supporterCount: 22,
         closesAt: null,
         costLines: [
-          { label: 'Race sit-ski', amountCents: 950000 },
-          { label: 'Custom seat moulding', amountCents: 250000 },
+          { label: 'Carbon running blade', amountCents: 950000 },
+          { label: 'Custom socket fitting', amountCents: 250000 },
         ],
       },
     ],
     accomplishments: [
-      { title: 'World Cup bronze, 15 km classic', year: 2025 },
-      { title: 'Canadian Para-Nordic champion', year: 2024 },
-      { title: 'Selected — Team Canada NextGen', year: 2023 },
+      { title: '1st Para Division, Montréal Marathon — 3:04:12', year: 2025 },
+      { title: 'Canadian Para 5000m champion (T64)', year: 2025 },
+      { title: 'Para course record, Québec City Half', year: 2024 },
     ],
   },
   {
     athleteSlug: 'priya-shah',
     fullName: 'Priya Shah',
-    headline: 'Lead climber prepping for the IFSC World Cup',
-    bio: 'I learned to climb on the prairie limestone outside Calgary. I am training in Innsbruck this winter to qualify for the World Cup tour — a place where Canadian women have never finished on a podium.',
-    primarySport: 'CLIMBING',
+    headline: 'Middle-distance runner chasing the Canadian 1500m standard',
+    bio: 'I learned to race on a gravel oval behind my school in northeast Calgary. Now I hold a U Sports 1500m title and a 4:11.38 PB — four seconds from the national standard, and closing.',
+    primarySport: 'TRACK_AND_FIELD',
     hometown: 'Calgary, AB',
     countryCode: 'CA',
     heroMediaUrl:
-      'https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&w=1400&q=70',
+      'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=70',
     values: ['Women in sport', 'South Asian representation', 'Education'],
     activeCampaignCount: 1,
     totalRaisedCents: 980000,
     campaigns: [
       {
-        campaignSlug: 'innsbruck-training-block',
-        campaignTitle: '8-week training block in Innsbruck',
-        campaignType: 'TRAINING',
+        campaignSlug: 'standard-chase-2026',
+        campaignTitle: 'The 4:07.50 season — meets, travel, coaching',
+        campaignType: 'SEASON',
         campaignStory:
-          'Innsbruck is where the World Cup field trains. Living and climbing there in February and March is the single biggest jump I can make this year.',
+          'Fast 1500s happen in fast fields, and fast fields mean flying to them. This season is Victoria, Vancouver, Toronto, and a European tune-up — chasing four seconds.',
         targetAmountCents: 2400000,
         raisedAmountCents: 980000,
         supporterCount: 31,
-        closesAt: '2026-01-20T23:59:59Z',
+        closesAt: '2026-06-01T23:59:59Z',
         costLines: [
-          { label: 'Flights + visa', amountCents: 250000 },
-          { label: '8 weeks training-camp lodging', amountCents: 1400000 },
-          { label: 'Gym access + coach', amountCents: 550000 },
-          { label: 'Physio + recovery', amountCents: 200000 },
+          { label: 'Meet travel + entries (5 meets)', amountCents: 1100000 },
+          { label: 'Coaching + track access', amountCents: 700000 },
+          { label: 'Physio + recovery', amountCents: 350000 },
+          { label: 'Spikes + kit', amountCents: 250000 },
         ],
       },
     ],
     accomplishments: [
-      { title: 'Canadian Lead Climbing champion', year: 2025 },
-      { title: 'Youth World Cup 4th place', year: 2023 },
-      { title: 'First Indo-Canadian on national team', year: 2022 },
+      { title: 'U Sports 1500m champion', year: 2025 },
+      { title: '4:11.38 1500m PB — Harry Jerome Classic', year: 2025 },
+      { title: 'Canadian U23 1500m silver', year: 2024 },
     ],
   },
   {
     athleteSlug: 'jordan-blackhorse',
     fullName: 'Jordan Blackhorse',
-    headline: 'Ironman 70.3 pro working toward Kona',
-    bio: 'I grew up on the Navajo Nation. I race triathlon to bring resources back to rural reservation kids who never see athletes who look like them on TV.',
-    primarySport: 'TRIATHLON',
+    headline: 'Trail ultrarunner with a golden ticket to Western States',
+    bio: 'I grew up on the Navajo Nation, where my grandfather woke me before dawn to run east toward the sunrise. Now I race 100-kilometre trails — 2nd overall at Black Canyon earned me a Western States spot, and I am carrying every rez kid who runs dirt roads at 5 a.m. with me.',
+    primarySport: 'RUNNING',
     hometown: 'Flagstaff, AZ',
     countryCode: 'US',
     heroMediaUrl:
-      'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1400&q=70',
+      'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=1400&q=70',
     values: ['Indigenous representation', 'Rural outreach', 'Healthy living'],
     activeCampaignCount: 1,
     totalRaisedCents: 1230000,
     campaigns: [
       {
-        campaignSlug: 'ironman-70-3-worlds',
-        campaignTitle: 'Ironman 70.3 World Championship — Marbella',
+        campaignSlug: 'western-states-2026',
+        campaignTitle: 'Western States 100 — crew, travel, and the big dance',
         campaignType: 'EVENT',
         campaignStory:
-          'I earned a pro slot at Worlds. Marbella is 6,000 km away from my house and the season is already over my hotel-bill budget.',
+          'A golden ticket gets you to the start line, not through 100 miles. I need a crew of four, pacers, lodging in Olympic Valley, and a month at altitude to arrive ready.',
         targetAmountCents: 3200000,
         raisedAmountCents: 1230000,
-        supporterCount: 41,
-        closesAt: '2026-09-01T23:59:59Z',
+        supporterCount: 89,
+        closesAt: '2026-06-01T23:59:59Z',
         costLines: [
-          { label: 'Race entry + bike shipping', amountCents: 900000 },
-          { label: 'Flights (FLG ↔ AGP)', amountCents: 1400000 },
-          { label: '8 nights accommodation', amountCents: 700000 },
-          { label: 'Race-week nutrition + recovery', amountCents: 200000 },
+          { label: 'Crew travel + lodging (4 people)', amountCents: 1500000 },
+          { label: 'Altitude camp — Olympic Valley', amountCents: 900000 },
+          { label: 'Coaching + physio block', amountCents: 500000 },
+          { label: 'Race nutrition + gear', amountCents: 300000 },
         ],
       },
     ],
     accomplishments: [
-      { title: 'Ironman 70.3 Indian Wells pro podium', year: 2025 },
-      { title: 'US Triathlon Elite Nationals 6th', year: 2024 },
-      { title: 'NCAA Division II All-American', year: 2021 },
+      { title: '2nd Overall, Black Canyon 100K — Golden Ticket', year: 2026 },
+      { title: '1st Overall, Canyon de Chelly Ultra 55K', year: 2025 },
+      { title: '1st Overall, Flagstaff Sky Peaks 50K', year: 2025 },
     ],
   },
   {
@@ -240,6 +235,26 @@ export const mockAthletes: MockAthlete[] = [
       { title: '1st Overall & course record, Lost Soul Ultra 100km', year: 2025 },
       { title: '1st Female, Royal Victoria Marathon — 2:39:50', year: 2025 },
       { title: '1st Female & course record, Black Spur Ultra 54km', year: 2025 },
+    ],
+  },
+  {
+    athleteSlug: 'emma-chen',
+    fullName: 'Emma Chen',
+    headline: 'Run-club captain training for her first marathon',
+    bio: 'Two years ago I could not run to the end of my block. A couch-to-5K plan, one very supportive Tuesday run club, and a 1:47 half marathon later — I am training for my first marathon. Proof that the person who starts from zero gets a story too.',
+    primarySport: 'RUNNING',
+    hometown: 'Vancouver, BC',
+    countryCode: 'CA',
+    heroMediaUrl:
+      'https://images.unsplash.com/photo-1540539234-c14a20fb7c7b?auto=format&fit=crop&w=1400&q=70',
+    values: ['Consistency', 'Community', 'Joy'],
+    activeCampaignCount: 0,
+    totalRaisedCents: 0,
+    campaigns: [],
+    accomplishments: [
+      { title: 'First sub-1:50 half — First Half Half Marathon', year: 2026 },
+      { title: 'First sub-50 10K — Eastside 10K', year: 2025 },
+      { title: 'First ever 5K — 31:06 and hooked', year: 2024 },
     ],
   },
 ];

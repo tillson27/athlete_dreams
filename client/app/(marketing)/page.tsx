@@ -32,27 +32,35 @@ const arcSteps: { number: string; title: string; body: string; icon: IconName }[
 const trendingAthletes: TrendingAthlete[] = [
   {
     name: 'Cassandra de Winter',
-    sport: 'Elite Endurance & Trail • Alberta, CAN',
+    sport: 'Elite Endurance & Trail • Lethbridge, CAN',
     image: img('1502904550040-7534597429ae', 760),
     highlight: '2:34:43 Marathon PB',
     followers: '12.4k',
     href: '/athletes/cassandra-de-winter',
   },
   {
-    name: 'Leo Vance',
-    sport: 'Elite Lead & Bouldering • London, UK',
-    image: img('1522163182402-834f871fd851', 760),
-    highlight: 'Lead World Cup finalist',
-    followers: '8.9k',
-    href: '/athletes',
+    name: 'Jordan Blackhorse',
+    sport: 'Trail & Ultra • Flagstaff, USA',
+    image: img('1476480862126-209bfaa8edc8', 760),
+    highlight: 'Western States Golden Ticket',
+    followers: '15.1k',
+    href: '/athletes/jordan-blackhorse',
   },
   {
-    name: 'Prince Emeka',
-    sport: 'IFBB Pro Bodybuilder • Toronto, CAN',
-    image: img('1571019613454-1cb2f99b2d8b', 760),
-    highlight: '3× Nationals podium',
-    followers: '21k',
-    href: '/athletes',
+    name: 'Maya Okafor',
+    sport: 'Road Marathon • Toronto, CAN',
+    image: img('1571008887538-b36bb32f4571', 760),
+    highlight: '2:34:11 Boston Marathon',
+    followers: '9.8k',
+    href: '/athletes/maya-okafor',
+  },
+  {
+    name: 'Emma Chen',
+    sport: 'Road Running • Vancouver, CAN',
+    image: img('1540539234-c14a20fb7c7b', 760),
+    highlight: 'First sub-1:50 half',
+    followers: '812',
+    href: '/athletes/emma-chen',
   },
 ];
 
@@ -86,11 +94,11 @@ const ledgerRemainingCents = 431000;
 
 const successStories = [
   {
-    name: 'Leo Vance',
-    sport: 'Track & Field • USA',
-    raisedCents: 3240000,
-    image: img('1461896836934-ffe607ba8211', 900),
-    href: '/athletes',
+    name: 'Félix Tremblay',
+    sport: 'Para Road Racing • Canada',
+    raisedCents: 2475000,
+    image: img('1508973379184-7517410fb0bc', 900),
+    href: '/athletes/felix-tremblay',
   },
   {
     name: 'Cassandra de Winter',
