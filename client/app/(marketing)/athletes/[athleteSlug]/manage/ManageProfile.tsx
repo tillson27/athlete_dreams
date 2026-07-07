@@ -1,65 +1,21 @@
 'use client';
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-type Highlight = {
-  id: string;
-  title: string;
-  date?: string;
-  detail: string;
-  resultsUrl?: string;
-  photos: string[];
-};
-type Race = {
-  id: string;
-  name: string;
-  date: string;
-  result: string;
-  resultsUrl?: string;
-  photos: string[];
-};
-type RoadmapItem = { id: string; name: string; date: string };
+import { findAthleteProfile } from '@/lib/athleteProfiles';
+import {
+  deriveEdits,
+  loadEdits,
+  saveEdits,
+  clearEdits,
+  type AthleteEdits,
+  type EditHighlight as Highlight,
+  type EditRace as Race,
+  type EditRoadmapItem as RoadmapItem,
+} from '@/lib/athleteEdits';
 
 const uid = () => Math.random().toString(36).slice(2, 10);
-
-const unsplash = (id: string) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=800&q=70`;
-
-// Seed the athlete's working lists. In-memory only until a backend is wired up.
-const seeds: Record<
-  string,
-  { highlights: Highlight[]; races: Race[]; roadmap: RoadmapItem[]; gallery: string[] }
-> = {
-  'cassandra-de-winter': {
-    gallery: [
-      unsplash('1508973379184-7517410fb0bc'),
-      unsplash('1530143311094-34d807799e8f'),
-      unsplash('1596727147705-61a532a659bd'),
-      unsplash('1552674605-db6ffd4facb5'),
-    ],
-    highlights: [
-      { id: uid(), title: '2026 Boston Marathon', date: 'Apr 20, 2026', detail: '1st Canadian Female (27th Overall) — 2:34:43', photos: [] },
-      { id: uid(), title: '2025 Lost Soul Ultra 100km', date: 'Sept 5, 2025', detail: '1st Overall (Course Record) — 10:03', photos: [] },
-      { id: uid(), title: '2025 Royal Victoria Marathon', date: 'Oct 12, 2025', detail: '1st Place Female — 2:39:50', photos: [] },
-      { id: uid(), title: '2025 Black Spur Ultra 54km', date: 'Aug 22, 2025', detail: '1st Place Female (Course Record) — 5:26:00', photos: [] },
-    ],
-    races: [
-      { id: uid(), name: 'Boston Marathon (Pro Start)', date: 'April 20, 2026', result: '1st Canadian Female — 2:34:43 (PB)', photos: [] },
-      { id: uid(), name: 'Moonlight Run 10K', date: 'March 21, 2026', result: '1st Female, CR — 35:26', photos: [] },
-      { id: uid(), name: 'Mesa Half Marathon', date: 'February 14, 2026', result: '4th Female — 1:12:54', photos: [] },
-      { id: uid(), name: 'Royal Victoria Marathon', date: 'Oct 12, 2025', result: '1st Female — 2:39:50', photos: [] },
-      { id: uid(), name: 'Lost Soul Ultra 100km', date: 'Sept 5–6, 2025', result: '1st Overall, CR — 10:03:12', photos: [] },
-      { id: uid(), name: 'Black Spur Ultra 54km', date: 'Aug 22–23, 2025', result: '1st Female, CR — 5:26:00', photos: [] },
-    ],
-    roadmap: [
-      { id: uid(), name: 'Edmonton Half Marathon', date: 'August 16, 2026' },
-      { id: uid(), name: 'Lost Soul 100-miler', date: 'Sept 11, 2026' },
-      { id: uid(), name: 'Toronto Waterfront Marathon', date: 'Oct 17-18, 2026' },
-    ],
-  },
-};
 
 const inputClass =
   'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/25';
@@ -84,12 +40,47 @@ export function ManageProfile({
   athleteName: string;
   initialCoverPhoto: string;
 }) {
-  const seed = seeds[athleteSlug] ?? { highlights: [], races: [], roadmap: [], gallery: [] };
-  const [highlights, setHighlights] = useState<Highlight[]>(seed.highlights);
-  const [races, setRaces] = useState<Race[]>(seed.races);
-  const [roadmap, setRoadmap] = useState<RoadmapItem[]>(seed.roadmap);
+  // Seed from the athlete's published profile, then hydrate any saved edits.
+  const published = useMemo<AthleteEdits>(() => {
+    const profile = findAthleteProfile(athleteSlug);
+    return profile ? deriveEdits(profile) : { highlights: [], races: [], roadmap: [], gallery: [] };
+  }, [athleteSlug]);
+
+  const [highlights, setHighlights] = useState<Highlight[]>(published.highlights);
+  const [races, setRaces] = useState<Race[]>(published.races);
+  const [roadmap, setRoadmap] = useState<RoadmapItem[]>(published.roadmap);
   const [coverPhoto, setCoverPhoto] = useState<string>(initialCoverPhoto);
-  const [gallery, setGallery] = useState<string[]>(seed.gallery);
+  const [gallery, setGallery] = useState<string[]>(published.gallery);
+  const skipNextPersist = useRef(true);
+
+  // Load any previously saved edits for this athlete (client-only, avoids SSR mismatch).
+  useEffect(() => {
+    const saved = loadEdits(athleteSlug);
+    if (saved) {
+      setHighlights(saved.highlights);
+      setRaces(saved.races);
+      setRoadmap(saved.roadmap);
+      setGallery(saved.gallery);
+    }
+  }, [athleteSlug]);
+
+  // Persist edits whenever they change (skipping the initial mount render).
+  useEffect(() => {
+    if (skipNextPersist.current) {
+      skipNextPersist.current = false;
+      return;
+    }
+    saveEdits(athleteSlug, { highlights, races, roadmap, gallery });
+  }, [athleteSlug, highlights, races, roadmap, gallery]);
+
+  const resetToPublished = () => {
+    clearEdits(athleteSlug);
+    setHighlights(published.highlights);
+    setRaces(published.races);
+    setRoadmap(published.roadmap);
+    setGallery(published.gallery);
+    setCoverPhoto(initialCoverPhoto);
+  };
 
   // Staged photos for the two "add" forms (previewed before the row is added).
   const [highlightPhotos, setHighlightPhotos] = useState<string[]>([]);
@@ -167,13 +158,23 @@ export function ManageProfile({
             Add races and achievements to {athleteName}&rsquo;s profile.
           </p>
         </div>
-        <Link
-          href={`/athletes/${athleteSlug}`}
-          className="label-bold inline-flex items-center gap-2 self-start rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container md:self-auto"
-        >
-          View public page
-          <Icon name="external" className="h-4 w-4" />
-        </Link>
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          <button
+            type="button"
+            onClick={resetToPublished}
+            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface-variant transition-colors hover:border-error hover:text-error"
+          >
+            <Icon name="history" className="h-4 w-4" />
+            Reset to published
+          </button>
+          <Link
+            href={`/athletes/${athleteSlug}`}
+            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
+          >
+            View public page
+            <Icon name="external" className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -388,7 +389,8 @@ export function ManageProfile({
       </div>
 
       <p className="mt-8 text-center text-xs text-on-surface-variant">
-        Changes are saved to your session only — connect your account to publish them.
+        Changes save to this browser and appear on your public profile. Uploaded photos stay on this
+        device until we add photo hosting.
       </p>
     </div>
   );
