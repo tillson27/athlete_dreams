@@ -129,10 +129,68 @@ const galleryPhotos = [
 
 const profileTabs = [
   { label: 'Story', href: '#story' },
+  { label: 'The Arc', href: '#arc' },
   { label: 'Results', href: '#results' },
   { label: 'Training', href: '#training' },
   { label: 'Gallery', href: '#gallery' },
 ];
+
+// Narrative timeline — the athlete's journey told as chapters, in her voice.
+type ArcChapter = {
+  era: string;
+  title: string;
+  icon: IconName;
+  tone: 'secondary' | 'tertiary' | 'primary';
+  body: string;
+  image?: string;
+  current?: boolean;
+};
+
+const arcChapters: ArcChapter[] = [
+  {
+    era: 'Before Arc',
+    title: 'National rugby',
+    icon: 'medal',
+    tone: 'secondary',
+    body: 'Before endurance, sport meant rugby — at the national level. Competition has always been part of who I am.',
+  },
+  {
+    era: '2020 – 2024',
+    title: 'Motherhood',
+    icon: 'heart',
+    tone: 'tertiary',
+    body: 'Three kids in a few short years. My mornings became early wake-ups and little ones finding their way into my bed. I stepped back from the start line — but never from the drive.',
+  },
+  {
+    era: '2025',
+    title: 'The return',
+    icon: 'history',
+    tone: 'primary',
+    image: '1502904550040-7534597429ae',
+    body: 'A quiet comeback through endurance racing. What began as a way to reconnect with myself quickly turned into something far bigger.',
+  },
+  {
+    era: '2025 – 2026',
+    title: 'The breakthrough',
+    icon: 'trophy',
+    tone: 'primary',
+    body: '1st Overall and a course record at the Lost Soul 100 km. 1st Canadian Female at Boston. The comeback became a breakthrough.',
+  },
+  {
+    era: 'Now',
+    title: 'What I’m chasing',
+    icon: 'flag',
+    tone: 'primary',
+    current: true,
+    body: 'The Lost Soul 100-miler this September — my biggest goal yet. I’m running it to show my kids what chasing something wholeheartedly looks like.',
+  },
+];
+
+const chapterTone: Record<'secondary' | 'tertiary' | 'primary', string> = {
+  secondary: 'bg-secondary',
+  tertiary: 'bg-tertiary',
+  primary: 'bg-primary',
+};
 
 export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
   const campaign = athlete.campaigns[0];
@@ -237,8 +295,78 @@ export function CassandraProfile({ athlete }: { athlete: MockAthlete }) {
           </div>
         </section>
 
+        {/* THE ARC — collapsible narrative timeline */}
+        <details id="arc" open className="group mt-8 scroll-mt-32 md:mt-16">
+          <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+            <div className="max-w-3xl">
+              <p className="label-bold text-primary">The Arc</p>
+              <h2 className="mt-2 font-display text-3xl font-bold text-on-surface md:text-4xl">
+                {athlete.fullName.split(' ')[0]}&rsquo;s journey
+              </h2>
+              <p className="mt-3 text-on-surface-variant">
+                From the rugby pitch to the podium — the chapters behind the athlete, in her own
+                words.
+              </p>
+            </div>
+            <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-transform group-open:rotate-180">
+              <Icon name="chevron" className="h-5 w-5" />
+            </span>
+          </summary>
+
+          <ol className="relative mt-10">
+            <span
+              aria-hidden="true"
+              className="absolute bottom-8 left-[19px] top-3 w-0.5 rounded-full bg-gradient-to-b from-secondary via-primary to-primary-container"
+            />
+            {arcChapters.map((chapter) => (
+              <li key={chapter.title} className="relative flex gap-5 pb-8 last:pb-0">
+                <span
+                  className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ring-4 ring-surface ${chapterTone[chapter.tone]} ${
+                    chapter.current ? 'shadow-lg shadow-primary/30' : ''
+                  }`}
+                >
+                  <Icon name={chapter.icon} className="h-5 w-5" />
+                  {chapter.current ? (
+                    <span className="pulse-live absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-primary-container ring-2 ring-surface" />
+                  ) : null}
+                </span>
+                <div
+                  className={`flex-1 ${
+                    chapter.current
+                      ? 'rounded-card border border-primary/25 bg-primary-soft/25 p-5'
+                      : 'pt-1'
+                  }`}
+                >
+                  <span className="label-bold text-on-surface-variant">{chapter.era}</span>
+                  <h3 className="mt-1 font-display text-xl font-bold text-on-surface">
+                    {chapter.title}
+                    {chapter.current ? (
+                      <span className="ml-2 inline-flex items-center gap-1 rounded-pill bg-primary-container px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide text-on-primary">
+                        <span className="pulse-live h-1.5 w-1.5 rounded-full bg-white" />
+                        In progress
+                      </span>
+                    ) : null}
+                  </h3>
+                  <p className="mt-2 leading-relaxed text-on-surface-variant">{chapter.body}</p>
+                  {chapter.image ? (
+                    <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-input md:max-w-md">
+                      <Image
+                        src={img(chapter.image, 800)}
+                        alt={`${chapter.title} — ${athlete.fullName}`}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 420px"
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </details>
+
         {/* MAIN GRID — flat/interleaved on mobile (via order), two columns on desktop */}
-        <div className="mt-6 flex flex-col gap-6 md:grid md:grid-cols-12">
+        <div className="mt-8 flex flex-col gap-6 md:mt-16 md:grid md:grid-cols-12">
           {/* LEFT COLUMN */}
           <div className="contents md:col-span-8 md:block md:space-y-6">
             {/* Featured Video */}
@@ -785,6 +913,7 @@ type IconName =
   | 'link'
   | 'external'
   | 'edit'
+  | 'flag'
   | 'share';
 
 function Icon({ name, className }: { name: IconName; className?: string }) {
@@ -810,6 +939,7 @@ function Icon({ name, className }: { name: IconName; className?: string }) {
     link: <path d="M10.6 13.4a1 1 0 0 0 1.4 0l3-3a3 3 0 0 0-4.2-4.2l-1 1 1.4 1.4 1-1a1 1 0 1 1 1.4 1.4l-3 3a1 1 0 0 0 0 1.4Zm2.8-2.8a1 1 0 0 0-1.4 0l-3 3a3 3 0 0 0 4.2 4.2l1-1-1.4-1.4-1 1a1 1 0 1 1-1.4-1.4l3-3a1 1 0 0 0 0-1.4Z" />,
     external: <path d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3Zm-9 2h5v2H5v12h12v-5h2v7H3V5h2Z" />,
     edit: <path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z" />,
+    flag: <path d="M6 3v18H4V3h2Zm2 1h12l-2.5 4L20 12H8V4Z" />,
     share: <path d="M18 16a3 3 0 0 0-2.3 1.1l-6.9-3.5a3 3 0 0 0 0-1.2l6.9-3.5a3 3 0 1 0-.7-1.9l-6.9 3.5a3 3 0 1 0 0 5l6.9 3.5A3 3 0 1 0 18 16Z" />,
   };
 
