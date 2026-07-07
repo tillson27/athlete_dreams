@@ -24,7 +24,7 @@ const pillars: { icon: IconName; title: string; body: string; tone: string }[] =
     icon: 'shield',
     title: 'Look the part',
     tone: 'bg-secondary/10 text-secondary',
-    body: 'A clean, verified, professional profile that makes your running count — whether you run for medals or just for yourself.',
+    body: 'A verified, professional profile — with results synced from Strava and official race databases — that makes your running count, whether you run for medals or just for yourself.',
   },
   {
     icon: 'groups',
@@ -57,6 +57,24 @@ const steps = [
     number: '03',
     title: 'Bring your community',
     body: 'Share your profile and let the people who care about your running follow every step of the journey.',
+  },
+];
+
+const comparisons = [
+  {
+    old: 'Instagram',
+    oldBody: 'Your best race scrolls out of sight within a day.',
+    arc: 'A permanent home for your journey — the first thing people see.',
+  },
+  {
+    old: 'Strava',
+    oldBody: 'Splits and pace. The numbers, none of the meaning.',
+    arc: 'The story behind the numbers — why each run mattered.',
+  },
+  {
+    old: 'A link in bio',
+    oldBody: 'A name and a PR on a plain, forgettable page.',
+    arc: 'Verified, professional, and unmistakably yours.',
   },
 ];
 
@@ -155,8 +173,8 @@ export default function ForAthletesPage() {
                 A profile you’ll be proud to share.
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
-                Not a directory listing — an editorial home for who you are as a runner. Here’s what
-                yours could look like.
+                Not a directory listing — an editorial home for who you are as a runner. Here’s a
+                real one; yours could look just as good.
               </p>
             </div>
           </Reveal>
@@ -169,7 +187,7 @@ export default function ForAthletesPage() {
                 <span className="h-3 w-3 rounded-full bg-primary-container/70" />
                 <span className="h-3 w-3 rounded-full bg-success/70" />
                 <span className="ml-3 flex-1 truncate rounded-pill bg-surface px-3 py-1 text-xs text-on-surface-variant">
-                  arc.network/athletes/jordan-michaels
+                  arc.network/athletes/cassandra-de-winter
                 </span>
               </div>
               {/* mini profile */}
@@ -177,7 +195,7 @@ export default function ForAthletesPage() {
                 <div className="relative h-56 md:h-64">
                   <Image
                     src={img('1502904550040-7534597429ae', 1200)}
-                    alt="Example athlete profile"
+                    alt="Cassandra de Winter's ARC profile"
                     fill
                     sizes="(max-width: 768px) 100vw, 768px"
                     className="object-cover"
@@ -186,31 +204,34 @@ export default function ForAthletesPage() {
                   <div className="absolute inset-x-0 bottom-0 p-6 text-white">
                     <span className="mb-2 inline-flex items-center gap-1 rounded-pill bg-success px-2.5 py-1 text-[11px] font-bold tracking-[0.05em]">
                       <Icon name="check" className="h-3.5 w-3.5" />
-                      Verified Runner
+                      Verified Athlete
                     </span>
                     <h3 className="font-display text-2xl font-extrabold leading-tight md:text-3xl">
-                      Jordan Michaels
+                      Cassandra de Winter
                     </h3>
-                    <p className="label-bold mt-1 text-white/90">Half-marathoner · Austin, TX</p>
+                    <p className="label-bold mt-1 text-white/90">
+                      Elite Endurance &amp; Trail · Lethbridge, AB
+                    </p>
                   </div>
                 </div>
                 <div className="grid gap-4 p-6 sm:grid-cols-3">
                   <div className="rounded-input bg-surface-container-low p-4">
-                    <p className="label-bold text-on-surface-variant">Half PR</p>
-                    <p className="font-display text-xl font-bold text-on-surface">1:38:12</p>
+                    <p className="label-bold text-on-surface-variant">Marathon PB</p>
+                    <p className="font-display text-xl font-bold text-on-surface">2:34:43</p>
                   </div>
                   <div className="rounded-input bg-surface-container-low p-4">
                     <p className="label-bold text-on-surface-variant">Next up</p>
-                    <p className="font-display text-lg font-bold text-on-surface">Austin Marathon</p>
+                    <p className="font-display text-lg font-bold text-on-surface">
+                      Lost Soul 100-miler
+                    </p>
                   </div>
                   <div className="rounded-input bg-surface-container-low p-4">
-                    <p className="label-bold text-on-surface-variant">Following</p>
-                    <p className="font-display text-xl font-bold text-on-surface">248</p>
+                    <p className="label-bold text-on-surface-variant">Followers</p>
+                    <p className="font-display text-xl font-bold text-on-surface">12.4k</p>
                   </div>
                   <div className="sm:col-span-3">
                     <p className="border-l-4 border-primary pl-4 italic text-on-surface-variant">
-                      “I started running to clear my head after work. Two years later I’m chasing a
-                      sub-1:35 — and my crew is right there with me.”
+                      “I run to show my kids what chasing something wholeheartedly looks like.”
                     </p>
                   </div>
                 </div>
@@ -218,14 +239,54 @@ export default function ForAthletesPage() {
             </div>
           </Reveal>
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
+            <p className="text-sm text-on-surface-variant">
+              A real ARC profile —{' '}
+              <span className="font-semibold text-on-surface">Cassandra de Winter</span>. Yours could
+              look just as good.
+            </p>
             <Link
               href="/athletes/cassandra-de-winter"
-              className="inline-flex items-center gap-2 font-bold text-primary hover:underline"
+              className="mt-2 inline-flex items-center gap-2 font-bold text-primary hover:underline"
             >
-              See a real one — Cassandra’s profile
+              View the full profile
               <Icon name="arrow" className="h-4 w-4" />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* MORE THAN A BIO LINK */}
+      <section className="bg-surface py-20 md:py-28">
+        <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="label-bold text-primary">Why ARC</p>
+              <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
+                More than a bio link.
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
+                Instagram is a highlight reel. Strava is a logbook. Your running deserves a home that
+                holds the whole story — and looks the part.
+              </p>
+            </div>
+          </Reveal>
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
+            {comparisons.map((comparison, index) => (
+              <Reveal key={comparison.old} delay={index * 90} className="h-full">
+                <div className="flex h-full flex-col rounded-card border border-outline-variant/50 bg-surface-container-lowest p-8">
+                  <p className="font-semibold text-on-surface-variant/70 line-through">
+                    {comparison.old}
+                  </p>
+                  <p className="mt-1 text-on-surface-variant">{comparison.oldBody}</p>
+                  <div className="my-5 h-px bg-outline-variant/60" />
+                  <p className="label-bold text-primary">On ARC</p>
+                  <p className="mt-1 font-display text-lg font-bold text-on-surface">
+                    {comparison.arc}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
