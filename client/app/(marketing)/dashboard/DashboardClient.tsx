@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut, type Session } from '@/lib/session';
 import { findMockAthlete } from '@/lib/mockAthletes';
+import { slugifyName } from '@/lib/slugify';
+import { loadEdits, subscribeToEdits } from '@/lib/athleteEdits';
 import { OnboardingProvider, useOnboarding } from '@/app/register/_components/OnboardingContext';
 import { ProfilePreview } from '@/app/register/_components/ProfilePreview';
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -41,14 +43,19 @@ function DashboardInner({ session }: { session: Session }) {
 
   const displayName = profile.name || session.name;
   const firstName = displayName.trim().split(' ')[0] || 'there';
-  const slug =
-    displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'your-name';
+  const slug = slugifyName(displayName) || 'your-name';
   const profileExists = Boolean(findMockAthlete(slug));
-  const profileHref = profileExists ? `/athletes/${slug}` : '/athletes';
-  const manageHref = profileExists
-    ? `/athletes/${slug}/manage`
-    : '/athletes/cassandra-de-winter/manage';
+  // New athletes' public pages open with the pilot; until then their preview is the profile.
+  const profileHref = profileExists ? `/athletes/${slug}` : '#profile-preview';
+  const manageHref = `/athletes/${slug}/manage`;
   const publicUrl = `arc.network/athletes/${slug}`;
+
+  const [hasRaceEdits, setHasRaceEdits] = useState(false);
+  useEffect(() => {
+    const sync = () => setHasRaceEdits(Boolean(loadEdits(slug)));
+    sync();
+    return subscribeToEdits(slug, sync);
+  }, [slug]);
 
   const filledBests = profile.personalBests.filter((best) => best.distance && best.time);
   const checklist: { label: string; done: boolean; href: string; cta: string }[] = [
@@ -56,7 +63,7 @@ function DashboardInner({ session }: { session: Session }) {
     { label: 'Add personal bests', done: filledBests.length > 0, href: '/register/athletics?from=review', cta: 'Add bests' },
     { label: 'Pick your values', done: profile.values.length > 0, href: '/register/values-social?from=review', cta: 'Add values' },
     { label: 'Write a tagline', done: Boolean(profile.mission), href: '/register/values-social?from=review', cta: 'Add tagline' },
-    { label: 'Add career highlights & previous races', done: false, href: manageHref, cta: 'Open editor' },
+    { label: 'Add career highlights & previous races', done: hasRaceEdits, href: manageHref, cta: 'Open editor' },
   ];
   const completedCount = checklist.filter((item) => item.done).length;
   const completeness = Math.round((completedCount / checklist.length) * 100);
@@ -124,7 +131,12 @@ function DashboardInner({ session }: { session: Session }) {
           <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
             <h2 className="mb-4 font-display text-xl font-bold text-on-surface">Quick actions</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <ActionTile icon="person" title="View profile" subtitle="See your public page" href={profileHref} />
+              <ActionTile
+                icon="person"
+                title="View profile"
+                subtitle={profileExists ? 'See your public page' : 'Preview your page below'}
+                href={profileHref}
+              />
               <ActionTile icon="trophy" title="Edit profile" subtitle="Highlights & races" href={manageHref} />
               <button
                 type="button"
@@ -181,7 +193,7 @@ function DashboardInner({ session }: { session: Session }) {
 
         {/* Right column — the profile card */}
         <div className="lg:col-span-4">
-          <div className="sticky top-24 space-y-4">
+          <div id="profile-preview" className="sticky top-24 scroll-mt-24 space-y-4">
             <ProfilePreview sticky={false} showMeta={false} />
             <div className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-2 pl-4">
               <Icon name="link" className="h-5 w-5 shrink-0 text-on-surface-variant" />

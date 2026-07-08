@@ -76,7 +76,7 @@ export function RaceDropdown({
   date: string;
   result: string;
   tone: 'primary' | 'secondary';
-  links?: string[];
+  links?: { label: string; href: string }[];
   images: string[];
 }) {
   const accent = tone === 'secondary' ? 'border-secondary' : 'border-primary';
@@ -102,14 +102,17 @@ export function RaceDropdown({
       <div className={`space-y-4 rounded-br-input border-l-4 bg-surface-container-low/20 p-5 ${accent}`}>
         {links && links.length > 0 ? (
           <div className="flex flex-wrap gap-4">
-            {links.map((label) => (
-              <span
-                key={label}
-                className="inline-flex items-center gap-1 text-xs font-bold text-secondary"
+            {links.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-bold text-secondary hover:underline"
               >
                 <Icon name="link" className="h-4 w-4" />
-                {label}
-              </span>
+                {link.label}
+              </a>
             ))}
           </div>
         ) : null}

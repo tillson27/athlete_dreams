@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
@@ -57,6 +58,7 @@ const connections: Connection[] = [
 
 export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean }) {
   const { profile, update } = useOnboarding();
+  const [connected, setConnected] = useState<string[]>([]);
 
   const toggleValue = (value: string) => {
     update((current) => {
@@ -163,14 +165,15 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
                     <p className="text-sm text-on-surface-variant">{connection.description}</p>
                   </div>
                 </div>
-                {connection.connectedHandle ? (
+                {connection.connectedHandle || connected.includes(connection.name) ? (
                   <div className="flex items-center gap-2 rounded-full bg-surface-container px-4 py-2 text-sm font-bold text-on-surface">
                     <Icon name="check" className="h-4 w-4" />
-                    <span>{connection.connectedHandle}</span>
+                    <span>{connection.connectedHandle ?? 'Connected'}</span>
                   </div>
                 ) : (
                   <button
                     type="button"
+                    onClick={() => setConnected((prev) => [...prev, connection.name])}
                     className="rounded-pill border border-outline px-6 py-2 font-bold text-secondary transition-colors hover:bg-surface-container-low"
                   >
                     Connect

@@ -158,6 +158,13 @@ export function ManageProfile({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          <Link
+            href="/dashboard"
+            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
+          >
+            <Icon name="arrow-back" className="h-4 w-4" />
+            Dashboard
+          </Link>
           <button
             type="button"
             onClick={resetToPublished}

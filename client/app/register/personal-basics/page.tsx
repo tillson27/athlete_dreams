@@ -18,7 +18,7 @@ export default async function PersonalBasicsPage({
 
   return (
     <>
-      <RegHeader backHref="/register" stepLabel="Step 1 of 4" progressPercent={25} />
+      <RegHeader backHref="/register" stepLabel="Step 1 of 4" currentStep={1} />
 
       <main className="flex-grow py-12">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">

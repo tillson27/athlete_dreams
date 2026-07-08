@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function FinalReviewPage() {
   return (
     <>
-      <RegHeader backHref="/register/values-social" stepLabel="Step 4 of 4" />
+      <RegHeader backHref="/register/values-social" stepLabel="Step 4 of 4" currentStep={4} />
 
       <main className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-12 md:px-16">
         <ReviewSummary />

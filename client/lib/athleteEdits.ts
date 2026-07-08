@@ -22,7 +22,7 @@ export type EditRace = {
   date: string;
   result: string;
   resultsUrl?: string;
-  links?: string[];
+  links?: { label: string; href: string }[];
   photos: string[];
 };
 export type EditRoadmapItem = { id: string; name: string; date: string };

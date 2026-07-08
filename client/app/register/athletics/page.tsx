@@ -18,7 +18,7 @@ export default async function AthleticsPage({
 
   return (
     <>
-      <RegHeader backHref="/register/personal-basics" stepLabel="Step 2 of 4" progressPercent={50} />
+      <RegHeader backHref="/register/personal-basics" stepLabel="Step 2 of 4" currentStep={2} />
 
       <main className="flex-grow py-12">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">

@@ -1,13 +1,29 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { buildFeed, buildRacingSoon, type FeedItem } from '@/lib/communityFeed';
 import { useFollows } from '@/lib/follows';
 import { useSession } from '@/lib/session';
+import { createBrowserStore } from '@/lib/browserStore';
+import { Icon } from '@/components/ui/Icon';
 import { FollowButton } from '@/components/site/FollowButton';
 import type { MockAthlete } from '@/lib/mockAthletes';
+
+const cheersStore = createBrowserStore<Record<string, boolean>>('arc-cheers', 'arc-cheers-change');
+
+// All-day Google Calendar link for a parseable race date; null keeps the UI honest.
+function calendarHref(title: string, dateText: string): string | null {
+  const parsed = new Date(dateText);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const day = (offset: number) => {
+    const d = new Date(parsed);
+    d.setDate(d.getDate() + offset);
+    return d.toISOString().slice(0, 10).replace(/-/g, '');
+  };
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${day(0)}/${day(1)}`;
+}
 
 const DISCIPLINES: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
@@ -24,6 +40,9 @@ export function CommunityClient() {
   const [tab, setTab] = useState<'everyone' | 'following'>('everyone');
   const [discipline, setDiscipline] = useState<MockAthlete['primarySport'] | 'ALL'>('ALL');
   const [cheered, setCheered] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    setCheered(cheersStore.read() ?? {});
+  }, []);
 
   const visible = feed.filter((item) => {
     if (discipline !== 'ALL' && item.primarySport !== discipline) return false;
@@ -32,7 +51,11 @@ export function CommunityClient() {
   });
 
   const toggleCheer = (id: string) =>
-    setCheered((prev) => ({ ...prev, [id]: !prev[id] }));
+    setCheered((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      cheersStore.write(next);
+      return next;
+    });
 
   return (
     <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-10 md:px-16 md:py-12">
@@ -128,6 +151,18 @@ export function CommunityClient() {
                       {entry.event} · {entry.date}
                     </p>
                   </div>
+                  {calendarHref(`${entry.athleteName} — ${entry.event}`, entry.date) ? (
+                    <a
+                      href={calendarHref(`${entry.athleteName} — ${entry.event}`, entry.date)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Add race day to your calendar"
+                      title="Add to calendar"
+                      className="rounded-pill p-2 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
+                    >
+                      <Icon name="calendar" className="h-4 w-4" />
+                    </a>
+                  ) : null}
                   <FollowButton slug={entry.athleteSlug} variant="chip" />
                 </li>
               ))}

@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { findMockAthlete } from '@/lib/mockAthletes';
+import { slugifyName } from '@/lib/slugify';
 import { markPublished } from '@/lib/session';
 
 type Status = 'idle' | 'publishing' | 'published';
@@ -40,17 +41,21 @@ export function PublishPanel() {
   const confetti = useConfetti();
 
   const firstName = profile.name.trim().split(' ')[0] || 'Athlete';
-  const slug =
-    profile.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'your-name';
+  const hasName = profile.name.trim().length > 0;
+  const slug = slugifyName(profile.name) || 'your-name';
   const profileExists = Boolean(findMockAthlete(slug));
-  const profileHref = profileExists ? `/athletes/${slug}` : '/athletes';
-  const manageHref = profileExists
-    ? `/athletes/${slug}/manage`
-    : '/athletes/cassandra-de-winter/manage';
+  const manageHref = `/athletes/${slug}/manage`;
   const publicUrl = `arc.network/athletes/${slug}`;
 
+  const missing = [
+    !profile.bio && 'your story',
+    profile.personalBests.filter((best) => best.distance && best.time).length === 0 &&
+      'personal bests',
+    profile.values.length === 0 && 'values',
+  ].filter((entry): entry is string => Boolean(entry));
+
   const publish = () => {
-    if (!agreed) {
+    if (!agreed || !hasName) {
       setError(true);
       return;
     }
@@ -146,10 +151,10 @@ export function PublishPanel() {
               <Icon name="arrow-forward" className="h-5 w-5" />
             </Link>
             <Link
-              href={profileHref}
+              href={profileExists ? `/athletes/${slug}` : '/athletes'}
               className="label-bold flex flex-1 items-center justify-center rounded-lg border-2 border-outline px-6 py-4 text-on-surface transition-all hover:bg-surface-container"
             >
-              View your profile
+              {profileExists ? 'View your profile' : 'Explore the network'}
             </Link>
           </div>
         </div>
@@ -175,10 +180,23 @@ export function PublishPanel() {
           I agree to the Radical Transparency guidelines
         </label>
       </div>
+      {!hasName ? (
+        <p className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error">
+          Add your name in{' '}
+          <Link href="/register/personal-basics?from=review" className="underline">
+            Step 1
+          </Link>{' '}
+          before publishing.
+        </p>
+      ) : missing.length > 0 ? (
+        <p className="text-xs text-on-surface-variant">
+          Still missing {missing.join(', ')} — you can add them after publishing.
+        </p>
+      ) : null}
       <button
         type="button"
         onClick={publish}
-        disabled={status === 'publishing'}
+        disabled={status === 'publishing' || !hasName}
         className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
       >
         {status === 'publishing' ? (

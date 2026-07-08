@@ -9,6 +9,7 @@ import { FollowButton } from '@/components/site/FollowButton';
 import { ShareCard, type ShareResume } from './ShareCard';
 import { Icon, img, type IconName } from './profileParts';
 import { ProfileTabNav } from './ProfileTabNav';
+import { OwnerManageLink } from './OwnerManageLink';
 import {
   EditedHighlights,
   EditedRaces,
@@ -139,28 +140,16 @@ export function AthleteProfile({
             <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row">
               {profile.supportEnabled ? (
                 <Link
-                  href="#back"
+                  href="/support"
                   className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
                 >
                   Back this athlete
                 </Link>
               ) : (
-                <button
-                  type="button"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-                >
-                  <Icon name="person-add" className="h-4 w-4" />
-                  FOLLOW
-                </button>
+                <FollowButton slug={athlete.athleteSlug} variant="block" className="md:w-auto md:px-8" />
               )}
               <ShareCard resume={shareResume} />
-              <Link
-                href={`/athletes/${athlete.athleteSlug}/manage`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold text-secondary transition-colors hover:bg-surface-container-low active:scale-95"
-              >
-                <Icon name="edit" className="h-4 w-4" />
-                Athlete view
-              </Link>
+              <OwnerManageLink athleteSlug={athlete.athleteSlug} />
             </div>
           </div>
         </section>
@@ -276,19 +265,22 @@ export function AthleteProfile({
             {profile.featuredVideo ? (
               <section className="card-lift order-2 rounded-card bg-surface-container-lowest p-8 md:order-none">
                 <CardHeading icon="play">Featured Video</CardHeading>
-                <div className="group relative mt-6 aspect-video cursor-pointer overflow-hidden rounded-input bg-surface-container">
+                <div className="relative mt-6 aspect-video overflow-hidden rounded-input bg-surface-container">
                   <Image
                     src={img(profile.featuredVideo.image, 1200)}
                     alt="Featured video thumbnail"
                     fill
                     sizes="(max-width: 768px) 100vw, 800px"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/30">
-                    <span className="flex h-20 w-20 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md transition-transform duration-300 group-hover:scale-110">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <span className="flex h-20 w-20 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md">
                       <Icon name="play" className="h-9 w-9 text-white" />
                     </span>
                   </div>
+                  <span className="absolute bottom-4 right-4 rounded-pill bg-black/60 px-3 py-1 text-xs font-bold text-white">
+                    Film coming soon
+                  </span>
                   <span className="absolute bottom-4 left-4 rounded bg-primary px-3 py-1 text-xs font-bold text-on-primary">
                     {profile.featuredVideo.duration}
                   </span>
@@ -410,18 +402,23 @@ export function AthleteProfile({
                   <Icon name="instagram" className="h-5 w-5 text-primary" />
                   <h3 className="label-bold text-on-surface">{profile.handle}</h3>
                 </div>
-                <button
-                  type="button"
+                <a
+                  href={`https://instagram.com/${profile.handle.slice(1)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="rounded border border-primary px-3 py-1 text-xs font-bold text-primary transition-colors hover:bg-surface-container-low"
                 >
                   Follow
-                </button>
+                </a>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {profile.instagramPosts.map((post, index) => (
-                  <div
+                  <a
                     key={post.id}
-                    className="group relative aspect-square cursor-pointer overflow-hidden rounded bg-surface-container"
+                    href={`https://instagram.com/${profile.handle.slice(1)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative aspect-square overflow-hidden rounded bg-surface-container"
                   >
                     <Image
                       src={img(post.id, 300)}
@@ -434,7 +431,7 @@ export function AthleteProfile({
                       <Icon name="heart" className="h-4 w-4" />
                       <span className="text-[10px] font-bold">{post.likes}</span>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
@@ -470,13 +467,15 @@ export function AthleteProfile({
                 <p className="label-bold text-on-surface">{profile.training.latestTitle}</p>
                 <p className="text-xs text-on-surface-variant">{profile.training.latestMeta}</p>
               </div>
-              <button
-                type="button"
+              <a
+                href="https://www.strava.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="label-bold inline-flex w-full items-center justify-center gap-2 rounded-button border border-outline py-3 text-on-surface-variant transition-colors hover:bg-surface-container-low"
               >
                 Follow on Strava
                 <Icon name="external" className="h-4 w-4" />
-              </button>
+              </a>
             </div>
 
             {/* Recent Backers */}
@@ -503,13 +502,6 @@ export function AthleteProfile({
                     </div>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  className="label-bold inline-flex w-full items-center justify-center gap-1 py-2 text-primary hover:underline"
-                >
-                  See all backers
-                  <ArrowGlyph className="h-4 w-4" />
-                </button>
               </div>
             ) : null}
 
@@ -520,13 +512,6 @@ export function AthleteProfile({
             >
               <CardHeading icon="gallery">Photo Gallery</CardHeading>
               <EditedGallery slug={athlete.athleteSlug} defaults={editDefaults} />
-              <button
-                type="button"
-                className="label-bold inline-flex w-full items-center justify-center gap-1 py-2 text-primary hover:underline"
-              >
-                View Full Gallery
-                <ArrowGlyph className="h-4 w-4" />
-              </button>
             </div>
           </aside>
         </div>
@@ -550,7 +535,7 @@ export function AthleteProfile({
                 thank-you, and a post-event recap.
               </p>
               <Link
-                href="/sign-in"
+                href="/support"
                 className="mt-6 inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
               >
                 Back this athlete
@@ -588,7 +573,7 @@ export function AthleteProfile({
         <div className="mx-auto flex max-w-[var(--spacing-container-max)] items-center gap-3">
           {profile.supportEnabled ? (
             <Link
-              href="#back"
+              href="/support"
               className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
             >
               Back this athlete

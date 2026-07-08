@@ -26,9 +26,13 @@ const RACES_VISIBLE = 3;
 const toneFor = (index: number): 'primary' | 'secondary' =>
   index % 2 === 0 ? 'secondary' : 'primary';
 
-const raceLinks = (race: EditRace): string[] | undefined => {
-  const links = [...(race.links ?? [])];
-  if (race.resultsUrl) links.push('Results');
+const raceLinks = (race: EditRace): { label: string; href: string }[] | undefined => {
+  // Older saved edits stored links as plain strings; only keep well-formed entries.
+  const links = (race.links ?? []).filter(
+    (link): link is { label: string; href: string } =>
+      typeof link === 'object' && link !== null && Boolean(link.href),
+  );
+  if (race.resultsUrl) links.push({ label: 'Results', href: race.resultsUrl });
   return links.length > 0 ? links : undefined;
 };
 

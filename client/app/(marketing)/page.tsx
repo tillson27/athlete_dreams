@@ -167,7 +167,7 @@ export default function HomePage() {
                 href="/mission"
                 className="inline-flex items-center justify-center gap-2 rounded-button border border-white/20 bg-white/10 px-8 py-4 text-lg font-bold text-white backdrop-blur-md transition-all hover:bg-white/20"
               >
-                Watch mission video
+                Our mission
               </Link>
             </div>
           </div>

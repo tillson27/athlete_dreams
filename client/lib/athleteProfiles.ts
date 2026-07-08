@@ -34,7 +34,7 @@ export type RaceEntry = {
   date: string;
   result: string;
   tone: ProfileTone;
-  links?: string[];
+  links?: { label: string; href: string }[];
   images: string[];
 };
 
@@ -143,7 +143,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Monday, April 20, 2026',
         result: '1st Canadian Female — 2:34:43 (PB)',
         tone: 'secondary',
-        links: ['Official B.A.A. Results', 'Running Magazine Recap', 'CBC Article'],
+        links: [{ label: 'Official B.A.A. Results', href: 'https://www.baa.org/races/boston-marathon/results' }, { label: 'Running Magazine Recap', href: 'https://runningmagazine.ca' }, { label: 'CBC Article', href: 'https://www.cbc.ca/sports' }],
         images: ['1540539234-c14a20fb7c7b'],
       },
       {
@@ -151,7 +151,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, March 21, 2026',
         result: '1st Female, CR — 35:26',
         tone: 'primary',
-        links: ['10K Results', 'Timing Page'],
+        links: [{ label: '10K Results', href: 'https://www.sportstats.ca' }, { label: 'Timing Page', href: 'https://raceroster.com' }],
         images: ['1486739985386-d4fae04ca6f7'],
       },
       {
@@ -159,7 +159,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, February 14, 2026',
         result: '4th Female — 1:12:54',
         tone: 'secondary',
-        links: ['World Athletics Results', 'Official Mesa Marathon Results'],
+        links: [{ label: 'World Athletics Results', href: 'https://worldathletics.org' }, { label: 'Official Mesa Marathon Results', href: 'https://mesamarathon.com' }],
         images: ['1596727147705-61a532a659bd', '1533560904424-a0c61dc306fc'],
       },
     ],
@@ -318,7 +318,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Sunday, January 18, 2026',
         result: '8th Female — 1:11:58 (PB)',
         tone: 'secondary',
-        links: ['Official Houston Results', 'Strava Activity'],
+        links: [{ label: 'Official Houston Results', href: 'https://www.houstonmarathon.com' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1594882645126-14020914d58d'],
       },
       {
@@ -326,7 +326,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Sunday, October 19, 2025',
         result: '1st Canadian Female — 2:35:12',
         tone: 'primary',
-        links: ['Official Results', 'Canadian Running Recap'],
+        links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Canadian Running Recap', href: 'https://runningmagazine.ca' }],
         images: ['1530143311094-34d807799e8f'],
       },
       {
@@ -334,7 +334,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Monday, April 21, 2025',
         result: '14th Female — 2:34:11 (PB)',
         tone: 'secondary',
-        links: ['Official B.A.A. Results', 'World Athletics Profile'],
+        links: [{ label: 'Official B.A.A. Results', href: 'https://www.baa.org/races/boston-marathon/results' }, { label: 'World Athletics Profile', href: 'https://worldathletics.org' }],
         images: ['1540539234-c14a20fb7c7b', '1461896836934-ffe607ba8211'],
       },
     ],
@@ -486,7 +486,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Sunday, September 21, 2025',
         result: '1st Para Division — 3:04:12 (PB)',
         tone: 'secondary',
-        links: ['Official Results', 'Radio-Canada Feature'],
+        links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Radio-Canada Feature', href: 'https://ici.radio-canada.ca/sports' }],
         images: ['1540539234-c14a20fb7c7b'],
       },
       {
@@ -494,7 +494,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, June 28, 2025',
         result: 'Gold (T64) — 19:02',
         tone: 'primary',
-        links: ['Athletics Canada Results'],
+        links: [{ label: 'Athletics Canada Results', href: 'https://athletics.ca' }],
         images: ['1461896836934-ffe607ba8211'],
       },
       {
@@ -502,7 +502,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Sunday, April 27, 2025',
         result: '1st Para — 1:26:40 (CR)',
         tone: 'secondary',
-        links: ['Sportstats Results', 'Le Soleil Recap'],
+        links: [{ label: 'Sportstats Results', href: 'https://www.sportstats.ca' }, { label: 'Le Soleil Recap', href: 'https://www.lesoleil.com' }],
         images: ['1530143311094-34d807799e8f', '1452626038306-9aae5e071dd3'],
       },
     ],
@@ -654,7 +654,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Friday, June 13, 2025',
         result: '4th — 4:11.38 (PB)',
         tone: 'secondary',
-        links: ['World Athletics Results', 'Athletics Canada Recap'],
+        links: [{ label: 'World Athletics Results', href: 'https://worldathletics.org' }, { label: 'Athletics Canada Recap', href: 'https://athletics.ca' }],
         images: ['1461897104016-0b3b00cc81ee'],
       },
       {
@@ -662,7 +662,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, March 8, 2025',
         result: 'Gold — 4:14.02',
         tone: 'primary',
-        links: ['U Sports Results', 'The Gauntlet Feature'],
+        links: [{ label: 'U Sports Results', href: 'https://usports.ca' }, { label: 'The Gauntlet Feature', href: 'https://thegauntlet.ca' }],
         images: ['1461896836934-ffe607ba8211'],
       },
       {
@@ -670,7 +670,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, May 17, 2025',
         result: '6th — 15:52.10 (PB)',
         tone: 'secondary',
-        links: ['Official Results'],
+        links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }],
         images: ['1483721310020-03333e577078', '1461897104016-0b3b00cc81ee'],
       },
     ],
@@ -815,7 +815,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, February 14, 2026',
         result: '2nd Overall — 8:58:47 (Golden Ticket)',
         tone: 'secondary',
-        links: ['UltraSignup Results', 'iRunFar Coverage', 'Golden Ticket Announcement'],
+        links: [{ label: 'UltraSignup Results', href: 'https://ultrasignup.com' }, { label: 'iRunFar Coverage', href: 'https://www.irunfar.com' }, { label: 'Golden Ticket Announcement', href: 'https://www.wser.org' }],
         images: ['1465188162913-8fb5709d6d57'],
       },
       {
@@ -823,7 +823,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, October 11, 2025',
         result: '1st Overall — 4:31:26',
         tone: 'primary',
-        links: ['Official Results', 'Navajo Times Feature'],
+        links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Navajo Times Feature', href: 'https://navajotimes.com' }],
         images: ['1486218119243-13883505764c'],
       },
       {
@@ -831,7 +831,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, September 6, 2025',
         result: '1st Overall — 4:02:11',
         tone: 'secondary',
-        links: ['UltraSignup Results', 'Strava Activity'],
+        links: [{ label: 'UltraSignup Results', href: 'https://ultrasignup.com' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1519750157634-b6d493a0f77c', '1476480862126-209bfaa8edc8'],
       },
     ],
@@ -979,7 +979,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Sunday, February 8, 2026',
         result: '1:47:38 (PB) — first sub-1:50',
         tone: 'secondary',
-        links: ['Sportstats Results', 'Strava Activity'],
+        links: [{ label: 'Sportstats Results', href: 'https://www.sportstats.ca' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1530143311094-34d807799e8f'],
       },
       {
@@ -987,7 +987,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Saturday, September 13, 2025',
         result: '49:12 (PB) — first sub-50',
         tone: 'primary',
-        links: ['Official Results', 'Run club recap post'],
+        links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Run club recap post', href: 'https://www.instagram.com' }],
         images: ['1452626038306-9aae5e071dd3'],
       },
       {
@@ -995,7 +995,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         date: 'Sunday, November 16, 2025',
         result: '50:30 — negative split!',
         tone: 'secondary',
-        links: ['Sportstats Results'],
+        links: [{ label: 'Sportstats Results', href: 'https://www.sportstats.ca' }],
         images: ['1533560904424-a0c61dc306fc', '1483721310020-03333e577078'],
       },
     ],

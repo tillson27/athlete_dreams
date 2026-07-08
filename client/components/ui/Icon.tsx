@@ -30,6 +30,7 @@ const ICONS = {
   'add-circle': { node: <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2Z" /> },
   'bar-chart': { node: <path d="M4 20V10h3v10H4Zm6.5 0V4h3v16h-3ZM17 20v-7h3v7h-3Z" /> },
   book: { node: <path d="M6 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h13V3H6Zm0 2h11v12H6a2 2 0 0 0-1 .27V5Zm2 2v2h7V7H8Zm0 4v2h7v-2H8Z" /> },
+  calendar: { node: <path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm12 8v10H5V10h14Z" /> },
   camera: { node: <path d="M9 3h6l1.5 2H20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3.5L9 3Zm3 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z" /> },
   chevron: {
     svgFill: 'none',
