@@ -127,7 +127,7 @@ export function CommunityClient() {
         </div>
 
         {/* Sidebar */}
-        <aside className="space-y-6 lg:col-span-4">
+        <aside className="space-y-6 lg:sticky lg:top-24 lg:col-span-4 lg:self-start">
           <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
             <h2 className="mb-1 font-display text-lg font-bold text-on-surface">Racing soon</h2>
             <p className="mb-4 text-xs text-on-surface-variant">Be there when it counts.</p>

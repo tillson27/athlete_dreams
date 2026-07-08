@@ -94,24 +94,25 @@ const successStories = [
   {
     name: 'Félix Tremblay',
     sport: 'Para Road Racing • Canada',
-    raisedCents: 2475000,
+    highlight: '1st Para Division, Montréal Marathon',
+    followers: '6.2k',
+    quote: 'Running gave me back forward motion — literally. Every race, I carry the kids I met in the hospital with me.',
     image: img('1508973379184-7517410fb0bc', 900),
     href: '/athletes/felix-tremblay',
   },
   {
     name: 'Cassandra de Winter',
     sport: 'Ultramarathon • Canada',
-    raisedCents: 1890000,
+    highlight: 'Course record, Lost Soul Ultra 100km',
+    followers: '12.4k',
+    quote: 'I’m running the 100-miler to show my kids what chasing something wholeheartedly looks like.',
     image: img('1502904550040-7534597429ae', 900),
     href: '/athletes/cassandra-de-winter',
   },
 ];
 
-const successQuote =
-  'Arc bridged the gap between my training milestones and competition entry fees. I finally felt professional.';
-
 const whyToneClasses: Record<'primary' | 'secondary' | 'tertiary', string> = {
-  primary: 'bg-primary-container/15 text-primary-container',
+  primary: 'bg-primary-container/25 text-primary-container',
   secondary: 'bg-secondary/20 text-secondary-fixed-dim',
   tertiary: 'bg-white/10 text-white',
 };
@@ -149,7 +150,7 @@ export default function HomePage() {
 
         <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <div className="max-w-3xl">
-            <h1 className="font-display text-4xl font-extrabold leading-[0.98] tracking-tight text-white drop-shadow-sm md:text-6xl">
+            <h1 className="font-display text-balance text-4xl font-extrabold leading-[0.98] tracking-tight text-white drop-shadow-sm md:text-6xl">
               Your <span className="text-primary-container">athletic</span> journey. Your{' '}
               <span className="text-primary-container">Arc</span>. Told in one place.
             </h1>
@@ -278,31 +279,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* TRANSPARENCY BENTO */}
+      {/* BACKING TEASER — transparent support arrives after the story-first launch */}
       <section className="border-y border-outline-variant bg-surface-container-low py-24">
         <Reveal>
           <div className="mx-auto mb-16 w-full max-w-[var(--spacing-container-max)] px-5 text-center md:px-16">
             <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
-              World&rsquo;s most transparent crowdfunding platform
+              Backing your favourite runners is coming.
             </h2>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
-              We&rsquo;re building the future of athletic support through data-driven transparency
-              and next-generation community tools.
+              We&rsquo;re launching story-first. When backing opens, you&rsquo;ll fund a specific
+              race, trip, or training block — and see exactly where every dollar lands.
             </p>
           </div>
         </Reveal>
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <div className="grid gap-8 md:grid-cols-2">
-            {/* Radical Transparency */}
+            {/* Itemized-season preview */}
             <div className="flex flex-col items-start gap-6 rounded-card border border-outline-variant bg-white p-8 shadow-sm md:flex-row">
               <div className="flex-1">
-                <Icon name="bar-chart" className="mb-4 h-8 w-8 text-secondary" />
+                <Icon name="bar-chart" className="mb-4 h-8 w-8 text-primary" />
                 <h4 className="mb-3 font-display text-xl font-bold text-on-surface">
-                  Radical Transparency
+                  A season, itemized
                 </h4>
                 <p className="text-on-surface-variant">
-                  Every dollar tracked. Every expense audited. See exactly how your contribution
-                  fuels the athlete&rsquo;s journey through real-time expense ledgers and reporting.
+                  Every campaign will be an itemized season — race entries, travel, coaching. You
+                  back the exact thing you want to make happen.
                 </p>
               </div>
               <div className="w-full rounded-input bg-surface-container p-4 text-sm md:w-64">
@@ -313,52 +314,33 @@ export default function HomePage() {
                 {ledgerLines.map((line) => (
                   <div key={line.label} className="flex justify-between py-1">
                     <span>{line.label}</span>
-                    <span className="text-secondary">&minus;{formatCents(line.amountCents)}</span>
+                    <span className="text-on-surface-variant">{formatCents(line.amountCents)}</span>
                   </div>
                 ))}
                 <div className="mt-2 flex justify-between border-t border-outline-variant pt-2 font-bold text-on-surface">
-                  <span>Remaining Balance</span>
+                  <span>Season total</span>
                   <span>{formatCents(ledgerRemainingCents)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Direct Connection */}
-            <div className="flex flex-col justify-center rounded-card border border-secondary bg-secondary p-8 text-white shadow-sm">
-              <Icon name="hub" className="mb-6 h-9 w-9" />
-              <h4 className="mb-4 font-display text-2xl font-bold">Direct Connection</h4>
-              <p className="text-lg leading-relaxed text-white/90">
-                Bypass the middleman. Your support goes directly to the athlete, creating a
-                measurable impact that you can follow from training to the podium.
-              </p>
-            </div>
-
-            {/* Measurable Impact */}
-            <div className="rounded-card border border-outline-variant bg-white p-8 shadow-sm">
-              <Icon name="insights" className="mb-4 h-8 w-8 text-primary" />
-              <h4 className="mb-3 font-display text-xl font-bold text-on-surface">
-                Measurable Impact
+            {/* Until-then card */}
+            <div className="flex flex-col justify-center rounded-card bg-inverse-surface p-8 text-white shadow-sm">
+              <Icon name="heart" className="mb-6 h-9 w-9 text-primary-container" />
+              <h4 className="mb-4 font-display text-2xl font-bold">
+                Until then, follow the journey.
               </h4>
-              <p className="text-on-surface-variant">
-                We track performance metrics alongside funding. Witness the correlation between
-                financial stability and athletic breakthroughs.
+              <p className="text-lg leading-relaxed text-white/80">
+                The runners you follow today are the ones you&rsquo;ll be able to back tomorrow —
+                and they&rsquo;ll see you in their corner from day one.
               </p>
-            </div>
-
-            {/* Professional Momentum */}
-            <div className="flex flex-col items-center gap-6 rounded-card border border-outline-variant bg-white p-8 shadow-sm md:flex-row">
-              <div className="flex-1">
-                <h4 className="mb-3 font-display text-xl font-bold text-on-surface">
-                  Professional Momentum
-                </h4>
-                <p className="text-on-surface-variant">
-                  A disciplined environment that mirrors the precision of elite sports. No clutter,
-                  just performance.
-                </p>
-              </div>
-              <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-xl border-4 border-secondary">
-                <span className="pulse-live font-display text-lg font-bold text-secondary">LIVE</span>
-              </div>
+              <Link
+                href="/support"
+                className="label-bold mt-6 inline-flex w-fit items-center gap-2 rounded-button bg-primary-container px-6 py-3 text-on-primary transition-colors hover:bg-primary"
+              >
+                How backing will work
+                <Icon name="arrow" className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>
@@ -373,7 +355,7 @@ export default function HomePage() {
                 Success Stories
               </h2>
               <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
-                Witness the real-world impact of radical transparency and direct fan support.
+                Real runners, real arcs — journeys unfolding on ARC right now.
               </p>
             </div>
           </Reveal>
@@ -401,14 +383,18 @@ export default function HomePage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="label-bold text-on-surface-variant">Raised</p>
+                      <p className="label-bold text-on-surface-variant">Followers</p>
                       <p className="font-display text-xl font-bold text-on-surface">
-                        {formatCents(story.raisedCents)}
+                        {story.followers}
                       </p>
                     </div>
                   </div>
+                  <p className="label-bold mb-4 inline-flex items-center gap-2 rounded-pill bg-surface-container-low px-3 py-1.5 text-on-surface">
+                    <Icon name="medal" className="h-4 w-4 text-primary" />
+                    {story.highlight}
+                  </p>
                   <blockquote className="mb-6 border-l-4 border-primary pl-4 italic text-on-surface-variant">
-                    &ldquo;{successQuote}&rdquo;
+                    &ldquo;{story.quote}&rdquo;
                   </blockquote>
                   <Link
                     href={story.href}
@@ -435,24 +421,24 @@ export default function HomePage() {
           />
           <div className="relative z-10 mx-auto max-w-2xl">
             <h2 className="mb-6 font-display text-3xl font-bold text-white md:text-5xl">
-              Ready to back the next champion?
+              Ready to follow the next great story?
             </h2>
             <p className="mb-10 text-lg leading-relaxed text-white/70">
-              Join over 15,000 backers who are changing the landscape of professional sports through
-              radical transparency.
+              Runners are telling their whole arc on ARC — the comebacks, the 5 a.m. miles, the
+              breakthroughs. Every follow puts someone in their corner.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link
                 href="/athletes"
-                className="inline-flex items-center justify-center rounded-button bg-white px-10 py-4 text-sm font-bold tracking-[0.05em] text-inverse-surface transition-all hover:bg-white/90"
+                className="inline-flex items-center justify-center rounded-button bg-white px-10 py-4 text-sm font-bold text-inverse-surface transition-all hover:bg-white/90"
               >
-                Explore Athletes
+                Discover runners
               </Link>
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-button bg-primary-container px-10 py-4 text-sm font-bold tracking-[0.05em] text-on-primary transition-all hover:bg-primary active:scale-95"
+                className="inline-flex items-center justify-center rounded-button bg-primary-container px-10 py-4 text-sm font-bold text-on-primary transition-all hover:bg-primary active:scale-95"
               >
-                Apply as Athlete
+                Start your story
               </Link>
             </div>
           </div>

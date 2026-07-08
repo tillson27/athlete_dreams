@@ -23,6 +23,11 @@ export function Reveal({
       setShown(true);
       return;
     }
+    // Already in view on mount (mid-page landings, restored scroll): show now.
+    if (element.getBoundingClientRect().top < window.innerHeight) {
+      setShown(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

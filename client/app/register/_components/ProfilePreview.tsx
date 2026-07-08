@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { Icon } from '@/components/ui/Icon';
 import { useOnboarding } from './OnboardingContext';
+import { useSession } from '@/lib/session';
+import { slugifyName } from '@/lib/slugify';
 
 const previewPhoto =
   'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=1000&q=70';
@@ -15,8 +17,10 @@ export function ProfilePreview({
   showMeta?: boolean;
 }) {
   const { profile } = useOnboarding();
-  const { name, discipline, location, bio, mission, values, personalBests } = profile;
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'your-name';
+  const { session } = useSession();
+  const { discipline, location, bio, mission, values, personalBests } = profile;
+  const name = profile.name || session?.name || '';
+  const slug = slugifyName(name) || 'your-name';
   const filledBests = personalBests.filter((best) => best.distance && best.time).slice(0, 3);
 
   return (
