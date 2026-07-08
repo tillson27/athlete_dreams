@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createBrowserStore } from '@/lib/browserStore';
 
 export type PersonalBest = { id: string; distance: string; time: string };
 
@@ -24,15 +25,22 @@ const emptyProfile: OnboardingProfile = {
   mission: '',
 };
 
+type OnboardingPatch =
+  | Partial<OnboardingProfile>
+  | ((current: OnboardingProfile) => Partial<OnboardingProfile>);
+
 type OnboardingContextValue = {
   profile: OnboardingProfile;
-  update: (patch: Partial<OnboardingProfile>) => void;
+  update: (patch: OnboardingPatch) => void;
   reset: () => void;
 };
 
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 
-const STORAGE_KEY = 'arc-onboarding-profile';
+const store = createBrowserStore<Partial<OnboardingProfile>>(
+  'arc-onboarding-profile',
+  'arc-onboarding-profile-change',
+);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<OnboardingProfile>(emptyProfile);
@@ -40,26 +48,22 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   // Rehydrate the in-progress profile so it survives step-to-step navigation and reloads.
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setProfile({ ...emptyProfile, ...JSON.parse(raw) });
-    } catch {
-      /* storage unavailable — start fresh */
-    }
+    const saved = store.read();
+    if (saved) setProfile({ ...emptyProfile, ...saved });
     setHydrated(true);
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-    } catch {
-      /* storage unavailable — skip persistence */
-    }
+    store.write(profile);
   }, [profile, hydrated]);
 
-  const update = (patch: Partial<OnboardingProfile>) =>
-    setProfile((current) => ({ ...current, ...patch }));
+  // Accepts a functional patch so rapid successive updates never read stale state.
+  const update = (patch: OnboardingPatch) =>
+    setProfile((current) => ({
+      ...current,
+      ...(typeof patch === 'function' ? patch(current) : patch),
+    }));
   const reset = () => setProfile(emptyProfile);
 
   return (

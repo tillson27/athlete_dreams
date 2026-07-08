@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Icon } from './Icon';
+import { Icon } from '@/components/ui/Icon';
 
 export function EditReturnBanner() {
   return (

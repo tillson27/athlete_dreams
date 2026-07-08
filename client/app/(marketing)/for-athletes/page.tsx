@@ -1,17 +1,15 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 import { Reveal } from '@/components/site/Reveal';
+import { Icon, type IconName } from '@/components/ui/Icon';
+import { unsplashPhoto as img } from '@/lib/unsplash';
 
 export const metadata: Metadata = {
   title: 'For Athletes — Your professional running home',
   description:
     'Every runner has a story worth telling. ARC is the professional home for your running journey — your races, milestones, and community. Whatever your pace.',
 };
-
-const img = (id: string, width = 1200) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=70`;
 
 const pillars: { icon: IconName; title: string; body: string; tone: string }[] = [
   {
@@ -203,7 +201,7 @@ export default function ForAthletesPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-6 text-white">
                     <span className="mb-2 inline-flex items-center gap-1 rounded-pill bg-success px-2.5 py-1 text-[11px] font-bold tracking-[0.05em]">
-                      <Icon name="check" className="h-3.5 w-3.5" />
+                      <Icon name="check-badge" className="h-3.5 w-3.5" />
                       Verified Athlete
                     </span>
                     <h3 className="font-display text-2xl font-extrabold leading-tight md:text-3xl">
@@ -431,45 +429,5 @@ export default function ForAthletesPage() {
         </div>
       </section>
     </>
-  );
-}
-
-type IconName = 'book' | 'shield' | 'groups' | 'arrow' | 'check';
-
-function Icon({ name, className }: { name: IconName; className?: string }) {
-  const paths: Record<IconName, ReactNode> = {
-    book: (
-      <path d="M6 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h13V3H6Zm0 2h11v12H6a2 2 0 0 0-1 .27V5Zm2 2v2h7V7H8Zm0 4v2h7v-2H8Z" />
-    ),
-    shield: (
-      <path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm-1 13-3-3 1.4-1.4L11 12.2l4.6-4.6L17 9l-6 6Z" />
-    ),
-    groups: (
-      <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-8 2c-3 0-6 1.5-6 4.5V20h8v-2.5c0-1.2.5-2.3 1.3-3.2A9.6 9.6 0 0 0 8 13Zm8 0c-.7 0-1.4.1-2 .2 1.2 1 2 2.3 2 3.8V20h6v-2.5c0-3-3-4.5-6-4.5Z" />
-    ),
-    arrow: (
-      <path
-        d="M4 10h12m-4-4 4 4-4 4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    ),
-    check: (
-      <path d="M10 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm3.86 6.39-4.6 4.6-2.13-2.12a.9.9 0 1 0-1.27 1.27l2.77 2.77a.9.9 0 0 0 1.27 0l5.23-5.23a.9.9 0 1 0-1.27-1.27Z" />
-    ),
-  };
-  const isStroke = name === 'arrow';
-  return (
-    <svg
-      viewBox={isStroke ? '0 0 20 20' : '0 0 24 24'}
-      fill={isStroke ? 'none' : 'currentColor'}
-      aria-hidden="true"
-      className={className}
-    >
-      {paths[name]}
-    </svg>
   );
 }

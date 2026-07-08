@@ -1,14 +1,10 @@
 import { mockAthletes, type MockAthlete } from './mockAthletes';
 import { athleteProfiles } from './athleteProfiles';
+import { unsplashPhoto } from './unsplash';
 
 // Builds the community feed from real roster data — verified results and
 // upcoming races — rather than fabricated posts. Deterministic so SSR and the
 // client render identically (no hydration mismatch, no Math.random).
-
-const IMG = (id: string, width = 640) =>
-  id.startsWith('http')
-    ? id
-    : `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=70`;
 
 export type FeedKind = 'result' | 'roadmap';
 
@@ -46,7 +42,7 @@ export function buildFeed(): FeedItem[] {
   mockAthletes.forEach((athlete, index) => {
     const profile = athleteProfiles[athlete.athleteSlug];
     if (!profile) return;
-    const avatar = IMG(athlete.heroMediaUrl, 200);
+    const avatar = unsplashPhoto(athlete.heroMediaUrl, 200);
 
     const topHighlight = profile.careerHighlights[0];
     if (topHighlight) {
@@ -60,7 +56,7 @@ export function buildFeed(): FeedItem[] {
         kind: 'result',
         headline: `Logged a verified result at ${topHighlight.title}`,
         detail: topHighlight.detail,
-        photo: topHighlight.images[0] ? IMG(topHighlight.images[0]) : undefined,
+        photo: topHighlight.images[0] ? unsplashPhoto(topHighlight.images[0], 640) : undefined,
         when: RESULT_WHENS[index % RESULT_WHENS.length],
         cheers: 84 - index * 9,
         verified: true,
@@ -98,7 +94,7 @@ export function buildRacingSoon(): RacingSoon[] {
       return {
         athleteSlug: athlete.athleteSlug,
         athleteName: athlete.fullName,
-        avatar: IMG(athlete.heroMediaUrl, 160),
+        avatar: unsplashPhoto(athlete.heroMediaUrl, 160),
         event: nextRace.name,
         date: nextRace.date,
       };

@@ -6,7 +6,7 @@ import { useSession, signOut, type Session } from '@/lib/session';
 import { findMockAthlete } from '@/lib/mockAthletes';
 import { OnboardingProvider, useOnboarding } from '@/app/register/_components/OnboardingContext';
 import { ProfilePreview } from '@/app/register/_components/ProfilePreview';
-import { Icon, type RegIconName } from '@/app/register/_components/Icon';
+import { Icon, type IconName } from '@/components/ui/Icon';
 
 export function DashboardClient() {
   const { session, ready } = useSession();
@@ -198,7 +198,7 @@ function ActionTile({
   subtitle,
   href,
 }: {
-  icon: RegIconName;
+  icon: IconName;
   title: string;
   subtitle: string;
   href: string;

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Icon } from './Icon';
+import { Icon } from '@/components/ui/Icon';
 
 // Minimal transactional header used across the registration flow (Arc brand +
 // step progress). Distinct from the marketing SiteHeader, which is suppressed

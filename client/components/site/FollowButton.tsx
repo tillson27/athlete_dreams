@@ -1,6 +1,7 @@
 'use client';
 
 import { useFollows } from '@/lib/follows';
+import { Icon } from '@/components/ui/Icon';
 
 type Variant = 'hero' | 'block' | 'chip';
 
@@ -43,28 +44,11 @@ export function FollowButton({
       onClick={() => toggle(slug)}
       className={`${base[variant]} ${following ? followed[variant] : notFollowed[variant]} ${className ?? ''}`}
     >
-      {following ? (
-        <CheckIcon className={variant === 'chip' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-      ) : (
-        <AddIcon className={variant === 'chip' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-      )}
+      <Icon
+        name={following ? 'check' : 'person-add'}
+        className={variant === 'chip' ? 'h-3.5 w-3.5' : 'h-4 w-4'}
+      />
       {label}
     </button>
-  );
-}
-
-function AddIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M10 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.4 0-8 2.2-8 5v1h12v-1c0-2.8 0-5-4-5Zm9-3v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3Z" />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
-    </svg>
   );
 }

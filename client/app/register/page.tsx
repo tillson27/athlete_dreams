@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { RegHeader } from './_components/RegHeader';
-import { Icon, type RegIconName } from './_components/Icon';
+import { Icon, type IconName } from '@/components/ui/Icon';
 
 export const metadata: Metadata = {
   title: 'How to Build Your Epic',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const steps: {
   number: string;
-  icon: RegIconName;
+  icon: IconName;
   title: string;
   body: string;
 }[] = [
@@ -40,7 +40,7 @@ const steps: {
   },
 ];
 
-const bottomNav: { icon: RegIconName; label: string; active?: boolean }[] = [
+const bottomNav: { icon: IconName; label: string; active?: boolean }[] = [
   { icon: 'person', label: 'Profile' },
   { icon: 'medal', label: 'Stats' },
   { icon: 'sync', label: 'Social' },

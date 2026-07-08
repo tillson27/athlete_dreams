@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Icon } from './Icon';
+import { Icon } from '@/components/ui/Icon';
 import { useOnboarding } from './OnboardingContext';
 
 export function StartOverButton({ className }: { className?: string }) {

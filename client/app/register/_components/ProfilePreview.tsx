@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Icon } from './Icon';
+import { Icon } from '@/components/ui/Icon';
 import { useOnboarding } from './OnboardingContext';
 
 const previewPhoto =

@@ -1,13 +1,12 @@
 import type { RichAthleteProfile } from './athleteProfiles';
+import { unsplashPhoto } from './unsplash';
+import { createBrowserStore } from './browserStore';
 
 // Frontend-only edit store for the /manage editor. Seeds from the published
 // athleteProfiles data, then persists an athlete's edits to localStorage so
 // they survive reloads and show up on the public profile — until a real
 // backend replaces it. Uploaded photos use blob: URLs that can't survive a
 // reload, so they are stripped on save (photo hosting is a Path-B concern).
-
-const IMG = (id: string, width = 800) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=70`;
 
 export type EditHighlight = {
   id: string;
@@ -36,7 +35,7 @@ export type AthleteEdits = {
 };
 
 export const EDITS_EVENT = 'arc-athlete-edits-change';
-const keyFor = (slug: string) => `arc-manage-${slug}`;
+const storeFor = (slug: string) => createBrowserStore<AthleteEdits>(`arc-manage-${slug}`, EDITS_EVENT);
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 // Public API contract: derive an editable snapshot from published profile data.
@@ -46,7 +45,7 @@ export function deriveEdits(profile: RichAthleteProfile): AthleteEdits {
       id: uid(),
       title: highlight.title,
       detail: highlight.detail,
-      photos: highlight.images.map((image) => IMG(image)),
+      photos: highlight.images.map((image) => unsplashPhoto(image)),
     })),
     races: [
       ...profile.previousRaces.map((race) => ({
@@ -55,18 +54,18 @@ export function deriveEdits(profile: RichAthleteProfile): AthleteEdits {
         date: race.date,
         result: race.result,
         links: race.links,
-        photos: race.images.map((image) => IMG(image)),
+        photos: race.images.map((image) => unsplashPhoto(image)),
       })),
       ...profile.morePreviousRaces.map((race) => ({
         id: uid(),
         name: race.name,
         date: race.date,
         result: race.result,
-        photos: race.images.map((image) => IMG(image)),
+        photos: race.images.map((image) => unsplashPhoto(image)),
       })),
     ],
     roadmap: profile.roadmap.map((event) => ({ id: uid(), name: event.name, date: event.date })),
-    gallery: profile.galleryPhotos.map((image) => IMG(image)),
+    gallery: profile.galleryPhotos.map((image) => unsplashPhoto(image)),
   };
 }
 
@@ -81,28 +80,18 @@ function stripBlobPhotos(edits: AthleteEdits): AthleteEdits {
 }
 
 export function loadEdits(slug: string): AthleteEdits | null {
-  try {
-    const raw = window.localStorage.getItem(keyFor(slug));
-    return raw ? (JSON.parse(raw) as AthleteEdits) : null;
-  } catch {
-    return null;
-  }
+  return storeFor(slug).read();
 }
 
 export function saveEdits(slug: string, edits: AthleteEdits) {
-  try {
-    window.localStorage.setItem(keyFor(slug), JSON.stringify(stripBlobPhotos(edits)));
-    window.dispatchEvent(new Event(EDITS_EVENT));
-  } catch {
-    /* storage unavailable — edits simply won't persist */
-  }
+  storeFor(slug).write(stripBlobPhotos(edits));
 }
 
 export function clearEdits(slug: string) {
-  try {
-    window.localStorage.removeItem(keyFor(slug));
-    window.dispatchEvent(new Event(EDITS_EVENT));
-  } catch {
-    /* storage unavailable — nothing to clear */
-  }
+  storeFor(slug).write(null);
+}
+
+/** Notifies on any athlete's edit change (same-tab and cross-tab); returns unsubscribe. */
+export function subscribeToEdits(slug: string, listener: () => void): () => void {
+  return storeFor(slug).subscribe(listener);
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Icon, type RegIconName } from '../_components/Icon';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { StartOverButton } from '../_components/StartOverButton';
@@ -146,7 +146,7 @@ function ReviewCard({
   editHref,
   children,
 }: {
-  icon: RegIconName;
+  icon: IconName;
   title: string;
   editHref: string;
   children: React.ReactNode;

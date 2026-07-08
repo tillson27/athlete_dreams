@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Icon, type RegIconName } from '../_components/Icon';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 
@@ -24,7 +24,7 @@ const MAX_VALUES = 3;
 type Connection = {
   name: string;
   description: string;
-  icon?: RegIconName;
+  icon?: IconName;
   iconWrap: string;
   iconColor: string;
   connectedHandle?: string;
@@ -59,11 +59,15 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
   const { profile, update } = useOnboarding();
 
   const toggleValue = (value: string) => {
-    if (profile.values.includes(value)) {
-      update({ values: profile.values.filter((entry) => entry !== value) });
-    } else if (profile.values.length < MAX_VALUES) {
-      update({ values: [...profile.values, value] });
-    }
+    update((current) => {
+      if (current.values.includes(value)) {
+        return { values: current.values.filter((entry) => entry !== value) };
+      }
+      if (current.values.length < MAX_VALUES) {
+        return { values: [...current.values, value] };
+      }
+      return {};
+    });
   };
 
   return (

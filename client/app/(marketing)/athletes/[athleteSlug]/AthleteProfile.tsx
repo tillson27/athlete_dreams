@@ -93,7 +93,7 @@ export function AthleteProfile({
         <div aria-hidden="true" className="grain pointer-events-none absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-8 text-white md:px-16 md:py-12">
           <span className="mb-3 inline-flex items-center gap-1 rounded-pill bg-success px-3 py-1 text-xs font-bold tracking-[0.05em] text-white">
-            <Icon name="check" className="h-4 w-4" />
+            <Icon name="check-badge" className="h-4 w-4" />
             Verified Athlete
           </span>
           <h1 className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight drop-shadow-sm md:text-6xl lg:text-7xl">
@@ -179,7 +179,7 @@ export function AthleteProfile({
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 md:p-5">
             <span className="flex items-center gap-2.5 text-sm font-semibold text-on-surface">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success text-white">
-                <Icon name="check" className="h-4 w-4" />
+                <Icon name="check-badge" className="h-4 w-4" />
               </span>
               <span>
                 Verified by ARC
@@ -200,7 +200,7 @@ export function AthleteProfile({
                 key={proof.title}
                 className="flex items-start gap-2.5 rounded-input bg-surface-container-lowest p-3"
               >
-                <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                <Icon name="check-badge" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                 <div>
                   <p className="label-bold text-on-surface">{proof.title}</p>
                   <p className="mt-0.5 text-xs text-on-surface-variant">{proof.body}</p>

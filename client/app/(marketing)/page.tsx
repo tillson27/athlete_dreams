@@ -1,12 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 import { formatCents } from '@/lib/format';
 import { TrendingAthletes, type TrendingAthlete } from '@/components/site/TrendingAthletes';
 import { Reveal } from '@/components/site/Reveal';
-
-const img = (id: string, width = 1200) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=70`;
+import { unsplashPhoto as img } from '@/lib/unsplash';
+import { Icon, type IconName } from '@/components/ui/Icon';
 
 const arcSteps: { number: string; title: string; body: string; icon: IconName }[] = [
   {
@@ -462,65 +460,5 @@ export default function HomePage() {
         </Reveal>
       </section>
     </>
-  );
-}
-
-type IconName =
-  | 'person-add'
-  | 'target'
-  | 'groups'
-  | 'edu'
-  | 'heart'
-  | 'bar-chart'
-  | 'hub'
-  | 'insights'
-  | 'arrow';
-
-function Icon({ name, className }: { name: IconName; className?: string }) {
-  const paths: Record<IconName, ReactNode> = {
-    'person-add': (
-      <path d="M10 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.4 0-8 2.2-8 5v1h12v-1c0-2.8 0-5-4-5Zm9-3v-3h-2v3h-3v2h3v3h2v-3h3v-2h-3Z" />
-    ),
-    target: (
-      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
-    ),
-    groups: (
-      <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-8 2c-3 0-6 1.5-6 4.5V20h8v-2.5c0-1.2.5-2.3 1.3-3.2A9.6 9.6 0 0 0 8 13Zm8 0c-.7 0-1.4.1-2 .2 1.2 1 2 2.3 2 3.8V20h6v-2.5c0-3-3-4.5-6-4.5Z" />
-    ),
-    edu: (
-      <path d="M12 3 1 9l11 6 9-4.9V17h2V9L12 3Zm0 14L5 13.2v3.3l7 3.8 7-3.8v-3.3L12 17Z" />
-    ),
-    heart: (
-      <path d="M12 21s-7-4.35-9.5-8.5C.5 9 2 5.5 5.5 5.5c2 0 3.5 1.5 4.5 3 1-1.5 2.5-3 4.5-3 3.5 0 5 3.5 3 7C19 16.65 12 21 12 21Z" />
-    ),
-    'bar-chart': <path d="M4 20V10h3v10H4Zm6.5 0V4h3v16h-3ZM17 20v-7h3v7h-3Z" />,
-    hub: (
-      <path d="M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM4 5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm16 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-16 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm16 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM6 7.4l4.4 3.3-1.2 1.6L4.8 9 6 7.4Zm12 0L19.2 9l-4.4 3.3-1.2-1.6L18 7.4ZM9.2 13.7l1.2 1.6L6 18.6 4.8 17l4.4-3.3Zm5.6 0L19.2 17 18 18.6l-4.4-3.3 1.2-1.6Z" />
-    ),
-    insights: (
-      <path d="m3.5 15 5-5 4 4 7-7L21 8.4 12.5 17l-4-4-3.6 3.6L3.5 15Z" />
-    ),
-    arrow: (
-      <path
-        d="M4 10h12m-4-4 4 4-4 4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    ),
-  };
-
-  const isStroke = name === 'arrow';
-  return (
-    <svg
-      viewBox={isStroke ? '0 0 20 20' : '0 0 24 24'}
-      fill={isStroke ? 'none' : 'currentColor'}
-      aria-hidden="true"
-      className={className}
-    >
-      {paths[name]}
-    </svg>
   );
 }

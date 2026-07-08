@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { findAthleteProfile } from '@/lib/athleteProfiles';
 import {
   deriveEdits,
@@ -51,7 +52,7 @@ export function ManageProfile({
   const [roadmap, setRoadmap] = useState<RoadmapItem[]>(published.roadmap);
   const [coverPhoto, setCoverPhoto] = useState<string>(initialCoverPhoto);
   const [gallery, setGallery] = useState<string[]>(published.gallery);
-  const skipNextPersist = useRef(true);
+  const [hydrated, setHydrated] = useState(false);
 
   // Load any previously saved edits for this athlete (client-only, avoids SSR mismatch).
   useEffect(() => {
@@ -62,16 +63,14 @@ export function ManageProfile({
       setRoadmap(saved.roadmap);
       setGallery(saved.gallery);
     }
+    setHydrated(true);
   }, [athleteSlug]);
 
-  // Persist edits whenever they change (skipping the initial mount render).
+  // Persist edits whenever they change, once hydration has settled.
   useEffect(() => {
-    if (skipNextPersist.current) {
-      skipNextPersist.current = false;
-      return;
-    }
+    if (!hydrated) return;
     saveEdits(athleteSlug, { highlights, races, roadmap, gallery });
-  }, [athleteSlug, highlights, races, roadmap, gallery]);
+  }, [hydrated, athleteSlug, highlights, races, roadmap, gallery]);
 
   const resetToPublished = () => {
     clearEdits(athleteSlug);
@@ -528,10 +527,10 @@ function ReorderControls({
   return (
     <div className="flex flex-col">
       <button type="button" onClick={onUp} disabled={isFirst} aria-label="Move up" className={buttonClass}>
-        <Icon name="chevron" className="h-4 w-4 rotate-180" />
+        <Icon name="chevron-solid" className="h-4 w-4 rotate-180" />
       </button>
       <button type="button" onClick={onDown} disabled={isLast} aria-label="Move down" className={buttonClass}>
-        <Icon name="chevron" className="h-4 w-4" />
+        <Icon name="chevron-solid" className="h-4 w-4" />
       </button>
     </div>
   );
@@ -555,58 +554,5 @@ function EmptyState({ label }: { label: string }) {
     <li className="rounded-input border border-dashed border-outline-variant/60 p-4 text-center text-sm text-on-surface-variant">
       {label}
     </li>
-  );
-}
-
-type IconName =
-  | 'medal'
-  | 'history'
-  | 'flag'
-  | 'plus'
-  | 'trash'
-  | 'external'
-  | 'pencil'
-  | 'camera'
-  | 'close'
-  | 'chevron'
-  | 'info'
-  | 'link';
-
-function Icon({ name, className }: { name: IconName; className?: string }) {
-  const paths: Record<IconName, ReactNode> = {
-    medal: (
-      <path d="M12 2 8 8h8l-4-6Zm0 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm0 3 1.2 2.4 2.6.4-1.9 1.8.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.8 2.6-.4L12 11Z" />
-    ),
-    history: (
-      <path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2 4.9l-1.4 1.5A9 9 0 1 0 13 3Zm-1 4v5l4.3 2.6.7-1.2-3.5-2.1V7H12Z" />
-    ),
-    flag: <path d="M5 3v18H3V3h2Zm2 1h12l-2.5 4L19 12H7V4Z" />,
-    plus: <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z" />,
-    trash: (
-      <path d="M6 7h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7Zm3-3h6l1 2h4v2H2V6h4l1-2Z" />
-    ),
-    external: <path d="M14 3h7v7h-2V6.4l-9.3 9.3-1.4-1.4L17.6 5H14V3Zm-9 2h5v2H5v12h12v-5h2v7H3V5h2Z" />,
-    pencil: (
-      <path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z" />
-    ),
-    camera: (
-      <path d="M9 3h6l1.5 2H20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3.5L9 3Zm3 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z" />
-    ),
-    close: (
-      <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
-    ),
-    chevron: <path d="M12 15.4 5.6 9 7 7.6l5 5 5-5L18.4 9 12 15.4Z" />,
-    info: (
-      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z" />
-    ),
-    link: (
-      <path d="M10.6 13.4a1 1 0 0 0 1.4 0l3-3a3 3 0 0 0-4.2-4.2l-1 1 1.4 1.4 1-1a1 1 0 1 1 1.4 1.4l-3 3a1 1 0 0 0 0 1.4Zm2.8-2.8a1 1 0 0 0-1.4 0l-3 3a3 3 0 0 0 4.2 4.2l1-1-1.4-1.4-1 1a1 1 0 1 1-1.4-1.4l3-3a1 1 0 0 0 0-1.4Z" />
-    ),
-  };
-
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className ?? 'h-6 w-6'}>
-      {paths[name]}
-    </svg>
   );
 }

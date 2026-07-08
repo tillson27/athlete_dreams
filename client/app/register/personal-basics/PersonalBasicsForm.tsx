@@ -2,12 +2,11 @@
 
 import { useRef } from 'react';
 import Link from 'next/link';
-import { Icon } from '../_components/Icon';
+import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
+import { formInputClass as inputClass } from '../_components/formStyles';
 
-const inputClass =
-  'w-full rounded-lg border border-outline-variant bg-[#F8FAFC] p-3 text-base outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary';
 
 const sports = ['Road running', 'Trail & ultra', 'Track & field', 'Marathon', 'Other'];
 
@@ -93,7 +92,7 @@ export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolea
                   ))}
                 </select>
                 <Icon
-                  name="chevron-down"
+                  name="chevron"
                   className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-tertiary"
                 />
               </div>

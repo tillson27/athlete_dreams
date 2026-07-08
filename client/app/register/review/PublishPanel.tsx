@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { Icon } from '../_components/Icon';
+import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { findMockAthlete } from '@/lib/mockAthletes';

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { loadEdits, EDITS_EVENT, type AthleteEdits, type EditRace } from '@/lib/athleteEdits';
+import { loadEdits, subscribeToEdits, type AthleteEdits, type EditRace } from '@/lib/athleteEdits';
 import { HighlightDropdown, RaceDropdown, Icon, img } from './profileParts';
 
 // Renders published `defaults` during SSR and until mounted, then swaps in any
@@ -13,12 +13,7 @@ function useAthleteEdits(slug: string, defaults: AthleteEdits): AthleteEdits {
   useEffect(() => {
     const sync = () => setEdits(loadEdits(slug) ?? defaults);
     sync();
-    window.addEventListener(EDITS_EVENT, sync);
-    window.addEventListener('storage', sync);
-    return () => {
-      window.removeEventListener(EDITS_EVENT, sync);
-      window.removeEventListener('storage', sync);
-    };
+    return subscribeToEdits(slug, sync);
     // defaults is derived fresh each render; slug identifies the athlete.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);

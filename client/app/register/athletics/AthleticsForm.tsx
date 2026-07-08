@@ -1,25 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { Icon } from '../_components/Icon';
+import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding, type PersonalBest } from '../_components/OnboardingContext';
+import { formInputClass as inputClass } from '../_components/formStyles';
 
 const distances = ['5K', '10K', 'Half Marathon', 'Marathon', '50K', '100K', '100-miler', 'Other'];
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-const inputClass =
-  'w-full rounded-lg border border-outline-variant bg-[#F8FAFC] p-3 text-base outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary';
 
 export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) {
   const { profile, update } = useOnboarding();
   const bests = profile.personalBests;
 
-  const setBests = (next: PersonalBest[]) => update({ personalBests: next });
-  const addBest = () => setBests([...bests, { id: uid(), distance: '', time: '' }]);
+  const setBests = (mutate: (current: PersonalBest[]) => PersonalBest[]) =>
+    update((current) => ({ personalBests: mutate(current.personalBests) }));
+  const addBest = () => setBests((current) => [...current, { id: uid(), distance: '', time: '' }]);
   const patchBest = (id: string, patch: Partial<PersonalBest>) =>
-    setBests(bests.map((best) => (best.id === id ? { ...best, ...patch } : best)));
-  const removeBest = (id: string) => setBests(bests.filter((best) => best.id !== id));
+    setBests((current) => current.map((best) => (best.id === id ? { ...best, ...patch } : best)));
+  const removeBest = (id: string) => setBests((current) => current.filter((best) => best.id !== id));
 
   return (
     <div className="grid gap-10 md:grid-cols-2 md:items-start">
@@ -78,7 +78,7 @@ export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) 
                         ))}
                       </select>
                       <Icon
-                        name="chevron-down"
+                        name="chevron"
                         className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-tertiary"
                       />
                     </div>
@@ -100,7 +100,7 @@ export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) 
                       aria-label="Remove personal best"
                       className="rounded-full p-2 text-error transition-colors hover:bg-error-container/30"
                     >
-                      <Icon name="delete" className="h-5 w-5" />
+                      <Icon name="trash" className="h-5 w-5" />
                     </button>
                   </div>
                 </div>

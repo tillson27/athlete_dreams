@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createBrowserStore } from './browserStore';
 
 /**
  * Frontend-only mock session. No backend, no auth, no password storage —
@@ -14,52 +15,27 @@ export type Session = {
   published: boolean;
 };
 
-const SESSION_KEY = 'arc-session';
-const ONBOARDING_KEY = 'arc-onboarding-profile';
-const SESSION_EVENT = 'arc-session-change';
-
-function readSession(): Session | null {
-  try {
-    const raw = window.localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as Session) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeSession(session: Session | null) {
-  try {
-    if (session) {
-      window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    } else {
-      window.localStorage.removeItem(SESSION_KEY);
-    }
-    window.dispatchEvent(new Event(SESSION_EVENT));
-  } catch {
-    /* storage unavailable — mock session simply won't persist */
-  }
-}
+const sessionStore = createBrowserStore<Session>('arc-session', 'arc-session-change');
+const onboardingNameStore = createBrowserStore<{ name?: string } & Record<string, unknown>>(
+  'arc-onboarding-profile',
+  'arc-onboarding-profile-change',
+);
 
 function seedOnboardingName(name: string) {
-  try {
-    const raw = window.localStorage.getItem(ONBOARDING_KEY);
-    const profile = raw ? JSON.parse(raw) : {};
-    if (!profile.name) {
-      window.localStorage.setItem(ONBOARDING_KEY, JSON.stringify({ ...profile, name }));
-    }
-  } catch {
-    /* storage unavailable — name simply won't pre-fill */
+  const profile = onboardingNameStore.read() ?? {};
+  if (!profile.name) {
+    onboardingNameStore.write({ ...profile, name });
   }
 }
 
 export function signUp({ name, email }: { name: string; email: string }) {
-  writeSession({ name, email, published: false });
+  sessionStore.write({ name, email, published: false });
   seedOnboardingName(name);
 }
 
 export function signIn({ email }: { email: string }) {
-  const existing = readSession();
-  writeSession({
+  const existing = sessionStore.read();
+  sessionStore.write({
     name: existing?.name ?? '',
     email,
     published: existing?.published ?? false,
@@ -67,12 +43,12 @@ export function signIn({ email }: { email: string }) {
 }
 
 export function signOut() {
-  writeSession(null);
+  sessionStore.write(null);
 }
 
 export function markPublished() {
-  const existing = readSession();
-  writeSession({
+  const existing = sessionStore.read();
+  sessionStore.write({
     name: existing?.name ?? '',
     email: existing?.email ?? '',
     published: true,
@@ -85,15 +61,10 @@ export function useSession(): { session: Session | null; ready: boolean } {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const sync = () => setSession(readSession());
+    const sync = () => setSession(sessionStore.read());
     sync();
     setReady(true);
-    window.addEventListener(SESSION_EVENT, sync);
-    window.addEventListener('storage', sync);
-    return () => {
-      window.removeEventListener(SESSION_EVENT, sync);
-      window.removeEventListener('storage', sync);
-    };
+    return sessionStore.subscribe(sync);
   }, []);
 
   return { session, ready };
