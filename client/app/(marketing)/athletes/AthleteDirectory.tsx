@@ -122,7 +122,7 @@ export function AthleteDirectory() {
             <button
               type="button"
               onClick={clear}
-              className="mt-3 w-full text-xs font-semibold uppercase tracking-wider text-on-surface-variant transition-colors hover:text-primary"
+              className="mt-3 w-full text-xs font-semibold text-on-surface-variant transition-colors hover:text-primary"
             >
               Clear all filters
             </button>

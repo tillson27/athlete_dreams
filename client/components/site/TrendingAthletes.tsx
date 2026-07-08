@@ -62,7 +62,7 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
             href={athlete.href}
             className="group min-w-[256px] overflow-hidden rounded-card bg-surface-container-lowest shadow-[0px_4px_20px_rgba(0,0,0,0.04)] transition-transform hover:scale-[1.02] md:min-w-[304px]"
           >
-            <div className="relative h-64">
+            <div className="relative h-64 bg-surface-container">
               <Image
                 src={athlete.image}
                 alt={athlete.name}

@@ -38,8 +38,11 @@ export function Logo({
       className="flex items-center gap-2.5 select-none"
     >
       <ArcMark className={`${markSize[size]} shrink-0`} />
-      <span className={`font-display font-extrabold leading-none tracking-tight ${textSize[size]} ${textTone}`}>
-        {variant === 'full' ? 'ARC Network' : 'ARC'}
+      <span
+        className={`whitespace-nowrap font-display font-extrabold leading-none tracking-tight ${textSize[size]} ${textTone}`}
+      >
+        ARC
+        {variant === 'full' ? <span className="hidden sm:inline"> Network</span> : null}
       </span>
     </Link>
   );

@@ -136,7 +136,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1517637633369-e4cc28755e01', '1486218119243-13883505764c'],
       },
     ],
-    moreResultsLabel: 'SEE MORE RESULTS',
+    moreResultsLabel: 'See more results',
     previousRaces: [
       {
         name: 'Boston Marathon (Pro Start)',
@@ -183,7 +183,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1533560904424-a0c61dc306fc', '1596727147705-61a532a659bd'],
       },
     ],
-    moreRacesLabel: 'SEE MORE RACES (2025 & PRIOR)',
+    moreRacesLabel: 'See more races (2025 & prior)',
     roadmapTitle: '2026 Roadmap',
     roadmap: [
       { name: 'Edmonton Half Marathon', date: 'August 16, 2026' },
@@ -248,7 +248,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       latestMeta: 'Yesterday • 12.0 km • 52:10',
     },
     galleryPhotos: [
-      '1508973379184-7517410fb0bc',
+      '1594882645126-14020914d58d',
       '1530143311094-34d807799e8f',
       '1596727147705-61a532a659bd',
       '1552674605-db6ffd4facb5',
@@ -311,7 +311,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1452626038306-9aae5e071dd3', '1596727147705-61a532a659bd'],
       },
     ],
-    moreResultsLabel: 'SEE MORE RESULTS',
+    moreResultsLabel: 'See more results',
     previousRaces: [
       {
         name: 'Houston Half Marathon',
@@ -352,7 +352,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1452626038306-9aae5e071dd3', '1596727147705-61a532a659bd'],
       },
     ],
-    moreRacesLabel: 'SEE MORE RACES (2024 & PRIOR)',
+    moreRacesLabel: 'See more races (2024 & prior)',
     roadmapTitle: 'Road to Tokyo',
     roadmap: [
       { name: 'Tokyo Marathon — sub-2:30 attempt', date: 'March 1, 2026' },
@@ -479,7 +479,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1517637633369-e4cc28755e01', '1486739985386-d4fae04ca6f7'],
       },
     ],
-    moreResultsLabel: 'SEE MORE RESULTS',
+    moreResultsLabel: 'See more results',
     previousRaces: [
       {
         name: 'Marathon Beneva de Montréal',
@@ -520,7 +520,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1461897104016-0b3b00cc81ee', '1594882645126-14020914d58d'],
       },
     ],
-    moreRacesLabel: 'SEE MORE RACES (2024 & PRIOR)',
+    moreRacesLabel: 'See more races (2024 & prior)',
     roadmapTitle: 'Road to Boston',
     roadmap: [
       { name: 'Boston Marathon — Para Division', date: 'April 20, 2026' },
@@ -626,7 +626,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         title: '2025 U Sports Championships',
         detail: 'Gold — 1500m (4:14.02)',
         tone: 'secondary',
-        images: ['1571008887538-b36bb32f4571', '1461897104016-0b3b00cc81ee'],
+        images: ['1461896836934-ffe607ba8211', '1461897104016-0b3b00cc81ee'],
       },
       {
         title: '2025 Harry Jerome Classic',
@@ -647,7 +647,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1461896836934-ffe607ba8211', '1594882645126-14020914d58d'],
       },
     ],
-    moreResultsLabel: 'SEE MORE RESULTS',
+    moreResultsLabel: 'See more results',
     previousRaces: [
       {
         name: 'Harry Jerome Track Classic — 1500m',
@@ -663,7 +663,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         result: 'Gold — 4:14.02',
         tone: 'primary',
         links: ['U Sports Results', 'The Gauntlet Feature'],
-        images: ['1571008887538-b36bb32f4571'],
+        images: ['1461896836934-ffe607ba8211'],
       },
       {
         name: 'Victoria Track Classic — 5000m',
@@ -688,7 +688,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1461896836934-ffe607ba8211', '1594882645126-14020914d58d'],
       },
     ],
-    moreRacesLabel: 'SEE MORE RACES (2024 & PRIOR)',
+    moreRacesLabel: 'See more races (2024 & prior)',
     roadmapTitle: 'Chasing 4:07.50',
     roadmap: [
       { name: 'Canadian Championships — 1500m', date: 'June 26, 2026' },
@@ -747,7 +747,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     },
     galleryPhotos: [
       '1461897104016-0b3b00cc81ee',
-      '1571008887538-b36bb32f4571',
+      '1530143311094-34d807799e8f',
       '1483721310020-03333e577078',
       '1461896836934-ffe607ba8211',
     ],
@@ -808,7 +808,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1486739985386-d4fae04ca6f7', '1533560904424-a0c61dc306fc'],
       },
     ],
-    moreResultsLabel: 'SEE MORE RESULTS',
+    moreResultsLabel: 'See more results',
     previousRaces: [
       {
         name: 'Black Canyon 100K',
@@ -824,7 +824,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         result: '1st Overall — 4:31:26',
         tone: 'primary',
         links: ['Official Results', 'Navajo Times Feature'],
-        images: ['1502904550040-7534597429ae'],
+        images: ['1486218119243-13883505764c'],
       },
       {
         name: 'Flagstaff Sky Peaks 50K',
@@ -849,7 +849,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1533560904424-a0c61dc306fc', '1486218119243-13883505764c'],
       },
     ],
-    moreRacesLabel: 'SEE MORE RACES (2024 & PRIOR)',
+    moreRacesLabel: 'See more races (2024 & prior)',
     roadmapTitle: 'The Big Dance',
     roadmap: [
       { name: 'Western States 100', date: 'June 27, 2026' },
@@ -903,7 +903,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     ],
     instagramPosts: [
       { id: '1476480862126-209bfaa8edc8', likes: '3.1k' },
-      { id: '1502904550040-7534597429ae', likes: '2.2k' },
+      { id: '1533560904424-a0c61dc306fc', likes: '2.2k' },
       { id: '1519750157634-b6d493a0f77c', likes: '1.8k' },
     ],
     training: {
@@ -914,7 +914,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       latestMeta: 'Saturday • 34.0 km • 3:41:05',
     },
     galleryPhotos: [
-      '1508973379184-7517410fb0bc',
+      '1517637633369-e4cc28755e01',
       '1465188162913-8fb5709d6d57',
       '1519750157634-b6d493a0f77c',
       '1486739985386-d4fae04ca6f7',
@@ -972,7 +972,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1594882645126-14020914d58d', '1490578474895-699cd4e2cf59'],
       },
     ],
-    moreResultsLabel: 'SEE THE EARLY DAYS',
+    moreResultsLabel: 'See the early days',
     previousRaces: [
       {
         name: 'First Half Half Marathon',
@@ -1013,7 +1013,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         images: ['1596727147705-61a532a659bd'],
       },
     ],
-    moreRacesLabel: 'SEE MORE RACES (THE EARLY DAYS)',
+    moreRacesLabel: 'See more races (the early days)',
     roadmapTitle: 'The First Marathon',
     roadmap: [
       { name: 'BMO Vancouver Marathon — my first 42.2', date: 'May 3, 2026' },

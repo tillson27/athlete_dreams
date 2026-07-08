@@ -80,7 +80,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
       {/* FORM */}
       <div className="order-2 flex flex-col gap-10">
         <section>
-          <span className="label-bold mb-2 block uppercase tracking-widest text-primary md:hidden">
+          <span className="eyebrow mb-2 block text-primary md:hidden">
             Step 3 of 4
           </span>
           <h1 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
@@ -92,7 +92,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
         </section>
 
         <section>
-          <label className="label-bold mb-3 block uppercase text-primary">
+          <label className="label-bold mb-3 block text-primary">
             Your values (pick up to {MAX_VALUES})
           </label>
           <div className="flex flex-wrap gap-3">
@@ -118,7 +118,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
         </section>
 
         <section>
-          <label className="label-bold mb-2 block uppercase text-primary" htmlFor="mission">
+          <label className="label-bold mb-2 block text-primary" htmlFor="mission">
             Your tagline
           </label>
           <div className="relative">
@@ -129,7 +129,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
               value={profile.mission}
               onChange={(event) => update({ mission: event.target.value })}
               placeholder="e.g. Chasing sunrises and sub-3 marathons."
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-4 py-4 outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              className="w-full rounded-input border border-outline-variant bg-surface-container-low px-4 py-4 outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/20"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant/50">
               {profile.mission.length}/100
@@ -148,7 +148,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
             {connections.map((connection) => (
               <div
                 key={connection.name}
-                className="flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm"
+                className="flex items-center justify-between rounded-card border border-outline-variant bg-surface-container-lowest p-5 shadow-sm"
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -171,7 +171,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
                 ) : (
                   <button
                     type="button"
-                    className="rounded-full bg-secondary px-6 py-2 font-bold text-white transition-all hover:brightness-110"
+                    className="rounded-pill border border-outline px-6 py-2 font-bold text-secondary transition-colors hover:bg-surface-container-low"
                   >
                     Connect
                   </button>
@@ -191,7 +191,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
           </Link>
           <Link
             href="/register/review"
-            className="w-full rounded-lg bg-primary px-12 py-4 text-center font-bold text-white shadow-lg transition-all hover:bg-[#832700] active:scale-95 sm:w-auto"
+            className="w-full rounded-lg bg-primary px-12 py-4 text-center font-bold text-white shadow-lg transition-all hover:bg-primary-strong active:scale-95 sm:w-auto"
           >
             {fromReview ? 'Save & return to review' : 'Next: Final Review'}
           </Link>

@@ -32,6 +32,7 @@
 
   /* Champion Orange */
   --color-primary: #ab3600;
+  --color-primary-strong: #832700;
   --color-on-primary: #ffffff;
   --color-primary-container: #ff5f1f;
   --color-on-primary-container: #561700;
@@ -68,15 +69,6 @@
   --spacing-margin-mobile: 1.25rem;
   --spacing-margin-desktop: 4rem;
   --spacing-container-max: 80rem;
-}
-
-/*
- * Global "zoom out" to 80%. The design is rem-based, so shrinking the root
- * font-size scales spacing, type, and sizing proportionally while leaving
- * viewport (dvh) heights and px breakpoints intact.
- */
-html {
-  font-size: 80%;
 }
 
 html, body {
@@ -121,9 +113,9 @@ html, body {
 
 /* ---------- Champion Flow component helpers ---------- */
 
-/* Gradient progress fill: Olympic Blue → Champion Orange (path to glory). */
+/* Gradient progress fill: single warm ramp so progress reads as one brand voice. */
 .progress-gradient {
-  background: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-primary-container) 100%);
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
 }
 
 /* Glass chips that sit on top of athlete photography. */
@@ -153,12 +145,20 @@ html, body {
   transition: all 280ms ease;
 }
 
-/* Used for label-bold style across components. */
+/* Compact bold microlabel — sentence case; use .eyebrow when caps are wanted. */
 .label-bold {
   font-size: 0.75rem;
   line-height: 1.2;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.01em;
+}
+
+/* Uppercase kicker for section eyebrows and step labels only. */
+.eyebrow {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 

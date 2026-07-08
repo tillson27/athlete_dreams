@@ -6,9 +6,9 @@ import { Icon } from '@/components/ui/Icon';
 type Variant = 'hero' | 'block' | 'chip';
 
 const base: Record<Variant, string> = {
-  hero: 'inline-flex min-h-10 items-center gap-1.5 rounded-pill px-6 py-2 text-sm font-bold tracking-[0.05em] transition-all active:scale-95',
+  hero: 'inline-flex min-h-10 items-center gap-1.5 rounded-pill px-6 py-2 text-sm font-bold transition-all active:scale-95',
   block:
-    'inline-flex w-full items-center justify-center gap-2 rounded-button py-3 text-sm font-bold tracking-[0.05em] shadow-md transition-all active:scale-95',
+    'inline-flex w-full items-center justify-center gap-2 rounded-button py-3 text-sm font-bold shadow-md transition-all active:scale-95',
   chip: 'inline-flex items-center gap-1.5 rounded-pill px-4 py-1.5 text-xs font-bold transition-all active:scale-95',
 };
 
@@ -21,7 +21,7 @@ const followed: Record<Variant, string> = {
 const notFollowed: Record<Variant, string> = {
   hero: 'bg-white text-inverse-surface hover:bg-white/90',
   block: 'bg-primary-container text-on-primary hover:bg-primary',
-  chip: 'bg-primary text-on-primary hover:bg-[#832700]',
+  chip: 'bg-primary text-on-primary hover:bg-primary-strong',
 };
 
 export function FollowButton({

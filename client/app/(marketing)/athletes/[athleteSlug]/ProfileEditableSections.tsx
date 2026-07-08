@@ -151,7 +151,7 @@ export function EditedGallery({ slug, defaults }: { slug: string; defaults: Athl
       {gallery.map((photo, index) => (
         <div
           key={photo}
-          className="relative aspect-square cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-90"
+          className="relative aspect-square cursor-pointer overflow-hidden rounded bg-surface-container transition-opacity hover:opacity-90"
         >
           <Image
             src={img(photo, 400)}

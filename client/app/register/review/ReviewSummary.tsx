@@ -121,10 +121,10 @@ export function ReviewSummary() {
         <div className="lg:col-span-4">
           <div className="sticky top-24 space-y-6">
             <ProfilePreview sticky={false} />
-            <div className="card-lift rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+            <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
               <PublishPanel />
             </div>
-            <div className="flex items-center gap-4 rounded-xl bg-surface-container-high p-4">
+            <div className="flex items-center gap-4 rounded-card bg-surface-container-high p-4">
               <Icon name="lock" className="h-6 w-6 shrink-0 text-secondary" />
               <div>
                 <h4 className="label-bold text-on-surface">Secure &amp; verified</h4>
@@ -152,7 +152,7 @@ function ReviewCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="card-lift rounded-xl border border-outline-variant bg-surface-container-lowest p-8">
+    <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-3">
           <Icon name={icon} className="h-6 w-6 text-primary" />

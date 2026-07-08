@@ -115,7 +115,7 @@ export function PublishPanel() {
             </button>
           </div>
 
-          <div className="mt-8 w-full rounded-xl border border-outline-variant bg-surface-container-low p-5 text-left">
+          <div className="mt-8 w-full rounded-card border border-outline-variant bg-surface-container-low p-5 text-left">
             <div className="flex items-start gap-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary-container/20 text-primary">
                 <Icon name="trophy" className="h-6 w-6" />
@@ -140,7 +140,7 @@ export function PublishPanel() {
           <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
             <Link
               href="/dashboard"
-              className="label-bold flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-4 text-on-primary transition-all hover:bg-[#832700] active:scale-95"
+              className="label-bold flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-4 text-on-primary transition-all hover:bg-primary-strong active:scale-95"
             >
               Go to your dashboard
               <Icon name="arrow-forward" className="h-5 w-5" />
@@ -179,7 +179,7 @@ export function PublishPanel() {
         type="button"
         onClick={publish}
         disabled={status === 'publishing'}
-        className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-[#832700] active:scale-95 disabled:opacity-80"
+        className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
       >
         {status === 'publishing' ? (
           <>

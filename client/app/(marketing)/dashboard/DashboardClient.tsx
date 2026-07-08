@@ -12,7 +12,16 @@ export function DashboardClient() {
   const { session, ready } = useSession();
 
   if (!ready) {
-    return <div className="min-h-[60vh]" />;
+    return (
+      <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-12 md:px-16">
+        <div className="h-8 w-40 animate-pulse rounded-pill bg-surface-container" />
+        <div className="mt-4 h-10 w-72 animate-pulse rounded-input bg-surface-container" />
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="h-64 animate-pulse rounded-card bg-surface-container lg:col-span-8" />
+          <div className="h-64 animate-pulse rounded-card bg-surface-container lg:col-span-4" />
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
@@ -98,13 +107,13 @@ function DashboardInner({ session }: { session: Session }) {
         <div className="space-y-6 lg:col-span-8">
           {/* Draft banner */}
           {!session.published ? (
-            <div className="flex flex-col items-start gap-3 rounded-xl border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col items-start gap-3 rounded-card border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-on-surface">
                 Your profile isn&rsquo;t live yet. Finish the last step to publish it to the network.
               </p>
               <Link
                 href="/register/review"
-                className="label-bold shrink-0 rounded-lg bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-[#832700]"
+                className="label-bold shrink-0 rounded-lg bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-primary-strong"
               >
                 Finish &amp; publish
               </Link>
@@ -112,7 +121,7 @@ function DashboardInner({ session }: { session: Session }) {
           ) : null}
 
           {/* Quick actions */}
-          <section className="card-lift rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
             <h2 className="mb-4 font-display text-xl font-bold text-on-surface">Quick actions</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <ActionTile icon="person" title="View profile" subtitle="See your public page" href={profileHref} />
@@ -130,7 +139,7 @@ function DashboardInner({ session }: { session: Session }) {
           </section>
 
           {/* Completeness + checklist */}
-          <section className="card-lift rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-display text-xl font-bold text-on-surface">Finish your profile</h2>
               <span className="label-bold text-primary">{completeness}%</span>
@@ -229,7 +238,7 @@ function SignedOutGate() {
         <div className="mt-6 flex flex-col gap-3">
           <Link
             href="/sign-in"
-            className="label-bold rounded-lg bg-primary px-6 py-3 text-on-primary transition-all hover:bg-[#832700]"
+            className="label-bold rounded-lg bg-primary px-6 py-3 text-on-primary transition-all hover:bg-primary-strong"
           >
             Sign in
           </Link>

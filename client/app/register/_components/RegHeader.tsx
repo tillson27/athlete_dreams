@@ -47,7 +47,7 @@ export function RegHeader({
           </button>
         ) : stepLabel ? (
           <div className="flex items-center gap-4 md:gap-6">
-            <span className="label-bold text-on-surface-variant">{stepLabel}</span>
+            <span className="eyebrow text-on-surface-variant">{stepLabel}</span>
             {typeof progressPercent === 'number' ? (
               <div className="h-2 w-24 overflow-hidden rounded-pill bg-surface-container md:w-32">
                 <div

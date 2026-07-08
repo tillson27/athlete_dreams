@@ -77,7 +77,7 @@ export default function OnboardingGuidePage() {
                 <div className="z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-container text-white shadow-lg transition-transform group-hover:scale-110">
                   <Icon name={step.icon} className="h-6 w-6" />
                 </div>
-                <div className="glass-effect flex-grow rounded-xl p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="glass-effect flex-grow rounded-card p-6 shadow-sm transition-shadow hover:shadow-md">
                   <h3 className="mb-2 font-display text-2xl font-bold text-on-surface">
                     {step.title}
                   </h3>
@@ -151,7 +151,7 @@ export default function OnboardingGuidePage() {
             key={item.label}
             className={`flex flex-col items-center justify-center transition-all ${
               item.active
-                ? 'rounded-xl bg-secondary-container px-4 py-1 text-on-secondary-container'
+                ? 'rounded-card bg-secondary-container px-4 py-1 text-on-secondary-container'
                 : 'text-on-surface-variant'
             }`}
           >

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 // Mobile-only bottom nav. Matches the wireframe's icon language using
 // inline SVGs so we don't need the Material Symbols web font.
@@ -51,6 +54,10 @@ const items: Array<{
 ];
 
 export function MobileBottomNav() {
+  const pathname = usePathname();
+  // Profile pages have their own sticky action bar; two stacked bars is too much chrome.
+  if (/^\/athletes\/[^/]+$/.test(pathname)) return null;
+
   return (
     <nav
       aria-label="Mobile primary"

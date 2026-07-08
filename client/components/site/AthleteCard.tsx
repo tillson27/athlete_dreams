@@ -24,7 +24,7 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
       href={`/athletes/${athlete.athleteSlug}`}
       className="card-lift card-lift-hover group flex flex-col overflow-hidden rounded-card bg-surface-container-lowest ring-1 ring-inset ring-outline-variant/60 md:h-72 md:flex-row"
     >
-      <div className="relative h-64 w-full overflow-hidden md:h-full md:w-80">
+      <div className="relative h-64 w-full overflow-hidden bg-surface-container md:h-full md:w-80">
         <Image
           src={athlete.heroMediaUrl}
           alt={`${athlete.fullName} running`}

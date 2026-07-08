@@ -14,7 +14,6 @@ export function SiteHeader() {
   return (
     <header
       className="sticky top-0 z-40 w-full border-b border-outline-variant/60 bg-surface/90 backdrop-blur"
-      style={{ zoom: 1.1 }}
     >
       <div className="mx-auto flex h-16 w-full max-w-[var(--spacing-container-max)] items-center justify-between gap-3 px-5 md:px-16">
         <div className="flex items-center gap-3">

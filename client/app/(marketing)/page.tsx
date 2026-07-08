@@ -128,7 +128,7 @@ export default function HomePage() {
             fill
             priority
             sizes="100vw"
-            className="ken-burns object-cover"
+            className="ken-burns object-cover object-[center_30%]"
           />
         </div>
         {/* warm directional wash for legibility */}
@@ -159,15 +159,15 @@ export default function HomePage() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-button bg-primary-container px-8 py-4 text-lg font-bold tracking-[0.05em] text-on-primary shadow-lg shadow-primary-container/25 transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
+                className="inline-flex items-center justify-center rounded-button bg-primary-container px-8 py-4 text-lg font-bold text-on-primary shadow-lg shadow-primary-container/25 transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
               >
-                Build Your Story
+                Build your story
               </Link>
               <Link
                 href="/mission"
-                className="inline-flex items-center justify-center gap-2 rounded-button border border-white/20 bg-white/10 px-8 py-4 text-lg font-bold tracking-[0.05em] text-white backdrop-blur-md transition-all hover:bg-white/20"
+                className="inline-flex items-center justify-center gap-2 rounded-button border border-white/20 bg-white/10 px-8 py-4 text-lg font-bold text-white backdrop-blur-md transition-all hover:bg-white/20"
               >
-                Watch Mission Video
+                Watch mission video
               </Link>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function HomePage() {
               href="/register"
               className="inline-flex items-center justify-center rounded-card bg-primary-container px-12 py-5 text-lg font-bold tracking-[0.05em] text-on-primary shadow-xl transition-all hover:-translate-y-1 hover:shadow-primary/25 active:scale-95"
             >
-              Start Your Journey
+              Start your journey
             </Link>
           </div>
         </div>
@@ -260,9 +260,9 @@ export default function HomePage() {
               </p>
             </div>
           </Reveal>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-8">
+          <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
             {whyArc.map((item, index) => (
-              <Reveal key={item.title} delay={index * 90} className="h-full">
+              <Reveal key={item.title} delay={index * 90} className="h-full min-w-[78%] snap-center md:min-w-0">
                 <div className="group flex h-full flex-col items-center rounded-card border border-white/10 bg-white/[0.04] p-8 text-center transition-all duration-300 hover:-translate-y-1.5 hover:bg-white/[0.07] hover:shadow-[0_28px_55px_-22px_rgba(255,95,31,0.4)] md:items-start md:text-left">
                   <div
                     className={`mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${whyToneClasses[item.tone]}`}

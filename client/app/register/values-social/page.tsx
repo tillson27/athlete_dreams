@@ -18,7 +18,7 @@ export default async function ValuesSocialPage({
 
   return (
     <>
-      <RegHeader backHref="/register/athletics" stepLabel="STEP 3 OF 4" progressPercent={75} />
+      <RegHeader backHref="/register/athletics" stepLabel="Step 3 of 4" progressPercent={75} />
 
       <main className="flex-grow py-12">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">

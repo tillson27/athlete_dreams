@@ -31,7 +31,7 @@ export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) 
       {/* FORM */}
       <div className="order-2 flex flex-col gap-8">
         <div>
-          <span className="label-bold mb-2 block uppercase tracking-widest text-primary md:hidden">
+          <span className="eyebrow mb-2 block text-primary md:hidden">
             Step 2 of 4
           </span>
           <h2 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
@@ -43,7 +43,7 @@ export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) 
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
+        <div className="flex flex-col gap-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
           <div className="flex items-center gap-3">
             <Icon name="trophy" className="h-7 w-7 text-primary" />
             <h3 className="font-display text-2xl font-bold text-on-surface">Personal bests</h3>

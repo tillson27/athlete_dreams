@@ -8,6 +8,7 @@ import { ArrowGlyph } from '@/components/ui/Button';
 import { FollowButton } from '@/components/site/FollowButton';
 import { ShareCard, type ShareResume } from './ShareCard';
 import { Icon, img, type IconName } from './profileParts';
+import { ProfileTabNav } from './ProfileTabNav';
 import {
   EditedHighlights,
   EditedRaces,
@@ -100,12 +101,12 @@ export function AthleteProfile({
             {athlete.fullName}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-white/90">
-            <p className="label-bold inline-flex items-center gap-1">
+            <p className="eyebrow inline-flex items-center gap-1">
               <Icon name="trail" className="h-4 w-4" />
               {profile.disciplineLabel}
             </p>
             <span className="hidden h-1 w-1 rounded-full bg-white/50 md:block" />
-            <p className="label-bold inline-flex items-center gap-1">
+            <p className="eyebrow inline-flex items-center gap-1">
               <Icon name="location" className="h-4 w-4" />
               {athlete.hometown}
             </p>
@@ -130,17 +131,7 @@ export function AthleteProfile({
 
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
         {/* IN-PAGE TAB NAV (mobile) */}
-        <nav className="no-scrollbar sticky top-16 z-30 -mx-5 flex gap-1 overflow-x-auto border-b border-outline-variant bg-surface/95 px-5 py-2 backdrop-blur md:hidden">
-          {profileTabs.map((tab) => (
-            <a
-              key={tab.href}
-              href={tab.href}
-              className="flex min-h-11 shrink-0 items-center rounded-pill px-4 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container active:bg-surface-container"
-            >
-              {tab.label}
-            </a>
-          ))}
-        </nav>
+        <ProfileTabNav tabs={profileTabs} />
 
         {/* QUICK ACTIONS (desktop — mobile uses the sticky bottom bar) */}
         <section className="relative z-10 -mt-12 hidden md:block">
@@ -149,14 +140,14 @@ export function AthleteProfile({
               {profile.supportEnabled ? (
                 <Link
                   href="#back"
-                  className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+                  className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
                 >
-                  BACK THIS ATHLETE
+                  Back this athlete
                 </Link>
               ) : (
                 <button
                   type="button"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
                 >
                   <Icon name="person-add" className="h-4 w-4" />
                   FOLLOW
@@ -165,10 +156,10 @@ export function AthleteProfile({
               <ShareCard resume={shareResume} />
               <Link
                 href={`/athletes/${athlete.athleteSlug}/manage`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold tracking-[0.05em] text-secondary transition-colors hover:bg-surface-container-low active:scale-95"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold text-secondary transition-colors hover:bg-surface-container-low active:scale-95"
               >
                 <Icon name="edit" className="h-4 w-4" />
-                ATHLETE VIEW
+                Athlete view
               </Link>
             </div>
           </div>
@@ -214,7 +205,7 @@ export function AthleteProfile({
         <details id="arc" open className="group mt-8 scroll-mt-32 md:mt-16">
           <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
             <div className="max-w-3xl">
-              <p className="label-bold text-primary">The Arc</p>
+              <p className="eyebrow text-primary">The Arc</p>
               <h2 className="mt-2 font-display text-3xl font-bold text-on-surface md:text-4xl">
                 {firstName}&rsquo;s journey
               </h2>
@@ -261,7 +252,7 @@ export function AthleteProfile({
                   </h3>
                   <p className="mt-2 leading-relaxed text-on-surface-variant">{chapter.body}</p>
                   {chapter.image ? (
-                    <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-input md:max-w-md">
+                    <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-input bg-surface-container md:max-w-md">
                       <Image
                         src={img(chapter.image, 800)}
                         alt={`${chapter.title} — ${athlete.fullName}`}
@@ -285,7 +276,7 @@ export function AthleteProfile({
             {profile.featuredVideo ? (
               <section className="card-lift order-2 rounded-card bg-surface-container-lowest p-8 md:order-none">
                 <CardHeading icon="play">Featured Video</CardHeading>
-                <div className="group relative mt-6 aspect-video cursor-pointer overflow-hidden rounded-input">
+                <div className="group relative mt-6 aspect-video cursor-pointer overflow-hidden rounded-input bg-surface-container">
                   <Image
                     src={img(profile.featuredVideo.image, 1200)}
                     alt="Featured video thumbnail"
@@ -430,7 +421,7 @@ export function AthleteProfile({
                 {profile.instagramPosts.map((post, index) => (
                   <div
                     key={post.id}
-                    className="group relative aspect-square cursor-pointer overflow-hidden rounded"
+                    className="group relative aspect-square cursor-pointer overflow-hidden rounded bg-surface-container"
                   >
                     <Image
                       src={img(post.id, 300)}
@@ -483,7 +474,7 @@ export function AthleteProfile({
                 type="button"
                 className="label-bold inline-flex w-full items-center justify-center gap-2 rounded-button border border-outline py-3 text-on-surface-variant transition-colors hover:bg-surface-container-low"
               >
-                FOLLOW ON STRAVA
+                Follow on Strava
                 <Icon name="external" className="h-4 w-4" />
               </button>
             </div>
@@ -560,9 +551,9 @@ export function AthleteProfile({
               </p>
               <Link
                 href="/sign-in"
-                className="mt-6 inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+                className="mt-6 inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
               >
-                BACK THIS ATHLETE
+                Back this athlete
               </Link>
             </div>
           </section>
@@ -571,7 +562,7 @@ export function AthleteProfile({
         {/* GROWTH LOOP — every profile is a recruiting billboard */}
         <section className="mt-6 flex flex-col items-center justify-between gap-5 rounded-card border border-outline-variant bg-surface-container-low p-6 text-center md:flex-row md:p-8 md:text-left">
           <div>
-            <p className="label-bold text-primary">Runners like {firstName} call ARC home</p>
+            <p className="eyebrow text-primary">Runners like {firstName} call ARC home</p>
             <h3 className="mt-1 font-display text-xl font-bold text-on-surface md:text-2xl">
               Like what you see? Build your own.
             </h3>
@@ -581,7 +572,7 @@ export function AthleteProfile({
           </div>
           <Link
             href="/for-athletes"
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
           >
             Get your own ARC profile
             <ArrowGlyph className="h-4 w-4" />
@@ -592,20 +583,20 @@ export function AthleteProfile({
       {/* STICKY ACTION BAR (mobile) — sits above the site bottom nav */}
       <div
         className="fixed inset-x-0 z-40 border-t border-outline-variant bg-surface-container-lowest/95 px-4 py-3 backdrop-blur md:hidden"
-        style={{ bottom: 'calc(3.75rem + env(safe-area-inset-bottom, 0px))' }}
+        style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="mx-auto flex max-w-[var(--spacing-container-max)] items-center gap-3">
           {profile.supportEnabled ? (
             <Link
               href="#back"
-              className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+              className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
             >
               Back this athlete
             </Link>
           ) : (
             <button
               type="button"
-              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 text-sm font-bold tracking-[0.05em] text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
             >
               <Icon name="person-add" className="h-4 w-4" />
               Follow {firstName}

@@ -46,7 +46,7 @@ export function HighlightDropdown({
           {images.map((image, index) => (
             <div
               key={`${title}-${index}`}
-              className="relative aspect-[3/4] overflow-hidden rounded-input"
+              className="relative aspect-[3/4] overflow-hidden rounded-input bg-surface-container"
             >
               <Image
                 src={img(image, 500)}
@@ -118,7 +118,7 @@ export function RaceDropdown({
             {images.map((image, index) => (
               <div
                 key={`${name}-${index}`}
-                className={`relative overflow-hidden rounded-input ${
+                className={`relative overflow-hidden rounded-input bg-surface-container ${
                   images.length > 1 ? 'aspect-[4/5]' : 'aspect-[16/9]'
                 }`}
               >

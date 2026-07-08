@@ -30,8 +30,8 @@ const columns = [
 
 export function SiteFooter() {
   return (
-    <footer className="hidden border-t border-outline-variant bg-surface-container-low py-16 md:block">
-      <div className="mx-auto grid w-full max-w-[var(--spacing-container-max)] gap-12 px-16 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <footer className="border-t border-outline-variant bg-surface-container-low pb-24 pt-2 md:py-16 md:pb-16">
+      <div className="mx-auto hidden w-full max-w-[var(--spacing-container-max)] gap-12 px-16 md:grid md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="space-y-4">
           <Logo size="lg" variant="full" />
           <p className="max-w-md text-sm leading-relaxed text-on-surface-variant">
@@ -54,7 +54,7 @@ export function SiteFooter() {
           </div>
         ))}
       </div>
-      <div className="mx-auto mt-12 flex w-full max-w-[var(--spacing-container-max)] flex-col items-start justify-between gap-3 border-t border-outline-variant/60 px-16 pt-6 text-xs text-on-surface-variant md:flex-row md:items-center">
+      <div className="mx-auto mt-4 flex w-full max-w-[var(--spacing-container-max)] flex-col items-center justify-between gap-1 px-5 pt-4 text-center text-xs text-on-surface-variant md:mt-12 md:flex-row md:items-center md:gap-3 md:border-t md:border-outline-variant/60 md:px-16 md:pt-6 md:text-left">
         <span>© {new Date().getFullYear()} ARC. All rights reserved.</span>
         <span>Built in Canada · Designed for athletes everywhere.</span>
       </div>

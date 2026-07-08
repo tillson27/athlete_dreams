@@ -38,7 +38,7 @@ export function ProfilePreview({
           </span>
         </div>
         {/* hero */}
-        <div className="relative h-56">
+        <div className="relative h-56 bg-surface-container">
           <Image src={previewPhoto} alt="" fill sizes="(max-width: 768px) 100vw, 500px" className="object-cover" />
           <div
             aria-hidden="true"

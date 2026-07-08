@@ -49,7 +49,7 @@ export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolea
       {/* FORM */}
       <div className="order-2 flex flex-col gap-8">
         <div>
-          <span className="label-bold mb-2 block uppercase tracking-widest text-primary md:hidden">
+          <span className="eyebrow mb-2 block text-primary md:hidden">
             Step 1 of 4
           </span>
           <h2 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
@@ -61,7 +61,7 @@ export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolea
           </p>
         </div>
 
-        <form className="flex flex-col gap-6 rounded-xl border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+        <form className="flex flex-col gap-6 rounded-card border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
           <Field label="Your name" htmlFor="full_name">
             <input
               id="full_name"
@@ -150,7 +150,7 @@ export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolea
           <div className="pt-4">
             <Link
               href={fromReview ? '/register/review' : '/register/athletics'}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 text-sm font-bold uppercase tracking-[0.05em] text-on-primary transition-all hover:bg-[#832700] active:scale-[0.98]"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 text-sm font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-[0.98]"
             >
               {fromReview ? 'Save & return to review' : 'Next: Achievements'}
               <Icon name={fromReview ? 'check' : 'arrow-forward'} className="h-5 w-5" />
@@ -165,10 +165,10 @@ export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolea
           </div>
         </form>
 
-        <div className="flex items-start gap-4 rounded-xl border border-secondary/20 bg-secondary-container/10 p-6">
-          <Icon name="shield-check" className="h-6 w-6 shrink-0 text-secondary" />
+        <div className="flex items-start gap-4 rounded-card border border-outline-variant bg-surface-container-low p-6">
+          <Icon name="shield-check" className="h-6 w-6 shrink-0 text-success" />
           <div>
-            <h4 className="label-bold text-on-secondary-fixed-variant">Verified &amp; trusted</h4>
+            <h4 className="label-bold text-on-surface">Verified &amp; trusted</h4>
             <p className="mt-1 text-tertiary">
               Every ARC profile is verified before it goes live — so your story carries real weight.
             </p>

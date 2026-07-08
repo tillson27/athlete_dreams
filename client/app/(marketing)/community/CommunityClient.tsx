@@ -113,7 +113,7 @@ export function CommunityClient() {
                 <li key={entry.athleteSlug} className="flex items-center gap-3">
                   <Link
                     href={`/athletes/${entry.athleteSlug}`}
-                    className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full"
+                    className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-container"
                   >
                     <Image src={entry.avatar} alt={entry.athleteName} fill sizes="40px" className="object-cover" />
                   </Link>
@@ -195,7 +195,7 @@ function FeedCard({
       <div className="flex items-start gap-3 p-5">
         <Link
           href={`/athletes/${item.athleteSlug}`}
-          className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full"
+          className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-surface-container"
         >
           <Image src={item.avatar} alt={item.athleteName} fill sizes="44px" className="object-cover" />
         </Link>
@@ -234,7 +234,7 @@ function FeedCard({
       </div>
 
       {item.photo ? (
-        <div className="relative aspect-[16/9] w-full overflow-hidden">
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-container">
           <Image src={item.photo} alt="" fill sizes="(max-width: 1024px) 100vw, 640px" className="object-cover" />
         </div>
       ) : null}
@@ -274,7 +274,7 @@ function EmptyFollowing({ signedIn }: { signedIn: boolean }) {
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link
           href="/athletes"
-          className="label-bold rounded-button bg-primary px-6 py-3 text-on-primary transition-colors hover:bg-[#832700]"
+          className="label-bold rounded-button bg-primary px-6 py-3 text-on-primary transition-colors hover:bg-primary-strong"
         >
           Discover runners
         </Link>
