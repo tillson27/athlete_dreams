@@ -48,7 +48,7 @@ function DashboardInner({ session }: { session: Session }) {
   // New athletes' public pages open with the pilot; until then their preview is the profile.
   const profileHref = profileExists ? `/athletes/${slug}` : '#profile-preview';
   const manageHref = `/athletes/${slug}/manage`;
-  const publicUrl = `arc.network/athletes/${slug}`;
+  const publicUrl = `athletearc.ca/athletes/${slug}`;
 
   const [hasRaceEdits, setHasRaceEdits] = useState(false);
   useEffect(() => {

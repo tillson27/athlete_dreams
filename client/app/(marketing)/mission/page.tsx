@@ -22,7 +22,7 @@ const pillars = [
   {
     step: '02',
     title: 'Earn real legitimacy',
-    body: 'Results confirmed against official databases, training synced from Strava, identity checked. A verified badge that actually means something.',
+    body: 'Results linked to official, public results pages earn a verified badge — legitimacy that actually means something.',
   },
   {
     step: '03',

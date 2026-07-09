@@ -31,9 +31,18 @@ const profileTabs = [
 ];
 
 const verifiedProofs = [
-  { title: 'Official results', body: 'Race times confirmed against official databases.' },
-  { title: 'Strava synced', body: 'Training verified from a connected Strava account.' },
-  { title: 'Identity confirmed', body: 'A real athlete — checked before going live.' },
+  {
+    title: 'Official results',
+    body: 'Results earn a verified badge when linked to an official, public results page.',
+  },
+  {
+    title: 'Receipts on funded expenses',
+    body: 'When backing opens, every campaign is itemized and expenses are proven with receipts.',
+  },
+  {
+    title: 'Post-event updates',
+    body: 'Athletes share recaps after key events, so supporters see the outcome.',
+  },
 ];
 
 const chapterTone: Record<'secondary' | 'tertiary' | 'primary', string> = {
@@ -65,7 +74,7 @@ export function AthleteProfile({
       (race) => `${race.name} — ${race.result}`,
     ),
     stats: profile.personalBests.map((best) => ({ label: best.label, value: best.value })),
-    url: `arc.network/athletes/${athlete.athleteSlug}`,
+    url: `athletearc.ca/athletes/${athlete.athleteSlug}`,
   };
 
   return (
@@ -162,10 +171,10 @@ export function AthleteProfile({
                 <Icon name="check-badge" className="h-4 w-4" />
               </span>
               <span>
-                Verified by ARC
+                Verified results
                 <span className="hidden font-normal text-on-surface-variant sm:inline">
                   {' '}
-                  · results, training &amp; identity confirmed
+                  · linked to official results pages
                 </span>
               </span>
             </span>
@@ -395,47 +404,6 @@ export function AthleteProfile({
               <EditedRoadmap slug={athlete.athleteSlug} defaults={editDefaults} />
             </div>
 
-            {/* Instagram */}
-            <div className="card-lift order-9 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Icon name="instagram" className="h-5 w-5 text-primary" />
-                  <h3 className="label-bold text-on-surface">{profile.handle}</h3>
-                </div>
-                <a
-                  href={`https://instagram.com/${profile.handle.slice(1)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded border border-primary px-3 py-1 text-xs font-bold text-primary transition-colors hover:bg-surface-container-low"
-                >
-                  Follow
-                </a>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {profile.instagramPosts.map((post, index) => (
-                  <a
-                    key={post.id}
-                    href={`https://instagram.com/${profile.handle.slice(1)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative aspect-square overflow-hidden rounded bg-surface-container"
-                  >
-                    <Image
-                      src={img(post.id, 300)}
-                      alt={`Instagram post ${index + 1}`}
-                      fill
-                      sizes="120px"
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/40 text-white opacity-0 transition-opacity group-hover:opacity-100">
-                      <Icon name="heart" className="h-4 w-4" />
-                      <span className="text-[10px] font-bold">{post.likes}</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
             {/* Live Training Feed */}
             <div
               id="training"
@@ -443,13 +411,13 @@ export function AthleteProfile({
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-xl font-bold text-on-surface">
-                  Live Training Feed
+                  Training Snapshot
                 </h3>
-                <span className="rounded bg-[#FC4C02]/10 px-2 py-1 text-[10px] font-bold tracking-[0.05em] text-[#FC4C02]">
-                  VERIFIED STRAVA
+                <span className="rounded bg-secondary-soft px-2 py-1 text-[10px] font-bold tracking-[0.05em] text-secondary">
+                  THIS WEEK
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-2 rounded-input border-t-2 border-[#FC4C02] bg-surface-container-low p-3">
+              <div className="grid grid-cols-3 gap-2 rounded-input border-t-2 border-secondary bg-surface-container-low p-3">
                 <div className="text-center">
                   <p className="text-[10px] font-bold uppercase tracking-[0.05em]">Weekly KM</p>
                   <p className="font-bold">{profile.training.weeklyKm}</p>
@@ -463,19 +431,10 @@ export function AthleteProfile({
                   <p className="font-bold">{profile.training.weeklyGain}</p>
                 </div>
               </div>
-              <div className="cursor-pointer">
+              <div>
                 <p className="label-bold text-on-surface">{profile.training.latestTitle}</p>
                 <p className="text-xs text-on-surface-variant">{profile.training.latestMeta}</p>
               </div>
-              <a
-                href="https://www.strava.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="label-bold inline-flex w-full items-center justify-center gap-2 rounded-button border border-outline py-3 text-on-surface-variant transition-colors hover:bg-surface-container-low"
-              >
-                Follow on Strava
-                <Icon name="external" className="h-4 w-4" />
-              </a>
             </div>
 
             {/* Recent Backers */}

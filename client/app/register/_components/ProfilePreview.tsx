@@ -41,7 +41,7 @@ export function ProfilePreview({
           <span className="h-3 w-3 rounded-full bg-primary-container/70" />
           <span className="h-3 w-3 rounded-full bg-success/70" />
           <span className="ml-3 flex-1 truncate rounded-pill bg-surface px-3 py-1 text-xs text-on-surface-variant">
-            arc.network/athletes/{slug}
+            athletearc.ca/athletes/{slug}
           </span>
         </div>
         {/* hero */}

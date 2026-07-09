@@ -63,12 +63,13 @@ const trendingAthletes: TrendingAthlete[] = [
   },
 ];
 
-const ledgerLines = [
-  { label: 'Coaching Fees', amountCents: 85000 },
-  { label: 'Travel: Regionals', amountCents: 42000 },
-  { label: 'Sports Nutrition', amountCents: 12500 },
+const ledgerLines: { label: string; amountCents: number; receipt: boolean }[] = [
+  { label: 'Race entries (5 events)', amountCents: 64000, receipt: true },
+  { label: 'Flights + lodging', amountCents: 185000, receipt: true },
+  { label: 'Coaching block', amountCents: 240000, receipt: true },
+  { label: 'Physio + nutrition', amountCents: 120000, receipt: false },
 ];
-const ledgerRemainingCents = 431000;
+const ledgerTotalCents = ledgerLines.reduce((sum, line) => sum + line.amountCents, 0);
 
 const successStories = [
   {
@@ -407,33 +408,59 @@ export default function HomePage() {
         </Reveal>
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <div className="grid gap-8 md:grid-cols-2">
-            {/* Itemized-season preview */}
+            {/* Itemized-season preview — transparency you can audit */}
             <div className="flex flex-col items-start gap-6 rounded-card border border-outline-variant bg-white p-8 shadow-sm md:flex-row">
               <div className="flex-1">
-                <Icon name="bar-chart" className="mb-4 h-8 w-8 text-primary" />
+                <Icon name="fact-check" className="mb-4 h-8 w-8 text-primary" />
                 <h4 className="mb-3 font-display text-xl font-bold text-on-surface">
-                  A season, itemized
+                  See where every dollar goes
                 </h4>
                 <p className="text-on-surface-variant">
-                  Every campaign will be an itemized season — race entries, travel, coaching. You
-                  back the exact thing you want to make happen.
+                  Every campaign is an itemized season — race entries, travel, coaching, gear. Back
+                  the exact line you want, and athletes prove each expense with{' '}
+                  <strong className="font-bold text-on-surface">receipts</strong> and post-event
+                  updates. No black box, no guessing.
                 </p>
               </div>
-              <div className="w-full rounded-input bg-surface-container p-4 text-sm md:w-64">
-                <div className="mb-2 flex justify-between border-b border-outline-variant pb-2 font-bold">
-                  <span>Item</span>
-                  <span>Amount</span>
+              <div className="w-full rounded-input bg-surface-container p-4 text-sm md:w-72">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="eyebrow text-on-surface-variant">Where your dollars go</span>
                 </div>
                 {ledgerLines.map((line) => (
-                  <div key={line.label} className="flex justify-between py-1">
-                    <span>{line.label}</span>
-                    <span className="text-on-surface-variant">{formatCents(line.amountCents)}</span>
+                  <div key={line.label} className="border-t border-outline-variant/60 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="min-w-0 flex-1 truncate text-on-surface">{line.label}</span>
+                      <span className="shrink-0 font-bold text-on-surface">
+                        {formatCents(line.amountCents)}
+                      </span>
+                    </div>
+                    <span
+                      className={`mt-1 inline-flex items-center gap-1 text-[11px] font-bold ${
+                        line.receipt ? 'text-success' : 'text-on-surface-variant'
+                      }`}
+                    >
+                      {line.receipt ? (
+                        <>
+                          <Icon name="check-badge" className="h-3.5 w-3.5" />
+                          Receipt attached
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="timer" className="h-3.5 w-3.5" />
+                          Receipt after the event
+                        </>
+                      )}
+                    </span>
                   </div>
                 ))}
-                <div className="mt-2 flex justify-between border-t border-outline-variant pt-2 font-bold text-on-surface">
+                <div className="mt-1 flex justify-between border-t-2 border-outline-variant pt-2 font-bold text-on-surface">
                   <span>Season total</span>
-                  <span>{formatCents(ledgerRemainingCents)}</span>
+                  <span>{formatCents(ledgerTotalCents)}</span>
                 </div>
+                <p className="mt-3 flex items-center gap-1.5 text-xs text-on-surface-variant">
+                  <Icon name="shield-check" className="h-4 w-4 shrink-0 text-success" />
+                  Every expense traced to a receipt.
+                </p>
               </div>
             </div>
 

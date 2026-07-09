@@ -95,8 +95,8 @@ export default function AboutPage() {
             </p>
             <p className="text-sm text-on-surface-variant">
               For now, email us directly:{' '}
-              <a className="font-semibold text-primary underline" href="mailto:hello@arc.network">
-                hello@arc.network
+              <a className="font-semibold text-primary underline" href="mailto:hello@athletearc.ca">
+                hello@athletearc.ca
               </a>
             </p>
             <div className="flex flex-wrap gap-3">

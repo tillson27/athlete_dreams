@@ -56,6 +56,14 @@ export function SiteFooter() {
       </div>
       <div className="mx-auto mt-4 flex w-full max-w-[var(--spacing-container-max)] flex-col items-center justify-between gap-1 px-5 pt-4 text-center text-xs text-on-surface-variant md:mt-12 md:flex-row md:items-center md:gap-3 md:border-t md:border-outline-variant/60 md:px-16 md:pt-6 md:text-left">
         <span>© {new Date().getFullYear()} ARC. All rights reserved.</span>
+        <span className="flex items-center gap-3">
+          <Link href="/privacy" className="transition-colors hover:text-primary">
+            Privacy
+          </Link>
+          <Link href="/terms" className="transition-colors hover:text-primary">
+            Terms
+          </Link>
+        </span>
         <span>Built in Canada · Designed for athletes everywhere.</span>
       </div>
     </footer>

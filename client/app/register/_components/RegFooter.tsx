@@ -1,4 +1,10 @@
-const links = ['Support', 'Privacy Policy', 'Terms of Service', 'Security'];
+import Link from 'next/link';
+
+const links = [
+  { label: 'Support', href: '/support' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms of Service', href: '/terms' },
+];
 
 export function RegFooter() {
   return (
@@ -11,14 +17,14 @@ export function RegFooter() {
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-6">
-          {links.map((label) => (
-            <a
-              key={label}
-              href="#"
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
               className="text-xs text-on-surface-variant transition-colors hover:text-secondary hover:underline"
             >
-              {label}
-            </a>
+              {link.label}
+            </Link>
           ))}
         </div>
       </div>

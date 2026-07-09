@@ -157,9 +157,9 @@ export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolea
             </Link>
             <p className="mt-4 text-center text-xs text-tertiary">
               By continuing, you agree to Arc&rsquo;s{' '}
-              <a href="#" className="underline hover:text-primary">
-                Terms of Professional Conduct
-              </a>
+              <Link href="/terms" target="_blank" className="underline hover:text-primary">
+                Terms of Service
+              </Link>
               .
             </p>
           </div>

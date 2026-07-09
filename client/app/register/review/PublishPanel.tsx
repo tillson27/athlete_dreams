@@ -45,7 +45,7 @@ export function PublishPanel() {
   const slug = slugifyName(profile.name) || 'your-name';
   const profileExists = Boolean(findMockAthlete(slug));
   const manageHref = `/athletes/${slug}/manage`;
-  const publicUrl = `arc.network/athletes/${slug}`;
+  const publicUrl = `athletearc.ca/athletes/${slug}`;
 
   const missing = [
     !profile.bio && 'your story',
@@ -206,7 +206,15 @@ export function PublishPanel() {
           className="h-5 w-5 cursor-pointer rounded border-outline text-primary focus:ring-primary"
         />
         <label htmlFor="terms" className="label-bold cursor-pointer select-none text-on-surface">
-          I agree to the Radical Transparency guidelines
+          I agree to the{' '}
+          <Link
+            href="/terms#transparency"
+            target="_blank"
+            onClick={(event) => event.stopPropagation()}
+            className="text-secondary underline hover:text-primary"
+          >
+            Radical Transparency guidelines
+          </Link>
         </label>
       </div>
       {!hasName ? (

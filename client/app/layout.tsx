@@ -17,7 +17,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://arc.network'),
+  metadataBase: new URL('https://athletearc.ca'),
   title: {
     default: 'ARC — Back the athletes you believe in',
     template: '%s · ARC',
