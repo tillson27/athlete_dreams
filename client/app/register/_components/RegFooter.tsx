@@ -7,7 +7,7 @@ export function RegFooter() {
         <div className="flex flex-col gap-1">
           <span className="font-display text-2xl font-bold text-on-surface">Arc</span>
           <p className="text-xs text-on-surface-variant">
-            © 2024 Arc. Professional Funding for Athletes.
+            © {new Date().getFullYear()} ARC. A home for your athletic story.
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-6">

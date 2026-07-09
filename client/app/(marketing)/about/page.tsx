@@ -89,9 +89,9 @@ export default function AboutPage() {
               We answer every email.
             </h2>
             <p className="max-w-xl text-base leading-relaxed text-on-surface-variant">
-              Whether you&rsquo;re a runner who wants to join the pilot cohort, a run club that wants
-              its members on ARC, or just have a question &mdash; write us a few sentences and
-              we&rsquo;ll reply within 48 hours.
+              Whether you&rsquo;re a runner who wants to join ARC, a run club that wants its members
+              on ARC, or just have a question &mdash; write us a few sentences and we&rsquo;ll reply
+              within 48 hours.
             </p>
             <p className="text-sm text-on-surface-variant">
               For now, email us directly:{' '}

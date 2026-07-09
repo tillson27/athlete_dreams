@@ -18,10 +18,13 @@ export function ProfilePreview({
 }) {
   const { profile } = useOnboarding();
   const { session } = useSession();
-  const { discipline, location, bio, mission, values, personalBests } = profile;
+  const { discipline, location, bio, mission, values, personalBests, careerHighlights, previousRaces } =
+    profile;
   const name = profile.name || session?.name || '';
   const slug = slugifyName(name) || 'your-name';
   const filledBests = personalBests.filter((best) => best.distance && best.time).slice(0, 3);
+  const filledHighlights = careerHighlights.filter((item) => item.title.trim()).slice(0, 4);
+  const filledRaces = previousRaces.filter((item) => item.name.trim()).slice(0, 4);
 
   return (
     <div className={sticky ? 'md:sticky md:top-24' : ''}>
@@ -50,10 +53,6 @@ export function ProfilePreview({
           />
           <div aria-hidden="true" className="grain pointer-events-none absolute inset-0" />
           <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-            <span className="mb-2 inline-flex items-center gap-1 rounded-pill bg-success px-2.5 py-1 text-[11px] font-bold tracking-[0.05em]">
-              <Icon name="check" className="h-3.5 w-3.5" />
-              Verified Athlete
-            </span>
             <h3
               className={`font-display text-2xl font-extrabold leading-tight drop-shadow-sm ${
                 name ? 'text-white' : 'text-white/50'
@@ -93,13 +92,80 @@ export function ProfilePreview({
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {filledBests.map((best) => (
                   <div key={best.id} className="rounded-input bg-surface-container-low p-2.5">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">
-                      {best.distance}
-                    </p>
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">
+                        {best.distance}
+                      </p>
+                      {best.resultUrl ? (
+                        <span
+                          className="inline-flex text-success"
+                          title="Verified result"
+                          aria-label="Verified result"
+                        >
+                          <Icon name="verified" className="h-3.5 w-3.5 shrink-0" />
+                        </span>
+                      ) : null}
+                    </div>
                     <p className="font-display text-sm font-bold text-on-surface">{best.time}</p>
                   </div>
                 ))}
               </div>
+            </div>
+          ) : null}
+
+          {filledHighlights.length > 0 ? (
+            <div>
+              <p className="label-bold text-on-surface-variant">Career highlights</p>
+              <ul className="mt-2 space-y-1.5">
+                {filledHighlights.map((item) => (
+                  <li key={item.id} className="flex items-start gap-2 text-sm">
+                    <Icon name="medal" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span className="flex-1">
+                      <span className="font-bold text-on-surface">{item.title}</span>
+                      {item.detail ? (
+                        <span className="text-on-surface-variant"> — {item.detail}</span>
+                      ) : null}
+                    </span>
+                    {item.resultUrl ? (
+                      <span
+                        className="mt-0.5 inline-flex shrink-0 text-success"
+                        title="Verified result"
+                        aria-label="Verified result"
+                      >
+                        <Icon name="verified" className="h-3.5 w-3.5" />
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {filledRaces.length > 0 ? (
+            <div>
+              <p className="label-bold text-on-surface-variant">Previous races</p>
+              <ul className="mt-2 space-y-1.5">
+                {filledRaces.map((item) => (
+                  <li key={item.id} className="flex items-start gap-2 text-sm">
+                    <Icon name="flag" className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                    <span className="flex-1">
+                      <span className="font-bold text-on-surface">{item.name}</span>
+                      {item.result ? (
+                        <span className="text-on-surface-variant"> — {item.result}</span>
+                      ) : null}
+                    </span>
+                    {item.resultUrl ? (
+                      <span
+                        className="mt-0.5 inline-flex shrink-0 text-success"
+                        title="Verified result"
+                        aria-label="Verified result"
+                      >
+                        <Icon name="verified" className="h-3.5 w-3.5" />
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : null}
 

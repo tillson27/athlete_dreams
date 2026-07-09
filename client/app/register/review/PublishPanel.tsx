@@ -54,6 +54,27 @@ export function PublishPanel() {
     profile.values.length === 0 && 'values',
   ].filter((entry): entry is string => Boolean(entry));
 
+  // Post-publish nudge: what's still worth adding so the profile reads as complete.
+  const missingSections = [
+    profile.careerHighlights.filter((item) => item.title.trim()).length === 0 && 'career highlights',
+    profile.previousRaces.filter((item) => item.name.trim()).length === 0 && 'previous races',
+  ].filter((entry): entry is string => Boolean(entry));
+
+  const completionChecks = [
+    hasName,
+    Boolean(profile.bio.trim()),
+    Boolean(profile.discipline.trim()),
+    Boolean(profile.location.trim()),
+    profile.personalBests.filter((best) => best.distance && best.time).length > 0,
+    profile.values.length > 0,
+    Boolean(profile.mission.trim()),
+    profile.careerHighlights.filter((item) => item.title.trim()).length > 0,
+    profile.previousRaces.filter((item) => item.name.trim()).length > 0,
+  ];
+  const completionPct = Math.round(
+    (completionChecks.filter(Boolean).length / completionChecks.length) * 100,
+  );
+
   const publish = () => {
     if (!agreed || !hasName) {
       setError(true);
@@ -120,27 +141,35 @@ export function PublishPanel() {
             </button>
           </div>
 
-          <div className="mt-8 w-full rounded-card border border-outline-variant bg-surface-container-low p-5 text-left">
-            <div className="flex items-start gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary-container/20 text-primary">
-                <Icon name="trophy" className="h-6 w-6" />
-              </span>
-              <div className="flex-1">
-                <h2 className="label-bold text-on-surface">Make it stronger</h2>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  Your profile is live — now add your <strong>career highlights</strong> and{' '}
-                  <strong>previous races</strong> so supporters can follow your whole journey.
-                </p>
-                <Link
-                  href={manageHref}
-                  className="label-bold mt-3 inline-flex items-center gap-1.5 text-secondary hover:underline"
-                >
-                  Add highlights &amp; races
-                  <Icon name="arrow-forward" className="h-4 w-4" />
-                </Link>
+          {missingSections.length > 0 ? (
+            <div className="mt-8 w-full rounded-card border-2 border-primary bg-primary-soft p-6 text-left shadow-xl shadow-primary/15">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="font-display text-2xl font-extrabold text-on-surface">
+                  Make it stronger
+                </h2>
+                <span className="label-bold shrink-0 text-primary">
+                  {completionPct}% complete
+                </span>
               </div>
+              <div className="mt-3 h-2.5 w-full overflow-hidden rounded-pill bg-white/70">
+                <div
+                  className="h-full rounded-pill bg-primary transition-all"
+                  style={{ width: `${completionPct}%` }}
+                />
+              </div>
+              <p className="mt-4 text-base leading-relaxed text-on-surface">
+                Still to add: <strong>{missingSections.join(', ')}</strong>. Profiles with a full
+                race history get followed — and backed — far more often.
+              </p>
+              <Link
+                href={manageHref}
+                className="mt-4 inline-flex items-center gap-2 rounded-button bg-primary px-6 py-3 font-display text-base font-bold text-on-primary shadow-lg shadow-primary/25 transition-all hover:bg-primary-strong active:scale-95"
+              >
+                Finish your profile
+                <Icon name="arrow-forward" className="h-5 w-5" />
+              </Link>
             </div>
-          </div>
+          ) : null}
 
           <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
             <Link

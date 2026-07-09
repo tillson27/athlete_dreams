@@ -3,7 +3,9 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { createBrowserStore } from '@/lib/browserStore';
 
-export type PersonalBest = { id: string; distance: string; time: string };
+export type PersonalBest = { id: string; distance: string; time: string; resultUrl?: string };
+export type CareerHighlight = { id: string; title: string; detail: string; resultUrl?: string };
+export type PreviousRace = { id: string; name: string; result: string; resultUrl?: string };
 
 export type OnboardingProfile = {
   name: string;
@@ -11,6 +13,8 @@ export type OnboardingProfile = {
   location: string;
   bio: string;
   personalBests: PersonalBest[];
+  careerHighlights: CareerHighlight[];
+  previousRaces: PreviousRace[];
   values: string[];
   mission: string;
 };
@@ -21,6 +25,8 @@ const emptyProfile: OnboardingProfile = {
   location: '',
   bio: '',
   personalBests: [],
+  careerHighlights: [],
+  previousRaces: [],
   values: [],
   mission: '',
 };

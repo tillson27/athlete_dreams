@@ -29,14 +29,14 @@ const steps: {
   {
     number: '3',
     icon: 'sync',
-    title: '3. Values & Social',
-    body: 'Connect your community. Link your social handles and your fitness tracker to describe the values that drive you. This helps backers understand the person behind the athlete.',
+    title: '3. Values & Voice',
+    body: 'Choose the values that drive you and add a tagline in your own words. This helps backers understand the person behind the athlete.',
   },
   {
     number: '4',
     icon: 'fact-check',
     title: '4. Review & Publish',
-    body: 'The final sprint. Review your funding targets, breakdown of fund usage, and launch your "Epic." Our team will perform a final verification to ensure transparency.',
+    body: 'The final sprint. Review your funding targets, breakdown of fund usage, and launch your "Epic." Any race you link to its official results carries a verified badge.',
   },
 ];
 
@@ -110,7 +110,7 @@ export default function OnboardingGuidePage() {
                         <span className="label-bold text-primary-container">VERIFIED</span>
                         <div className="mt-2 flex items-center gap-2">
                           <Icon name="check-circle" className="h-4 w-4 text-secondary" />
-                          <span className="text-xs">Certificates</span>
+                          <span className="text-xs">Race results</span>
                         </div>
                       </div>
                     </div>

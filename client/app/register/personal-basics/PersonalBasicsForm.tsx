@@ -8,7 +8,7 @@ import { useOnboarding } from '../_components/OnboardingContext';
 import { formInputClass as inputClass } from '../_components/formStyles';
 
 
-const sports = ['Road running', 'Trail & ultra', 'Track & field', 'Marathon', 'Other'];
+const sports = ['Road running', 'Trail & ultra'];
 
 const storyPrompts = [
   { label: 'What got you started?', scaffold: 'What got me started: ' },
@@ -164,16 +164,6 @@ export function PersonalBasicsForm({ fromReview = false }: { fromReview?: boolea
             </p>
           </div>
         </form>
-
-        <div className="flex items-start gap-4 rounded-card border border-outline-variant bg-surface-container-low p-6">
-          <Icon name="shield-check" className="h-6 w-6 shrink-0 text-success" />
-          <div>
-            <h4 className="label-bold text-on-surface">Verified &amp; trusted</h4>
-            <p className="mt-1 text-tertiary">
-              Every ARC profile is verified before it goes live — so your story carries real weight.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { Icon, type IconName } from '@/components/ui/Icon';
+import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 
@@ -22,43 +21,8 @@ const VALUES = [
 ];
 const MAX_VALUES = 3;
 
-type Connection = {
-  name: string;
-  description: string;
-  icon?: IconName;
-  iconWrap: string;
-  iconColor: string;
-  connectedHandle?: string;
-};
-
-const connections: Connection[] = [
-  {
-    name: 'Strava',
-    description: 'Import training stats and verified results.',
-    icon: 'run',
-    iconWrap: 'bg-[#ffdbcf]',
-    iconColor: 'text-[#FC6100]',
-  },
-  {
-    name: 'Instagram',
-    description: 'Show your day-to-day running life.',
-    icon: 'camera',
-    iconWrap: 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]',
-    iconColor: 'text-white',
-    connectedHandle: '@you',
-  },
-  {
-    name: 'Garmin / Coros',
-    description: 'Sync workouts and technical metrics.',
-    icon: 'watch',
-    iconWrap: 'bg-surface-container-high',
-    iconColor: 'text-on-surface-variant',
-  },
-];
-
 export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean }) {
   const { profile, update } = useOnboarding();
-  const [connected, setConnected] = useState<string[]>([]);
 
   const toggleValue = (value: string) => {
     update((current) => {
@@ -89,7 +53,7 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
             Values &amp; voice
           </h1>
           <p className="text-lg text-on-surface-variant">
-            What you stand for and connections that make your story real.
+            What you stand for, in your own words — the values and voice behind your story.
           </p>
         </section>
 
@@ -136,51 +100,6 @@ export function ValuesSocialForm({ fromReview = false }: { fromReview?: boolean 
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant/50">
               {profile.mission.length}/100
             </span>
-          </div>
-        </section>
-
-        <section className="flex w-full flex-col gap-6">
-          <div>
-            <h2 className="font-display text-2xl font-bold text-on-surface">Connect your journey</h2>
-            <p className="mt-1 text-on-surface-variant">
-              Link your platforms so your training and results stay verified.
-            </p>
-          </div>
-          <div className="flex w-full flex-col gap-4">
-            {connections.map((connection) => (
-              <div
-                key={connection.name}
-                className="flex items-center justify-between rounded-card border border-outline-variant bg-surface-container-lowest p-5 shadow-sm"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`flex h-14 w-14 items-center justify-center rounded-lg ${connection.iconWrap}`}
-                  >
-                    {connection.icon ? (
-                      <Icon name={connection.icon} className={`h-7 w-7 ${connection.iconColor}`} />
-                    ) : null}
-                  </div>
-                  <div>
-                    <h3 className="label-bold text-on-surface">{connection.name}</h3>
-                    <p className="text-sm text-on-surface-variant">{connection.description}</p>
-                  </div>
-                </div>
-                {connection.connectedHandle || connected.includes(connection.name) ? (
-                  <div className="flex items-center gap-2 rounded-full bg-surface-container px-4 py-2 text-sm font-bold text-on-surface">
-                    <Icon name="check" className="h-4 w-4" />
-                    <span>{connection.connectedHandle ?? 'Connected'}</span>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConnected((prev) => [...prev, connection.name])}
-                    className="rounded-pill border border-outline px-6 py-2 font-bold text-secondary transition-colors hover:bg-surface-container-low"
-                  >
-                    Connect
-                  </button>
-                )}
-              </div>
-            ))}
           </div>
         </section>
 

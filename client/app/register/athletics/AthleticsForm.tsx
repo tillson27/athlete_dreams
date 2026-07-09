@@ -3,7 +3,12 @@
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
-import { useOnboarding, type PersonalBest } from '../_components/OnboardingContext';
+import {
+  useOnboarding,
+  type PersonalBest,
+  type CareerHighlight,
+  type PreviousRace,
+} from '../_components/OnboardingContext';
 import { formInputClass as inputClass } from '../_components/formStyles';
 
 const distances = ['5K', '10K', 'Half Marathon', 'Marathon', '50K', '100K', '100-miler', 'Other'];
@@ -13,6 +18,8 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) {
   const { profile, update } = useOnboarding();
   const bests = profile.personalBests;
+  const highlights = profile.careerHighlights;
+  const races = profile.previousRaces;
 
   const setBests = (mutate: (current: PersonalBest[]) => PersonalBest[]) =>
     update((current) => ({ personalBests: mutate(current.personalBests) }));
@@ -20,6 +27,22 @@ export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) 
   const patchBest = (id: string, patch: Partial<PersonalBest>) =>
     setBests((current) => current.map((best) => (best.id === id ? { ...best, ...patch } : best)));
   const removeBest = (id: string) => setBests((current) => current.filter((best) => best.id !== id));
+
+  const setHighlights = (mutate: (current: CareerHighlight[]) => CareerHighlight[]) =>
+    update((current) => ({ careerHighlights: mutate(current.careerHighlights) }));
+  const addHighlight = () =>
+    setHighlights((current) => [...current, { id: uid(), title: '', detail: '' }]);
+  const patchHighlight = (id: string, patch: Partial<CareerHighlight>) =>
+    setHighlights((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  const removeHighlight = (id: string) =>
+    setHighlights((current) => current.filter((item) => item.id !== id));
+
+  const setRaces = (mutate: (current: PreviousRace[]) => PreviousRace[]) =>
+    update((current) => ({ previousRaces: mutate(current.previousRaces) }));
+  const addRace = () => setRaces((current) => [...current, { id: uid(), name: '', result: '' }]);
+  const patchRace = (id: string, patch: Partial<PreviousRace>) =>
+    setRaces((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  const removeRace = (id: string) => setRaces((current) => current.filter((item) => item.id !== id));
 
   return (
     <div className="grid gap-10 md:grid-cols-2 md:items-start">
@@ -103,6 +126,22 @@ export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) 
                       <Icon name="trash" className="h-5 w-5" />
                     </button>
                   </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-12">
+                    <label className="label-bold text-on-surface-variant">
+                      Results link <span className="font-normal text-tertiary">(optional)</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={best.resultUrl ?? ''}
+                      onChange={(event) => patchBest(best.id, { resultUrl: event.target.value })}
+                      placeholder="Link to the official results page"
+                      className={inputClass}
+                    />
+                    <p className="flex items-center gap-1.5 text-xs text-tertiary">
+                      <Icon name="shield-check" className="h-4 w-4 shrink-0 text-success" />
+                      Add a link to the official race results and this result earns a verified badge.
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -115,6 +154,160 @@ export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) 
           >
             <Icon name="add-circle" className="h-5 w-5" />
             {bests.length === 0 ? 'Add your first personal best' : 'Add another'}
+          </button>
+        </div>
+
+        <div className="flex items-start gap-3 rounded-card border border-dashed border-outline-variant bg-surface-container-low p-4">
+          <Icon name="info" className="h-5 w-5 shrink-0 text-secondary" />
+          <p className="text-sm text-on-surface-variant">
+            Career highlights and previous races are optional. Add what you have now, or skip for now
+            — you can fill them in anytime after your profile is created.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
+          <div className="flex items-center gap-3">
+            <Icon name="medal" className="h-7 w-7 text-primary" />
+            <h3 className="font-display text-2xl font-bold text-on-surface">Career highlights</h3>
+            <span className="label-bold ml-auto text-tertiary">Optional</span>
+          </div>
+
+          {highlights.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {highlights.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-1 items-end gap-3 rounded-lg border border-outline-variant/20 bg-surface p-4 md:grid-cols-12"
+                >
+                  <div className="flex flex-col gap-1.5 md:col-span-6">
+                    <label className="label-bold text-on-surface-variant">Highlight</label>
+                    <input
+                      type="text"
+                      value={item.title}
+                      onChange={(event) => patchHighlight(item.id, { title: event.target.value })}
+                      placeholder="e.g. Canadian Marathon Record"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-5">
+                    <label className="label-bold text-on-surface-variant">Detail</label>
+                    <input
+                      type="text"
+                      value={item.detail}
+                      onChange={(event) => patchHighlight(item.id, { detail: event.target.value })}
+                      placeholder="e.g. 2:24:11 at Toronto Waterfront, 2025"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex justify-end pb-1 md:col-span-1 md:justify-center">
+                    <button
+                      type="button"
+                      onClick={() => removeHighlight(item.id)}
+                      aria-label="Remove career highlight"
+                      className="rounded-full p-2 text-error transition-colors hover:bg-error-container/30"
+                    >
+                      <Icon name="trash" className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-12">
+                    <label className="label-bold text-on-surface-variant">
+                      Results link <span className="font-normal text-tertiary">(optional)</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={item.resultUrl ?? ''}
+                      onChange={(event) => patchHighlight(item.id, { resultUrl: event.target.value })}
+                      placeholder="Link to the official results page"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={addHighlight}
+            className="flex items-center gap-2 self-start font-bold text-secondary hover:underline"
+          >
+            <Icon name="add-circle" className="h-5 w-5" />
+            {highlights.length === 0 ? 'Add a career highlight' : 'Add another'}
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
+          <div className="flex items-center gap-3">
+            <Icon name="flag" className="h-7 w-7 text-primary" />
+            <h3 className="font-display text-2xl font-bold text-on-surface">Previous races</h3>
+            <span className="label-bold ml-auto text-tertiary">Optional</span>
+          </div>
+
+          {races.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {races.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-1 items-end gap-3 rounded-lg border border-outline-variant/20 bg-surface p-4 md:grid-cols-12"
+                >
+                  <div className="flex flex-col gap-1.5 md:col-span-6">
+                    <label className="label-bold text-on-surface-variant">Race</label>
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(event) => patchRace(item.id, { name: event.target.value })}
+                      placeholder="e.g. Boston Marathon 2026"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-5">
+                    <label className="label-bold text-on-surface-variant">Result</label>
+                    <input
+                      type="text"
+                      value={item.result}
+                      onChange={(event) => patchRace(item.id, { result: event.target.value })}
+                      placeholder="e.g. 1st Female — 2:34:43"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex justify-end pb-1 md:col-span-1 md:justify-center">
+                    <button
+                      type="button"
+                      onClick={() => removeRace(item.id)}
+                      aria-label="Remove previous race"
+                      className="rounded-full p-2 text-error transition-colors hover:bg-error-container/30"
+                    >
+                      <Icon name="trash" className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-12">
+                    <label className="label-bold text-on-surface-variant">
+                      Results link <span className="font-normal text-tertiary">(optional)</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={item.resultUrl ?? ''}
+                      onChange={(event) => patchRace(item.id, { resultUrl: event.target.value })}
+                      placeholder="Link to the official results page"
+                      className={inputClass}
+                    />
+                    <p className="flex items-center gap-1.5 text-xs text-tertiary">
+                      <Icon name="shield-check" className="h-4 w-4 shrink-0 text-success" />
+                      Link the official results and this race earns a verified badge.
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={addRace}
+            className="flex items-center gap-2 self-start font-bold text-secondary hover:underline"
+          >
+            <Icon name="add-circle" className="h-5 w-5" />
+            {races.length === 0 ? 'Add a previous race' : 'Add another'}
           </button>
         </div>
 

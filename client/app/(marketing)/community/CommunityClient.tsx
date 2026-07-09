@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { buildFeed, buildRacingSoon, type FeedItem } from '@/lib/communityFeed';
+import { buildFeed, buildRacingSoon, type FeedItem, type FeedCategory } from '@/lib/communityFeed';
 import { useFollows } from '@/lib/follows';
 import { useSession } from '@/lib/session';
 import { createBrowserStore } from '@/lib/browserStore';
@@ -28,7 +28,13 @@ function calendarHref(title: string, dateText: string): string | null {
 const DISCIPLINES: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
   { key: 'RUNNING', label: 'Road, Trail & Ultra' },
-  { key: 'TRACK_AND_FIELD', label: 'Track & Field' },
+];
+
+const FEED_TYPES: Array<{ key: FeedCategory | 'ALL'; label: string; icon: 'hub' | 'flag' | 'timer' | 'medal' }> = [
+  { key: 'ALL', label: 'All updates', icon: 'hub' },
+  { key: 'race', label: 'Races', icon: 'flag' },
+  { key: 'training', label: 'Training runs', icon: 'timer' },
+  { key: 'milestone', label: 'Milestones', icon: 'medal' },
 ];
 
 export function CommunityClient() {
@@ -39,6 +45,7 @@ export function CommunityClient() {
 
   const [tab, setTab] = useState<'everyone' | 'following'>('everyone');
   const [discipline, setDiscipline] = useState<MockAthlete['primarySport'] | 'ALL'>('ALL');
+  const [feedType, setFeedType] = useState<FeedCategory | 'ALL'>('ALL');
   const [cheered, setCheered] = useState<Record<string, boolean>>({});
   useEffect(() => {
     setCheered(cheersStore.read() ?? {});
@@ -46,6 +53,7 @@ export function CommunityClient() {
 
   const visible = feed.filter((item) => {
     if (discipline !== 'ALL' && item.primarySport !== discipline) return false;
+    if (feedType !== 'ALL' && item.category !== feedType) return false;
     if (tab === 'following' && !follows.includes(item.athleteSlug)) return false;
     return true;
   });
@@ -62,15 +70,16 @@ export function CommunityClient() {
       {/* Header */}
       <header className="mb-8">
         <span className="inline-flex items-center gap-2 rounded-pill bg-secondary-soft px-3 py-1 text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-          <span className="pulse-live h-2 w-2 rounded-full bg-secondary" />
-          Live
+          <Icon name="timer" className="h-3.5 w-3.5" />
+          Coming soon
         </span>
         <h1 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-on-surface md:text-5xl">
           Community
         </h1>
         <p className="mt-2 max-w-2xl text-lg text-on-surface-variant">
-          Verified results and the road ahead, from the runners you follow. Cheer them on — the
-          journey is better with people in it.
+          Here&rsquo;s a preview of what&rsquo;s coming. Soon this will be a live feed of verified
+          results and the road ahead, from the runners you follow — cheer them on and never miss a
+          start line. The journey is better with people in it.
         </p>
       </header>
 
@@ -103,6 +112,28 @@ export function CommunityClient() {
             );
           })}
         </div>
+      </div>
+
+      {/* Content-type filters */}
+      <div className="mb-6 -mx-5 flex gap-2 overflow-x-auto px-5 no-scrollbar md:mx-0 md:px-0">
+        {FEED_TYPES.map((entry) => {
+          const active = feedType === entry.key;
+          return (
+            <button
+              key={entry.key}
+              type="button"
+              onClick={() => setFeedType(entry.key)}
+              className={`label-bold inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill px-4 py-2 text-sm transition-colors ${
+                active
+                  ? 'bg-secondary text-on-secondary'
+                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+            >
+              <Icon name={entry.icon} className="h-4 w-4" />
+              {entry.label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
