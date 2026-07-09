@@ -7,7 +7,7 @@ export type MockAthlete = {
   fullName: string;
   headline: string;
   bio: string;
-  primarySport: 'RUNNING' | 'TRACK_AND_FIELD';
+  primarySport: 'RUNNING' | 'TRACK_AND_FIELD' | 'ROAD_CYCLING';
   runnerLevel: 'ELITE' | 'COMPETITIVE' | 'EVERYDAY';
   hometown: string;
   countryCode: 'CA' | 'US';
@@ -264,7 +264,36 @@ export const mockAthletes: MockAthlete[] = [
       { title: 'First ever 5K — 31:06 and hooked', year: 2024 },
     ],
   },
+  {
+    athleteSlug: 'naomi-osei',
+    fullName: 'Naomi Osei',
+    headline: 'Everyday cyclist and year-round bike commuter chasing her first 100 km',
+    bio: 'Two years ago my bike hung untouched in the garage. Now I commute by bike year-round, ride with a no-drop Saturday community club, and I am training for my first 100 km gran fondo. I do not race and I will probably never be fast — that is exactly the point. Cycling gave me my mornings, my headspace, and a whole community, and I want to show other everyday riders that they belong here too.',
+    primarySport: 'ROAD_CYCLING',
+    runnerLevel: 'EVERYDAY',
+    hometown: 'Hamilton, ON',
+    countryCode: 'CA',
+    heroMediaUrl:
+      'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=1400&q=70',
+    values: ['Community', 'Consistency', 'Car-free living'],
+    activeCampaignCount: 0,
+    totalRaisedCents: 0,
+    campaigns: [],
+    accomplishments: [
+      { title: 'Longest ride yet — 82 km', year: 2026 },
+      { title: 'One full year of car-free commuting', year: 2025 },
+      { title: 'First group ride with the Saturday club', year: 2024 },
+    ],
+  },
 ];
+
+const RUNNER_SPORTS: MockAthlete['primarySport'][] = ['RUNNING', 'TRACK_AND_FIELD'];
+
+// The launch directory + community feed stay runners-only. Non-running athletes
+// (e.g. the cyclist pilot) still resolve their own profile page by slug.
+export const runnerAthletes: MockAthlete[] = mockAthletes.filter((athlete) =>
+  RUNNER_SPORTS.includes(athlete.primarySport),
+);
 
 export function findMockAthlete(slug: string): MockAthlete | undefined {
   return mockAthletes.find((athlete) => athlete.athleteSlug === slug);

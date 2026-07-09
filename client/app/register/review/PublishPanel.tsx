@@ -8,7 +8,9 @@ import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { findMockAthlete } from '@/lib/mockAthletes';
 import { slugifyName } from '@/lib/slugify';
+import { profileUrl } from '@/lib/profileUrl';
 import { markPublished } from '@/lib/session';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 type Status = 'idle' | 'publishing' | 'published';
 
@@ -45,7 +47,7 @@ export function PublishPanel() {
   const slug = slugifyName(profile.name) || 'your-name';
   const profileExists = Boolean(findMockAthlete(slug));
   const manageHref = `/athletes/${slug}/manage`;
-  const publicUrl = `athletearc.ca/athletes/${slug}`;
+  const publicUrl = profileUrl(slug);
 
   const missing = [
     !profile.bio && 'your story',
@@ -151,12 +153,12 @@ export function PublishPanel() {
                   {completionPct}% complete
                 </span>
               </div>
-              <div className="mt-3 h-2.5 w-full overflow-hidden rounded-pill bg-white/70">
-                <div
-                  className="h-full rounded-pill bg-primary transition-all"
-                  style={{ width: `${completionPct}%` }}
-                />
-              </div>
+              <ProgressBar
+                percent={completionPct}
+                tone="primary"
+                trackColorClassName="bg-white/70"
+                className="mt-3"
+              />
               <p className="mt-4 text-base leading-relaxed text-on-surface">
                 Still to add: <strong>{missingSections.join(', ')}</strong>. Profiles with a full
                 race history get followed — and backed — far more often.

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AthleteRow } from '@/components/site/AthleteCard';
 import { LinkButton } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { mockAthletes, type MockAthlete } from '@/lib/mockAthletes';
+import { runnerAthletes, type MockAthlete } from '@/lib/mockAthletes';
 
 const SPORTS: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
@@ -55,7 +55,7 @@ export function AthleteDirectory() {
   }, []);
 
   const filtered = useMemo(() => {
-    return mockAthletes.filter((athlete) => {
+    return runnerAthletes.filter((athlete) => {
       if (filters.sport !== 'ALL' && athlete.primarySport !== filters.sport) return false;
       if (filters.level !== 'ALL' && athlete.runnerLevel !== filters.level) return false;
       if (filters.country !== 'ALL' && athlete.countryCode !== filters.country) return false;
@@ -69,7 +69,7 @@ export function AthleteDirectory() {
   }, [filters]);
 
   const clear = () => setFilters(initialFilters);
-  const isFiltered = filtered.length !== mockAthletes.length;
+  const isFiltered = filtered.length !== runnerAthletes.length;
 
   return (
     <div className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-col md:flex-row">

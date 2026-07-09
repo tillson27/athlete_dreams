@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
-import { formInputClass as inputClass } from '../_components/formStyles';
+import { formInputClass as inputClass } from '@/components/ui/formStyles';
 
 
 const sports = ['Road running', 'Trail & ultra'];

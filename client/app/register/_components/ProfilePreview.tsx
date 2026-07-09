@@ -5,6 +5,7 @@ import { Icon } from '@/components/ui/Icon';
 import { useOnboarding } from './OnboardingContext';
 import { useSession } from '@/lib/session';
 import { slugifyName } from '@/lib/slugify';
+import { profileUrl } from '@/lib/profileUrl';
 
 const previewPhoto =
   'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=1000&q=70';
@@ -41,7 +42,7 @@ export function ProfilePreview({
           <span className="h-3 w-3 rounded-full bg-primary-container/70" />
           <span className="h-3 w-3 rounded-full bg-success/70" />
           <span className="ml-3 flex-1 truncate rounded-pill bg-surface px-3 py-1 text-xs text-on-surface-variant">
-            athletearc.ca/athletes/{slug}
+            {profileUrl(slug)}
           </span>
         </div>
         {/* hero */}

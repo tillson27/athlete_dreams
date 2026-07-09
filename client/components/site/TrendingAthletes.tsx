@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { VerifiedChip } from '@/components/ui/Badge';
+import { Icon } from '@/components/ui/Icon';
 
 export type TrendingAthlete = {
   name: string;
@@ -85,7 +86,7 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
               </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-2.5 rounded-lg bg-surface-container-low px-3 py-2.5">
-                  <MedalIcon className="h-5 w-5 shrink-0 text-primary" />
+                  <Icon name="medal" className="h-5 w-5 shrink-0 text-primary" />
                   <span className="label-bold text-on-surface">{athlete.highlight}</span>
                 </div>
                 <div className="flex items-center gap-2 pt-1 text-sm text-on-surface-variant">
@@ -118,14 +119,6 @@ function Chevron({ className }: { className?: string }) {
       className={className}
     >
       <path d="m9 6 6 6-6 6" />
-    </svg>
-  );
-}
-
-function MedalIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M12 2 8 8h8l-4-6Zm0 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm0 3 1.2 2.4 2.6.4-1.9 1.8.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.8 2.6-.4L12 11Z" />
     </svg>
   );
 }

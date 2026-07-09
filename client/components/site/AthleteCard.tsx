@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { MockAthlete } from '@/lib/mockAthletes';
 import { findAthleteProfile } from '@/lib/athleteProfiles';
 import { formatSport } from '@/lib/format';
+import { Icon } from '@/components/ui/Icon';
 
 const LEVEL_LABEL: Record<MockAthlete['runnerLevel'], string> = {
   ELITE: 'Pro & Elite',
@@ -45,9 +46,7 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
               {athlete.fullName}
             </h3>
             <span className="flex shrink-0 items-center gap-1 text-xs font-bold uppercase tracking-wider text-success">
-              <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-                <path d="M10 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm3.86 6.39-4.6 4.6-2.13-2.12a.9.9 0 1 0-1.27 1.27l2.77 2.77a.9.9 0 0 0 1.27 0l5.23-5.23a.9.9 0 1 0-1.27-1.27Z" />
-              </svg>
+              <Icon name="check-badge" className="h-4 w-4" />
               Verified
             </span>
           </div>
@@ -60,7 +59,7 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           {topHighlight ? (
             <span className="inline-flex items-center gap-2 rounded-pill bg-surface-container-low px-3 py-1.5 text-xs font-bold text-on-surface">
-              <MedalIcon className="h-4 w-4 shrink-0 text-primary" />
+              <Icon name="medal" className="h-4 w-4 shrink-0 text-primary" />
               {topHighlight}
             </span>
           ) : (
@@ -80,14 +79,6 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
         </div>
       </div>
     </Link>
-  );
-}
-
-function MedalIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M12 2 8 8h8l-4-6Zm0 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm0 3 1.2 2.4 2.6.4-1.9 1.8.4 2.6-2.3-1.2-2.3 1.2.4-2.6-1.9-1.8 2.6-.4L12 11Z" />
-    </svg>
   );
 }
 

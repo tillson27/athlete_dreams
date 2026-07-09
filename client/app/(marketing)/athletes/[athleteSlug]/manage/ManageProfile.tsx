@@ -15,8 +15,7 @@ import {
   type EditRace as Race,
   type EditRoadmapItem as RoadmapItem,
 } from '@/lib/athleteEdits';
-
-const uid = () => Math.random().toString(36).slice(2, 10);
+import { uid } from '@/lib/uid';
 
 const inputClass =
   'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/25';

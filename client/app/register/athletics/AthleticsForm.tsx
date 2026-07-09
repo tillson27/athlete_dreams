@@ -9,10 +9,10 @@ import {
   type CareerHighlight,
   type PreviousRace,
 } from '../_components/OnboardingContext';
-import { formInputClass as inputClass } from '../_components/formStyles';
+import { formInputClass as inputClass } from '@/components/ui/formStyles';
+import { uid } from '@/lib/uid';
 
 const distances = ['5K', '10K', 'Half Marathon', 'Marathon', '50K', '100K', '100-miler', 'Other'];
-const uid = () => Math.random().toString(36).slice(2, 9);
 
 
 export function AthleticsForm({ fromReview = false }: { fromReview?: boolean }) {

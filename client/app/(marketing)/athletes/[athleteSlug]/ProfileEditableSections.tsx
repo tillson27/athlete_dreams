@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { loadEdits, subscribeToEdits, type AthleteEdits, type EditRace } from '@/lib/athleteEdits';
-import { HighlightDropdown, RaceDropdown, Icon, img } from './profileParts';
+import { HighlightDropdown, RaceDropdown } from './profileParts';
+import { Icon } from '@/components/ui/Icon';
+import { unsplashPhoto } from '@/lib/unsplash';
 
 // Renders published `defaults` during SSR and until mounted, then swaps in any
 // saved edits for this athlete (reactive to saves from the manage editor).
@@ -158,7 +160,7 @@ export function EditedGallery({ slug, defaults }: { slug: string; defaults: Athl
           className="relative aspect-square cursor-pointer overflow-hidden rounded bg-surface-container transition-opacity hover:opacity-90"
         >
           <Image
-            src={img(photo, 400)}
+            src={unsplashPhoto(photo, 400)}
             alt={`Gallery photo ${index + 1}`}
             fill
             unoptimized

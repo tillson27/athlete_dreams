@@ -1,18 +1,10 @@
 import type { Metadata } from 'next';
 import { findMockAthlete, mockAthletes } from '@/lib/mockAthletes';
 import { unsplashPhoto } from '@/lib/unsplash';
+import { nameFromSlug } from '@/lib/slugify';
 import { ManageProfile } from './ManageProfile';
 
 const FALLBACK_COVER = unsplashPhoto('1594882645126-14020914d58d', 1400);
-
-// New athletes' slugs aren't in the mock roster yet — derive a display name so
-// their editor still works instead of dead-ending on a 404.
-function nameFromSlug(slug: string): string {
-  return slug
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 export function generateStaticParams() {
   return mockAthletes.map((athlete) => ({ athleteSlug: athlete.athleteSlug }));

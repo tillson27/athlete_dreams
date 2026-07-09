@@ -1,6 +1,7 @@
 import type { RichAthleteProfile } from './athleteProfiles';
 import { unsplashPhoto } from './unsplash';
 import { createBrowserStore } from './browserStore';
+import { uid } from './uid';
 
 // Frontend-only edit store for the /manage editor. Seeds from the published
 // athleteProfiles data, then persists an athlete's edits to localStorage so
@@ -36,7 +37,6 @@ export type AthleteEdits = {
 
 export const EDITS_EVENT = 'arc-athlete-edits-change';
 const storeFor = (slug: string) => createBrowserStore<AthleteEdits>(`arc-manage-${slug}`, EDITS_EVENT);
-const uid = () => Math.random().toString(36).slice(2, 10);
 
 // Public API contract: derive an editable snapshot from published profile data.
 export function deriveEdits(profile: RichAthleteProfile): AthleteEdits {

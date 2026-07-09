@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useSession, signOut, type Session } from '@/lib/session';
 import { findMockAthlete } from '@/lib/mockAthletes';
 import { slugifyName } from '@/lib/slugify';
+import { profileUrl } from '@/lib/profileUrl';
 import { loadEdits, subscribeToEdits } from '@/lib/athleteEdits';
 import { OnboardingProvider, useOnboarding } from '@/app/register/_components/OnboardingContext';
 import { ProfilePreview } from '@/app/register/_components/ProfilePreview';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 export function DashboardClient() {
   const { session, ready } = useSession();
@@ -48,7 +50,7 @@ function DashboardInner({ session }: { session: Session }) {
   // New athletes' public pages open with the pilot; until then their preview is the profile.
   const profileHref = profileExists ? `/athletes/${slug}` : '#profile-preview';
   const manageHref = `/athletes/${slug}/manage`;
-  const publicUrl = `athletearc.ca/athletes/${slug}`;
+  const publicUrl = profileUrl(slug);
 
   const [hasRaceEdits, setHasRaceEdits] = useState(false);
   useEffect(() => {
@@ -156,12 +158,7 @@ function DashboardInner({ session }: { session: Session }) {
               <h2 className="font-display text-xl font-bold text-on-surface">Finish your profile</h2>
               <span className="label-bold text-primary">{completeness}%</span>
             </div>
-            <div className="mb-6 h-2.5 w-full overflow-hidden rounded-pill bg-surface-container">
-              <div
-                className="progress-gradient h-full rounded-pill transition-all"
-                style={{ width: `${completeness}%` }}
-              />
-            </div>
+            <ProgressBar percent={completeness} className="mb-6" />
             <ul className="space-y-2">
               {checklist.map((item) => (
                 <li

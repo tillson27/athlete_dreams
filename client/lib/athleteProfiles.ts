@@ -53,6 +53,19 @@ export type RecentBacker = {
   icon?: 'groups' | 'person';
 };
 
+// Cycling-only performance block. A cyclist's identity is power, not
+// time-over-distance, so `powerProfile` surfaces the FTP + power curve that
+// runners' `personalBests` can't express. Optional — runners omit it.
+export type PowerPeak = { label: string; watts: string };
+
+export type PowerProfile = {
+  ftpWatts: string;
+  wattsPerKg: string;
+  riderWeight: string;
+  riderType: string;
+  peaks: PowerPeak[];
+};
+
 export type RichAthleteProfile = {
   athleteSlug: string;
   handle: string;
@@ -63,9 +76,11 @@ export type RichAthleteProfile = {
   storyBody: string[];
   personalBests: { label: string; value: string }[];
   careerHighlights: HighlightEntry[];
+  highlightsHeading?: string;
   moreResults: ExtraHighlight[];
   moreResultsLabel: string;
   previousRaces: RaceEntry[];
+  racesHeading?: string;
   morePreviousRaces: ExtraRace[];
   moreRacesLabel: string;
   roadmapTitle: string;
@@ -77,9 +92,11 @@ export type RichAthleteProfile = {
     weeklyKm: string;
     weeklyTime: string;
     weeklyGain: string;
+    weeklyLoad?: string;
     latestTitle: string;
     latestMeta: string;
   };
+  powerProfile?: PowerProfile;
   galleryPhotos: string[];
   featuredVideo?: { image: string; duration: string };
   supportEnabled: boolean;
@@ -1082,6 +1099,168 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       '1452626038306-9aae5e071dd3',
       '1530143311094-34d807799e8f',
       '1461897104016-0b3b00cc81ee',
+    ],
+    supportEnabled: false,
+  },
+
+  'naomi-osei': {
+    athleteSlug: 'naomi-osei',
+    handle: '@naomi.rides.hamont',
+    followers: '640',
+    disciplineLabel: 'Road & gravel · Everyday rider',
+    arcSubtitle:
+      'From a dusty garage bike to her first gran fondo — the chapters behind the rider, in her own words.',
+    storyIntro:
+      'Year-round bike commuter, weekend club rider, and proudly not a racer. Two years ago my bike hung untouched in the garage. This fall I’m riding my first 100 km gran fondo…',
+    storyBody: [
+      'I’m Naomi. For years my bike hung in the garage under a film of dust — a good intention I never quite kept. Two years ago a coworker dragged me out on a slow Saturday loop, and something clicked at the coffee stop. I’ve barely stopped pedalling since.',
+      'I’m not fast and I don’t race. I ride to work most days — rain, snow, the works — and I ride for headspace on the weekends. My commute is eleven kilometres of thinking time bookending every day, and it’s become the part I protect most.',
+      'This year I found a Saturday-morning community club that waits at the top of every hill for the last rider. That’s the whole culture I want more people to see: no dropping, no ego, just coffee and kilometres. I went from the person getting waited for to the one who waits.',
+      'My big goal is my first 100-kilometre gran fondo this fall. Not to place — just to finish, and to show every dusty-garage-bike person out there that the door is open. Come ride.',
+    ],
+    personalBests: [
+      { label: 'Longest ride', value: '82 km' },
+      { label: 'Biggest climb day', value: '640 m' },
+      { label: 'Weekly distance', value: '180 km' },
+      { label: 'Bike commutes (2026)', value: '148 days' },
+    ],
+    careerHighlights: [
+      {
+        title: '2026 Tour de Grand — 60 km route',
+        detail: 'My first organized ride — finished grinning',
+        tone: 'secondary',
+        images: ['1571008887538-b36bb32f4571', '1461896836934-ffe607ba8211'],
+      },
+      {
+        title: '2025 Bike Month Challenge',
+        detail: 'Commuted every workday in June — 22 days car-free',
+        tone: 'primary',
+        images: ['1540539234-c14a20fb7c7b', '1461897104016-0b3b00cc81ee'],
+      },
+    ],
+    highlightsHeading: 'Ride Highlights',
+    moreResults: [
+      {
+        title: '2025 Paris to Ancaster — 40 km Fun Route',
+        detail: 'Survived the mud and loved every minute',
+        images: ['1508973379184-7517410fb0bc', '1530143311094-34d807799e8f'],
+      },
+      {
+        title: '2024 First 50 km ride',
+        detail: 'Longest ride at the time — cried a little at the coffee stop',
+        images: ['1483721310020-03333e577078', '1596727147705-61a532a659bd'],
+      },
+    ],
+    moreResultsLabel: 'See more rides',
+    previousRaces: [
+      {
+        name: 'Tour de Grand — 60 km route',
+        date: 'Sunday, June 7, 2026',
+        result: 'Finished — 2:48 rolling, all smiles',
+        tone: 'secondary',
+        links: [{ label: 'Strava Activity', href: 'https://www.strava.com' }],
+        images: ['1540539234-c14a20fb7c7b'],
+      },
+      {
+        name: 'Saturday Community Club — Dundas loop',
+        date: 'Most Saturdays',
+        result: 'No-drop, 44 km with the crew',
+        tone: 'primary',
+        images: ['1483721310020-03333e577078'],
+      },
+      {
+        name: 'Paris to Ancaster — 40 km Fun Route',
+        date: 'Sunday, April 27, 2025',
+        result: 'Finished — muddy and delighted',
+        tone: 'secondary',
+        links: [{ label: 'Event Info', href: 'https://paristoancaster.com' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
+        images: ['1571008887538-b36bb32f4571', '1461897104016-0b3b00cc81ee'],
+      },
+    ],
+    racesHeading: 'Ride Log',
+    morePreviousRaces: [
+      {
+        name: 'First 50 km ride',
+        date: 'Aug 2024',
+        result: 'Longest yet at the time',
+        images: ['1508973379184-7517410fb0bc', '1530143311094-34d807799e8f'],
+      },
+      {
+        name: 'Sunday bakery loop',
+        date: 'May 2024',
+        result: 'The slow ride that started it all',
+        images: ['1596727147705-61a532a659bd', '1533560904424-a0c61dc306fc'],
+      },
+    ],
+    moreRacesLabel: 'See more rides (the early days)',
+    roadmapTitle: 'The Road to My First 100',
+    roadmap: [
+      { name: 'Tour de Grand — 100 km gran fondo (my first)', date: 'September 13, 2026' },
+      { name: 'Fall-colours bikepacking overnighter', date: 'October 2026' },
+      { name: 'Keep the car-free commute streak alive', date: 'All winter' },
+    ],
+    coreValues: [
+      { title: 'Community', body: 'No-drop, wait at the top.' },
+      { title: 'Consistency', body: 'Rain, snow, ride anyway.' },
+      { title: 'Car-free living', body: 'Two wheels, most days.' },
+      { title: 'Joy', body: 'The coffee stop counts.' },
+    ],
+    arcChapters: [
+      {
+        era: '2015 – 2023',
+        title: 'The garage bike',
+        icon: 'book',
+        tone: 'secondary',
+        body: 'A good intention gathering dust — a bike I bought and barely rode for years, telling myself I’d start “once things calmed down.”',
+      },
+      {
+        era: '2024',
+        title: 'The Saturday that stuck',
+        icon: 'heart',
+        tone: 'tertiary',
+        body: 'A coworker dragged me out on a slow loop. Something clicked at the coffee stop, and I’ve barely stopped pedalling since.',
+      },
+      {
+        era: '2024 – 2025',
+        title: 'Going car-free',
+        icon: 'history',
+        tone: 'primary',
+        image: '1571008887538-b36bb32f4571',
+        body: 'I started commuting by bike — rain, snow, all of it. Eleven kilometres of thinking time became the part of my day I protect most.',
+      },
+      {
+        era: '2025',
+        title: 'Finding the crew',
+        icon: 'groups',
+        tone: 'primary',
+        body: 'A no-drop community club that waits at the top of every hill. I went from the rider getting waited for to the one who waits.',
+      },
+      {
+        era: 'Now',
+        title: 'My first 100',
+        icon: 'flag',
+        tone: 'primary',
+        current: true,
+        body: 'A 100 km gran fondo this fall. Not to place — just to finish, and to hold the door open for every dusty-garage-bike person out there.',
+      },
+    ],
+    instagramPosts: [
+      { id: '1571008887538-b36bb32f4571', likes: '96' },
+      { id: '1461896836934-ffe607ba8211', likes: '74' },
+      { id: '1483721310020-03333e577078', likes: '118' },
+    ],
+    training: {
+      weeklyKm: '165',
+      weeklyTime: '7h 10m',
+      weeklyGain: '1,240m',
+      latestTitle: 'Saturday club ride: Dundas loop',
+      latestMeta: 'Saturday • 44 km • 1:52:30',
+    },
+    galleryPhotos: [
+      '1571008887538-b36bb32f4571',
+      '1461896836934-ffe607ba8211',
+      '1483721310020-03333e577078',
+      '1540539234-c14a20fb7c7b',
     ],
     supportEnabled: false,
   },

@@ -1,4 +1,4 @@
-import { mockAthletes, type MockAthlete } from './mockAthletes';
+import { runnerAthletes, type MockAthlete } from './mockAthletes';
 import { athleteProfiles } from './athleteProfiles';
 import { unsplashPhoto } from './unsplash';
 
@@ -42,7 +42,7 @@ export function buildFeed(): FeedItem[] {
   const races: FeedItem[] = [];
   const training: FeedItem[] = [];
 
-  mockAthletes.forEach((athlete, index) => {
+  runnerAthletes.forEach((athlete, index) => {
     const profile = athleteProfiles[athlete.athleteSlug];
     if (!profile) return;
     const base = {
@@ -124,7 +124,7 @@ export function buildFeed(): FeedItem[] {
 }
 
 export function buildRacingSoon(): RacingSoon[] {
-  return mockAthletes
+  return runnerAthletes
     .map((athlete) => {
       const profile = athleteProfiles[athlete.athleteSlug];
       const nextRace = profile?.roadmap[0];

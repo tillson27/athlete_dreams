@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Reveal } from '@/components/site/Reveal';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { unsplashPhoto as img } from '@/lib/unsplash';
+import { profileUrl } from '@/lib/profileUrl';
 
 export const metadata: Metadata = {
   title: 'For Athletes — Your professional running home',
@@ -185,7 +186,7 @@ export default function ForAthletesPage() {
                 <span className="h-3 w-3 rounded-full bg-primary-container/70" />
                 <span className="h-3 w-3 rounded-full bg-success/70" />
                 <span className="ml-3 flex-1 truncate rounded-pill bg-surface px-3 py-1 text-xs text-on-surface-variant">
-                  athletearc.ca/athletes/cassandra-de-winter
+                  {profileUrl('cassandra-de-winter')}
                 </span>
               </div>
               {/* mini profile */}

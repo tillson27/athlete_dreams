@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signIn } from '@/lib/session';
+import { authInputClass } from '@/components/ui/formStyles';
 
 export function SignInForm() {
   const router = useRouter();
@@ -90,7 +91,7 @@ function Field({
         required
         minLength={minLength}
         placeholder={placeholder}
-        className="w-full rounded-input border border-outline-variant bg-surface-container-low px-4 py-3 text-base text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-secondary focus:bg-surface-container-lowest focus:ring-2 focus:ring-secondary/25"
+        className={authInputClass}
       />
     </label>
   );

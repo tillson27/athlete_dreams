@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 const REG_STEPS = [
   { href: '/register/personal-basics', label: 'Step 1 — Basics' },
@@ -84,12 +85,11 @@ export function RegHeader({
                 })}
               </nav>
             ) : typeof progressPercent === 'number' ? (
-              <div className="h-2 w-24 overflow-hidden rounded-pill bg-surface-container md:w-32">
-                <div
-                  className="progress-gradient h-full rounded-pill"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+              <ProgressBar
+                percent={progressPercent}
+                heightClassName="h-2"
+                widthClassName="w-24 md:w-32"
+              />
             ) : null}
           </div>
         ) : null}

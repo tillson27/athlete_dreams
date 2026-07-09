@@ -6,6 +6,7 @@ import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { StartOverButton } from '../_components/StartOverButton';
 import { PublishPanel } from './PublishPanel';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 export function ReviewSummary() {
   const { profile } = useOnboarding();
@@ -39,9 +40,7 @@ export function ReviewSummary() {
           <span className="label-bold text-primary">Profile complete</span>
           <span className="label-bold text-on-surface">100%</span>
         </div>
-        <div className="h-3 w-full overflow-hidden rounded-pill bg-surface-container">
-          <div className="progress-gradient h-full w-full rounded-pill" />
-        </div>
+        <ProgressBar percent={100} heightClassName="h-3" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

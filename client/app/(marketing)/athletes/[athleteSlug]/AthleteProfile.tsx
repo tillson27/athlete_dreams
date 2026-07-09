@@ -4,10 +4,12 @@ import type { MockAthlete } from '@/lib/mockAthletes';
 import type { RichAthleteProfile } from '@/lib/athleteProfiles';
 import { deriveEdits } from '@/lib/athleteEdits';
 import { formatCents } from '@/lib/format';
+import { profileUrl } from '@/lib/profileUrl';
 import { ArrowGlyph } from '@/components/ui/Button';
 import { FollowButton } from '@/components/site/FollowButton';
 import { ShareCard, type ShareResume } from './ShareCard';
-import { Icon, img, type IconName } from './profileParts';
+import { Icon, type IconName } from '@/components/ui/Icon';
+import { unsplashPhoto } from '@/lib/unsplash';
 import { ProfileTabNav } from './ProfileTabNav';
 import { OwnerManageLink } from './OwnerManageLink';
 import {
@@ -59,6 +61,9 @@ export function AthleteProfile({
   profile: RichAthleteProfile;
 }) {
   const firstName = athlete.fullName.split(' ')[0];
+  const isCyclist = athlete.primarySport === 'ROAD_CYCLING';
+  const peerNoun = isCyclist ? 'Riders' : 'Runners';
+  const sportNoun = isCyclist ? 'cycling' : 'running';
   const supportersCount = profile.supporterCount ?? 0;
   const editDefaults = deriveEdits(profile);
 
@@ -74,7 +79,7 @@ export function AthleteProfile({
       (race) => `${race.name} — ${race.result}`,
     ),
     stats: profile.personalBests.map((best) => ({ label: best.label, value: best.value })),
-    url: `athletearc.ca/athletes/${athlete.athleteSlug}`,
+    url: profileUrl(athlete.athleteSlug),
   };
 
   return (
@@ -83,7 +88,7 @@ export function AthleteProfile({
       <section className="relative h-[46vh] min-h-[360px] w-full overflow-hidden md:h-[70vh] md:min-h-0">
         <Image
           src={athlete.heroMediaUrl}
-          alt={`${athlete.fullName} running`}
+          alt={`${athlete.fullName} — ${profile.disciplineLabel}`}
           fill
           priority
           sizes="100vw"
@@ -252,7 +257,7 @@ export function AthleteProfile({
                   {chapter.image ? (
                     <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-input bg-surface-container md:max-w-md">
                       <Image
-                        src={img(chapter.image, 800)}
+                        src={unsplashPhoto(chapter.image, 800)}
                         alt={`${chapter.title} — ${athlete.fullName}`}
                         fill
                         sizes="(max-width: 768px) 100vw, 420px"
@@ -276,7 +281,7 @@ export function AthleteProfile({
                 <CardHeading icon="play">Featured Video</CardHeading>
                 <div className="relative mt-6 aspect-video overflow-hidden rounded-input bg-surface-container">
                   <Image
-                    src={img(profile.featuredVideo.image, 1200)}
+                    src={unsplashPhoto(profile.featuredVideo.image, 1200)}
                     alt="Featured video thumbnail"
                     fill
                     sizes="(max-width: 768px) 100vw, 800px"
@@ -335,9 +340,48 @@ export function AthleteProfile({
               </div>
             </div>
 
+            {/* Power Profile — cycling-only */}
+            {profile.powerProfile ? (
+              <div className="card-lift order-3 rounded-card bg-surface-container-lowest p-8 md:order-none">
+                <CardHeading icon="insights">Power Profile</CardHeading>
+                <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="rounded-input bg-primary-soft p-4">
+                    <p className="label-bold text-on-primary-container/70">FTP</p>
+                    <p className="font-display text-2xl font-bold text-on-primary-container">
+                      {profile.powerProfile.ftpWatts}
+                    </p>
+                  </div>
+                  <div className="rounded-input bg-primary-soft p-4">
+                    <p className="label-bold text-on-primary-container/70">Power-to-weight</p>
+                    <p className="font-display text-2xl font-bold text-on-primary-container">
+                      {profile.powerProfile.wattsPerKg} <span className="text-base">W/kg</span>
+                    </p>
+                  </div>
+                  <div className="col-span-2 rounded-input bg-surface-container-low p-4">
+                    <p className="label-bold text-on-surface-variant">Rider type</p>
+                    <p className="font-display text-lg font-bold text-on-surface">
+                      {profile.powerProfile.riderType}
+                    </p>
+                    <p className="text-xs text-on-surface-variant">
+                      Racing weight {profile.powerProfile.riderWeight}
+                    </p>
+                  </div>
+                </div>
+                <p className="eyebrow mt-6 text-on-surface-variant">Peak power</p>
+                <div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-4">
+                  {profile.powerProfile.peaks.map((peak) => (
+                    <div key={peak.label} className="rounded-input bg-surface-container-low p-4">
+                      <p className="label-bold text-on-surface-variant">{peak.label}</p>
+                      <p className="font-display text-xl font-bold text-on-surface">{peak.watts}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {/* Career Highlights */}
             <div className="card-lift order-4 rounded-card bg-surface-container-lowest p-8 md:order-none">
-              <CardHeading icon="medal">Career Highlights</CardHeading>
+              <CardHeading icon="medal">{profile.highlightsHeading ?? 'Career Highlights'}</CardHeading>
               <EditedHighlights
                 slug={athlete.athleteSlug}
                 defaults={editDefaults}
@@ -347,7 +391,7 @@ export function AthleteProfile({
 
             {/* Previous Races */}
             <section className="card-lift order-8 rounded-card bg-surface-container-lowest p-8 md:order-none">
-              <CardHeading icon="history">Previous Races</CardHeading>
+              <CardHeading icon="history">{profile.racesHeading ?? 'Previous Races'}</CardHeading>
               <EditedRaces
                 slug={athlete.athleteSlug}
                 defaults={editDefaults}
@@ -431,6 +475,12 @@ export function AthleteProfile({
                   <p className="font-bold">{profile.training.weeklyGain}</p>
                 </div>
               </div>
+              {profile.training.weeklyLoad ? (
+                <p className="-mt-3 text-center text-xs text-on-surface-variant">
+                  <span className="font-bold text-on-surface">Load</span> ·{' '}
+                  {profile.training.weeklyLoad}
+                </p>
+              ) : null}
               <div>
                 <p className="label-bold text-on-surface">{profile.training.latestTitle}</p>
                 <p className="text-xs text-on-surface-variant">{profile.training.latestMeta}</p>
@@ -506,12 +556,12 @@ export function AthleteProfile({
         {/* GROWTH LOOP — every profile is a recruiting billboard */}
         <section className="mt-6 flex flex-col items-center justify-between gap-5 rounded-card border border-outline-variant bg-surface-container-low p-6 text-center md:flex-row md:p-8 md:text-left">
           <div>
-            <p className="eyebrow text-primary">Runners like {firstName} call ARC home</p>
+            <p className="eyebrow text-primary">{peerNoun} like {firstName} call ARC home</p>
             <h3 className="mt-1 font-display text-xl font-bold text-on-surface md:text-2xl">
               Like what you see? Build your own.
             </h3>
             <p className="mt-1 text-on-surface-variant">
-              A professional home for your running story — free while we&rsquo;re in pilot.
+              A professional home for your {sportNoun} story — free while we&rsquo;re in pilot.
             </p>
           </div>
           <Link

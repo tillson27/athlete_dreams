@@ -1,12 +1,9 @@
 import Image from 'next/image';
-import { Icon, type IconName } from '@/components/ui/Icon';
-import { unsplashPhoto as img } from '@/lib/unsplash';
+import { Icon } from '@/components/ui/Icon';
+import { unsplashPhoto } from '@/lib/unsplash';
 
 // Shared presentational pieces for the athlete profile. Pure (no hooks / client
 // APIs) so both the server profile and the client editable sections can use them.
-
-export { Icon, img };
-export type { IconName };
 
 export function HighlightDropdown({
   title,
@@ -49,7 +46,7 @@ export function HighlightDropdown({
               className="relative aspect-[3/4] overflow-hidden rounded-input bg-surface-container"
             >
               <Image
-                src={img(image, 500)}
+                src={unsplashPhoto(image, 500)}
                 alt={`${title} photo ${index + 1}`}
                 fill
                 unoptimized
@@ -126,7 +123,7 @@ export function RaceDropdown({
                 }`}
               >
                 <Image
-                  src={img(image, 900)}
+                  src={unsplashPhoto(image, 900)}
                   alt={`${name} photo ${index + 1}`}
                   fill
                   unoptimized
