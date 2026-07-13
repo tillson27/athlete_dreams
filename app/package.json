@@ -15,6 +15,9 @@
     "lint:fix": "eslint --fix \"src/**/*.{ts,tsx}\"",
     "migrate:create": "prisma migrate dev --create-only"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.20.0",
     "argon2": "^0.41.1",

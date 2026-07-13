@@ -5,12 +5,16 @@
 // Multi-member teams (e.g., an athlete + their manager/coach) join via TeamMembership rows.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // citext is required by User.email (@db.Citext); declaring it here makes every
+  // migration environment (local, RDS) self-provision the extension.
+  extensions = [citext]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

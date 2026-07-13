@@ -3,10 +3,16 @@
 ## Step 6 - Init migration draft + seed script
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 4
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8 (with user-applied migration/seed)
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- First execution of the `$db-migrate-and-seed` (`/db-migrate-and-seed`) skill. Enabled `postgresqlExtensions` + `extensions = [citext]` before drafting; `20260713174510_init` drafted via the sanctioned create-only command and reviewed end-to-end (extension emitted first, `ROAD_CYCLING`/`AthleteLevel` enums, all 20 tables, nate profile fields/uniques/indexes, cascade FKs). **User** applied via `prisma migrate dev` and seeded via `prisma db seed`.
+- `app/prisma/seed.ts` imports `client/lib/{mockAthletes,athleteProfiles}.ts` directly (single source of truth); idempotent (upserts by email/slug/`userId_role`; keyless children delete+recreate per athlete). Result: 7 athletes (7 users, personal teams, `ATHLETE` roles), 6 campaigns + cost lines, 36 race results, 28 personal bests, media/roadmap/presentation JSON, `publishedAt` set.
+- Verified: `RUN_DB_TESTS=1` test suite 3/3 (ready-200 against the real DB); compiled API (`node dist/index.js`) serves `/v1/health/ready` 200, directory with all 7 slugs + correct aggregated stats, profile by slug.
+- **KNOWN ISSUE (pre-existing, logged for step 12):** `npm run dev --prefix app` (tsx) cannot boot the DI container — esbuild never emits decorator metadata, so tsyringe throws `TypeInfo not known`. The production path (`tsc` build → `node dist/index.js`) is unaffected (Docker/ECS use it). Fix the dev runner (swc-based runner or `tsc --watch` + `node --watch`) when a live local API is needed, at the latest in step 12.
 
 ### Context
 
@@ -34,12 +40,12 @@
 - Upsert order: user → personal team → profile → children (PBs, results, highlights, events, campaigns/cost lines); derive `handle` from `athleteProfiles[slug].handle` (strip `@`).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
