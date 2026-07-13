@@ -34,7 +34,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 4 | Prisma schema evolution (nate alignment) | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-1-5.md` |
 | 5 | Zod contract evolution in common/ | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-1-5.md` |
 | 6 | Init migration draft + seed script | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
-| 7 | Athlete read path: rich profile, directory keyset + filters | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
+| 7 | Athlete read path: rich profile, directory keyset + filters | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
 | 8 | Athlete write path: PATCH me, publish, editor set-replace | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
 | 9 | Follows: model wiring, endpoints, tests | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
 | 10 | Campaign read path + transparency rule | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |

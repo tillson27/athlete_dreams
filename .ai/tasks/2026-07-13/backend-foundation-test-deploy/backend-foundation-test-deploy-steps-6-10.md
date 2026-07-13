@@ -52,10 +52,18 @@
 ## Step 7 - Athlete read path: rich profile, directory keyset + filters
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 3, 5, 6
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- `AthleteRepository`: `findBySlug`/`findByUserId`/`create` share a `richProfileInclude` (personalBests, raceResults, accomplishments, media, events — each ordered). `listDirectory` rewritten for keyset pagination (opaque base64url `createdAt|id` cursor via new `app/src/shared/keysetCursor.ts`, `orderBy [(createdAt desc),(id desc)]`, `take limit+1`), filters (`sport`/`runnerLevel`/`countryCode`/`search` over name+headline+hometown+disciplineLabel), and `publishedAt: { not: null }`. New `getCampaignStatsForAthletes` uses one `campaign.groupBy(['athleteId','campaignStatus'])` — folds total-raised (all statuses) + active count (ACTIVE) — killing the prior per-athlete N+1.
+- `AthleteService`: dropped the `CampaignRepository` dep; `listDirectory` returns the `athleteDirectoryResponseSchema` wrapper `{ items, nextCursor }` with batched stats; `getProfileBySlug(slug, requestingUserId?)` enforces published-only with owner exception (unpublished → `NotFoundError` unless `userId` matches); `toProfileDto` maps the full rich DTO (handle, runnerLevel, disciplineLabel, story fields, coreValues/presentation JSON passthrough, personalBests, raceResults, roadmap-from-events, gallery-from-IMAGE-media, media, publishedAt).
+- `AthleteController.getProfile` threads `req.authenticatedUserId`; `AthleteRouterFactory` mounts `auth.optional` on `GET /:athleteSlug`.
+- CI: `test` job now runs `prisma migrate deploy` + `prisma db seed` (working-directory app) between Generate-Prisma-client and Test so DB tests get schema+roster.
+- Left `app/src/repositories/CampaignRepository.ts` and `app/src/api/campaigns/**` untouched (step 10 owns them; its cleanup can reconcile the now-unused `count/sumRaisedForAthlete` helpers).
+- Tests (`app/src/api/athletes/athletes.read.test.ts`, gated on `RUN_DB_TESTS=1`, unique `step7-<epoch>` fixtures deleted in `afterAll`): filters (sport/runnerLevel/country/search), keyset pagination correctness across pages (own `AQ` paged fixtures, descending order + no dupes) + out-of-range empty + malformed-cursor 422, published gating + owner-exception (owner 200 / non-owner + anon 404), seeded-roster rich profile round-trip, fully contract-valid fixture DTO (`athleteProfileSchema.parse`), and stats batching correctness vs a direct groupBy. `RUN_DB_TESTS=1 npx vitest run` → 18/18; `npm run ci` green; fixtures verified cleaned, seeded roster intact.
 
 ### Context
 
@@ -75,12 +83,12 @@
 - Controller/Router: parse query via updated `athleteDirectoryQuerySchema`; return the paginated wrapper; mount `auth.optional` on the profile route for the owner exception.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

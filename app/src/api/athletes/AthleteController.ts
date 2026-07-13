@@ -23,13 +23,16 @@ export class AthleteController {
 
   listDirectory = async (req: Request, res: Response): Promise<void> => {
     const query = parseRequestQuery(athleteDirectoryQuerySchema, req);
-    const items = await this.athleteService.listDirectory(query);
-    ResponseHandler.success(res, 200, items);
+    const directory = await this.athleteService.listDirectory(query);
+    ResponseHandler.success(res, 200, directory);
   };
 
   getProfile = async (req: Request, res: Response): Promise<void> => {
     const params = parseRequestParams(athleteSlugParamSchema, req);
-    const profile = await this.athleteService.getProfileBySlug(params.athleteSlug);
+    const profile = await this.athleteService.getProfileBySlug(
+      params.athleteSlug,
+      req.authenticatedUserId
+    );
     ResponseHandler.success(res, 200, profile);
   };
 

@@ -90,5 +90,13 @@ jobs:
       - name: Generate Prisma client
         run: npm run build-client --prefix app
 
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+        working-directory: app
+
+      - name: Seed database
+        run: npx prisma db seed
+        working-directory: app
+
       - name: Test
         run: npm run test

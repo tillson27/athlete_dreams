@@ -18,7 +18,7 @@ export class AthleteRouterFactory extends BaseRouterFactory {
   build(): Router {
     const router = Router();
     router.get('/', this.wrap(this.athleteController.listDirectory));
-    router.get('/:athleteSlug', this.wrap(this.athleteController.getProfile));
+    router.get('/:athleteSlug', this.auth.optional, this.wrap(this.athleteController.getProfile));
     router.post('/', this.auth.required, this.wrap(this.athleteController.createMyProfile));
     return router;
   }
