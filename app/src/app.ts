@@ -1,0 +1,49 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { container } from 'tsyringe';
+import { requestIdMiddleware } from './middleware/requestIdMiddleware';
+import { errorHandler } from './middleware/errorHandler';
+import { HealthRouterFactory } from './api/health/HealthRouterFactory';
+import { AuthRouterFactory } from './api/auth/AuthRouterFactory';
+import { UserRouterFactory } from './api/users/UserRouterFactory';
+import { TeamRouterFactory } from './api/teams/TeamRouterFactory';
+import { AthleteRouterFactory } from './api/athletes/AthleteRouterFactory';
+import { CampaignRouterFactory } from './api/campaigns/CampaignRouterFactory';
+
+function parseAllowedOrigins(): string[] {
+  const raw = process.env.CORS_ALLOWED_ORIGINS ?? '';
+  return raw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
+export function buildApp(): express.Express {
+  const app = express();
+  app.disable('x-powered-by');
+  app.use(helmet());
+  app.use(
+    cors({
+      origin: parseAllowedOrigins(),
+      credentials: true,
+    })
+  );
+  app.use(express.json({ limit: '1mb' }));
+  app.use(requestIdMiddleware);
+
+  const routerFactories = [
+    container.resolve(HealthRouterFactory),
+    container.resolve(AuthRouterFactory),
+    container.resolve(UserRouterFactory),
+    container.resolve(TeamRouterFactory),
+    container.resolve(AthleteRouterFactory),
+    container.resolve(CampaignRouterFactory),
+  ];
+  for (const factory of routerFactories) {
+    app.use(factory.basePath, factory.build());
+  }
+
+  app.use(errorHandler);
+  return app;
+}

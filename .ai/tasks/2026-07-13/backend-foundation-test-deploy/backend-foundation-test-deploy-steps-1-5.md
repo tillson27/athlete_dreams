@@ -39,10 +39,16 @@
 ## Step 2 - App bootstrap refactor: buildApp split, lifecycle, health
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- Split `app/src/index.ts` into `app/src/app.ts` (exports `buildApp(): express.Express`; preserves helmet → CORS → json → request-id → routers → errorHandler order) and a boot-only `app/src/index.ts` (`reflect-metadata`/dotenv first, `prisma.$connect()` before `listen`, SIGTERM/SIGINT graceful shutdown via `server.close()` → `prisma.$disconnect()` with a bounded 10s force-exit timer that exits non-zero on forced timeout or shutdown error).
+- Replaced inline `/v1/health` with a DI health feature (`app/src/api/health/HealthRouterFactory.ts` + `HealthController.ts`): `/v1/health/live` returns 200 unconditionally; `/v1/health/ready` runs `SELECT 1` and returns 503 on DB failure.
+- Kept the [STRICT] repository boundary: the `SELECT 1` probe lives in a new `app/src/repositories/HealthRepository.ts` (`ping()`); the controller injects the repository, never `PrismaService`/`PrismaClient` directly.
+- Added `ServiceUnavailableError` (503, `service_unavailable`) to `app/src/shared/errors.ts`; readiness 503s flow through the existing `errorHandler` to emit the standard `{error: {code, message}}` envelope. `npm run ci` passes (type-check, lint:fix, build across common/app/client).
 
 ### Context
 
@@ -69,12 +75,12 @@
 - Implement `start()` with `prisma.$connect()` before `listen`, plus a bounded-drain shutdown handler.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

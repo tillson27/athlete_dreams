@@ -1,65 +1,67 @@
 import 'reflect-metadata';
 import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
+import type { Server } from 'node:http';
 import { container } from 'tsyringe';
+import { buildApp } from './app';
 import { Logger } from './services/infrastructure/Logger';
-import { requestIdMiddleware } from './middleware/requestIdMiddleware';
-import { errorHandler } from './middleware/errorHandler';
-import { AuthRouterFactory } from './api/auth/AuthRouterFactory';
-import { UserRouterFactory } from './api/users/UserRouterFactory';
-import { TeamRouterFactory } from './api/teams/TeamRouterFactory';
-import { AthleteRouterFactory } from './api/athletes/AthleteRouterFactory';
-import { CampaignRouterFactory } from './api/campaigns/CampaignRouterFactory';
+import { PrismaService } from './services/infrastructure/PrismaService';
 
-function parseAllowedOrigins(): string[] {
-  const raw = process.env.CORS_ALLOWED_ORIGINS ?? '';
-  return raw
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-}
+const SHUTDOWN_TIMEOUT_MS = 10_000;
 
-function buildApp(): express.Express {
-  const app = express();
-  app.disable('x-powered-by');
-  app.use(helmet());
-  app.use(
-    cors({
-      origin: parseAllowedOrigins(),
-      credentials: true,
-    })
-  );
-  app.use(express.json({ limit: '1mb' }));
-  app.use(requestIdMiddleware);
-
-  app.get('/v1/health', (_req, res) => {
-    res.json({ data: { status: 'ok' } });
-  });
-
-  const routerFactories = [
-    container.resolve(AuthRouterFactory),
-    container.resolve(UserRouterFactory),
-    container.resolve(TeamRouterFactory),
-    container.resolve(AthleteRouterFactory),
-    container.resolve(CampaignRouterFactory),
-  ];
-  for (const factory of routerFactories) {
-    app.use(factory.basePath, factory.build());
-  }
-
-  app.use(errorHandler);
-  return app;
-}
-
-function start(): void {
+async function start(): Promise<void> {
   const logger = container.resolve(Logger);
+  const prismaService = container.resolve(PrismaService);
   const port = Number(process.env.PORT ?? 4000);
+
+  await prismaService.$connect();
+
   const app = buildApp();
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     logger.info({ port }, 'FAD API listening');
   });
+
+  registerShutdownHandlers(server, prismaService, logger);
 }
 
-start();
+function registerShutdownHandlers(server: Server, prismaService: PrismaService, logger: Logger): void {
+  let shuttingDown = false;
+
+  const shutdown = (signal: NodeJS.Signals): void => {
+    if (shuttingDown) {
+      return;
+    }
+    shuttingDown = true;
+    logger.info({ signal }, 'Shutting down FAD API');
+
+    const forceExit = setTimeout(() => {
+      logger.error({ signal, timeoutMs: SHUTDOWN_TIMEOUT_MS }, 'Forced shutdown after drain timeout');
+      process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS);
+    forceExit.unref();
+
+    server.close((closeError) => {
+      void (async () => {
+        try {
+          await prismaService.$disconnect();
+        } catch (disconnectError) {
+          logger.error({ err: disconnectError }, 'Error disconnecting Prisma during shutdown');
+        }
+        clearTimeout(forceExit);
+        if (closeError) {
+          logger.error({ err: closeError }, 'Error closing HTTP server during shutdown');
+          process.exit(1);
+        }
+        process.exit(0);
+      })();
+    });
+  };
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
+
+start().catch((err) => {
+  const logger = container.resolve(Logger);
+  logger.error({ err }, 'Failed to start FAD API');
+  process.exit(1);
+});
