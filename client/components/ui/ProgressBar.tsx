@@ -1,89 +1,35 @@
-import { formatCents, formatProgress } from '@/lib/format';
-
-type Variant = 'default' | 'compact' | 'over-photo';
-
-// Champion Flow progress bar — light track + Olympic Blue → Champion Orange fill,
-// pill-shaped to evoke a path/track.
+// Public API contract: `percent` is clamped to 0–100. Size/track overrides are
+// separate props (not one className) so Tailwind utilities never conflict.
 export function ProgressBar({
-  raisedAmountCents,
-  targetAmountCents,
-  supporterCount,
-  variant = 'default',
-  daysLeft,
+  percent,
+  tone = 'gradient',
+  heightClassName = 'h-2.5',
+  widthClassName = 'w-full',
+  trackColorClassName = 'bg-surface-container',
+  className = '',
 }: {
-  raisedAmountCents: number;
-  targetAmountCents: number;
-  supporterCount?: number;
-  daysLeft?: number;
-  variant?: Variant;
+  percent: number;
+  tone?: 'gradient' | 'primary';
+  heightClassName?: string;
+  widthClassName?: string;
+  trackColorClassName?: string;
+  className?: string;
 }) {
-  const percent = formatProgress(raisedAmountCents, targetAmountCents);
-
-  if (variant === 'compact') {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="label-bold text-on-surface-variant">Funding Goal</span>
-          <span className="label-bold text-primary">{percent}%</span>
-        </div>
-        <div className="h-2 w-full overflow-hidden rounded-pill bg-surface-container">
-          <div
-            className="progress-gradient h-full rounded-pill transition-[width] duration-500"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (variant === 'over-photo') {
-    return (
-      <div className="glass-effect-dark space-y-2 rounded-pill px-4 py-3 text-white">
-        <div className="flex items-baseline justify-between text-sm">
-          <span className="font-display text-lg font-bold">
-            {formatCents(raisedAmountCents)}
-          </span>
-          <span className="label-bold text-white/85">{percent}%</span>
-        </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-pill bg-white/20">
-          <div
-            className="progress-gradient h-full rounded-pill transition-[width] duration-500"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      </div>
-    );
-  }
+  const clampedPercent = Math.max(0, Math.min(100, percent));
+  const fillToneClass = tone === 'primary' ? 'bg-primary' : 'progress-gradient';
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-baseline justify-between">
-        <span className="font-display text-2xl font-bold text-on-surface">
-          {formatCents(raisedAmountCents)}
-        </span>
-        <span className="text-sm text-on-surface-variant">
-          raised of {formatCents(targetAmountCents)}
-        </span>
-      </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-pill bg-surface-container">
-        <div
-          className="progress-gradient h-full rounded-pill transition-[width] duration-500"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between text-xs">
-        <span className="label-bold text-primary">{percent}% funded</span>
-        <div className="flex items-center gap-4 text-on-surface-variant">
-          {typeof supporterCount === 'number' ? (
-            <span>
-              {supporterCount} supporter{supporterCount === 1 ? '' : 's'}
-            </span>
-          ) : null}
-          {typeof daysLeft === 'number' && daysLeft >= 0 ? (
-            <span>{daysLeft} days left</span>
-          ) : null}
-        </div>
-      </div>
+    <div
+      role="progressbar"
+      aria-valuenow={Math.round(clampedPercent)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className={`overflow-hidden rounded-pill ${heightClassName} ${widthClassName} ${trackColorClassName} ${className}`}
+    >
+      <div
+        className={`h-full rounded-pill transition-all ${fillToneClass}`}
+        style={{ width: `${clampedPercent}%` }}
+      />
     </div>
   );
 }

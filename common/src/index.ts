@@ -9,3 +9,5 @@ export * from './zod/donation';
 export * from './zod/sponsor';
 export * from './zod/auth';
 export * from './zod/shared';
+export * from './zod/community';
+export * from './zod/dashboard';

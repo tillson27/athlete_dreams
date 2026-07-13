@@ -46,18 +46,6 @@ export function Badge({
   );
 }
 
-// Pulsing dot used inside live-funding badges.
-export function LiveDot({ tone = 'on-primary' }: { tone?: 'on-primary' | 'on-secondary' }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`pulse-live inline-block h-1.5 w-1.5 rounded-full ${
-        tone === 'on-primary' ? 'bg-white' : 'bg-secondary'
-      }`}
-    />
-  );
-}
-
 // Green check verified pill that sits over hero photography.
 export function VerifiedChip({ label = 'Verified' }: { label?: string }) {
   return (

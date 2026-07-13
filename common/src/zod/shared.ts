@@ -2,6 +2,10 @@ import { z } from 'zod';
 
 export const idSchema = z.string().uuid();
 export const isoDateTimeSchema = z.string().datetime();
+export const httpUrlSchema = z.string().url().refine((value) => {
+  const { protocol } = new URL(value);
+  return protocol === 'http:' || protocol === 'https:';
+}, 'HTTP(S) URL required');
 export const slugSchema = z
   .string()
   .min(2)

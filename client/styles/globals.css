@@ -32,6 +32,7 @@
 
   /* Champion Orange */
   --color-primary: #ab3600;
+  --color-primary-strong: #832700;
   --color-on-primary: #ffffff;
   --color-primary-container: #ff5f1f;
   --color-on-primary-container: #561700;
@@ -112,9 +113,9 @@ html, body {
 
 /* ---------- Champion Flow component helpers ---------- */
 
-/* Gradient progress fill: Olympic Blue → Champion Orange (path to glory). */
+/* Gradient progress fill: single warm ramp so progress reads as one brand voice. */
 .progress-gradient {
-  background: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-primary-container) 100%);
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
 }
 
 /* Glass chips that sit on top of athlete photography. */
@@ -144,12 +145,20 @@ html, body {
   transition: all 280ms ease;
 }
 
-/* Used for label-bold style across components. */
+/* Compact bold microlabel — sentence case; use .eyebrow when caps are wanted. */
 .label-bold {
   font-size: 0.75rem;
   line-height: 1.2;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.01em;
+}
+
+/* Uppercase kicker for section eyebrows and step labels only. */
+.eyebrow {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -169,6 +178,83 @@ html, body {
 }
 .pulse-live {
   animation: pulse-live 1.6s ease-in-out infinite;
+}
+
+/* Fine film grain overlay — adds texture on dark hero imagery. */
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+}
+
+/* Subtle hero image drift (ken burns). */
+@keyframes ken-burns {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.12); }
+}
+.ken-burns {
+  animation: ken-burns 20s ease-out both;
+}
+
+/* Bobbing scroll cue at the base of the hero. */
+@keyframes scroll-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.85; }
+  50% { transform: translateY(6px); opacity: 0.4; }
+}
+.scroll-cue {
+  animation: scroll-bob 1.9s ease-in-out infinite;
+}
+
+/* Scroll-reveal: sections fade + rise as they enter the viewport (toggled by JS). */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s ease-out,
+    transform 0.7s cubic-bezier(0.22, 0.68, 0.16, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  .ken-burns,
+  .scroll-cue {
+    animation: none;
+  }
+}
+
+/* Publish celebration confetti — brief, one-shot fall on the "You're live" moment. */
+@keyframes arc-confetti-fall {
+  0% {
+    transform: translate3d(0, -10%, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 105vh, 0) rotate(540deg);
+    opacity: 0;
+  }
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  animation: arc-confetti-fall 2.8s cubic-bezier(0.3, 0.7, 0.6, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece {
+    display: none;
+  }
 }
 
 /* Mobile menu disclosure styling — uses native <details>/<summary> for no-JS. */

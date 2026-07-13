@@ -34,6 +34,29 @@ export const campaignSchema = z.object({
 
 export type Campaign = z.infer<typeof campaignSchema>;
 
+export const campaignSummarySchema = campaignSchema
+  .pick({
+    campaignId: true,
+    campaignSlug: true,
+    athleteId: true,
+    athleteEventId: true,
+    campaignTitle: true,
+    campaignType: true,
+    campaignStatus: true,
+    targetAmountCents: true,
+    raisedAmountCents: true,
+    supporterCount: true,
+    costLines: true,
+    closesAt: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    campaignStoryExcerpt: z.string().max(1200).nullable(),
+  });
+
+export type CampaignSummary = z.infer<typeof campaignSummarySchema>;
+
 export const createCampaignRequestSchema = z
   .object({
     campaignSlug: slugSchema,
