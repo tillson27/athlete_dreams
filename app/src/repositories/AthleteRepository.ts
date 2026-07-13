@@ -33,6 +33,29 @@ export type AthleteDirectoryRow = Prisma.AthleteProfileGetPayload<{
   select: typeof directoryColumns;
 }>;
 
+// The community feed surfaces at most one item per category per athlete (first
+// highlight, latest race, next roadmap event, training snapshot — mirroring
+// `client/lib/communityFeed.ts`), so each relation is capped at one row to keep
+// this derived-feed query lean instead of pulling the full rich profile.
+const feedSourceInclude = Prisma.validator<Prisma.AthleteProfileInclude>()({
+  raceResults: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }], take: 1 },
+  accomplishments: { orderBy: { createdAt: 'asc' }, take: 1 },
+  events: { orderBy: [{ eventStartDate: 'asc' }, { createdAt: 'asc' }], take: 1 },
+});
+
+const feedSourceColumns = Prisma.validator<Prisma.AthleteProfileSelect>()({
+  id: true,
+  athleteSlug: true,
+  fullName: true,
+  primarySport: true,
+  presentation: true,
+  ...feedSourceInclude,
+});
+
+export type AthleteFeedSourceRow = Prisma.AthleteProfileGetPayload<{
+  select: typeof feedSourceColumns;
+}>;
+
 export interface AthleteCampaignStats {
   activeCampaignCount: number;
   totalRaisedCents: number;
@@ -348,5 +371,21 @@ export class AthleteRepository {
     }
 
     return stats;
+  }
+
+  listPublishedFeedSources(filters: {
+    primarySport?: SportCategory;
+    athleteIds?: string[];
+  }): Promise<AthleteFeedSourceRow[]> {
+    return this.prisma.athleteProfile.findMany({
+      where: {
+        deletedAt: null,
+        publishedAt: { not: null },
+        ...(filters.primarySport ? { primarySport: filters.primarySport } : {}),
+        ...(filters.athleteIds ? { id: { in: filters.athleteIds } } : {}),
+      },
+      select: feedSourceColumns,
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    });
   }
 }

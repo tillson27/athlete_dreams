@@ -3,10 +3,23 @@
 ## Step 11 - Community feed endpoint (derived, follows-aware)
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 7, 9
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+
+### Completion Notes
+- **New `app/src/api/community/` feature folder** (`CommunityRouterFactory` basePath `/v1/community` → `GET /feed` with `auth.optional`, thin `CommunityController` that parses `communityFeedQuerySchema` + forwards `req.authenticatedUserId`, and `CommunityFeedService` holding all derivation). Registered with one appended line in `app/src/app.ts`. Consumes contracts from `fad-common` only (`communityFeedQuerySchema`, `CommunityFeedItem`, `CommunityFeedResponse`, `FeedCategory`) — no redefinition.
+- **Derived, never stored** (mirrors `client/lib/communityFeed.ts`): per published athlete the service emits milestone (first accomplishment, `category=milestone`/`kind=result`, headline `Hit a milestone — …`), race (latest race result by `sortOrder`, `race`/`result`, `Raced …`), roadmap (next `AthleteEvent` by `eventStartDate asc`, `race`/`roadmap`, `Is racing …`), and training (the `presentation.training` snapshot, `training`/`roadmap`, `Logged a training run — …`). Derivation lives in pure, exported, unit-tested mapping functions (`buildOrderedFeedItems`, `sortFeedItems`); the controller stays thin.
+- **Repository:** added one lightweight `AthleteRepository.listPublishedFeedSources({ primarySport?, athleteIds? })` (published-only; each of raceResults/accomplishments/events capped at `take: 1` since the feed surfaces one card per category per athlete — lean, no rich include). Existing `AthleteRepository` methods untouched; `followedOnly` reuses `FollowRepository.listForUser`.
+- **feedItemId decision:** used `<athleteSlug>-<category>-<sourceId>` per this step's explicit guidance + Context §9 (the `feed.ts` schema *comment* still says `<kind>`; the field itself is a plain `z.string()`, so both forms validate — chose category as it is the stable, more specific discriminator; the roadmap card's source id is the event row id, training's is the literal `training`). No contract or seed changes.
+- **photoUrl decision (as flagged):** the contract field is `z.string().url().nullable()`, but seeded `photoRefs` are **bare Unsplash asset IDs** (e.g. `1594882645126-14020914d58d`), not URLs. Since the schema demands `.url()`, the mapper emits the ref only when it already parses as an absolute http(s) URL and otherwise emits `null`; against the current seed that means feed `photoUrl` is uniformly `null` (verified). Contract and seed left unchanged, consistent with the logged step-12 ref-vs-url decision — resolving refs→URLs is a later concern.
+- **isVerified** derives strictly from the source carrying a non-empty `resultUrl`: seeded race results (from `previousRaces[0].links[0].href`) are verified; seeded accomplishments have no `resultUrl` so milestones are unverified; roadmap/training are always unverified. (This intentionally follows the derive-from-source contract rather than the client mock's hardcoded `verified: true` on milestones/races.)
+- **Determinism:** ordered by an occurred-at key (race → parsed `displayDate`; roadmap → `eventStartDate`; milestone → `occurredOn ?? createdAt`; training → sentinel 0 so it trails) desc, then `feedItemId` asc — same DB input yields byte-identical ordering (asserted by a two-call determinism test). Cursor is treated as a simple base64url offset window over that ordering; garbage/out-of-range decodes to offset 0 / empty page (never throws), per Context §11.
+- **Tests** (`app/src/api/community/community.test.ts`): pure mapper unit tests (per-category derivation, isVerified-from-resultUrl, photoUrl pass-through vs bare-ref null, category skipping, ordering + stability) run always; an auth-gate test asserts `followedOnly=true` while anonymous → 401; `RUN_DB_TESTS`-gated integration tests hit the seeded roster (derivation subset assertions for `felix-tremblay`, category filter, `sport=ROAD_CYCLING` filter incl. `naomi-osei`, follows-aware path restricted to the followed athlete, empty feed for a follower with no follows, two-call determinism). Fixtures use unique `step11-<epoch>-…` emails with `afterAll` cleanup; no global-count assertions.
+- `$backend-review` (`/backend-review`, uncommitted + community focus) — no violations: feature-folder layout, thin controller, Prisma confined to the repository, typed `UnauthorizedError`, `fad-common` types, small guard-claused mappers, allowed why/intent comments only.
+- `$ci` (`/ci`) green (exit 0): common build, type-check across common/app/client, lint:fix "No ESLint warnings or errors", full build, tests. `RUN_DB_TESTS=1 npx vitest run` from `app/` → **6 files, 58 tests passed** (prior 45 + 13 new). No lockfile/`package.json` drift.
 
 ### Context
 
@@ -26,12 +39,12 @@
 - Feed item ids: `<athleteSlug>-<category>-<sourceId>` (stable, matches Context §9).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

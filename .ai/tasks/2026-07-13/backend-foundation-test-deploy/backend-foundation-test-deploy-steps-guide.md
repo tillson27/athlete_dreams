@@ -38,7 +38,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 8 | Athlete write path: PATCH me, publish, editor set-replace | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
 | 9 | Follows: model wiring, endpoints, tests | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
 | 10 | Campaign read path + transparency rule | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-6-10.md` |
-| 11 | Community feed endpoint (derived, follows-aware) | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
+| 11 | Community feed endpoint (derived, follows-aware) | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
 | 12 | Client API layer + flagged data-source swap | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
 | 13 | CDK skeleton + NetworkStack | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
 | 14 | DataStack + ApiStack + Dockerfile + migration/seed tasks | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
