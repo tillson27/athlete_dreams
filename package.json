@@ -11,9 +11,10 @@
     "==": "==========================<BUILD & VALIDATION>==========================",
     "build": "npm run script:rules:check && npm run script:sync:all && npm run build --prefix common && npm run build --prefix app && npm run build --prefix client",
     "type-check": "npm run type-check --prefix common && npm run type-check --prefix app && npm run type-check --prefix client",
+    "test": "npm run test --prefix app",
     "lint": "npm run lint --prefix app && npm run lint --prefix client",
     "lint:fix": "npm run lint:fix --prefix app && npm run lint:fix --prefix client",
-    "ci": "npm run type-check && npm run lint:fix && npm run build",
+    "ci": "npm run type-check && npm run lint:fix && npm run build && npm run test",
 
     "===": "==========================<WORKSPACE INSTALL>===========================",
     "postinstall": "echo '\\nInstalling common...' && npm --prefix common install && echo '\\nInstalling app...' && npm --prefix app install && echo '\\nInstalling client...' && npm --prefix client install",

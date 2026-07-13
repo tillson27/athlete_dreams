@@ -93,10 +93,16 @@
 ## Step 3 - Test harness: vitest + supertest, wired into CI
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1, 2
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- Added devDeps `vitest`, `supertest`, `@types/supertest` to `app/` (no test deps existed — dependency-reuse confirmed). Authored `app/vitest.config.ts` (node env, `pool: 'forks'`, `fileParallelism: false`, `maxWorkers: 1` for sequential integration tests; Vitest 4 top-level pool options) and `app/src/test/setup.ts` (loads `reflect-metadata` before tsyringe resolves — required or `container.resolve` throws the reflect-polyfill error) wired via `setupFiles`.
+- `app/src/test/buildTestApp.ts` returns Step 2's `buildApp()`. `app/src/test/health.test.ts` covers: `/v1/health/live` 200 (no DB); `/v1/health/ready` 503 by overriding `HealthRepository` in the tsyringe container with a stub whose `ping()` throws (exercises the real controller → `ServiceUnavailableError` → errorHandler `service_unavailable` envelope, no DB); `/v1/health/ready` 200 real `SELECT 1`.
+- **Ready-200 locally:** no Postgres was reachable at first (`pg_isready` no response, port 5432 closed, no docker pg), so it is gated behind `describe.skipIf(RUN_DB_TESTS !== '1')` — a *visible* skip, never a fake pass. Then verified for real against a throwaway `postgres:16` container with `RUN_DB_TESTS=1` + `DATABASE_URL=…/fad_test`: all 3 tests pass. Documented `RUN_DB_TESTS` in `app/.env.example`.
+- Scripts: `app/package.json` += `test`/`test:watch`; root `package.json` += `"test": "npm run test --prefix app"` and `ci` now ends with `&& npm run test`. `ci.yml` gained a `test` job with a health-checked `postgres:16` service, `DATABASE_URL=…/fad_test`, `RUN_DB_TESTS=1` (so the ready-200 test RUNS in CI), steps npm ci → build common → build-client → test. `$backend-review` + `$ci` green.
 
 ### Context
 
@@ -116,12 +122,12 @@
 - Wire root scripts and extend `ci.yml` (service container: `postgres:16`, health-checked; `DATABASE_URL=postgresql://fad:fad@localhost:5432/fad_test`).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
