@@ -11,6 +11,8 @@ import { TeamRouterFactory } from './api/teams/TeamRouterFactory';
 import { AthleteRouterFactory } from './api/athletes/AthleteRouterFactory';
 import { CampaignRouterFactory } from './api/campaigns/CampaignRouterFactory';
 import { AthleteCampaignsRouterFactory } from './api/campaigns/AthleteCampaignsRouterFactory';
+import { AthleteFollowRouterFactory } from './api/follows/AthleteFollowRouterFactory';
+import { MyFollowsRouterFactory } from './api/follows/MyFollowsRouterFactory';
 
 function parseAllowedOrigins(): string[] {
   const raw = process.env.CORS_ALLOWED_ORIGINS ?? '';
@@ -40,6 +42,8 @@ export function buildApp(): express.Express {
     container.resolve(TeamRouterFactory),
     container.resolve(AthleteRouterFactory),
     container.resolve(AthleteCampaignsRouterFactory),
+    container.resolve(AthleteFollowRouterFactory),
+    container.resolve(MyFollowsRouterFactory),
     container.resolve(CampaignRouterFactory),
   ];
   for (const factory of routerFactories) {

@@ -132,10 +132,17 @@
 ## Step 9 - Follows: model wiring, endpoints, tests
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 7
 **Size:** small
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- New `app/src/repositories/FollowRepository.ts`: `follow(followerUserId, athleteId)` upserts on the `followerUserId_athleteId` unique (idempotent — repeat follow is a no-op `update: {}`), `unfollow` via `deleteMany` (idempotent no-op when absent), `listForUser(followerUserId)` includes a lightweight athlete select ordered `createdAt desc`. Added `findPublishedAthleteBySlug` (own small `{ id: true }` select filtered `deletedAt: null, publishedAt: { not: null }`) so the follow path resolves the target without touching `AthleteRepository` or pulling step 7's rich include.
+- New feature folder `app/src/api/follows/` with a single `FollowService` (resolves published-only athlete by slug → 404 `NotFoundError` for unknown OR unpublished; maps to `followSchema`/`followListResponseSchema` from `fad-common`) behind a thin `FollowController` and two router factories.
+- **ROUTING SHAPE (parallel-safety, follows step 10's `AthleteCampaignsRouterFactory` precedent):** did NOT touch `app/src/api/athletes/**`, `app/src/api/users/**`, `app/src/api/campaigns/**`, or `AthleteRepository`. Two factories mount on shared base paths: `AthleteFollowRouterFactory` (`basePath = '/v1/athletes'`, `POST /:athleteSlug/follow` + `DELETE /:athleteSlug/follow`, both `auth.required`) and `MyFollowsRouterFactory` (`basePath = '/v1/users'`, `GET /me/follows`, `auth.required`). Registered via two appended lines in the `routerFactories` array in `app/src/app.ts` (the only shared file edited). Express mounts them alongside the existing athletes/users routers without collision (distinct methods + subpaths).
+- All three routes return the `followListResponseSchema` wrapper (`{ items, nextCursor }`, `nextCursor` always `null` — the follow set is unpaginated); POST/DELETE return the resulting list so the client's toggle (`client/lib/follows.ts`) syncs its whole set in one round-trip.
+- Tests (`app/src/api/follows/follows.test.ts`, DB gated behind `RUN_DB_TESTS=1`, unique `step9-<epoch>-<rand>` fixtures deleted in `afterAll` via team + user cascade — `Follow.follower`/`AthleteProfile.user` cascades remove follow rows and the unpublished fixture): 401 on all three routes (not DB-gated, runs in plain CI), follow→list→unfollow round-trip (list contains then gone, row count 0), double-follow single-row idempotency, unfollow-when-not-following no-op, 404 unknown slug, 404 own unpublished athlete fixture. Verified `RUN_DB_TESTS=1 npx vitest run` = 31/31 (4 files) pass; `npm run ci` green (exit 0); DB residue zero (0 step9 users/follow rows, seeded 7 published athletes intact).
 
 ### Context
 
@@ -153,12 +160,12 @@
 - New `app/src/api/follows/` Router/Controller/Service (or mount under athletes router — follow the smaller-diff option consistent with `app/AGENTS.md` feature-folder rule: dedicated feature folder).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
