@@ -86,6 +86,7 @@
 - `cdk/` contains `package.json` (CDK v2, TypeScript), `cdk.json`, `tsconfig.json`, `bin/fad.ts`, `config/{test,prod}.ts` exposing the planned parameters (`multiAz`, `instanceSize`, `natStrategy`, `desiredCount`, `useSpot`, `priceClass`, domain names), and `AGENTS.md` (package conventions; sync script mirrors it).
 - `lib/network-stack.ts`: VPC (2 AZ), public/private subnets, `natStrategy: 'gateway' | 'instance'`, shared security groups, free S3 gateway endpoint.
 - `npx cdk synth -c env=test` succeeds locally with no AWS credentials (no lookups/context requiring an account).
+- `scripts/sync-agents-instructions.js` is **worktree-safe**: when run inside a nested git worktree (e.g. `.claude/worktrees/agent-*/`), it must resolve the repo root via `git rev-parse --show-toplevel` (or equivalent) instead of treating the worktree as a subdirectory — observed 2026-07-13 mis-stamping `AGENTS.md` precedence headers with `.claude/worktrees/...` chain paths during parallel step execution.
 
 **References:**
 - Context §10 (cdk impact); `docs/aws-architecture-and-orchestration.md` (stack graph + justifications); `docs/infrastructure-and-scaling.md` (CDK cost/HA parameters table — source of the config values); `docs/backend-build-sheet.md` → *Infra & Deploy track* (file list).
