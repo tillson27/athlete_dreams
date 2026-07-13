@@ -6,6 +6,9 @@ on:
       - nate
       - main
   workflow_dispatch:
+  # Reusable: the deploy workflows invoke this via `jobs.<id>.uses` so the
+  # pre-deploy gate runs the identical build + DB-backed test jobs (no copy-paste).
+  workflow_call:
 
 permissions:
   contents: read

@@ -1,0 +1,145 @@
+name: Deploy API (test)
+
+# Builds the arm64 API image, pushes it to ECR, deploys the ApiStack pinned to
+# that image, then runs the pre-traffic migration RunTask (and optionally the
+# seed RunTask). AI authors this; the user owns the AWS side — the `test`
+# environment supplies the OIDC role and resource ids (see cdk/README.md).
+#
+# Image-tag mechanism (CDK-idiomatic): the git SHA is pushed as an immutable ECR
+# tag and passed to CDK as `-c imageTag=<sha>`, so CloudFormation sees a changed
+# task definition and ECS performs a health-checked rolling replacement. A
+# mutable `latest` would leave the template unchanged and never roll.
+
+on:
+  push:
+    branches:
+      - nate
+    paths:
+      - app/**
+      - common/**
+      - cdk/**
+      - .github/workflows/deploy-api.yml
+      - .github/workflows/ci.yml
+  workflow_dispatch:
+    inputs:
+      run_seed:
+        description: Run the seed RunTask after migrations (first bring-up only).
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-api-test
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    # Reuse the exact PR gate (build + DB-backed tests) — no copy-paste.
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: test
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: us-east-1
+      STACK_NAME: Arc-test-Api
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            common/package-lock.json
+            app/package-lock.json
+            cdk/package-lock.json
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push arm64 image to ECR
+        env:
+          # github.sha is a trusted, fixed-format value — safe to interpolate.
+          IMAGE_TAG: ${{ github.sha }}
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          set -euo pipefail
+          IMAGE_URI="${ECR_REGISTRY}/arc-test-api:${IMAGE_TAG}"
+          # Repo-root build context: app/Dockerfile resolves fad-common from ../common.
+          docker buildx build \
+            --platform linux/arm64 \
+            --file app/Dockerfile \
+            --tag "${IMAGE_URI}" \
+            --push \
+            .
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> "$GITHUB_ENV"
+
+      - name: Install CDK dependencies
+        working-directory: cdk
+        run: npm ci
+
+      - name: Deploy ApiStack (pinned to the pushed image)
+        working-directory: cdk
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          set -euo pipefail
+          npx cdk deploy "${STACK_NAME}" \
+            -c env=test \
+            -c "imageTag=${IMAGE_TAG}" \
+            --require-approval never
+
+      - name: Read ApiStack outputs
+        id: outputs
+        run: |
+          set -euo pipefail
+          read_output() {
+            aws cloudformation describe-stacks \
+              --stack-name "${STACK_NAME}" \
+              --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" \
+              --output text
+          }
+          {
+            echo "cluster=$(read_output EcsClusterName)"
+            echo "migration_task_def=$(read_output MigrationTaskDefinitionArn)"
+            echo "seed_task_def=$(read_output SeedTaskDefinitionArn)"
+            echo "security_group=$(read_output ServiceSecurityGroupId)"
+            echo "subnets=$(read_output PrivateSubnetIds)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run migration task (pre-traffic, wait for exit 0)
+        env:
+          CLUSTER: ${{ steps.outputs.outputs.cluster }}
+          TASK_DEF: ${{ steps.outputs.outputs.migration_task_def }}
+          SECURITY_GROUP: ${{ steps.outputs.outputs.security_group }}
+          SUBNETS: ${{ steps.outputs.outputs.subnets }}
+        run: ./.github/scripts/run-ecs-task.sh
+
+      - name: Run seed task (optional, wait for exit 0)
+        if: ${{ inputs.run_seed == true }}
+        env:
+          CLUSTER: ${{ steps.outputs.outputs.cluster }}
+          TASK_DEF: ${{ steps.outputs.outputs.seed_task_def }}
+          SECURITY_GROUP: ${{ steps.outputs.outputs.security_group }}
+          SUBNETS: ${{ steps.outputs.outputs.subnets }}
+        run: ./.github/scripts/run-ecs-task.sh

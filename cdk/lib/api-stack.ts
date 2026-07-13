@@ -1,4 +1,4 @@
-import { Duration, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
 import { ISecurityGroup, IVpc, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Repository, TagStatus } from 'aws-cdk-lib/aws-ecr';
 import {
@@ -38,6 +38,14 @@ export interface ApiStackProps extends StackProps {
   readonly dbInstance: DatabaseInstance;
   readonly dbSecret: ISecret;
   readonly databaseName: string;
+  /**
+   * ECR tag the service + migration/seed tasks run. `deploy-api.yml` passes the
+   * git SHA of the image it just pushed (`-c imageTag=<sha>`), so each deploy
+   * pins an immutable tag and CloudFormation detects the change (a mutable
+   * `latest` would leave the task definition unchanged and ECS would not roll).
+   * Defaults to `latest` for a first bring-up before any SHA exists.
+   */
+  readonly imageTag?: string;
 }
 
 const LOG_RETENTION_BY_DAYS: Record<number, RetentionDays> = {
@@ -45,7 +53,7 @@ const LOG_RETENTION_BY_DAYS: Record<number, RetentionDays> = {
   30: RetentionDays.ONE_MONTH,
 };
 
-const IMAGE_TAG = 'latest';
+const DEFAULT_IMAGE_TAG = 'latest';
 
 /**
  * API compute: an ECR repo, a Graviton (arm64) Fargate service behind a public
@@ -71,6 +79,7 @@ export class ApiStack extends Stack {
 
     const { config, vpc, albSecurityGroup, serviceSecurityGroup, dbInstance, dbSecret, databaseName } =
       props;
+    const imageTag = props.imageTag ?? DEFAULT_IMAGE_TAG;
 
     this.repository = new Repository(this, 'ApiRepository', {
       repositoryName: `arc-${config.envName}-api`,
@@ -117,7 +126,7 @@ export class ApiStack extends Stack {
       vpcSubnets: { subnetType: SubnetType.PUBLIC },
     });
 
-    const image = ContainerImage.fromEcrRepository(this.repository, IMAGE_TAG);
+    const image = ContainerImage.fromEcrRepository(this.repository, imageTag);
 
     const containerEnvironment: Record<string, string> = {
       NODE_ENV: config.nodeEnv,
@@ -204,7 +213,7 @@ export class ApiStack extends Stack {
       },
     };
 
-    this.createRunTask('MigrationTask', {
+    const migrationTask = this.createRunTask('MigrationTask', {
       ...runTaskDefaults,
       image,
       logGroup,
@@ -214,7 +223,7 @@ export class ApiStack extends Stack {
       innerCommand: 'npx prisma migrate deploy',
     });
 
-    this.createRunTask('SeedTask', {
+    const seedTask = this.createRunTask('SeedTask', {
       ...runTaskDefaults,
       image,
       logGroup,
@@ -225,9 +234,42 @@ export class ApiStack extends Stack {
     });
 
     this.addAlarms(dbInstance);
+    this.exportRunTaskWiring(cluster, serviceSecurityGroup, vpc, migrationTask, seedTask);
 
     Tags.of(this).add('project', 'arc');
     Tags.of(this).add('env', config.envName);
+  }
+
+  /**
+   * Everything `deploy-api.yml` needs to launch the migration/seed RunTasks with
+   * `aws ecs run-task` (and the runbook to do it by hand): the cluster, the two
+   * task-definition families, the private subnets, and the service security
+   * group. Emitting them as outputs keeps the workflow free of brittle name
+   * guessing — it reads these via `aws cloudformation describe-stacks`.
+   */
+  private exportRunTaskWiring(
+    cluster: Cluster,
+    serviceSecurityGroup: ISecurityGroup,
+    vpc: IVpc,
+    migrationTask: FargateTaskDefinition,
+    seedTask: FargateTaskDefinition
+  ): void {
+    const privateSubnetIds = vpc.selectSubnets({
+      subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+    }).subnetIds;
+
+    const outputs: Record<string, string> = {
+      EcsClusterName: cluster.clusterName,
+      MigrationTaskDefinitionArn: migrationTask.taskDefinitionArn,
+      SeedTaskDefinitionArn: seedTask.taskDefinitionArn,
+      ServiceSecurityGroupId: serviceSecurityGroup.securityGroupId,
+      PrivateSubnetIds: privateSubnetIds.join(','),
+      EcrRepositoryUri: this.repository.repositoryUri,
+    };
+
+    for (const [key, value] of Object.entries(outputs)) {
+      new CfnOutput(this, key, { value });
+    }
   }
 
   private createRunTask(

@@ -3,10 +3,23 @@
 ## Step 16 - Deploy workflows (OIDC), smoke suite, deploy runbook
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 3, 14, 15
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+
+### Completion Notes
+
+- **`cdk/lib/cicd-stack.ts`** — GitHub OIDC provider via the native `AWS::IAM::OIDCProvider` construct (`OidcProviderNative`, no Lambda custom resource) + a least-privilege deploy role. Trust: `sts:AssumeRoleWithWebIdentity` with `StringEquals` on `:aud=sts.amazonaws.com` and `StringLike` on `:sub` = `repo:tillson27/athlete_dreams:ref:refs/heads/{nate,main}` only. Permissions: assume `cdk-*` bootstrap roles (CFN least-privilege deploy path), ECR auth + push to `arc-<env>-api`, `ecs:RunTask`/`DescribeTasks`/`ListTasks` (cluster-scoped condition) + `iam:PassRole` to the `Arc-<env>-Api-*` task roles (`iam:PassedToService=ecs-tasks.amazonaws.com`), S3 sync to `arc-<env>-web`, CloudFront invalidation. Wired first in `bin/fad.ts` (no cross-stack deps); `GithubDeployRoleArn` output. Both `cdk synth -c env=test` and `-c env=prod` exit 0, credential-free.
+- **Image-tag mechanism** — `ApiStack` gained an optional `imageTag` prop (default `latest`); `bin/fad.ts` reads `-c imageTag=<sha>`. Immutable per-SHA tag so CloudFormation detects the changed task def and ECS rolls (a mutable `latest` would not). `ApiStack` also emits outputs (cluster, migration/seed task-def ARNs, service SG, private subnets, ECR URI) so the workflow/runbook launch RunTasks without name guessing.
+- **`.github/workflows/deploy-api.yml`** — push to `nate` on `app/**`/`common/**`/`cdk/**` (+ `workflow_dispatch` with a `run_seed` flag); `environment: test`; OIDC (`id-token: write`). Reuses `ci.yml` via `jobs.ci.uses` (added `workflow_call:` to ci.yml — not copy-paste). Then buildx `linux/arm64` `docker build -f app/Dockerfile .` → push ECR (tag `github.sha`) → `cdk deploy Arc-test-Api -c imageTag=<sha> --require-approval never` → migration RunTask (wait exit 0) → optional seed RunTask. RunTask launch/poll extracted to `.github/scripts/run-ecs-task.sh` (DRY, injection-safe).
+- **`.github/workflows/deploy-web.yml`** — push to `nate` on `client/**`/`common/**` (+ dispatch); `environment: test`; OIDC. `STATIC_EXPORT=true` build → `aws s3 sync client/out/ s3://$WEB_BUCKET --delete` → CloudFront invalidation. Bucket/distribution from env vars. Legacy `deploy-client-pages.yml` untouched. Verified the STATIC_EXPORT build emits `client/out/` locally.
+- **`scripts/smoke-test.sh`** — curl + jq only; PASS/FAIL table, non-zero exit on any failure. **Ran for real against the locally-booted API (`http://localhost:4000`, seeded `fad_dev`): 13/13 PASS, exit 0** — health live/ready, directory `?runnerLevel=ELITE` (filter verified + one cursor page walked), `maya-okafor` profile (rich fields present: personalBests/raceResults/roadmap/storyBody/accomplishments/presentation/runnerLevel), community feed (5), campaigns feed (5), auth round-trip (sign-up 201 → sign-in → `GET /v1/users/me` email match), follow round-trip (follow → list contains → unfollow). Non-zero exit confirmed against an unreachable URL.
+- **`cdk/README.md`** — full user-executed runbook: prerequisites (cross-refs `docs/infrastructure-and-scaling.md` → *Prerequisites & access*; set real `hostedZoneId`), one-time bootstrap, deploy order Cicd → Network → Data → Api → Web with exact commands, first-image + migration/seed RunTask invocation (pipeline + manual), GitHub `test` environment setup (role ARN secret + web bucket/distribution vars), smoke invocation, rollback (prev image tag / ECS circuit breaker / RDS PITR / S3 re-sync).
+- **`.gitignore`** — added `client/out/` (step-15 flag; STATIC_EXPORT/GITHUB_PAGES output, verified git-ignored).
+- **ALB origin hardening — DECISION: documented as a post-deploy user action, NOT implemented in-stack.** The AWS-managed `com.amazonaws.global.cloudfront.origin-facing` prefix list has a **region-specific id that AWS does not publish as a stable constant**; resolving it needs either `PrefixList.fromLookup` (forbidden by `cdk/AGENTS.md` — requires credentials/account at synth) or a brittle hardcoded `pl-*`. Neither keeps synth credential-free, so `cdk/README.md` §8 documents the post-deploy `describe-managed-prefix-lists` + `authorize`/`revoke` security-group steps, and notes the credential-free CloudFront-custom-header + ALB-listener/WAF alternative as a future stack change.
+- **Verification:** `$infra-review` executed (OIDC trust conditions validated in synthesized template; least-privilege confirmed statement-by-statement; workflow injection audit — no `github.event.*`/untrusted input in any `run:`; all step outputs passed via `env:`, consumed as shell vars). `$ci` (`npm run ci`) green (build + type-check + lint:fix + tests: 10 passed, 48 DB-tests skipped locally). cdk type-check + both synths exit 0. No lockfile/build-artifact drift.
 
 ### Context
 
@@ -28,11 +41,11 @@
 - Runbook cross-references `docs/infrastructure-and-scaling.md` *Prerequisites & access* instead of duplicating it.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$infra-review` (`/infra-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
+- [x] Step-specific tasks complete
+- [x] `$infra-review` (`/infra-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
 - [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---

@@ -5,6 +5,8 @@
 **/coverage/
 **/cdk.out/
 **/.next/
+# Next.js static export output (STATIC_EXPORT / GITHUB_PAGES builds); never commit.
+client/out/
 **/.turbo/
 **/.vercel/
 **/.parcel-cache/
