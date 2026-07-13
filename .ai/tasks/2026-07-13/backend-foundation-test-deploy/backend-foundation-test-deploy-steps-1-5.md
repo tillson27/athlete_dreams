@@ -1,0 +1,185 @@
+# Backend Foundation, Nate Contract Alignment & AWS Test-Deployment Readiness - Steps 1-5
+
+## Step 1 - CI enablement: PR checks, PR template, Dependabot
+
+### Metadata
+**Status:** Incomplete
+**Prereqs:** None
+**Size:** small
+**Owner:** unassigned
+
+### Context
+
+**Objective:** Stand up the M0 quality gates so every subsequent PR into `nate`/`main` is checked.
+**Done When:**
+- `.github/workflows/ci.yml` runs on `pull_request` into `nate` and `main`: install → build `common` → type-check → lint → build (a `test` job is added in Step 3).
+- `.github/pull_request_template.md` and `.github/dependabot.yml` (npm, weekly, directories `/`, `/common`, `/app`, `/client`) exist.
+- Workflow is green on a draft PR.
+
+**References:**
+- Context §2 (M0 scope), §10 (.github impact); `docs/delivery-plan.md` → *GitHub settings* + *Quality gates*.
+- Existing workflow conventions: `.github/workflows/deploy-client-pages.yml` (Node 22, npm cache paths).
+
+### Plan
+- Author `ci.yml` mirroring the Node/cache setup of the Pages workflow; steps: `npm ci` → `npm run build --prefix common` → `npm run type-check` → `npm run lint` → `npm run build`.
+- Add a concise PR template: summary, linked step/task doc, checklist (CI green, tests added, docs touched).
+- Add `dependabot.yml` for all npm workspaces.
+- Flag for the user (in the PR description): enable branch protection on `nate`/`main` with `ci` as a required check, plus Dependabot + secret scanning (settings are user-only actions).
+
+### Step checklist
+- [ ] Step-specific tasks complete
+- [ ] `$infra-review` (`/infra-review`) run
+- [ ] `$ci` (`/ci`) run
+- [ ] Fix any issues caused by `$ci` (`/ci`)
+- [ ] Step metadata updated in the steps doc and the steps guide index
+- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+
+---
+
+## Step 2 - App bootstrap refactor: buildApp split, lifecycle, health
+
+### Metadata
+**Status:** Incomplete
+**Prereqs:** None
+**Size:** medium
+**Owner:** unassigned
+
+### Context
+
+**Objective:** Make the Express app importable without side effects and observable/deployable: `buildApp()` export, DB lifecycle, split health endpoints.
+**Done When:**
+- `app/src/app.ts` exports `buildApp(): express.Express`; `app/src/index.ts` only boots (`start()`), connects Prisma, and registers SIGTERM/SIGINT graceful shutdown (`server.close()` → `prisma.$disconnect()`).
+- `GET /v1/health/live` returns 200 unconditionally; `GET /v1/health/ready` runs `SELECT 1` via `PrismaService` and returns 503 with the standard error envelope when the DB is unreachable.
+- `npm run ci` passes.
+
+**References:**
+- Context §4 (current `app/src/index.ts`), §11–12 (ready semantics, shutdown); `docs/backend-build-sheet.md` → Phase 0 *App entry refactor*.
+- Patterns: `app/src/middleware/errorHandler.ts`, `app/src/shared/ResponseHandler.ts`.
+
+### Plan
+- Move `buildApp` (helmet/CORS/json/request-id, router mounting, errorHandler) into `app/src/app.ts`; keep mounting order intact.
+- Replace the inline `/v1/health` with a small health router:
+    - Snippet:
+      ```ts
+      router.get('/ready', async (_req, res) => {
+        await prisma.$queryRaw`SELECT 1`;
+        res.json({ data: { status: 'ready' } });
+      });
+      ```
+- Implement `start()` with `prisma.$connect()` before `listen`, plus a bounded-drain shutdown handler.
+
+### Step checklist
+- [ ] Step-specific tasks complete
+- [ ] `$backend-review` (`/backend-review`) run
+- [ ] `$ci` (`/ci`) run
+- [ ] Fix any issues caused by `$ci` (`/ci`)
+- [ ] Step metadata updated in the steps doc and the steps guide index
+- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+
+---
+
+## Step 3 - Test harness: vitest + supertest, wired into CI
+
+### Metadata
+**Status:** Incomplete
+**Prereqs:** 1, 2
+**Size:** medium
+**Owner:** unassigned
+
+### Context
+
+**Objective:** Give the repo its first automated tests and make them a required gate.
+**Done When:**
+- `vitest run` executes from `app/` with passing health tests (live always; ready against a running local Postgres).
+- `app/package.json` has `test`/`test:watch`; root `package.json` gains `"test": "npm run test --prefix app"` and `ci` includes it.
+- `ci.yml` gains a `test` job with a `postgres:16` service container and `DATABASE_URL` env.
+
+**References:**
+- Context §1 (success criteria), §6 (local Postgres assumption); `docs/backend-build-sheet.md` → Phase 0 *Test harness*.
+- Dependency-reuse rule (root `AGENTS.md`): vitest + supertest chosen in planning; no test deps exist yet in `app/package.json`.
+
+### Plan
+- Add devDeps `vitest`, `supertest`, `@types/supertest`; author `app/vitest.config.ts` (node environment, sequential integration pool).
+- Add `app/src/test/buildTestApp.ts` returning `buildApp()`; write `health.test.ts` (live 200; ready 200 with DB, 503 with a broken `DATABASE_URL` case).
+- Wire root scripts and extend `ci.yml` (service container: `postgres:16`, health-checked; `DATABASE_URL=postgresql://fad:fad@localhost:5432/fad_test`).
+
+### Step checklist
+- [ ] Step-specific tasks complete
+- [ ] `$backend-review` (`/backend-review`) run
+- [ ] `$ci` (`/ci`) run
+- [ ] Fix any issues caused by `$ci` (`/ci`)
+- [ ] Step metadata updated in the steps doc and the steps guide index
+- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+
+---
+
+## Step 4 - Prisma schema evolution (nate alignment)
+
+### Metadata
+**Status:** Incomplete
+**Prereqs:** None
+**Size:** medium
+**Owner:** unassigned
+
+### Context
+
+**Objective:** Evolve `app/prisma/schema.prisma` to the launch data model — the exact Δschema locked in planning — **without** creating a migration (Step 6 does that).
+**Done When:**
+- Schema contains: `AthleteProfile` += `handle String? @unique`, `runnerLevel AthleteLevel @default(EVERYDAY)`, `disciplineLabel String?`, `storyIntro String?`, `storyBody String[]`, `coreValues Json?`, `presentation Json?`, `publishedAt DateTime?`; `AthleteAccomplishment` += `detail String?`, `resultUrl String?`, `photoRefs String[]`; new models `AthleteRaceResult`, `PersonalBest`, `Follow` (with `@@unique([followerUserId, athleteId])` and indexes); `AthleteEvent` += `displayDate String?`; `SportCategory` += `ROAD_CYCLING`; new enum `AthleteLevel { ELITE COMPETITIVE EVERYDAY }`.
+- `npm run build-client --prefix app` (prisma generate) succeeds and `npm run ci` stays green (changes are additive).
+
+**References:**
+- Context §9 (data model changes, handle format); `docs/backend-build-sheet.md` → *Phase 1 → Nate alignment additions* (authoritative field list).
+- Shape source: `client/lib/athleteProfiles.ts` (`RichAthleteProfile`), `client/lib/athleteEdits.ts` (editor entities), `client/lib/mockAthletes.ts` (`runnerLevel`).
+- Conventions: existing schema style — uuid PKs, `@db.Uuid`, `snake_case` `@@map`, soft-delete `deletedAt` where rows are user-managed.
+
+### Plan
+- Add fields/models/enums following the existing section banners and naming conventions (explicit names: `resultSummary`, `displayDate`, `photoRefs`).
+- `AthleteRaceResult`: `id`, `athleteId`, `resultName`, `displayDate String`, `occurredOn DateTime? @db.Date`, `resultSummary String`, `resultUrl String?`, `links Json?`, `photoRefs String[]`, `sortOrder Int @default(0)`, timestamps; relation + index on `athleteId`.
+- `PersonalBest`: `id`, `athleteId`, `label`, `value`, `resultUrl String?`, `sortOrder Int @default(0)`; `@@unique([athleteId, label])`.
+- `Follow`: `id`, `followerUserId`, `athleteId`, `createdAt`; relations to `User`/`AthleteProfile` (cascade), `@@unique([followerUserId, athleteId])`, index on `athleteId`.
+- Run prisma generate via the sanctioned build script; fix any compile fallout (expected: none — additive).
+
+### Step checklist
+- [ ] Step-specific tasks complete
+- [ ] `$backend-review` (`/backend-review`) run
+- [ ] `$ci` (`/ci`) run
+- [ ] Fix any issues caused by `$ci` (`/ci`)
+- [ ] Step metadata updated in the steps doc and the steps guide index
+- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+
+---
+
+## Step 5 - Zod contract evolution in common/
+
+### Metadata
+**Status:** Incomplete
+**Prereqs:** None
+**Size:** medium
+**Owner:** unassigned
+
+### Context
+
+**Objective:** Land the full contract surface for Phases 0–1 in `common/src/zod/` so app and client consume identical types.
+**Done When:**
+- `common/src/types/enums.ts` gains `ROAD_CYCLING` in `SportCategory` and a new `AthleteLevel`; barrel exports updated.
+- `athlete.ts`: `athleteProfileSchema` grown toward `RichAthleteProfile` (handle, runnerLevel, disciplineLabel, storyIntro/storyBody, coreValues, presentation, publishedAt, personalBests, raceResults, roadmap, gallery); `updateAthleteProfileRequestSchema` (`.strict()`, all-optional); `athleteDirectoryQuerySchema` += `runnerLevel`; `athleteDirectoryResponseSchema = paginationResponseSchema(athleteDirectoryItemSchema)`; set-replace request schemas for highlights/races/roadmap/gallery; publish response schema.
+- New `follow.ts` (follow item + list response) and `feed.ts` (`communityFeedItemSchema` per Context §9 example + query schema); `campaign.ts` += `campaignSummarySchema` + `activeCampaignFeedResponseSchema`.
+- `npm run build --prefix common` passes and `npm run type-check` is green across the workspace.
+
+**References:**
+- Context §9 (contract changes + feed example shape); `docs/backend-build-sheet.md` → Phase 1 Δcontract + *Nate alignment additions*.
+- Conventions: `common/AGENTS.md` (strict request bodies, ISO dates, integer cents); existing patterns in `common/src/zod/shared.ts` (`slugSchema`, `paginationResponseSchema`).
+
+### Plan
+- Model `handle` as `z.string().regex(/^[a-z0-9.]{3,30}$/)` (Context §9); keep response schemas non-strict, requests `.strict()`.
+- Mirror the editor's save-all model with array-payload set-replace schemas (max lengths: highlights 20, races 30, roadmap 10, gallery 12).
+- Export everything through `common/src/index.ts`; build and re-type-check `app/` + `client/`.
+
+### Step checklist
+- [ ] Step-specific tasks complete
+- [ ] `$backend-review` (`/backend-review`) run
+- [ ] `$ci` (`/ci`) run
+- [ ] Fix any issues caused by `$ci` (`/ci`)
+- [ ] Step metadata updated in the steps doc and the steps guide index
+- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
