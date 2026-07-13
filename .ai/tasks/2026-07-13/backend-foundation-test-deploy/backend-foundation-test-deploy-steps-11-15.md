@@ -179,10 +179,25 @@
 ## Step 15 - WebStack + client static-export knob
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 13, 14
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+
+### Completion Notes
+- **`client/next.config.ts` static-export knob:** introduced a readable single mode-switch `buildMode = GITHUB_PAGES ? 'pages' : STATIC_EXPORT ? 'domain' : 'server'` (documented as a contract comment). `pages` keeps the legacy `/athlete_dreams` basePath/assetPrefix + trailingSlash EXACTLY as before; `domain` is a plain `output: 'export'` with NO basePath/assetPrefix (served at the domain root) for the S3/CloudFront deploy; `server` is the default Next build. `output` and `images.unoptimized` are on for both export modes; basePath/assetPrefix/trailingSlash stay gated on `pages` only — so the `GITHUB_PAGES` config resolves byte-identically to the prior file, and the default server config is unchanged. Documented `STATIC_EXPORT` in `client/.env.example`.
+- **Three-mode verification (all green):**
+  - `STATIC_EXPORT=true npm run build --prefix client` → exit 0, emits `client/out/` with `index.html` + `404.html` (Next names the not-found page `404.html`), asset paths are domain-root (`/_next/...`), and a full-tree grep found **0** files containing `/athlete_dreams` (no basePath leakage). `sitemap.xml`, `robots.txt`, `opengraph-image` all emitted.
+  - `GITHUB_PAGES=true npm run build --prefix client` → exit 0, emits `client/out/` with `index.html` + `404.html` and asset paths correctly carrying the `/athlete_dreams/_next/...` basePath prefix (byte-compatible with the legacy export).
+  - `npm run build --prefix client` (default) → exit 0, server build, no `out/` emitted; the register pages render as static `○`.
+- **Export-compatibility fix (pre-existing `nate` blocker, in-scope for the knob):** at the branch base BOTH export modes failed — the metadata routes (`app/opengraph-image.tsx`, `app/sitemap.ts`, `app/robots.ts`) lacked `export const dynamic = 'force-static'` (required under `output: 'export'`), and the three onboarding pages (`app/register/{athletics,personal-basics,values-social}/page.tsx`) read `await searchParams` (inherently dynamic — cannot statically export). Fixes: (1) added `dynamic = 'force-static'` to the three metadata routes (they already render as `○ (Static)` in server mode, so no behavior change); (2) moved the `from` query-param read out of each register server page into its already-`'use client'` form via `useSearchParams()` (wrapped the form in `<Suspense>`; moved the `EditReturnBanner` conditional into the form). UX is byte-preserved (same `?from=review` param → same banner + "Save & return to review" button); the pages now prerender statically in all modes. No `app/src/**`, deploy-workflow, or `deploy-client-pages.yml` changes.
+- **`cdk/lib/web-stack.ts`:** private S3 bucket (`BLOCK_ALL` public access, BucketOwnerEnforced, S3-managed encryption, enforceSSL) fronted by CloudFront with **Origin Access Control** via `S3BucketOrigin.withOriginAccessControl` (the AWS-recommended modern OAC pattern; auto-generates the OAC + a `SourceArn`-scoped bucket policy granting only this distribution `s3:GetObject`). Default behavior → S3 (redirect-to-https, CACHING_OPTIMIZED, compress). Behaviors `/v1/*` and `/webhooks/stripe` → the ApiStack ALB via a single shared `LoadBalancerV2Origin` (**HTTP_ONLY** origin protocol — step 14 left the ALB on HTTP; HTTPS hardening handed off to step 16 in the class TSDoc), `AllowedMethods.ALLOW_ALL`, `CachePolicy.CACHING_DISABLED`, `OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER` (forwards all viewer headers except Host so the raw Stripe webhook body survives and the ALB gets the correct Host). `errorResponses` map S3 403 **and** 404 → `/404.html` with a 404 response code. `priceClass` from config (`PriceClass_100` both envs). ACM DNS-validated `Certificate` (stacks are already us-east-1) for `clientDomain` (+ `clientAlternateDomain` SAN in prod). Route 53 A **and** AAAA alias records per client domain.
+- **Credential-free synth (non-negotiable):** the hosted zone is imported with `HostedZone.fromHostedZoneAttributes` (NOT `fromLookup`) using `hostedZoneId`/`zoneName` from config. Added `hostedZoneId` + `zoneName` to `DomainConfig` (`cdk/config/types.ts`) with a public-API-contract TSDoc stating the user MUST replace the placeholder before deploying WebStack; per-env values carry the obvious placeholder `Z0PLACEHOLDER000000` for zone `athletearc.ca`. Wired WebStack into `cdk/bin/fad.ts` after ApiStack via the cross-stack ALB ref `api.service.loadBalancer`.
+- **Synth VERIFIED credential-free both envs:** `npx cdk synth -c env=test` and `-c env=prod` both exit 0 with AWS creds unset. Templates skimmed — **test** `Arc-test-Web`: OAC (`s3`/`always`/`sigv4`), private bucket (all 4 PublicAccessBlock flags true) + OAC bucket policy scoped to the distribution ARN, Distribution aliases `[test.athletearc.ca]` / `PriceClass_100` / cert (TLSv1.2_2021 sni-only) / default S3 behavior (CACHING_OPTIMIZED) / `/v1/*` + `/webhooks/stripe` behaviors (all 7 methods, CACHING_DISABLED `4135ea2d…`, ALL_VIEWER_EXCEPT_HOST_HEADER `b689b0a8…`) → ALB origin (`http-only`), 403+404→`/404.html`, 2 Route53 RecordSets (A+AAAA), bucket removal DESTROY + autoDelete. **prod** `Arc-prod-Web`: aliases `[athletearc.ca, www.athletearc.ca]`, 4 RecordSets (A+AAAA × 2 domains), bucket removal RETAIN. Only the known upstream advisory warnings from steps 13/14 (NAT `keyName` deprecation, cross-stack-reference strength) — none from WebStack.
+- `$infra-review` (`/infra-review`) executed: validated `S3BucketOrigin.withOriginAccessControl` as the current recommended OAC construct (OAI is legacy) and `ALL_VIEWER_EXCEPT_HOST_HEADER` as correct for an ALB/custom origin (forwards everything except Host, CloudFront substitutes the origin host) against current AWS docs; confirmed least-privilege OAC bucket policy, private bucket, credential-free `fromHostedZoneAttributes` synth, and the HTTP-origin → HTTPS handoff note to step 16. No critical issues.
+- `$frontend-review` (`/frontend-review`) executed against the client changes: the register refactor keeps pages as server components and reads the query param only in the already-client forms (minimal, UX-preserving); `next.config.ts`/`.env.example` are config/docs. No `fad-common`/money-helper/story-first violations introduced. Re-indented the register form JSX after the fragment-wrap so nesting is consistent (project uses `next lint`, not prettier; `lint:fix` is green).
+- `$ci` (`/ci`) — `npm run ci` green (common build, type-check across common/app/client, `lint:fix`, full build incl. client server build with all routes static, app tests 3 passed / 42 skipped DB-gated). Copied the gitignored `app/.env` from the primary checkout into the worktree first (CI skill worktree note) for the DI container's `JWT_SECRET`; it stays gitignored. cdk is package-local (not in root CI): its own `type-check` + both synths pass. No root breakage; no lockfile/package.json/AGENTS-mirror drift.
 
 ### Context
 
@@ -201,10 +216,10 @@
 - Raw-body preservation for the future Stripe webhook: the `/webhooks/stripe` behavior must not alter bodies (origin request policy: all viewer headers except Host).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$infra-review` (`/infra-review`) run
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$infra-review` (`/infra-review`) run
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

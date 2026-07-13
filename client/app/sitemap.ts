@@ -1,6 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { mockAthletes } from '@/lib/mockAthletes';
 
+// Emit at build time so the sitemap ships in the static export (`output: 'export'`).
+export const dynamic = 'force-static';
+
 const BASE_URL = 'https://athletearc.ca';
 
 export default function sitemap(): MetadataRoute.Sitemap {

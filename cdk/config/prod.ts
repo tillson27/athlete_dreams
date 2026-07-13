@@ -31,5 +31,8 @@ export const prodConfig: EnvironmentConfig = {
     clientDomain: 'athletearc.ca',
     clientAlternateDomain: 'www.athletearc.ca',
     apiDomain: 'api.athletearc.ca',
+    // PLACEHOLDER — replace with the real athletearc.ca hosted-zone id before deploying WebStack.
+    hostedZoneId: 'Z0PLACEHOLDER000000',
+    zoneName: 'athletearc.ca',
   },
 };

@@ -1,5 +1,8 @@
 import { ImageResponse } from 'next/og';
 
+// Render at build time so the card ships in the static export (`output: 'export'`).
+export const dynamic = 'force-static';
+
 export const alt = 'ARC — a home for your athletic story';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';

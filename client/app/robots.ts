@@ -1,5 +1,8 @@
 import type { MetadataRoute } from 'next';
 
+// Emit at build time so robots.txt ships in the static export (`output: 'export'`).
+export const dynamic = 'force-static';
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {

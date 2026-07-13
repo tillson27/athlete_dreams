@@ -4,6 +4,7 @@ import { resolveEnvironmentConfig } from '../config';
 import { NetworkStack } from '../lib/network-stack';
 import { DataStack } from '../lib/data-stack';
 import { ApiStack } from '../lib/api-stack';
+import { WebStack } from '../lib/web-stack';
 
 const app = new App();
 
@@ -33,7 +34,7 @@ const data = new DataStack(app, `${stackPrefix}-Data`, {
   description: `ARC database (${config.envName}).`,
 });
 
-new ApiStack(app, `${stackPrefix}-Api`, {
+const api = new ApiStack(app, `${stackPrefix}-Api`, {
   env,
   config,
   vpc: network.vpc,
@@ -43,6 +44,13 @@ new ApiStack(app, `${stackPrefix}-Api`, {
   dbSecret: data.dbSecret,
   databaseName: data.databaseName,
   description: `ARC API compute (${config.envName}).`,
+});
+
+new WebStack(app, `${stackPrefix}-Web`, {
+  env,
+  config,
+  loadBalancer: api.service.loadBalancer,
+  description: `ARC web front door (${config.envName}).`,
 });
 
 app.synth();

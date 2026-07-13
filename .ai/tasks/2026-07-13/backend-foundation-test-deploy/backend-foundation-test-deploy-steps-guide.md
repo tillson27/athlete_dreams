@@ -42,7 +42,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 12 | Client API layer + flagged data-source swap | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
 | 13 | CDK skeleton + NetworkStack | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
 | 14 | DataStack + ApiStack + Dockerfile + migration/seed tasks | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
-| 15 | WebStack + client static-export knob | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
+| 15 | WebStack + client static-export knob | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-11-15.md` |
 | 16 | Deploy workflows (OIDC), smoke suite, deploy runbook | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-16-17.md` |
 | 17 | Final validation & cleanup (required, always last) | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-16-17.md` |
 

@@ -11,6 +11,19 @@ export interface DomainConfig {
   readonly clientDomain: string;
   readonly clientAlternateDomain?: string;
   readonly apiDomain: string;
+
+  /**
+   * Route 53 hosted-zone attributes for `rootDomain`, consumed by WebStack via
+   * `HostedZone.fromHostedZoneAttributes` (NOT `fromLookup`) so `cdk synth` stays
+   * account/credential-free.
+   *
+   * CONTRACT: `hostedZoneId` ships as an obvious placeholder. Before deploying
+   * WebStack the user MUST replace it with the real hosted-zone id for
+   * `zoneName` (Route 53 console → the zone → "Hosted zone ID"); deploying with
+   * the placeholder fails to create the ACM validation and alias records.
+   */
+  readonly hostedZoneId: string;
+  readonly zoneName: string;
 }
 
 /**
