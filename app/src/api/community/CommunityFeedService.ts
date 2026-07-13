@@ -188,19 +188,11 @@ function hasResultUrl(resultUrl: string | null): boolean {
   return typeof resultUrl === 'string' && resultUrl.trim().length > 0;
 }
 
-// The seed stores bare Unsplash asset refs (e.g. `1594882645126-14020914d58d`),
-// not URLs, while the contract's `photoUrl` demands `.url()`; emit a value only
-// when the ref is already an absolute http(s) URL, otherwise null (see step 11
-// notes / the step-12 ref-vs-url decision — contract and seed are unchanged).
+// `photoUrl` is a `mediaRefSchema` (absolute http(s) URL OR a bare storage/photo
+// ref); the client composes a display URL from a bare ref via `client/lib/unsplash.ts`.
+// Pass the first ref through unchanged, nulling only when a photo is genuinely absent.
 function toPhotoUrl(photoRefs: string[]): string | null {
-  const ref = photoRefs[0];
-  if (!ref) return null;
-  try {
-    const parsed = new URL(ref);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? ref : null;
-  } catch {
-    return null;
-  }
+  return photoRefs[0] ?? null;
 }
 
 function toTrainingSnapshot(presentation: unknown): TrainingSnapshot | null {

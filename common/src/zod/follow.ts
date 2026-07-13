@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { idSchema, isoDateTimeSchema, paginationResponseSchema, slugSchema } from './shared';
+import {
+  idSchema,
+  isoDateTimeSchema,
+  mediaRefSchema,
+  paginationResponseSchema,
+  slugSchema,
+} from './shared';
 import { SportCategory } from '../types/enums';
 
 const sportSchema = z.nativeEnum(SportCategory);
@@ -10,7 +16,7 @@ export const followSchema = z.object({
   athleteSlug: slugSchema,
   athleteName: z.string(),
   primarySport: sportSchema,
-  heroMediaUrl: z.string().url().nullable(),
+  heroMediaUrl: mediaRefSchema.nullable(),
   followedAt: isoDateTimeSchema,
 });
 

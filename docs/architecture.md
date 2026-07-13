@@ -5,9 +5,9 @@ A snapshot of how the codebase is organized today. Updated 2026-07-13 (against t
 ## Workspaces
 
 - **`client/`** — Next.js 15 App Router (React 19, Tailwind v4). Marketing site + the start of the authenticated experience. Today's priority.
-- **`app/`** — Express 5 + Prisma backend. Scaffolded with the same Controller/Service/Repository pattern used in the parent emly repo. Currently covers auth, users, teams, athletes, and campaigns at the API layer.
+- **`app/`** — Express 5 + Prisma backend. Same Controller/Service/Repository pattern used in the parent emly repo. The Phase 0–1 read/write path is implemented and integration-tested: auth, users, teams, athletes (rich profile + directory), follows, community feed, campaigns, and health at the API layer.
 - **`common/`** — Shared Zod schemas (published as `fad-common`). Single source of truth for request/response shapes.
-- **`cdk/`** — Reserved for AWS CDK infrastructure. Not yet implemented.
+- **`cdk/`** — AWS CDK v2 infrastructure (Network/Data/Api/Web stacks + CI/CD OIDC role, `test`/`prod` configs). Authored and synth-verified credential-free; deployment is user-executed (see `cdk/README.md`).
 
 ## Account Model
 
@@ -48,6 +48,8 @@ HTTP → Express Router → <Feature>RouterFactory
 - All Zod schemas live in `common/src/zod/`.
 - Controllers parse `req.body` / `req.query` / `req.params` through `parseRequestBody` etc.
 - The global `errorHandler` middleware translates `DomainError` subclasses into HTTP responses.
+- Health is split into `GET /v1/health/live` (process) and `GET /v1/health/ready` (DB `SELECT 1`, 503 when unreachable); the ALB targets `ready`.
+- Directory and feed reads use opaque keyset pagination (`(createdAt desc, id desc)`, no OFFSET); directory and feed return **published athletes only**.
 
 ## Site Layout (Frontend — `nate`)
 
@@ -58,7 +60,7 @@ Runner-first launch surface on `athletearc.ca` (the `/brands`, `/ambassadors`, `
 - **Athlete loop:** `/sign-up`, `/sign-in`, `/register` + 4-step `/register/{personal-basics,athletics,values-social,review}` onboarding, `/dashboard`, `/athletes/[athleteSlug]/manage` (editor).
 - **SEO:** `sitemap.ts`, `robots.ts` (private routes disallowed), dynamic OG images, `metadataBase = https://athletearc.ca`.
 
-All data is mock/localStorage by design: roster + rich profiles from `client/lib/{mockAthletes,athleteProfiles}.ts`; session, follows, cheers, onboarding drafts, and manage-editor edits in localStorage stores that each name their backend replacement. The seam-by-seam mapping to API phases lives in `docs/backend-build-sheet.md` → *Frontend contract alignment*.
+Data source is flag-driven via `NEXT_PUBLIC_DATA_SOURCE` (`mock` default, `api`). In `mock` mode all data is mock/localStorage: roster + rich profiles from `client/lib/{mockAthletes,athleteProfiles}.ts`; session, follows, cheers, onboarding drafts, and manage-editor edits in localStorage stores that each name their backend replacement. In `api` mode the directory, profile, and community surfaces fetch from `GET /v1/…` via `client/lib/api.ts` (the GitHub Pages export stays on mock). The seam-by-seam mapping to API phases lives in `docs/backend-build-sheet.md` → *Frontend contract alignment*.
 
 ## AI Toolkit
 

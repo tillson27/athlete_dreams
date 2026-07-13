@@ -56,21 +56,6 @@ export class CampaignRepository {
     });
   }
 
-  countActiveForAthlete(athleteId: string): Promise<number> {
-    return this.prisma.campaign.count({
-      where: { athleteId, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE },
-    });
-  }
-
-  sumRaisedForAthlete(athleteId: string): Promise<number> {
-    return this.prisma.campaign
-      .aggregate({
-        _sum: { raisedAmountCents: true },
-        where: { athleteId, deletedAt: null },
-      })
-      .then((r) => r._sum.raisedAmountCents ?? 0);
-  }
-
   findBySlug(campaignSlug: string): Promise<(Campaign & { costLines: CampaignCostLine[] }) | null> {
     return this.prisma.campaign.findFirst({
       where: { campaignSlug, deletedAt: null },

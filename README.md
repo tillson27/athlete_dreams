@@ -13,9 +13,9 @@ We anchor on (1) to seed the network with athletes, then layer (2) and (3) as th
 ## Repository Layout
 
 - `client/` — Next.js 15 marketing site + app (React 19, Tailwind v4). The primary focus today.
-- `app/` — Express 5 + Prisma backend foundation (TypeScript, tsyringe DI). Scaffolded; not feature-complete.
+- `app/` — Express 5 + Prisma backend (TypeScript, tsyringe DI). Phase 0–1 read/write path implemented and tested; later phases (donations, lifecycle, teams) not yet built.
 - `common/` — Shared Zod schemas and types published as `fad-common`.
-- `cdk/` — Reserved for AWS CDK infrastructure (not yet implemented).
+- `cdk/` — AWS CDK v2 infrastructure (Network/Data/Api/Web + CI/CD). Authored; deployment is user-executed.
 - `docs/` — Architecture notes and product references.
 - `scripts/` — Sync scripts for AI instruction files and skills.
 - `.ai/` — Source of truth for AI agent skills, prompts, and rules.
@@ -50,10 +50,10 @@ npm run dev:client
 
 ## Status
 
-- `client/` — ✅ Marketing site live. Landing, athlete directory, athlete profile, brands, ambassadors, how-it-works, about, sign-in, sign-up. Uses `client/lib/mockAthletes.ts` for content.
-- `app/` — ⏳ Foundation scaffolded (Express + Prisma + tsyringe DI, auth/users/teams/athletes/campaigns routes). Needs `npm install` and a Postgres database to run. No data yet.
+- `client/` — ✅ Marketing site live (landing, athlete directory, athlete profile, how-it-works, about, sign-in, sign-up). Dual-mode: mock/localStorage by default, or live API via `NEXT_PUBLIC_DATA_SOURCE=api`.
+- `app/` — ✅ Phase 0–1 API implemented and integration-tested (auth, users, teams, athletes read/write + publish, follows, community feed, campaigns, health). Runs on `npm install` + a seeded Postgres.
 - `common/` — ✅ Zod schemas defined and building cleanly.
-- `cdk/` — ❌ Not yet started.
+- `cdk/` — 🟡 Stacks authored + synth-verified credential-free (Network/Data/Api/Web + CI/CD OIDC). Deployment is user-executed (see `cdk/README.md`).
 
 ## Docs
 

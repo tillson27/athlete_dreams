@@ -40,7 +40,7 @@ The world's most transparent athlete funding network. A directory-style platform
 
 ## Pricing
 
-- **Crowdfunding** — 3% platform fee on successful donations. No upfront cost to athletes.
+- **Crowdfunding** — zero platform fee, non-custodial (funds flow backer → Stripe → athlete; the athlete owns Stripe's processing fee, refunds, and payouts). No upfront cost to athletes. See `docs/business/incorporation-and-finances.md` and `docs/backend-build-sheet.md` (Phase 2).
 - **Brand sponsorships** — facilitation fee per contract; TBD.
 - **Managed ambassador programs** — flat quarterly retainer; TBD per scope.
 

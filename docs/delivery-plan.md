@@ -64,16 +64,16 @@ Promotion is **artifact-forward**: the same image/CDK code verified in test is w
 
 Each milestone = one or more PRs into `nate`, with entry/exit criteria. AI builds; the user reviews/merges and runs anything that touches GitHub settings or AWS.
 
-| # | Milestone | Contents | Exit criteria |
-|---|---|---|---|
-| **M0** | Engineering enablement | `ci.yml` (PR checks: type-check, lint, test, build), PR template, Dependabot config; user applies branch protection + environments | CI required check live on PRs into `nate` |
-| **M1** | Phase 0 — foundation | `init` migration draft, vitest/supertest harness, seed script, `buildApp` split, DB-aware health, platform-role fix (per build sheet Phase 0) | `npm run ci` + tests green against local Postgres; seed produces the client roster |
-| **M2** | Phase 1 — read path + nate contract alignment | Directory/profile/feed endpoints **extended to nate's frontend contracts** (rich profile surface, follows, community feed — see build sheet Phase 1) | Client pages can render from `GET /v1/…` locally with mock stores swapped behind a flag |
-| **M3** | Infra authoring + **first AWS test deployment** | `cdk/` app (Network/Data/Api/Web, test config), `deploy-api.yml`/`deploy-web.yml` targeting the `test` environment, plain static-export knob in `next.config.ts` (no basePath — the `GITHUB_PAGES` path is Pages-specific); user runs bootstrap + first deploy + migration task + seed | **Smoke suite passes against `test`**: health/ready, directory/profile/feed reads, sign-up→sign-in round-trip |
-| **M4** | Phase 2 — donations (Stripe **test mode**) | Standard OAuth onboarding, direct-charge donations, event ledger, Connect webhooks (build sheet Phase 2) | Test-mode donation completes end-to-end on `test`; ledger + projections correct; webhook idempotency verified |
-| **M5** | Phase 3 — campaign lifecycle | Status transitions, transparency updates | Lifecycle verified on `test` |
-| **M6** | Phase 4 — accounts, teams + client session cutover | Refresh tokens, verification (SES), rate limiting, teams; client swaps `lib/session.ts` mock for real auth | Client on `test` runs sign-up → onboard → publish → dashboard against the real API |
-| **M7** | Production readiness (deferred until wanted) | `prod` config bring-up, `nate → main` promotion PR, DNS cutover, live Stripe credentials | Go-live checklist green |
+| # | Milestone | Status | Contents | Exit criteria |
+|---|---|---|---|---|
+| **M0** | Engineering enablement | ✅ Complete | `ci.yml` (PR checks: type-check, lint, test, build), PR template, Dependabot config; user applies branch protection + environments | CI required check live on PRs into `nate` |
+| **M1** | Phase 0 — foundation | ✅ Complete | `init` migration draft, vitest/supertest harness, seed script, `buildApp` split, DB-aware health, platform-role fix (per build sheet Phase 0) | `npm run ci` + tests green against local Postgres; seed produces the client roster |
+| **M2** | Phase 1 — read path + nate contract alignment | ✅ Complete | Directory/profile/feed endpoints **extended to nate's frontend contracts** (rich profile surface, follows, community feed — see build sheet Phase 1) | Client pages can render from `GET /v1/…` locally with mock stores swapped behind a flag |
+| **M3** | Infra authoring + **first AWS test deployment** | 🟡 Authored — awaiting user-executed deploy | `cdk/` app (Network/Data/Api/Web, test config), `deploy-api.yml`/`deploy-web.yml` targeting the `test` environment, plain static-export knob in `next.config.ts` (no basePath — the `GITHUB_PAGES` path is Pages-specific); user runs bootstrap + first deploy + migration task + seed | **Smoke suite passes against `test`**: health/ready, directory/profile/feed reads, sign-up→sign-in round-trip |
+| **M4** | Phase 2 — donations (Stripe **test mode**) | ◻ Not started | Standard OAuth onboarding, direct-charge donations, event ledger, Connect webhooks (build sheet Phase 2) | Test-mode donation completes end-to-end on `test`; ledger + projections correct; webhook idempotency verified |
+| **M5** | Phase 3 — campaign lifecycle | ◻ Not started | Status transitions, transparency updates | Lifecycle verified on `test` |
+| **M6** | Phase 4 — accounts, teams + client session cutover | ◻ Not started | Refresh tokens, verification (SES), rate limiting, teams; client swaps `lib/session.ts` mock for real auth | Client on `test` runs sign-up → onboard → publish → dashboard against the real API |
+| **M7** | Production readiness (deferred until wanted) | ◻ Not started | `prod` config bring-up, `nate → main` promotion PR, DNS cutover, live Stripe credentials | Go-live checklist green |
 
 Milestones are sequential gates, but work within them parallelizes (e.g., M3 infra authoring can proceed while M2 is in review).
 

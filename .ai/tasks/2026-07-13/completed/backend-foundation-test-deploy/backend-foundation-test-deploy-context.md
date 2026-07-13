@@ -117,7 +117,7 @@ Note: `docs/product-brief.md` §Pricing (3% platform fee) is **stale** — super
 - Serve every read surface nate renders: filtered/paginated directory (`sport`, `runnerLevel`, `search`, `countryCode`, published-only), rich profile by slug (PBs, highlights, races with `resultUrl`, roadmap, story, presentation JSON, gallery), derived community feed (kind/sport filters, follows-aware when authenticated), campaign feed + per-athlete campaigns.
 - Persist every write nate's UI performs: onboarding profile updates (`PATCH /v1/athletes/me`), publish, manage-editor set-replace (highlights/races/roadmap/gallery), follows, campaign create with transparency validation.
 - Auth: existing sign-up/sign-in; `GET /v1/users/me` restores session; profile creation assigns `ATHLETE` platform role.
-- Seed reproduces the 8-athlete launch roster exactly.
+- Seed reproduces the 7-athlete launch roster exactly (`client/lib/mockAthletes.ts` has 7 entries).
 
 **Non-functional requirements:**
 - Keyset pagination (no OFFSET) on `(createdAt desc, id desc)`; directory stats batched via `groupBy` (no N+1).

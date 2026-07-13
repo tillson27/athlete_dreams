@@ -114,14 +114,15 @@ describe('community feed derivation (pure)', () => {
     expect(byId.get('alex-runner-training-training')?.isVerified).toBe(false);
   });
 
-  it('passes through absolute photo URLs but nulls bare refs', () => {
+  it('passes photo refs through (absolute URLs and bare refs alike) and nulls only absent photos', () => {
     const items = buildOrderedFeedItems([makeSource()]).map((entry) => entry.item);
     const byId = new Map(items.map((item) => [item.feedItemId, item]));
 
     expect(byId.get('alex-runner-race-race-1')?.photoUrl).toBe(
       'https://images.example.com/race.jpg'
     );
-    expect(byId.get('alex-runner-milestone-highlight-1')?.photoUrl).toBeNull();
+    expect(byId.get('alex-runner-milestone-highlight-1')?.photoUrl).toBe('bare-unsplash-ref');
+    expect(byId.get('alex-runner-race-event-1')?.photoUrl).toBeNull();
   });
 
   it('skips categories whose source is absent', () => {

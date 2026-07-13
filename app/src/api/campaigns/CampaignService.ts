@@ -7,11 +7,11 @@ import type {
 } from 'fad-common';
 import {
   CampaignRepository,
-  type ActiveFeedCursor,
   type CampaignWithAthlete,
 } from '../../repositories/CampaignRepository';
 import { AthleteRepository } from '../../repositories/AthleteRepository';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors';
+import { decodeKeysetCursor, encodeKeysetCursor } from '../../shared/keysetCursor';
 import type { Campaign, CampaignCostLine } from '@prisma/client';
 
 @injectable()
@@ -22,15 +22,16 @@ export class CampaignService {
   ) {}
 
   async listActiveFeed(params: { limit: number; cursor?: string }): Promise<ActiveCampaignFeedResponse> {
+    const decoded = params.cursor ? decodeKeysetCursor(params.cursor) : undefined;
     const { campaigns, hasMore } = await this.campaignRepository.listActiveFeed({
       limit: params.limit,
-      cursor: params.cursor ? decodeActiveFeedCursor(params.cursor) : undefined,
+      cursor: decoded ? { createdAt: decoded.createdAt, campaignId: decoded.id } : undefined,
     });
     const items = campaigns.map(toCampaignSummary);
     const lastCampaign = campaigns.at(-1);
     const nextCursor =
       hasMore && lastCampaign
-        ? encodeActiveFeedCursor({ createdAt: lastCampaign.createdAt, campaignId: lastCampaign.id })
+        ? encodeKeysetCursor({ createdAt: lastCampaign.createdAt, id: lastCampaign.id })
         : null;
     return { items, nextCursor };
   }
@@ -78,26 +79,6 @@ function assertCostLinesMatchTarget(input: CreateCampaignRequest): void {
     costLinesTotalCents,
     costLines: costLines.map((line) => ({ label: line.label, amountCents: line.amountCents })),
   });
-}
-
-const CURSOR_SEPARATOR = '|';
-
-function encodeActiveFeedCursor(cursor: ActiveFeedCursor): string {
-  const raw = `${cursor.createdAt.toISOString()}${CURSOR_SEPARATOR}${cursor.campaignId}`;
-  return Buffer.from(raw, 'utf8').toString('base64url');
-}
-
-function decodeActiveFeedCursor(encoded: string): ActiveFeedCursor {
-  const raw = Buffer.from(encoded, 'base64url').toString('utf8');
-  const separatorIndex = raw.indexOf(CURSOR_SEPARATOR);
-  if (separatorIndex === -1) throw new ValidationError('Invalid cursor');
-  const createdAtIso = raw.slice(0, separatorIndex);
-  const campaignId = raw.slice(separatorIndex + 1);
-  const createdAt = new Date(createdAtIso);
-  if (Number.isNaN(createdAt.getTime()) || campaignId.length === 0) {
-    throw new ValidationError('Invalid cursor');
-  }
-  return { createdAt, campaignId };
 }
 
 function toCampaignSummary(campaign: CampaignWithAthlete): CampaignSummary {

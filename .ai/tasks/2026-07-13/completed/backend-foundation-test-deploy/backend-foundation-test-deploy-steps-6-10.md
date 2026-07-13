@@ -20,7 +20,7 @@
 **Done When:**
 - `app/prisma/migrations/<ts>_init/` exists, created **only** via `npm run migrate:create --prefix app -- --name init`, and its SQL contains the nate-alignment models/fields from Step 4.
 - The datasource enables the `citext` extension via the `postgresqlExtensions` preview feature **before drafting**, so the migration emits `CREATE EXTENSION IF NOT EXISTS "citext"` and applies on vanilla Postgres/RDS (see skill → Gotchas; `User.email` is `@db.Citext`).
-- `app/prisma/seed.ts` upserts (idempotent re-run) the 8-athlete roster from `client/lib/mockAthletes.ts` + `client/lib/athleteProfiles.ts` — users (placeholder emails + argon2 hashes), personal teams, profiles (published), PBs, race results, highlights, roadmap events, campaigns + cost lines, presentation JSON.
+- `app/prisma/seed.ts` upserts (idempotent re-run) the 7-athlete roster from `client/lib/mockAthletes.ts` + `client/lib/athleteProfiles.ts` — users (placeholder emails + argon2 hashes), personal teams, profiles (published), PBs, race results, highlights, roadmap events, campaigns + cost lines, presentation JSON.
 - `app/package.json` gains `"prisma": { "seed": "tsx prisma/seed.ts" }`.
 - **USER ACTIONS flagged in the PR:** run a local Postgres, then `prisma migrate dev` and `prisma db seed` (AI must not apply).
 
