@@ -2,6 +2,8 @@
 import { App } from 'aws-cdk-lib';
 import { resolveEnvironmentConfig } from '../config';
 import { NetworkStack } from '../lib/network-stack';
+import { DataStack } from '../lib/data-stack';
+import { ApiStack } from '../lib/api-stack';
 
 const app = new App();
 
@@ -17,10 +19,30 @@ const stackPrefix = `Arc-${config.envName}`;
  */
 const env = { region: config.region };
 
-new NetworkStack(app, `${stackPrefix}-Network`, {
+const network = new NetworkStack(app, `${stackPrefix}-Network`, {
   env,
   config,
   description: `ARC network foundation (${config.envName}).`,
+});
+
+const data = new DataStack(app, `${stackPrefix}-Data`, {
+  env,
+  config,
+  vpc: network.vpc,
+  databaseSecurityGroup: network.databaseSecurityGroup,
+  description: `ARC database (${config.envName}).`,
+});
+
+new ApiStack(app, `${stackPrefix}-Api`, {
+  env,
+  config,
+  vpc: network.vpc,
+  albSecurityGroup: network.albSecurityGroup,
+  serviceSecurityGroup: network.serviceSecurityGroup,
+  dbInstance: data.dbInstance,
+  dbSecret: data.dbSecret,
+  databaseName: data.databaseName,
+  description: `ARC API compute (${config.envName}).`,
 });
 
 app.synth();

@@ -1,0 +1,38 @@
+# Build context is the repo root (fad-common is a `file:../common` workspace dep),
+# so this keeps only what app/Dockerfile needs: common/ + app/ sources and the two
+# pure-data client/lib modules the Prisma seed imports. Everything else is excluded
+# to keep the arm64 image build fast and small.
+
+**/node_modules
+**/dist
+**/dist-ssr
+**/cdk.out
+**/.cdk.staging
+.git
+.gitignore
+
+# Packages not needed to build or run the API image.
+cdk
+docs
+.ai
+.claude
+.codex
+scripts
+.github
+
+# The client app is excluded wholesale EXCEPT the two pure-data modules the seed
+# RunTask imports (client/lib/{mockAthletes,athleteProfiles}.ts). Re-included below.
+client/*
+!client/lib
+client/lib/*
+!client/lib/mockAthletes.ts
+!client/lib/athleteProfiles.ts
+
+# Secrets / local env — never bake into an image.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Editor / OS noise.
+**/.DS_Store
+**/*.log

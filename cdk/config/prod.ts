@@ -12,6 +12,20 @@ export const prodConfig: EnvironmentConfig = {
   useSpot: false,
   priceClass: 'PriceClass_100',
 
+  rdsAllocatedStorageGib: 50,
+  rdsBackupRetentionDays: 14,
+  rdsRemovalPolicy: 'snapshot',
+
+  serviceCpu: 512,
+  serviceMemoryMib: 1024,
+  minCapacity: 2,
+  maxCapacity: 4,
+  cpuTargetUtilizationPercent: 60,
+
+  logRetentionDays: 30,
+  nodeEnv: 'production',
+  logLevel: 'info',
+
   domain: {
     rootDomain: 'athletearc.ca',
     clientDomain: 'athletearc.ca',

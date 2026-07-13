@@ -118,10 +118,23 @@
 ## Step 14 - DataStack + ApiStack + Dockerfile + migration/seed tasks
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 2, 13
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+
+### Completion Notes
+- **`app/Dockerfile`** (multi-stage, arm64, repo-root build context — `fad-common` is `file:../common`): stage 1 (`node:22.22.2-bookworm-slim`, Debian not Alpine because argon2 is a native glibc addon) installs+builds `common` (tsc) then `app` (`prisma generate` + `tsc`); runtime stage carries only production deps, the generated Prisma client (with the arm64 query engine), `dist/`, `prisma/` (schema + migrations for the RunTasks), a non-root `arc` user (uid 1001, with a writable `$HOME` for Prisma/npx caches), and `CMD ["node", "dist/index.js"]`. Build command documented in the Dockerfile header (survives comment rules as a required build-instruction header): `docker build -f app/Dockerfile -t arc-api .` from repo root. Added a repo-root `.dockerignore` (excludes node_modules/dist/.git/cdk/docs/.ai/client, re-includes only `client/lib/{mockAthletes,athleteProfiles}.ts`).
+- **Seed-image decision:** `prisma db seed` runs `tsx prisma/seed.ts`, which imports the two pure-data client modules via `../../client/lib/{mockAthletes,athleteProfiles}.ts` (both verified to have zero imports). Chose to (a) copy those two files into the runtime image at `/repo/client/lib/` so the seed's relative import resolves unchanged, and (b) copy `tsx` + `esbuild` + `@esbuild/linux-arm64` and the `prisma` CLI + `@prisma/engines` from the builder stage (exact locked versions) with recreated `.bin` shims — the migrate/seed RunTasks (`npx prisma migrate deploy` / `npx prisma db seed`) need the Prisma CLI and the spawned `tsx`, both excluded by `--omit=dev`. Also install `common`'s prod deps (`zod`) into `/repo/common/node_modules` because a `require()` originating in `common/dist` does not fall back to `app/node_modules`. No app source touched.
+- **Docker build VERIFIED locally** (host arm64, Docker 29.4.2, `--platform linux/arm64`): image builds clean; smoke checks confirm non-root `arc` user, generated `libquery_engine-linux-arm64-openssl-3.0.x.so.node`, `dist/index.js` + `prisma/migrations/` + both `client/lib` data files present. `node dist/index.js` boots (loads `fad-common`/zod, DI container, pino JSON logger), attempts `prisma.$connect()`, fails only on DB reach (P1001) against a fake DB — proving the app entrypoint works. `npx prisma migrate deploy` resolves the CLI (binaryTarget `linux-arm64-openssl-3.0.x`). The seed via `tsx prisma/seed.ts` compiles, resolves the `client/lib` imports, hashes with argon2, and reaches `prisma.user.upsert()` before the same expected DB-connect failure — the full seed path is functional.
+- **`cdk/lib/data-stack.ts`:** RDS PostgreSQL 16, Graviton `t4g` (parsed from `instanceSize`), gp3 (allocated + 4× autoscale), private subnets + the NetworkStack database SG, `multiAz` param-driven, backups + PITR (`backupRetention` days from config: test 7 / prod 14), Secrets Manager-generated master creds (`arc/<env>/rds/master`), storage encrypted, removal policy param-driven (test `DESTROY` + no deletion protection / prod `SNAPSHOT` + deletion protection). Exports `dbInstance` + `dbSecret` + `databaseName` (`arc`) for ApiStack.
+- **`cdk/lib/api-stack.ts`:** ECR repo (`arc-<env>-api`, scan-on-push, untagged-expiry lifecycle); `ApplicationLoadBalancedFargateService` on ARM64/LINUX runtime platform, `desiredCount` from config, CPU-target autoscaling (min 2 → max 4 at 60%), **deployment circuit breaker with rollback**, `minHealthyPercent 100`/`maxHealthyPercent 200` for zero-downtime, health check `/v1/health/ready` (healthy 2 / unhealthy 3, 60s Prisma-connect grace), container port 8080 (`PORT` set to match the service SG). Env (`NODE_ENV`/`LOG_LEVEL`/`CORS_ALLOWED_ORIGINS` from config) + secrets: `JWT_SECRET` (dedicated generated secret `arc/<env>/api/jwt`), and the DB creds injected as ECS secrets from the RDS secret JSON fields — the container assembles `DATABASE_URL` at start (`export DATABASE_URL=... && exec ...`) so the password never appears in plaintext and no app change is needed. **Migration + seed ECS Fargate task definitions** share the API image with command overrides (`npx prisma migrate deploy` / `npx prisma db seed`) — never on container boot. CloudWatch log group (retention from config) + Container Insights + 6 alarms (ALB 5xx, unhealthy targets, ECS CPU, ECS memory, RDS free storage, RDS CPU). To avoid a Network⇄Api SG dependency cycle, the ALB is built with the NetworkStack `albSecurityGroup` and passed to the construct with `openListener: false` (the shared service SG is never mutated).
+- **Config extension** (`config/types.ts` + `test.ts`/`prod.ts`): added `rdsAllocatedStorageGib`, `rdsBackupRetentionDays`, `rdsRemovalPolicy`, `serviceCpu`, `serviceMemoryMib`, `minCapacity`, `maxCapacity`, `cpuTargetUtilizationPercent`, `logRetentionDays`, `nodeEnv`, `logLevel`, and a `DATABASE_NAME` const — all driven by the `docs/infrastructure-and-scaling.md` sizing table (test lean = 256/512 CPU-mem, t4g.small, 20GB, 14d logs, DESTROY; prod HA = 512/1024, t4g.medium, MultiAZ, 50GB, 30d logs, SNAPSHOT). Wired DataStack + ApiStack into `bin/fad.ts` after NetworkStack via cross-stack refs.
+- **Hardening handoff (noted in ApiStack):** synth is credential-free (NO `fromLookup`, no ACM/Route53) so the ALB listener is plain HTTP — TLS/ACM, the CloudFront front door, and WAF are owned by steps 15/16.
+- **Synth VERIFIED credential-free both envs:** `npx cdk synth -c env=test` and `-c env=prod` both exit 0 with AWS creds unset. Templates skimmed: DataStack test = postgres 16 / db.t4g.small / gp3 20GB / MultiAZ false / 7d backup / encrypted / DeletionPolicy Delete; prod = db.t4g.medium / MultiAZ true / 14d / deletion protection / Snapshot. ApiStack = ECR scan-on-push, service DesiredCount 2 + CircuitBreaker {Enable,Rollback} + 100/200 healthy + 60s grace, 3 ARM64 task defs (service/migration/seed) with the DATABASE_URL-assembly commands + JWT/DB secrets, HTTP:80 listener, health path `/v1/health/ready`, autoscale 2→4 @60%, all 6 alarms, and 3 execution roles each granted secret-read + ECR-pull + logs. Only advisory synth warnings remain (the known upstream `keyName` NAT deprecation from step 13, plus cross-stack-reference-strength and feature-flag notices).
+- `$infra-review` (`/infra-review`) executed: verified construct correctness against `aws-cdk-lib@2.261.0`, least-privilege SG reuse, private-subnet DB, encryption, secrets-not-plaintext, circuit breaker + zero-downtime rolling deploy, Graviton/gp3/capped-logs cost levers, and that the migrate/seed task execution roles can pull the image + read secrets + log. No critical issues; non-critical/deferred: HTTP-only listener (→ 15/16) and RDS credential rotation (Secrets Manager, later).
+- `$ci` (`/ci`) — `npm run ci` green (common build, type-check across common/app/client, lint:fix, full build incl. client Next build, app tests 2 passed / 23 skipped DB-gated). Needed to copy the gitignored `app/.env` from the primary checkout into the worktree first (per the CI skill's worktree env-sync note) so `JWT_SECRET` was present for the DI container; that `.env` stays gitignored. cdk is package-local (not in root CI): its own `type-check` + both synths pass. No root breakage; no lockfile/package.json drift.
 
 ### Context
 
@@ -141,12 +154,12 @@
 - Migration/seed task defs share the API image with command overrides.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$infra-review` (`/infra-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$infra-review` (`/infra-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
