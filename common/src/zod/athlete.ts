@@ -34,6 +34,7 @@ const sportSchema = sportCategorySchema;
 const displayDateSchema = z.string().min(1).max(120);
 const sortOrderSchema = z.number().int().nonnegative();
 const nullableHttpUrlSchema = httpUrlSchema.nullable();
+const expectedProfileVersionSchema = z.number().int().nonnegative();
 
 export const athleteAccomplishmentSchema = z.object({
   athleteAccomplishmentId: idSchema,
@@ -489,26 +490,43 @@ export type PublishAthleteProfileResponse = z.infer<
   typeof publishAthleteProfileResponseSchema
 >;
 
-export const upsertAthletePersonalBestRequestSchema = personalBestInputSchema;
+export const upsertAthletePersonalBestRequestSchema = personalBestInputSchema
+  .extend({
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
+  })
+  .strict();
 export type UpsertAthletePersonalBestRequest = z.infer<
   typeof upsertAthletePersonalBestRequestSchema
 >;
 
-export const upsertAthleteResultRequestSchema = athleteResultInputSchema;
+export const upsertAthleteResultRequestSchema = athleteResultInputSchema
+  .extend({
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
+  })
+  .strict();
 export type UpsertAthleteResultRequest = z.infer<typeof upsertAthleteResultRequestSchema>;
 
-export const upsertAthleteStoryChapterRequestSchema = athleteStoryChapterInputSchema;
+export const upsertAthleteStoryChapterRequestSchema = athleteStoryChapterInputSchema
+  .extend({
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
+  })
+  .strict();
 export type UpsertAthleteStoryChapterRequest = z.infer<
   typeof upsertAthleteStoryChapterRequestSchema
 >;
 
-export const upsertAthleteRoadmapEventRequestSchema = athleteRoadmapEventInputSchema;
+export const upsertAthleteRoadmapEventRequestSchema = athleteRoadmapEventInputSchema
+  .extend({
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
+  })
+  .strict();
 export type UpsertAthleteRoadmapEventRequest = z.infer<
   typeof upsertAthleteRoadmapEventRequestSchema
 >;
 
 export const upsertAthleteTrainingSnapshotRequestSchema = z
   .object({
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
     weeklyDistanceLabel: z.string().max(40).optional().nullable(),
     weeklyTimeLabel: z.string().max(40).optional().nullable(),
     weeklyElevationGainLabel: z.string().max(40).optional().nullable(),
@@ -523,20 +541,34 @@ export type UpsertAthleteTrainingSnapshotRequest = z.infer<
   typeof upsertAthleteTrainingSnapshotRequestSchema
 >;
 
-export const upsertAthleteMediaAssetRequestSchema = athleteMediaAssetInputSchema;
+export const upsertAthleteMediaAssetRequestSchema = athleteMediaAssetInputSchema
+  .extend({
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
+  })
+  .strict();
 export type UpsertAthleteMediaAssetRequest = z.infer<
   typeof upsertAthleteMediaAssetRequestSchema
 >;
 
 export const reorderAthleteProfileChildrenRequestSchema = z
   .object({
-    expectedProfileVersion: z.number().int().nonnegative().optional(),
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
     orderedChildIds: z.array(idSchema).min(1).max(100),
   })
   .strict();
 
 export type ReorderAthleteProfileChildrenRequest = z.infer<
   typeof reorderAthleteProfileChildrenRequestSchema
+>;
+
+export const deleteAthleteProfileChildRequestSchema = z
+  .object({
+    expectedProfileVersion: expectedProfileVersionSchema.optional(),
+  })
+  .strict();
+
+export type DeleteAthleteProfileChildRequest = z.infer<
+  typeof deleteAthleteProfileChildRequestSchema
 >;
 
 export const createAthleteProfileRequestSchema = z

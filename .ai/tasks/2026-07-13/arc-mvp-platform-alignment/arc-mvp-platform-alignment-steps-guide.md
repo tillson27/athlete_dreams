@@ -28,9 +28,9 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 1 | Import `origin/nate` UI surface | Complete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-1-5.md` |
 | 2 | Refactor imported client structure without visual changes | Complete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-1-5.md` |
 | 3 | Define shared MVP contracts in `common/` | Complete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-1-5.md` |
-| 4 | Create Prisma data model alignment | Incomplete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-1-5.md` |
-| 5 | Implement profile draft, publish, and public profile APIs | Incomplete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-1-5.md` |
-| 6 | Implement profile child data APIs | Incomplete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-6-10.md` |
+| 4 | Create Prisma data model alignment | Complete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-1-5.md` |
+| 5 | Implement profile draft, publish, and public profile APIs | Complete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-1-5.md` |
+| 6 | Implement profile child data APIs | Complete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-6-10.md` |
 | 7 | Implement follows, community feed, and dashboard APIs | Incomplete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-6-10.md` |
 | 8 | Align campaign and support readiness APIs | Incomplete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-6-10.md` |
 | 9 | Connect client UI to typed backend APIs | Incomplete | AI agent | `.ai/tasks/2026-07-13/arc-mvp-platform-alignment/arc-mvp-platform-alignment-steps-6-10.md` |

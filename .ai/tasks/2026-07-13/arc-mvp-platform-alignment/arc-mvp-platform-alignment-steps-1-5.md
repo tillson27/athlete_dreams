@@ -177,7 +177,7 @@
 ## Step 4 - Create Prisma Data Model Alignment
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 3
 **Size:** medium
 **Owner:** AI agent
@@ -207,22 +207,34 @@
 - Use the allowed migration-create command after schema edits.
 
 ### Step checklist
-- [ ] Prisma schema updated
-- [ ] Required indexes and unique constraints added
-- [ ] Draft migration created with the repo-approved command only
-- [ ] No immutable migration files edited
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Prisma schema updated
+- [x] Required indexes and unique constraints added
+- [x] Draft migration created with the repo-approved command only
+- [x] No immutable migration files edited
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+
+### Completion notes
+
+- Updated `app/prisma/schema.prisma` for draft/published profile state, optimistic profile versioning, richer profile fields, support readiness fields, and published-profile directory indexes.
+- Added normalized Prisma models for core values, story chapters, personal bests, results, source links, roadmap event source links, training snapshots, power profiles, profile milestones, follows, and community reactions.
+- Extended `AthleteMedia`, `AthleteEvent`, `Campaign`, and `CampaignCostLine` to support deterministic ordering, media roles, source-link readiness, campaign summary reads, and idempotent community features.
+- Added unique constraints for one profile per user, stable athlete slugs, one follow per `(userId, athleteId)`, and one community reaction per `(userId, targetType, targetId)`.
+- Created draft migration `app/prisma/migrations/20260713171400_align_mvp_profile_models/migration.sql` with `npm run migrate:create --prefix app -- --name align_mvp_profile_models`; a temporary local Postgres Docker container was used because no local `DATABASE_URL` was configured.
+- Updated current athlete repository/service behavior so legacy public profile and directory routes only expose published, complete profiles while draft rows can be nullable for Step 5.
+- Ran the `$backend-review` (`/backend-review`) skill with uncommitted Step 4 backend/schema focus and applied its local cleanup.
+- Ran `npm run type-check --prefix app`; it passed.
+- Ran the `$ci` (`/ci`) skill with `DATABASE_URL=postgresql://fad:fad@localhost:5432/fad_dev?schema=public npm run ci`; it passed.
 
 ---
 
 ## Step 5 - Implement Profile Draft, Publish, and Public Profile APIs
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 3, 4
 **Size:** medium
 **Owner:** AI agent
@@ -256,12 +268,22 @@
 - Keep public reads limited to published profiles unless the requester owns the draft.
 
 ### Step checklist
-- [ ] Draft profile API implemented
-- [ ] Publish API implemented
-- [ ] Public profile-by-slug API implemented
-- [ ] Ownership, not-found, conflict, and validation errors handled
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Draft profile API implemented
+- [x] Publish API implemented
+- [x] Public profile-by-slug API implemented
+- [x] Ownership, not-found, conflict, and validation errors handled
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+
+### Completion notes
+
+- Added owner-only profile draft routes under `GET /v1/athletes/me/draft` and `PUT /v1/athletes/me/draft`, backed by `upsertAthleteProfileDraftRequestSchema`.
+- Added `POST /v1/athletes/me/publish`, with structured completion/missing-field responses and idempotent already-published handling.
+- Updated public `GET /v1/athletes/:athleteSlug` to return the richer `PublicAthleteProfile` DTO for published profiles, with optional bearer-token follower state.
+- Added deterministic Prisma includes and DTO mappers for public/draft profile sections so child records already read in stable order before Step 6 adds dedicated child mutation APIs.
+- Added optimistic concurrency for existing draft updates via `expectedProfileVersion`; stale or missing version tokens return typed conflict errors with the current version when available.
+- Preserved repository-only Prisma access and split section replacement persistence out of `AthleteRepository` during `$backend-review` (`/backend-review`).
+- Ran `npm run type-check --prefix app`, `npm run lint --prefix app`, and the `$ci` (`/ci`) skill with `npm run ci`; all passed. The app lint command still emits the existing ESLint config module-type warning.

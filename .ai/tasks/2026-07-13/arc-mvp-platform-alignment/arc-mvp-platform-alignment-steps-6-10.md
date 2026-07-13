@@ -3,7 +3,7 @@
 ## Step 6 - Implement Profile Child Data APIs
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 3, 4, 5
 **Size:** medium
 **Owner:** AI agent
@@ -36,15 +36,25 @@
 - Add conflict checks for stale profile edits.
 
 ### Step checklist
-- [ ] Personal best APIs implemented
-- [ ] Result/highlight/race APIs implemented
-- [ ] Roadmap/event APIs implemented
-- [ ] Story chapter, training snapshot, and media metadata APIs implemented
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Personal best APIs implemented
+- [x] Result/highlight/race APIs implemented
+- [x] Roadmap/event APIs implemented
+- [x] Story chapter, training snapshot, and media metadata APIs implemented
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+
+### Completion notes
+
+- Added `expectedProfileVersion` to dedicated child mutation contracts in `common/src/zod/athlete.ts`, plus a delete-child request contract for owner-only deletes.
+- Added authenticated child collection routes under `app/src/api/athletes/AthleteRouterFactory.ts` for personal bests, results, roadmap events, story chapters, training snapshot, and media assets.
+- Added controller/service methods that parse only `fad-common` schemas, enforce authenticated ownership through the current user, reject route/body child ID mismatches, and return refreshed `AthleteProfileDraft` DTOs after mutations.
+- Added `app/src/repositories/AthleteProfileChildRepository.ts` with transactional child writes, full-list reorder checks, stale profile-version checks, and rollback on failed ownership or order validation.
+- Preserved deterministic public/draft profile child ordering through the existing profile read mapper and included source links, verification status fields, and HTTP(S)-only media/source URL validation via shared schemas.
+- Ran the `$backend-review` (`/backend-review`) skill in uncommitted backend scope with Step 6 child API focus; no strict blockers remained.
+- Ran `npm run ci`; it passed. Existing tool warnings remain for the app ESLint config module type and deprecated `next lint`.
 
 ---
 
