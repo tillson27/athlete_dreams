@@ -1,0 +1,23 @@
+{
+  "name": "fad-cdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS CDK v2 infrastructure for the FAD/ARC API + client.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "synth": "cdk synth",
+    "synth:test": "cdk synth -c env=test",
+    "synth:prod": "cdk synth -c env=prod"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.261.0",
+    "constructs": "^10.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "aws-cdk": "^2.1130.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

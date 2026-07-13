@@ -74,10 +74,18 @@
 ## Step 13 - CDK skeleton + NetworkStack
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+
+### Completion Notes
+- Authored the `cdk/` package (hand-rolled, no `cdk init` bloat): `package.json` (`aws-cdk-lib ^2.261.0`, `constructs ^10.6.0`; devDeps `aws-cdk` CLI, `typescript`, reused `tsx` as the `cdk.json` app runner per dependency-reuse), `tsconfig.json` (repo style, strict, `noEmit`), `cdk.json` (`"app": "npx tsx bin/fad.ts"` + modern context feature flags), `bin/fad.ts` (reads `-c env=test|prod` default `test`, resolves `config/`, instantiates `NetworkStack`; region-only env → account-agnostic, no `fromLookup`), `config/{types,test,prod,index}.ts` (typed `EnvironmentConfig`: `multiAz`, `instanceSize`, `natStrategy`, `natGatewayCount`, `desiredCount`, `useSpot`, `priceClass`, `domain`, `envName` — test=lean, prod=HA per `docs/infrastructure-and-scaling.md` cost/HA table), `lib/network-stack.ts` (2-AZ VPC, public+private subnets, NAT per `natStrategy` — test `NatProvider.instanceV2` t4g.nano / prod 2× gateway, free S3 gateway endpoint, least-privilege SG chain ALB:443/80 → service:8080 → database:5432, stack tags `project=arc`/`env=<envName>`), and `AGENTS.md` (+ generated `CLAUDE.md`/`GEMINI.md` mirrors). Package-local: intentionally NOT wired into root `package.json` scripts/postinstall (documented in `cdk/AGENTS.md`).
+- Synth verified with NO AWS credentials for both envs: `npx cdk synth -c env=test` and `-c env=prod` succeed. Test template = 1 NAT instance (t4g.nano, AMI via public SSM param — no account lookup) + S3 gateway endpoint + 3 SGs (correct 8080/5432 ingress chain) + 2 public/2 private subnets + `project=arc`/`env=test` tags. Prod template = 2 NAT gateways + 2 EIPs (HA) + S3 gateway endpoint + same SG chain/subnets + `env=prod` tags. Sole synth output is an upstream cosmetic `InstanceProps#keyName` deprecation WARNING from CDK's internal `NatInstanceProviderV2` (aws/aws-cdk#30806) — not fixable from our code, does not affect the template or synth.
+- **Sync-fix (worktree-safe agents sync):** root-caused the mis-stamp — when `scripts/sync-agents-instructions.js` (via `scripts/agents-md-header.js`) ran from the MAIN checkout, `collectAgentsFiles` traversed into `.claude/worktrees/agent-*/` and stamped those committed `AGENTS.md` files with `.claude/worktrees/...` chain paths (and rewrote sibling worktrees). Fix: new shared `scripts/repo-paths.js` — `getRepoRoot()` resolves the repo root robustly via `git rev-parse --show-toplevel` (fallback to path logic), and `collectAgentsFiles()` prunes any nested git checkout (a subdir with its own `.git`), so traversal never crosses a worktree boundary. Both entry scripts now import the shared helper (removes duplicated traversal). **Verified inside this worktree:** `npm run script:agents:sync` reports 0/4 existing AGENTS.md updated (only the new `cdk/AGENTS.md` stamped, with the correct `` `cdk/AGENTS.md` _(this file)_ > `AGENTS.md` _(root)_ `` chain); `git status` shows NO changes to any existing AGENTS.md/CLAUDE.md/GEMINI.md; sibling worktrees confirmed untouched; a simulated main-checkout run now finds only the 4 canonical files (was 16).
+- `$infra-review` (`/infra-review`) executed: least-privilege SGs, private-subnet compute/DB, `restrictDefaultSecurityGroup` flag, Graviton NAT + free S3 endpoint + `PriceClass_100` cost levers all validated; `NatProvider.instanceV2` confirmed as the current (non-deprecated) NAT-instance construct; account-agnostic region-only synth confirmed as the supported credential-free pattern. No critical issues.
+- `npm run ci` green (type-check + lint:fix + build + test: 2 passed / 1 skipped DB probe). cdk is not wired into root CI; the sync-fix caused no breakage (root `build` runs the sync twice with zero AGENTS.md drift).
 
 ### Context
 
@@ -98,12 +106,12 @@
 - Set `test` config to the lean profile and `prod` to the HA profile from the parameters table.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$infra-review` (`/infra-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$infra-review` (`/infra-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
