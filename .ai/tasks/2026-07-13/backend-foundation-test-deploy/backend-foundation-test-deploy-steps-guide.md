@@ -28,7 +28,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 
 | Step | Name | Status | Owner | Doc |
 | --- | --- | --- | --- | --- |
-| 1 | CI enablement: PR checks, PR template, Dependabot | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-1-5.md` |
+| 1 | CI enablement: PR checks, PR template, Dependabot | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-1-5.md` |
 | 2 | App bootstrap refactor: buildApp split, lifecycle, health | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-1-5.md` |
 | 3 | Test harness: vitest + supertest, wired into CI | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-1-5.md` |
 | 4 | Prisma schema evolution (nate alignment) | Incomplete | unassigned | `.ai/tasks/2026-07-13/backend-foundation-test-deploy/backend-foundation-test-deploy-steps-1-5.md` |

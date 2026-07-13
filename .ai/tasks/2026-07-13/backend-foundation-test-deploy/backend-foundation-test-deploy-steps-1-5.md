@@ -3,10 +3,16 @@
 ## Step 1 - CI enablement: PR checks, PR template, Dependabot
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** small
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- Added `.github/workflows/ci.yml` (triggers: `pull_request` into `nate`/`main` + `workflow_dispatch`; Node 22 + npm cache over all four workspace lockfiles; steps `npm ci` → build `common` → `type-check` → `lint` → `build`; least-privilege `contents: read`, `cancel-in-progress` concurrency). No `test` job — Step 3 adds it.
+- Added `.github/pull_request_template.md` (summary, linked task/step, checklist) and `.github/dependabot.yml` (weekly npm updates for `/`, `/common`, `/app`, `/client`, plus `github-actions` at `/`).
+- `$infra-review` + `$ci` (`npm run ci`) both green; CI builds `common` before `type-check`, resolving the known `fad-common` dist dependency (Context §5).
+- **USER ACTION (GitHub settings — human only):** enable branch protection on `nate` and `main` requiring the `ci` check; enable Dependabot alerts/security updates and secret scanning.
 
 ### Context
 
@@ -27,12 +33,12 @@
 - Flag for the user (in the PR description): enable branch protection on `nate`/`main` with `ci` as a required check, plus Dependabot + secret scanning (settings are user-only actions).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$infra-review` (`/infra-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$infra-review` (`/infra-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
