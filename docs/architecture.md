@@ -1,6 +1,6 @@
-# FAD Architecture Overview
+# ARC Architecture Overview
 
-A snapshot of how the codebase is organized today. Updated 2026-05-19.
+A snapshot of how the codebase is organized today. Updated 2026-07-13 (against the `nate` integration branch).
 
 ## Workspaces
 
@@ -49,18 +49,16 @@ HTTP → Express Router → <Feature>RouterFactory
 - Controllers parse `req.body` / `req.query` / `req.params` through `parseRequestBody` etc.
 - The global `errorHandler` middleware translates `DomainError` subclasses into HTTP responses.
 
-## Marketing Site Layout (Frontend)
+## Site Layout (Frontend — `nate`)
 
-- `/` — Landing (hero, three pillars, athlete spotlights, transparency pitch, athlete CTA).
-- `/athletes` — Directory with sport filter.
-- `/athletes/[athleteSlug]` — Athlete profile with campaigns and itemized cost breakdowns.
-- `/brands` — Marketing page for corporate sponsors.
-- `/ambassadors` — Marketing page for managed ambassador programs.
-- `/how-it-works` — Persona breakdown (athletes, supporters, brands).
-- `/about` — Company values + contact.
-- `/sign-in`, `/sign-up` — Auth forms.
+Runner-first launch surface on `athletearc.ca` (the `/brands`, `/ambassadors`, `/presentation` corporate routes were removed):
 
-Data on the directory and profile pages currently comes from `client/lib/mockAthletes.ts`. Replacing that with `fetch(`${API_BASE_URL}/v1/athletes`)` is the next step once the backend is deployed.
+- **Marketing:** `/` (story-led home), `/for-athletes` (recruiting), `/mission`, `/about`, `/how-it-works` (runners + followers personas), `/support` (backing preview — itemized cost lines, "coming soon"), `/terms`, `/privacy`.
+- **Discovery:** `/athletes` (directory: discipline / level / region filters), `/athletes/[athleteSlug]` (rich profile: Arc chapters, verified results, highlights, roadmap), `/community` (feed: races / training / milestones, follows, cheers).
+- **Athlete loop:** `/sign-up`, `/sign-in`, `/register` + 4-step `/register/{personal-basics,athletics,values-social,review}` onboarding, `/dashboard`, `/athletes/[athleteSlug]/manage` (editor).
+- **SEO:** `sitemap.ts`, `robots.ts` (private routes disallowed), dynamic OG images, `metadataBase = https://athletearc.ca`.
+
+All data is mock/localStorage by design: roster + rich profiles from `client/lib/{mockAthletes,athleteProfiles}.ts`; session, follows, cheers, onboarding drafts, and manage-editor edits in localStorage stores that each name their backend replacement. The seam-by-seam mapping to API phases lives in `docs/backend-build-sheet.md` → *Frontend contract alignment*.
 
 ## AI Toolkit
 
@@ -72,7 +70,9 @@ Data on the directory and profile pages currently comes from `client/lib/mockAth
 
 ## Open Questions / Next Up
 
-1. **Payments provider.** Stripe Connect is the obvious choice for "money goes to the athlete," but we need to scope the onboarding burden for first-time athletes.
-2. **Hosting.** Vercel for the client + Fly.io/Render for the API is the cheapest path to live, but CDK is wired into emlyreal for a reason — revisit before scaling.
-3. **Email.** Resend for transactional + Postmark for donation receipts is a good default.
-4. **CMS for athlete stories.** Today athletes write through forms in the app; consider a structured editor later.
+Implementation and hosting are now planned in detail — see `docs/backend-build-sheet.md` (per-file plan, Phases 0–4 + Infra & Deploy) and `docs/infrastructure-and-scaling.md` (AWS design, cost levers, scaling stages).
+
+1. **Payments provider.** ✅ Decided: **Stripe Connect (Express)** — see build sheet Phase 2. First-time athlete onboarding handled via Stripe hosted account links.
+2. **Hosting.** ✅ Decided: **AWS via CDK v2** — ECS Fargate + ALB (API), RDS PostgreSQL (Multi-AZ toggle), S3 + CloudFront (client). See `docs/infrastructure-and-scaling.md`.
+3. **Email.** ✅ Decided: **Amazon SES** (AWS-native) — see build sheet Phase 4.
+4. **CMS for athlete stories.** Open — today athletes write through forms in the app; consider a structured editor later.
