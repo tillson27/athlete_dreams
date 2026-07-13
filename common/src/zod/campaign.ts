@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   idSchema,
   isoDateTimeSchema,
+  mediaRefSchema,
   moneyCentsSchema,
   paginationResponseSchema,
   slugSchema,
@@ -76,7 +77,7 @@ export const campaignSummarySchema = z.object({
   athleteSlug: slugSchema,
   athleteName: z.string(),
   primarySport: sportSchema,
-  heroMediaUrl: z.string().url().nullable(),
+  heroMediaUrl: mediaRefSchema.nullable(),
   targetAmountCents: moneyCentsSchema,
   raisedAmountCents: moneyCentsSchema,
   supporterCount: z.number().int().nonnegative(),
@@ -84,6 +85,12 @@ export const campaignSummarySchema = z.object({
 });
 
 export type CampaignSummary = z.infer<typeof campaignSummarySchema>;
+
+// Public API contract: `GET /v1/athletes/:athleteSlug/campaigns` returns the
+// athlete's active campaigns as a bare array (not a paginated wrapper).
+export const athleteCampaignsResponseSchema = z.array(campaignSummarySchema);
+
+export type AthleteCampaignsResponse = z.infer<typeof athleteCampaignsResponseSchema>;
 
 export const activeCampaignFeedResponseSchema = paginationResponseSchema(campaignSummarySchema);
 

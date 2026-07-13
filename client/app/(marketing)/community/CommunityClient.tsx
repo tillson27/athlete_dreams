@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { buildFeed, buildRacingSoon, type FeedItem, type FeedCategory } from '@/lib/communityFeed';
+import type { FeedCategory } from '@/lib/communityFeed';
+import { useCommunityData } from '@/lib/dataSource';
 import { useFollows } from '@/lib/follows';
 import { useSession } from '@/lib/session';
 import { createBrowserStore } from '@/lib/browserStore';
@@ -40,8 +41,7 @@ const FEED_TYPES: Array<{ key: FeedCategory | 'ALL'; label: string; icon: 'hub' 
 ];
 
 export function CommunityClient() {
-  const feed = useMemo(() => buildFeed(), []);
-  const racingSoon = useMemo(() => buildRacingSoon(), []);
+  const { feed, racingSoon } = useCommunityData();
   const { follows, ready } = useFollows();
   const { session } = useSession();
 

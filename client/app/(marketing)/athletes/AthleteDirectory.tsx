@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { AthleteRow } from '@/components/site/AthleteCard';
 import { LinkButton } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { runnerAthletes, type MockAthlete } from '@/lib/mockAthletes';
+import type { MockAthlete } from '@/lib/mockAthletes';
+import { useDirectoryAthletes } from '@/lib/dataSource';
 
 const SPORTS: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
@@ -40,6 +41,7 @@ const initialFilters: Filters = {
 };
 
 export function AthleteDirectory() {
+  const { athletes } = useDirectoryAthletes();
   const [filters, setFilters] = useState<Filters>(initialFilters);
 
   // Sync initial state from URL (?sport=RUNNING&level=EVERYDAY) for deep-linkability.
@@ -55,7 +57,7 @@ export function AthleteDirectory() {
   }, []);
 
   const filtered = useMemo(() => {
-    return runnerAthletes.filter((athlete) => {
+    return athletes.filter((athlete) => {
       if (filters.sport !== 'ALL' && athlete.primarySport !== filters.sport) return false;
       if (filters.level !== 'ALL' && athlete.runnerLevel !== filters.level) return false;
       if (filters.country !== 'ALL' && athlete.countryCode !== filters.country) return false;
@@ -66,10 +68,10 @@ export function AthleteDirectory() {
       }
       return true;
     });
-  }, [filters]);
+  }, [athletes, filters]);
 
   const clear = () => setFilters(initialFilters);
-  const isFiltered = filtered.length !== runnerAthletes.length;
+  const isFiltered = filtered.length !== athletes.length;
 
   return (
     <div className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-col md:flex-row">

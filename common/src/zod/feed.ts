@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { paginationResponseSchema, slugSchema } from './shared';
+import { mediaRefSchema, paginationResponseSchema, slugSchema } from './shared';
 import { SportCategory } from '../types/enums';
 
 const sportSchema = z.nativeEnum(SportCategory);
@@ -12,7 +12,9 @@ export type FeedCategory = z.infer<typeof feedCategorySchema>;
 
 // Public API contract: a derived community-feed card. `feedItemId` is
 // `<athleteSlug>-<kind>-<sourceId>` and `isVerified` is true when the source
-// result carries a `resultUrl` (see context §9 example shape).
+// result carries a `resultUrl` (see context §9 example shape). `photoUrl` is a
+// media reference (absolute URL or bare ref) or null; clients compose a display
+// URL from a bare ref.
 export const communityFeedItemSchema = z.object({
   feedItemId: z.string(),
   athleteSlug: slugSchema,
@@ -22,7 +24,7 @@ export const communityFeedItemSchema = z.object({
   category: feedCategorySchema,
   headline: z.string(),
   detail: z.string(),
-  photoUrl: z.string().url().nullable(),
+  photoUrl: mediaRefSchema.nullable(),
   occurredAtLabel: z.string(),
   isVerified: z.boolean(),
 });

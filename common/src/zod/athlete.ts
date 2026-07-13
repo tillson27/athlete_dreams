@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { idSchema, isoDateTimeSchema, paginationResponseSchema, slugSchema } from './shared';
+import {
+  idSchema,
+  isoDateTimeSchema,
+  mediaRefSchema,
+  paginationResponseSchema,
+  slugSchema,
+} from './shared';
 import { AthleteLevel, SportCategory } from '../types/enums';
 
 const sportSchema = z.nativeEnum(SportCategory);
@@ -68,7 +74,7 @@ export type AthleteCoreValue = z.infer<typeof athleteCoreValueSchema>;
 
 export const athleteMediaSchema = z.object({
   athleteMediaId: idSchema,
-  mediaUrl: z.string().url(),
+  mediaUrl: mediaRefSchema,
   mediaKind: z.enum(['IMAGE', 'VIDEO']),
   caption: z.string().max(280).nullable(),
 });
@@ -101,7 +107,7 @@ export const athleteProfileSchema = z.object({
   personalBests: z.array(personalBestSchema).optional(),
   raceResults: z.array(athleteRaceResultSchema).optional(),
   roadmap: z.array(athleteRoadmapItemSchema).optional(),
-  gallery: z.array(z.string().url()).optional(),
+  gallery: z.array(mediaRefSchema).optional(),
   media: z.array(athleteMediaSchema),
   publishedAt: isoDateTimeSchema.nullable().optional(),
   createdAt: isoDateTimeSchema,
@@ -119,7 +125,7 @@ export const athleteDirectoryItemSchema = z.object({
   runnerLevel: athleteLevelSchema.optional(),
   hometown: z.string().nullable(),
   countryCode: z.string().nullable(),
-  heroMediaUrl: z.string().url().nullable(),
+  heroMediaUrl: mediaRefSchema.nullable(),
   activeCampaignCount: z.number().int().nonnegative(),
   totalRaisedCents: z.number().int().nonnegative(),
 });
@@ -164,7 +170,7 @@ export const updateAthleteProfileRequestSchema = z
     socialInstagramHandle: z.string().max(60).optional(),
     socialTwitterHandle: z.string().max(60).optional(),
     socialStravaUrl: z.string().url().optional(),
-    heroMediaUrl: z.string().url().optional(),
+    heroMediaUrl: mediaRefSchema.optional(),
   })
   .strict();
 
@@ -228,7 +234,7 @@ export type SetAthleteRoadmapRequest = z.infer<typeof setAthleteRoadmapRequestSc
 
 export const setAthleteGalleryRequestSchema = z
   .object({
-    gallery: z.array(z.string().url()).max(12),
+    gallery: z.array(mediaRefSchema).max(12),
   })
   .strict();
 

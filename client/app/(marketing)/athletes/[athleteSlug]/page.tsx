@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { findMockAthlete, mockAthletes } from '@/lib/mockAthletes';
 import { findAthleteProfile } from '@/lib/athleteProfiles';
 import { formatSport } from '@/lib/format';
-import { AthleteProfile } from './AthleteProfile';
+import { AthleteProfileHydrator } from './AthleteProfileHydrator';
 
 export async function generateStaticParams() {
   return mockAthletes.map((athlete) => ({ athleteSlug: athlete.athleteSlug }));
@@ -33,5 +33,5 @@ export default async function AthleteProfilePage({
   const profile = findAthleteProfile(athleteSlug);
   if (!athlete || !profile) notFound();
 
-  return <AthleteProfile athlete={athlete} profile={profile} />;
+  return <AthleteProfileHydrator athlete={athlete} profile={profile} />;
 }
