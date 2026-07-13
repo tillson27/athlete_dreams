@@ -128,10 +128,16 @@
 ## Step 4 - Prisma schema evolution (nate alignment)
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- Evolved `app/prisma/schema.prisma` with the exact Δschema: `AthleteProfile` (+handle/runnerLevel/disciplineLabel/story/coreValues/presentation/publishedAt), `AthleteAccomplishment` (+detail/resultUrl/photoRefs), new `AthleteRaceResult`/`PersonalBest`/`Follow`, `AthleteEvent` (+displayDate), `SportCategory` += `ROAD_CYCLING`, enum `AthleteLevel`. Regenerated the Prisma client via `npm run build-client --prefix app`.
+- Followed existing conventions: uuid PKs `@db.Uuid`, snake_case `@@map`, section banners (added a "Social graph" banner for `Follow`), cascade relations, and no `deletedAt` on child/join rows (matches existing leaf models).
+- **Cross-step dependency resolved to keep CI green:** the new Prisma `ROAD_CYCLING` widens `SportCategory` beyond the `fad-common` union, breaking `app/src/api/athletes/AthleteService.ts` DTO mapping. Added only the single enum member `ROAD_CYCLING` to `common/src/types/enums.ts` (Step 5 lists this exact addition — identical additions converge on merge; no other Step 5 contract surface touched).
+- Added `@@index([runnerLevel])` on `AthleteProfile` (mirrors existing `@@index([primarySport])`) for the Step 7 directory `runnerLevel` filter. `npm run ci` passes (exit 0: type-check + lint + build across common/app/client).
 
 ### Context
 
@@ -153,12 +159,12 @@
 - Run prisma generate via the sanctioned build script; fix any compile fallout (expected: none — additive).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

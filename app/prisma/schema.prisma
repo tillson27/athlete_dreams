@@ -33,6 +33,7 @@ model User {
   teamInvitations    TeamInvitation[] @relation("InvitedBy")
   sessions           AuthSession[]
   donations          Donation[]
+  follows            Follow[]
   brandMemberships   BrandMembership[]
   platformRoleAssignments PlatformRoleAssignment[]
 
@@ -150,6 +151,7 @@ enum SportCategory {
   RUNNING
   TRIATHLON
   CYCLING
+  ROAD_CYCLING
   SWIMMING
   CLIMBING
   SKIING
@@ -162,49 +164,105 @@ enum SportCategory {
   OTHER
 }
 
+enum AthleteLevel {
+  ELITE
+  COMPETITIVE
+  EVERYDAY
+}
+
 model AthleteProfile {
   id                    String        @id @default(uuid()) @db.Uuid
   userId                String        @unique @db.Uuid
   athleteSlug           String        @unique
+  handle                String?       @unique
   fullName              String
   headline              String?
   bio                   String?
   primarySport          SportCategory
   secondarySports       SportCategory[]
+  runnerLevel           AthleteLevel  @default(EVERYDAY)
+  disciplineLabel       String?
   hometown              String?
   countryCode           String?       @db.VarChar(2)
   values                String[]
+  storyIntro            String?
+  storyBody             String[]
+  coreValues            Json?
+  presentation          Json?
   socialInstagramHandle String?
   socialTwitterHandle   String?
   socialStravaUrl       String?
   heroMediaUrl          String?
+  publishedAt           DateTime?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   deletedAt             DateTime?
 
   user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   accomplishments AthleteAccomplishment[]
+  personalBests   PersonalBest[]
+  raceResults     AthleteRaceResult[]
   media           AthleteMedia[]
   events          AthleteEvent[]
   campaigns       Campaign[]
+  followers       Follow[]
   sponsorshipInquiries SponsorshipInquiry[]
 
   @@index([primarySport])
+  @@index([runnerLevel])
   @@map("athlete_profiles")
 }
 
 model AthleteAccomplishment {
-  id          String   @id @default(uuid()) @db.Uuid
-  athleteId   String   @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  athleteId   String    @db.Uuid
   title       String
   description String?
+  detail      String?
+  resultUrl   String?
+  photoRefs   String[]
   occurredOn  DateTime? @db.Date
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   @@index([athleteId])
   @@map("athlete_accomplishments")
+}
+
+model AthleteRaceResult {
+  id            String    @id @default(uuid()) @db.Uuid
+  athleteId     String    @db.Uuid
+  resultName    String
+  displayDate   String
+  occurredOn    DateTime? @db.Date
+  resultSummary String
+  resultUrl     String?
+  links         Json?
+  photoRefs     String[]
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId])
+  @@map("athlete_race_results")
+}
+
+model PersonalBest {
+  id        String @id @default(uuid()) @db.Uuid
+  athleteId String @db.Uuid
+  label     String
+  value     String
+  resultUrl String?
+  sortOrder Int    @default(0)
+
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([athleteId, label])
+  @@index([athleteId])
+  @@map("personal_bests")
 }
 
 enum MediaKind {
@@ -233,6 +291,7 @@ model AthleteEvent {
   eventLocation    String?
   eventStartDate   DateTime  @db.Date
   eventEndDate     DateTime? @db.Date
+  displayDate      String?
   eventDescription String?
   createdAt        DateTime  @default(now())
 
@@ -241,6 +300,24 @@ model AthleteEvent {
 
   @@index([athleteId, eventStartDate])
   @@map("athlete_events")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Social graph
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Follow {
+  id             String   @id @default(uuid()) @db.Uuid
+  followerUserId String   @db.Uuid
+  athleteId      String   @db.Uuid
+  createdAt      DateTime @default(now())
+
+  follower User           @relation(fields: [followerUserId], references: [id], onDelete: Cascade)
+  athlete  AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([followerUserId, athleteId])
+  @@index([athleteId])
+  @@map("follows")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ export const SportCategory = {
   Running: 'RUNNING',
   Triathlon: 'TRIATHLON',
   Cycling: 'CYCLING',
+  RoadCycling: 'ROAD_CYCLING',
   Swimming: 'SWIMMING',
   Climbing: 'CLIMBING',
   Skiing: 'SKIING',
