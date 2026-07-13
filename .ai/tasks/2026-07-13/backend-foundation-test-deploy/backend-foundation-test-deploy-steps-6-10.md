@@ -95,10 +95,17 @@
 ## Step 8 - Athlete write path: PATCH me, publish, editor set-replace
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 7
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- `AthleteRepository` writers (all resolve the profile by `id`, return the step-7 `richProfileInclude` payload): `update(athleteId, patch)` (splits JSON `coreValues`/`presentation` from scalars, casts at the Prisma boundary); `setPublished(athleteId)` — **first-write-wins** via a guarded `updateMany({ where: { id, publishedAt: null } })` then read-back, so a second publish is a no-op preserving the original `publishedAt` and concurrent publishes cannot race; transactional set-replace writers `replaceHighlights`/`replaceRaceResults`/`replaceRoadmapEvents`/`replaceGallery`, each `deleteMany` + `createMany` inside one `prisma.$transaction`. Races carry `sortOrder = index`; highlights/gallery/roadmap have no `sortOrder` column, so a new module-level `orderedTimestamps(n)` stamps strictly increasing `createdAt` values to make the step-7 `createdAt asc` read ordering total and preserve submitted array order. Roadmap's required `eventStartDate` is derived from `displayDate` via `parseEventStartDate`, extracted from `prisma/seed.ts` into new `app/src/shared/displayDate.ts` (single source of truth; seed now imports it).
+- New `app/src/repositories/PlatformRoleRepository.ts`: `assignRole(userId, role)` upsert on `userId_role`. `AthleteService.createProfileForUser` now calls it with `PlatformRole.ATHLETE` after creating the profile.
+- `AthleteService` write methods (`updateMyProfile`, `publishMyProfile`, `replaceMy{Highlights,RaceResults,Roadmap,Gallery}`) all resolve the caller via `findByUserId(req.authenticatedUserId)` → 404 `NotFoundError('Athlete profile')` when the user has no profile; publish runs `assertPublishable` (minimum-content guard → 422 `ValidationError` with `details.missing` listing exactly which of `storyIntro`/`personalBests`/`disciplineLabel` are absent, checked against current profile + children state).
+- `AthleteController` + `AthleteRouterFactory`: `PATCH /v1/athletes/me`, `POST /v1/athletes/me/publish`, `PUT /v1/athletes/me/{highlights,races,roadmap,gallery}` — all `auth.required`, all bodies parsed via the step-5 `fad-common` schemas (`updateAthleteProfileRequestSchema`, `setAthlete{Highlights,RaceResults,Roadmap,Gallery}RequestSchema`). `GET /:athleteSlug` moved after the `/me/*` routes so the specific paths match first. Did NOT touch `campaigns/**`, `follows/**` (absent), or `app.ts` (the athletes router is already mounted).
+- Tests (`app/src/api/athletes/athletes.write.test.ts`, `RUN_DB_TESTS=1`-gated, unique `step8-<epoch>-<rand>` fixtures deleted in `afterAll` via user cascade): ATHLETE role assigned on `POST /v1/athletes`; 401 on unauthenticated PATCH/publish/PUT + 404 when authed user has no profile; PATCH round-trips fields via `GET` and touches only the caller (a second fixture stays unchanged); publish guard lists exactly the missing items (all-three + discipline-only cases) and stays unpublished; publish is idempotent (second call returns the same `publishedAt`); each set-replace round-trips via `GET` with submitted order preserved (highlights/gallery by createdAt, races by sortOrder, roadmap chronological) incl. replace-to-fewer and empty-set. `RUN_DB_TESTS=1 npx vitest run` = 39/39 (steps 3/7/10 green); `npm run ci` green; fixtures verified zero-residue, seeded 7-athlete roster intact.
 
 ### Context
 
@@ -120,12 +127,12 @@
 - Controllers gate on `req.authenticatedUserId`; all request parsing via `fad-common` schemas.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

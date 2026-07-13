@@ -1,7 +1,8 @@
 import { injectable } from 'tsyringe';
-import { type AthleteLevel, CampaignStatus, Prisma, SportCategory } from '@prisma/client';
+import { type AthleteLevel, CampaignStatus, MediaKind, Prisma, SportCategory } from '@prisma/client';
 import { PrismaService } from '../services/infrastructure/PrismaService';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../shared/keysetCursor';
+import { parseEventStartDate } from '../shared/displayDate';
 
 const richProfileInclude = Prisma.validator<Prisma.AthleteProfileInclude>()({
   personalBests: { orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }] },
@@ -35,6 +36,62 @@ export type AthleteDirectoryRow = Prisma.AthleteProfileGetPayload<{
 export interface AthleteCampaignStats {
   activeCampaignCount: number;
   totalRaisedCents: number;
+}
+
+// JSON columns (coreValues, presentation, race-result links) accept the client's
+// validated structural values; Prisma types them as its opaque InputJsonValue,
+// so callers pass a plain object/array and the repository casts at the boundary.
+type JsonPatchValue = Record<string, unknown> | unknown[];
+
+export interface AthleteProfilePatch {
+  handle?: string;
+  fullName?: string;
+  headline?: string;
+  bio?: string;
+  runnerLevel?: AthleteLevel;
+  disciplineLabel?: string;
+  hometown?: string;
+  countryCode?: string;
+  secondarySports?: SportCategory[];
+  values?: string[];
+  coreValues?: JsonPatchValue;
+  storyIntro?: string;
+  storyBody?: string[];
+  presentation?: JsonPatchValue;
+  socialInstagramHandle?: string;
+  socialTwitterHandle?: string;
+  socialStravaUrl?: string;
+  heroMediaUrl?: string;
+}
+
+export interface HighlightInput {
+  title: string;
+  detail?: string;
+  resultUrl?: string;
+  photoRefs: string[];
+}
+
+export interface RaceResultInput {
+  resultName: string;
+  displayDate: string;
+  resultSummary: string;
+  resultUrl?: string;
+  links?: JsonPatchValue;
+  photoRefs: string[];
+}
+
+export interface RoadmapEventInput {
+  eventName: string;
+  displayDate: string;
+}
+
+// Highlights, gallery, and roadmap have no `sortOrder` column, yet the editor's
+// save-all model is order-sensitive. Stamping strictly increasing `createdAt`
+// values makes the `createdAt asc` read ordering total, so a set-replace round
+// trip preserves the submitted array order.
+function orderedTimestamps(count: number): Date[] {
+  const base = Date.now();
+  return Array.from({ length: count }, (_, index) => new Date(base + index));
 }
 
 @injectable()
@@ -79,6 +136,134 @@ export class AthleteRepository {
     return this.prisma.athleteProfile.findFirst({
       where: { userId, deletedAt: null },
       include: richProfileInclude,
+    });
+  }
+
+  update(athleteId: string, patch: AthleteProfilePatch): Promise<AthleteProfileWithRelations> {
+    const { coreValues, presentation, ...scalars } = patch;
+    return this.prisma.athleteProfile.update({
+      where: { id: athleteId },
+      data: {
+        ...scalars,
+        ...(coreValues !== undefined ? { coreValues: coreValues as Prisma.InputJsonValue } : {}),
+        ...(presentation !== undefined
+          ? { presentation: presentation as Prisma.InputJsonValue }
+          : {}),
+      },
+      include: richProfileInclude,
+    });
+  }
+
+  // First-write-wins: publishing an already-published profile is a no-op that
+  // preserves the original `publishedAt`. The guarded `updateMany` sets the
+  // timestamp only when it is still null, so concurrent publishes cannot race.
+  async setPublished(athleteId: string): Promise<AthleteProfileWithRelations> {
+    await this.prisma.athleteProfile.updateMany({
+      where: { id: athleteId, publishedAt: null },
+      data: { publishedAt: new Date() },
+    });
+    return this.prisma.athleteProfile.findUniqueOrThrow({
+      where: { id: athleteId },
+      include: richProfileInclude,
+    });
+  }
+
+  replaceHighlights(
+    athleteId: string,
+    highlights: HighlightInput[]
+  ): Promise<AthleteProfileWithRelations> {
+    const orderedAt = orderedTimestamps(highlights.length);
+    return this.prisma.$transaction(async (tx) => {
+      await tx.athleteAccomplishment.deleteMany({ where: { athleteId } });
+      if (highlights.length > 0) {
+        await tx.athleteAccomplishment.createMany({
+          data: highlights.map((highlight, index) => ({
+            athleteId,
+            title: highlight.title,
+            detail: highlight.detail,
+            resultUrl: highlight.resultUrl,
+            photoRefs: highlight.photoRefs,
+            createdAt: orderedAt[index],
+          })),
+        });
+      }
+      return tx.athleteProfile.findUniqueOrThrow({
+        where: { id: athleteId },
+        include: richProfileInclude,
+      });
+    });
+  }
+
+  replaceRaceResults(
+    athleteId: string,
+    races: RaceResultInput[]
+  ): Promise<AthleteProfileWithRelations> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.athleteRaceResult.deleteMany({ where: { athleteId } });
+      if (races.length > 0) {
+        await tx.athleteRaceResult.createMany({
+          data: races.map((race, index) => ({
+            athleteId,
+            resultName: race.resultName,
+            displayDate: race.displayDate,
+            resultSummary: race.resultSummary,
+            resultUrl: race.resultUrl,
+            links: race.links as Prisma.InputJsonValue | undefined,
+            photoRefs: race.photoRefs,
+            sortOrder: index,
+          })),
+        });
+      }
+      return tx.athleteProfile.findUniqueOrThrow({
+        where: { id: athleteId },
+        include: richProfileInclude,
+      });
+    });
+  }
+
+  replaceRoadmapEvents(
+    athleteId: string,
+    events: RoadmapEventInput[]
+  ): Promise<AthleteProfileWithRelations> {
+    const orderedAt = orderedTimestamps(events.length);
+    return this.prisma.$transaction(async (tx) => {
+      await tx.athleteEvent.deleteMany({ where: { athleteId } });
+      if (events.length > 0) {
+        await tx.athleteEvent.createMany({
+          data: events.map((event, index) => ({
+            athleteId,
+            eventName: event.eventName,
+            displayDate: event.displayDate,
+            eventStartDate: parseEventStartDate(event.displayDate),
+            createdAt: orderedAt[index],
+          })),
+        });
+      }
+      return tx.athleteProfile.findUniqueOrThrow({
+        where: { id: athleteId },
+        include: richProfileInclude,
+      });
+    });
+  }
+
+  replaceGallery(athleteId: string, imageUrls: string[]): Promise<AthleteProfileWithRelations> {
+    const orderedAt = orderedTimestamps(imageUrls.length);
+    return this.prisma.$transaction(async (tx) => {
+      await tx.athleteMedia.deleteMany({ where: { athleteId, mediaKind: MediaKind.IMAGE } });
+      if (imageUrls.length > 0) {
+        await tx.athleteMedia.createMany({
+          data: imageUrls.map((mediaUrl, index) => ({
+            athleteId,
+            mediaUrl,
+            mediaKind: MediaKind.IMAGE,
+            createdAt: orderedAt[index],
+          })),
+        });
+      }
+      return tx.athleteProfile.findUniqueOrThrow({
+        where: { id: athleteId },
+        include: richProfileInclude,
+      });
     });
   }
 

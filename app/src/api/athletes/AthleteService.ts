@@ -1,4 +1,5 @@
 import { injectable } from 'tsyringe';
+import { PlatformRole } from '@prisma/client';
 import type {
   AthleteAccomplishment as AthleteAccomplishmentDto,
   AthleteCoreValue,
@@ -11,14 +12,22 @@ import type {
   AthleteRoadmapItem,
   CreateAthleteProfileRequest,
   PersonalBest as PersonalBestDto,
+  PublishAthleteProfileResponse,
+  SetAthleteGalleryRequest,
+  SetAthleteHighlightsRequest,
+  SetAthleteRaceResultsRequest,
+  SetAthleteRoadmapRequest,
+  UpdateAthleteProfileRequest,
 } from 'fad-common';
 import {
   type AthleteCampaignStats,
   type AthleteDirectoryRow,
+  type AthleteProfilePatch,
   type AthleteProfileWithRelations,
   AthleteRepository,
 } from '../../repositories/AthleteRepository';
-import { ConflictError, NotFoundError } from '../../shared/errors';
+import { PlatformRoleRepository } from '../../repositories/PlatformRoleRepository';
+import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors';
 
 type RaceResultRelation = AthleteProfileWithRelations['raceResults'][number];
 type AccomplishmentRelation = AthleteProfileWithRelations['accomplishments'][number];
@@ -28,7 +37,10 @@ type PersonalBestRelation = AthleteProfileWithRelations['personalBests'][number]
 
 @injectable()
 export class AthleteService {
-  constructor(private readonly athleteRepository: AthleteRepository) {}
+  constructor(
+    private readonly athleteRepository: AthleteRepository,
+    private readonly platformRoleRepository: PlatformRoleRepository
+  ) {}
 
   async listDirectory(query: AthleteDirectoryQuery): Promise<AthleteDirectoryResponse> {
     const { items, nextCursor } = await this.athleteRepository.listDirectory({
@@ -78,7 +90,133 @@ export class AthleteService {
       countryCode: input.countryCode,
       values: input.values,
     });
+    await this.platformRoleRepository.assignRole(userId, PlatformRole.ATHLETE);
     return toProfileDto(created);
+  }
+
+  async updateMyProfile(
+    userId: string,
+    input: UpdateAthleteProfileRequest
+  ): Promise<AthleteProfileDto> {
+    const athlete = await this.requireOwnProfile(userId);
+    const updated = await this.athleteRepository.update(athlete.id, toProfilePatch(input));
+    return toProfileDto(updated);
+  }
+
+  async publishMyProfile(userId: string): Promise<PublishAthleteProfileResponse> {
+    const athlete = await this.requireOwnProfile(userId);
+    assertPublishable(athlete);
+    const published = await this.athleteRepository.setPublished(athlete.id);
+    return {
+      athleteId: published.id,
+      athleteSlug: published.athleteSlug,
+      publishedAt: (published.publishedAt ?? new Date()).toISOString(),
+    };
+  }
+
+  async replaceMyHighlights(
+    userId: string,
+    input: SetAthleteHighlightsRequest
+  ): Promise<AthleteProfileDto> {
+    const athlete = await this.requireOwnProfile(userId);
+    const updated = await this.athleteRepository.replaceHighlights(
+      athlete.id,
+      input.highlights.map((highlight) => ({
+        title: highlight.title,
+        detail: highlight.detail,
+        resultUrl: highlight.resultUrl,
+        photoRefs: highlight.photoRefs ?? [],
+      }))
+    );
+    return toProfileDto(updated);
+  }
+
+  async replaceMyRaceResults(
+    userId: string,
+    input: SetAthleteRaceResultsRequest
+  ): Promise<AthleteProfileDto> {
+    const athlete = await this.requireOwnProfile(userId);
+    const updated = await this.athleteRepository.replaceRaceResults(
+      athlete.id,
+      input.races.map((race) => ({
+        resultName: race.resultName,
+        displayDate: race.displayDate,
+        resultSummary: race.resultSummary,
+        resultUrl: race.resultUrl,
+        links: race.links,
+        photoRefs: race.photoRefs ?? [],
+      }))
+    );
+    return toProfileDto(updated);
+  }
+
+  async replaceMyRoadmap(
+    userId: string,
+    input: SetAthleteRoadmapRequest
+  ): Promise<AthleteProfileDto> {
+    const athlete = await this.requireOwnProfile(userId);
+    const updated = await this.athleteRepository.replaceRoadmapEvents(
+      athlete.id,
+      input.roadmap.map((event) => ({
+        eventName: event.eventName,
+        displayDate: event.displayDate,
+      }))
+    );
+    return toProfileDto(updated);
+  }
+
+  async replaceMyGallery(
+    userId: string,
+    input: SetAthleteGalleryRequest
+  ): Promise<AthleteProfileDto> {
+    const athlete = await this.requireOwnProfile(userId);
+    const updated = await this.athleteRepository.replaceGallery(athlete.id, input.gallery);
+    return toProfileDto(updated);
+  }
+
+  private async requireOwnProfile(userId: string): Promise<AthleteProfileWithRelations> {
+    const athlete = await this.athleteRepository.findByUserId(userId);
+    if (!athlete) throw new NotFoundError('Athlete profile');
+    return athlete;
+  }
+}
+
+function toProfilePatch(input: UpdateAthleteProfileRequest): AthleteProfilePatch {
+  return {
+    handle: input.handle,
+    fullName: input.fullName,
+    headline: input.headline,
+    bio: input.bio,
+    runnerLevel: input.runnerLevel,
+    disciplineLabel: input.disciplineLabel,
+    hometown: input.hometown,
+    countryCode: input.countryCode,
+    secondarySports: input.secondarySports,
+    values: input.values,
+    coreValues: input.coreValues,
+    storyIntro: input.storyIntro,
+    storyBody: input.storyBody,
+    presentation: input.presentation,
+    socialInstagramHandle: input.socialInstagramHandle,
+    socialTwitterHandle: input.socialTwitterHandle,
+    socialStravaUrl: input.socialStravaUrl,
+    heroMediaUrl: input.heroMediaUrl,
+  };
+}
+
+function assertPublishable(athlete: AthleteProfileWithRelations): void {
+  const missing: string[] = [];
+  if (!athlete.storyIntro || athlete.storyIntro.trim().length === 0) {
+    missing.push('storyIntro');
+  }
+  if (athlete.personalBests.length === 0) {
+    missing.push('personalBests');
+  }
+  if (!athlete.disciplineLabel || athlete.disciplineLabel.trim().length === 0) {
+    missing.push('disciplineLabel');
+  }
+  if (missing.length > 0) {
+    throw new ValidationError('Profile is missing required content to publish', { missing });
   }
 }
 

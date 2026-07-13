@@ -4,7 +4,12 @@ import { z } from 'zod';
 import {
   athleteDirectoryQuerySchema,
   createAthleteProfileRequestSchema,
+  setAthleteGalleryRequestSchema,
+  setAthleteHighlightsRequestSchema,
+  setAthleteRaceResultsRequestSchema,
+  setAthleteRoadmapRequestSchema,
   slugSchema,
+  updateAthleteProfileRequestSchema,
 } from 'fad-common';
 import { AthleteService } from './AthleteService';
 import { ResponseHandler } from '../../shared/ResponseHandler';
@@ -41,5 +46,46 @@ export class AthleteController {
     const body = parseRequestBody(createAthleteProfileRequestSchema, req);
     const profile = await this.athleteService.createProfileForUser(req.authenticatedUserId, body);
     ResponseHandler.success(res, 201, profile);
+  };
+
+  updateMyProfile = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const body = parseRequestBody(updateAthleteProfileRequestSchema, req);
+    const profile = await this.athleteService.updateMyProfile(req.authenticatedUserId, body);
+    ResponseHandler.success(res, 200, profile);
+  };
+
+  publishMyProfile = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const result = await this.athleteService.publishMyProfile(req.authenticatedUserId);
+    ResponseHandler.success(res, 200, result);
+  };
+
+  replaceMyHighlights = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const body = parseRequestBody(setAthleteHighlightsRequestSchema, req);
+    const profile = await this.athleteService.replaceMyHighlights(req.authenticatedUserId, body);
+    ResponseHandler.success(res, 200, profile);
+  };
+
+  replaceMyRaceResults = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const body = parseRequestBody(setAthleteRaceResultsRequestSchema, req);
+    const profile = await this.athleteService.replaceMyRaceResults(req.authenticatedUserId, body);
+    ResponseHandler.success(res, 200, profile);
+  };
+
+  replaceMyRoadmap = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const body = parseRequestBody(setAthleteRoadmapRequestSchema, req);
+    const profile = await this.athleteService.replaceMyRoadmap(req.authenticatedUserId, body);
+    ResponseHandler.success(res, 200, profile);
+  };
+
+  replaceMyGallery = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const body = parseRequestBody(setAthleteGalleryRequestSchema, req);
+    const profile = await this.athleteService.replaceMyGallery(req.authenticatedUserId, body);
+    ResponseHandler.success(res, 200, profile);
   };
 }

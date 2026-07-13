@@ -3,6 +3,7 @@ import { AthleteLevel, CampaignStatus, MediaKind, PlatformRole, PrismaClient, Te
 import argon2 from 'argon2';
 import { mockAthletes, type MockAthlete } from '../../client/lib/mockAthletes';
 import { athleteProfiles, type RichAthleteProfile } from '../../client/lib/athleteProfiles';
+import { parseEventStartDate } from '../src/shared/displayDate';
 
 // Seeds the nate launch roster from the client's data modules (single source of
 // truth) so API responses render identically to today's mock mode. Idempotent:
@@ -13,25 +14,6 @@ const prisma = new PrismaClient();
 
 const SEED_PUBLISHED_AT = new Date('2026-07-01T00:00:00.000Z');
 const SEED_PASSWORD = 'ArcSeed!Passw0rd';
-
-const MONTH_NAMES = [
-  'january', 'february', 'march', 'april', 'may', 'june',
-  'july', 'august', 'september', 'october', 'november', 'december',
-];
-
-// Roadmap dates are display prose ("Sept 11, 2026", "October 2026", "All winter").
-// eventStartDate is a required DATE column, so parse best-effort and fall back
-// to a stable sentinel; the UI renders displayDate, never this value.
-function parseEventStartDate(displayDate: string): Date {
-  const direct = new Date(displayDate);
-  if (!Number.isNaN(direct.getTime())) return direct;
-
-  const lowered = displayDate.toLowerCase();
-  const yearMatch = lowered.match(/(20\d{2})/);
-  const year = yearMatch ? Number(yearMatch[1]) : 2026;
-  const monthIndex = MONTH_NAMES.findIndex((month) => lowered.includes(month.slice(0, 3)));
-  return new Date(Date.UTC(year, monthIndex >= 0 ? monthIndex : 11, 1));
-}
 
 function toHandle(rich: RichAthleteProfile | undefined): string | null {
   if (!rich?.handle) return null;
