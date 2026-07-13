@@ -4,6 +4,8 @@ export * from './zod/user';
 export * from './zod/team';
 export * from './zod/athlete';
 export * from './zod/campaign';
+export * from './zod/follow';
+export * from './zod/feed';
 export * from './zod/event';
 export * from './zod/donation';
 export * from './zod/sponsor';

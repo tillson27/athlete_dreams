@@ -1,6 +1,14 @@
 import { z } from 'zod';
-import { idSchema, isoDateTimeSchema, moneyCentsSchema, slugSchema } from './shared';
-import { CampaignStatus, CampaignType } from '../types/enums';
+import {
+  idSchema,
+  isoDateTimeSchema,
+  moneyCentsSchema,
+  paginationResponseSchema,
+  slugSchema,
+} from './shared';
+import { CampaignStatus, CampaignType, SportCategory } from '../types/enums';
+
+const sportSchema = z.nativeEnum(SportCategory);
 
 const campaignStatusSchema = z.nativeEnum(CampaignStatus);
 const campaignTypeSchema = z.nativeEnum(CampaignType);
@@ -57,3 +65,26 @@ export const createCampaignRequestSchema = z
   .strict();
 
 export type CreateCampaignRequest = z.infer<typeof createCampaignRequestSchema>;
+
+export const campaignSummarySchema = z.object({
+  campaignId: idSchema,
+  campaignSlug: slugSchema,
+  campaignTitle: z.string(),
+  campaignType: campaignTypeSchema,
+  campaignStatus: campaignStatusSchema,
+  athleteId: idSchema,
+  athleteSlug: slugSchema,
+  athleteName: z.string(),
+  primarySport: sportSchema,
+  heroMediaUrl: z.string().url().nullable(),
+  targetAmountCents: moneyCentsSchema,
+  raisedAmountCents: moneyCentsSchema,
+  supporterCount: z.number().int().nonnegative(),
+  closesAt: isoDateTimeSchema.nullable(),
+});
+
+export type CampaignSummary = z.infer<typeof campaignSummarySchema>;
+
+export const activeCampaignFeedResponseSchema = paginationResponseSchema(campaignSummarySchema);
+
+export type ActiveCampaignFeedResponse = z.infer<typeof activeCampaignFeedResponseSchema>;

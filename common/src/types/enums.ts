@@ -17,6 +17,14 @@ export const SportCategory = {
 
 export type SportCategory = (typeof SportCategory)[keyof typeof SportCategory];
 
+export const AthleteLevel = {
+  Elite: 'ELITE',
+  Competitive: 'COMPETITIVE',
+  Everyday: 'EVERYDAY',
+} as const;
+
+export type AthleteLevel = (typeof AthleteLevel)[keyof typeof AthleteLevel];
+
 export const CampaignStatus = {
   Draft: 'DRAFT',
   Active: 'ACTIVE',
