@@ -157,10 +157,17 @@
 ## Step 10 - Campaign read path + transparency rule
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 3, 5, 6
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-13
+**Completion Notes:**
+- `CampaignRepository`: added `listActiveFeed({ limit, cursor })` — keyset on `(createdAt desc, id desc)` over `campaignStatus: ACTIVE, deletedAt: null` with `include: { costLines, athlete }`, fetching `limit + 1` to derive `hasMore`; refactored the previously-dead `listActiveForAthlete` to return ACTIVE-only with the `athlete` include (feeds the per-profile list). Exported `CampaignWithAthlete` and `ActiveFeedCursor` types.
+- `CampaignService`: `listActiveFeed` (opaque base64url `createdAt|id` cursor codec, co-located as module functions alongside the existing `toCampaignDto` mapper — matches the file's convention rather than a separate `contracts.ts`), `listForAthleteSlug` (resolves via `AthleteRepository.findBySlug`, 404 on absent OR unpublished `publishedAt === null`), and **[STRICT] transparency enforcement** in `createForAthlete`: `assertCostLinesMatchTarget` throws 422 `ValidationError` with `{ targetAmountCents, costLinesTotalCents, costLines[] }` details when Σ`costLines.amountCents !== targetAmountCents` (a create with no cost lines against a non-zero target fails, total 0 ≠ target).
+- Contract: added `activeCampaignFeedQuerySchema` (`status: 'active'` default, `limit` default 20 max 100, `cursor`) to `common/src/zod/campaign.ts`; feed response reuses the existing (step 5) `activeCampaignFeedResponseSchema`; per-athlete list returns `CampaignSummary[]`. Rebuilt `common`.
+- **ROUTING DECISION (parallel-safety):** did NOT touch `app/src/api/athletes/**`, `AthleteRouterFactory`, or `AthleteController` (step 7 owns those concurrently). Feed route `GET /v1/campaigns` (public) added to the existing `CampaignRouterFactory` before `GET /:campaignSlug`. For `GET /v1/athletes/:athleteSlug/campaigns` created a new `AthleteCampaignsRouterFactory` inside `app/src/api/campaigns/` (`basePath = '/v1/athletes'`, exposes only `/:athleteSlug/campaigns`) and registered it via ONE appended line in `app/src/app.ts` after `AthleteRouterFactory` (Express mounts two routers on one base path). Keeps campaign ownership in the campaigns feature folder and avoids cross-feature edits.
+- Tests (`app/src/test/campaign.test.ts`, DB-gated behind `RUN_DB_TESTS=1`, unique `step10-<epoch>-<rand>` fixtures deleted in `afterAll` via user/team cascade): feed keyset pagination walks own fixtures across 2-per-page requests to a null cursor (asserts fixture subset + no duplicates), malformed-cursor 422, seeded per-athlete list (`felix-tremblay`, ≥2 ACTIVE, all `campaignStatus === ACTIVE`), unknown-athlete 404, transparency accept (Σ==target → 201) + reject (Σ≠target → 422 with details) + no-cost-lines reject. Verified `RUN_DB_TESTS=1 npx vitest run` = 9/9 pass; fixtures leave zero residue and the seeded baseline (6 ACTIVE campaigns, 7 athletes) is intact.
 
 ### Context
 
@@ -181,9 +188,9 @@
 - Router: add the two GET routes (public).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

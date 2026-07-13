@@ -1,16 +1,58 @@
 import { injectable } from 'tsyringe';
-import { type Campaign, type CampaignCostLine, CampaignStatus, type CampaignType } from '@prisma/client';
+import {
+  type AthleteProfile,
+  type Campaign,
+  type CampaignCostLine,
+  CampaignStatus,
+  type CampaignType,
+  type Prisma,
+} from '@prisma/client';
 import { PrismaService } from '../services/infrastructure/PrismaService';
+
+export type CampaignWithAthlete = Campaign & {
+  costLines: CampaignCostLine[];
+  athlete: AthleteProfile;
+};
+
+export type ActiveFeedCursor = { createdAt: Date; campaignId: string };
 
 @injectable()
 export class CampaignRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  listActiveForAthlete(athleteId: string): Promise<(Campaign & { costLines: CampaignCostLine[] })[]> {
+  async listActiveFeed(params: {
+    limit: number;
+    cursor?: ActiveFeedCursor;
+  }): Promise<{ campaigns: CampaignWithAthlete[]; hasMore: boolean }> {
+    const where: Prisma.CampaignWhereInput = {
+      campaignStatus: CampaignStatus.ACTIVE,
+      deletedAt: null,
+      ...(params.cursor
+        ? {
+            OR: [
+              { createdAt: { lt: params.cursor.createdAt } },
+              { createdAt: params.cursor.createdAt, id: { lt: params.cursor.campaignId } },
+            ],
+          }
+        : {}),
+    };
+
+    const rows = await this.prisma.campaign.findMany({
+      where,
+      include: { costLines: true, athlete: true },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: params.limit + 1,
+    });
+
+    const hasMore = rows.length > params.limit;
+    return { campaigns: hasMore ? rows.slice(0, params.limit) : rows, hasMore };
+  }
+
+  listActiveForAthlete(athleteId: string): Promise<CampaignWithAthlete[]> {
     return this.prisma.campaign.findMany({
-      where: { athleteId, deletedAt: null, campaignStatus: { in: [CampaignStatus.ACTIVE, CampaignStatus.FUNDED] } },
-      include: { costLines: true },
-      orderBy: { createdAt: 'desc' },
+      where: { athleteId, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE },
+      include: { costLines: true, athlete: true },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
   }
 

@@ -88,3 +88,11 @@ export type CampaignSummary = z.infer<typeof campaignSummarySchema>;
 export const activeCampaignFeedResponseSchema = paginationResponseSchema(campaignSummarySchema);
 
 export type ActiveCampaignFeedResponse = z.infer<typeof activeCampaignFeedResponseSchema>;
+
+export const activeCampaignFeedQuerySchema = z.object({
+  status: z.literal('active').optional().default('active'),
+  limit: z.coerce.number().int().positive().max(100).optional().default(20),
+  cursor: z.string().optional(),
+});
+
+export type ActiveCampaignFeedQuery = z.infer<typeof activeCampaignFeedQuerySchema>;
