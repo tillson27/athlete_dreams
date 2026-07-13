@@ -1,11 +1,14 @@
 import { injectable } from 'tsyringe';
 import type {
+  AthleteDashboard,
   AthleteDirectoryItem,
   AthleteDirectoryQuery,
   AthleteProfile as AthleteProfileDto,
   AthleteProfileDraft,
+  AthleteRecentBacker,
   CreateAthleteProfileRequest,
   DeleteAthleteProfileChildRequest,
+  FollowAthleteResponse,
   PublicAthleteProfile,
   PublishAthleteProfileRequest,
   PublishAthleteProfileResponse,
@@ -18,16 +21,25 @@ import type {
   UpsertAthleteStoryChapterRequest,
   UpsertAthleteTrainingSnapshotRequest,
 } from 'fad-common';
-import { AthleteRepository } from '../../repositories/AthleteRepository';
+import {
+  AthleteRepository,
+  type AthleteDirectoryRead,
+} from '../../repositories/AthleteRepository';
 import {
   AthleteProfileChildRepository,
   type AthleteProfileChildMutationResult,
 } from '../../repositories/AthleteProfileChildRepository';
-import { CampaignRepository } from '../../repositories/CampaignRepository';
-import { BadRequestError, ConflictError, NotFoundError } from '../../shared/errors';
-import type { AthleteProfile } from '@prisma/client';
-import { Prisma } from '@prisma/client';
 import {
+  CampaignRepository,
+  type CampaignSupportMetrics,
+  type RecentCampaignBacker,
+} from '../../repositories/CampaignRepository';
+import { UserRepository } from '../../repositories/UserRepository';
+import { BadRequestError, ConflictError, NotFoundError } from '../../shared/errors';
+import { AthleteProfileStatus, type AthleteProfile, Prisma } from '@prisma/client';
+import { toCampaignSummaryDto } from '../campaigns/campaignMappers';
+import {
+  type AthleteSupportRead,
   buildAthleteProfileCompletion,
   canMapPublicAthleteProfile,
   getPublishMissingFieldKeys,
@@ -47,7 +59,8 @@ export class AthleteService {
   constructor(
     private readonly athleteRepository: AthleteRepository,
     private readonly athleteProfileChildRepository: AthleteProfileChildRepository,
-    private readonly campaignRepository: CampaignRepository
+    private readonly campaignRepository: CampaignRepository,
+    private readonly userRepository: UserRepository
   ) {}
 
   async listDirectory(query: AthleteDirectoryQuery): Promise<AthleteDirectoryItem[]> {
@@ -57,7 +70,13 @@ export class AthleteService {
       search: query.search,
       limit: query.limit,
     });
-    return Promise.all(athletes.map((athlete) => this.buildDirectoryItem(athlete)));
+    const campaignMetricsByAthleteId =
+      await this.campaignRepository.getSupportMetricsForAthletes(
+        athletes.map((athlete) => athlete.id)
+      );
+    return athletes.map((athlete) =>
+      this.buildDirectoryItem(athlete, campaignMetricsByAthleteId.get(athlete.id))
+    );
   }
 
   async getProfileBySlug(
@@ -69,16 +88,86 @@ export class AthleteService {
       throw new NotFoundError('Published athlete profile');
     }
 
-    const viewerIsFollowing = viewerUserId
-      ? await this.athleteRepository.isFollowedByUser(viewerUserId, profile.id)
-      : null;
+    const [viewerIsFollowing, supportRead] = await Promise.all([
+      viewerUserId
+        ? this.athleteRepository.isFollowedByUser(viewerUserId, profile.id)
+        : Promise.resolve(null),
+      this.getAthleteSupportRead(profile.id),
+    ]);
 
-    return toPublicAthleteProfile(profile, viewerIsFollowing);
+    return toPublicAthleteProfile(profile, viewerIsFollowing, supportRead);
   }
 
   async getDraftForUser(userId: string): Promise<AthleteProfileDraft> {
     const profile = await this.athleteRepository.findOrCreateDraftByUserId(userId);
     return toAthleteProfileDraft(profile);
+  }
+
+  async getDashboardForUser(userId: string): Promise<AthleteDashboard> {
+    const [profile, user] = await Promise.all([
+      this.athleteRepository.findOrCreateDraftByUserId(userId),
+      this.userRepository.findById(userId),
+    ]);
+    if (!user) throw new NotFoundError('User');
+
+    const supportRead = await this.getAthleteSupportRead(profile.id);
+    const draft = toAthleteProfileDraft(profile, supportRead);
+    const publicProfileUrl =
+      profile.profileStatus === AthleteProfileStatus.PUBLISHED &&
+      profile.publishedAt &&
+      profile.athleteSlug
+        ? `/athletes/${profile.athleteSlug}`
+        : null;
+    const manageProfileUrl = profile.athleteSlug
+      ? `/athletes/${profile.athleteSlug}/manage`
+      : '/register';
+
+    return {
+      userId,
+      athleteId: profile.id,
+      athleteSlug: profile.athleteSlug,
+      fullName: (profile.fullName ?? user.displayName.trim()) || 'Athlete',
+      profileStatus: profile.profileStatus,
+      publicProfileUrl,
+      manageProfileUrl,
+      profileVersion: profile.profileVersion,
+      completion: draft.completion,
+      draft,
+      quickActions: buildDashboardQuickActions(publicProfileUrl, manageProfileUrl),
+      updatedAt: profile.updatedAt.toISOString(),
+    };
+  }
+
+  async followAthlete(
+    userId: string,
+    athleteSlug: string
+  ): Promise<FollowAthleteResponse> {
+    const athlete = await this.athleteRepository.findPublicIdentityBySlug(athleteSlug);
+    if (!athlete) throw new NotFoundError('Published athlete profile');
+
+    const followerCount = await this.athleteRepository.follow(userId, athlete.id);
+    return {
+      athleteId: athlete.id,
+      athleteSlug: athlete.athleteSlug,
+      isFollowing: true,
+      followerCount,
+    };
+  }
+
+  async unfollowAthlete(
+    userId: string,
+    athleteSlug: string
+  ): Promise<FollowAthleteResponse> {
+    const athlete = await this.athleteRepository.findPublicIdentityBySlug(athleteSlug);
+    if (!athlete) throw new NotFoundError('Published athlete profile');
+
+    const followerCount = await this.athleteRepository.unfollow(userId, athlete.id);
+    return {
+      athleteId: athlete.id,
+      athleteSlug: athlete.athleteSlug,
+      isFollowing: false,
+      followerCount,
+    };
   }
 
   async upsertDraftForUser(
@@ -124,6 +213,19 @@ export class AthleteService {
     const existing = await this.athleteRepository.findDraftByUserId(userId);
     if (!existing) throw new NotFoundError('Athlete profile draft');
 
+    const completion = buildAthleteProfileCompletion(existing);
+    if (canMapPublicAthleteProfile(existing)) {
+      return {
+        profile: toPublicAthleteProfile(
+          existing,
+          null,
+          await this.getAthleteSupportRead(existing.id)
+        ),
+        completion,
+        published: true,
+      };
+    }
+
     if (
       input.expectedProfileVersion !== undefined &&
       existing.profileVersion !== input.expectedProfileVersion
@@ -134,21 +236,12 @@ export class AthleteService {
       });
     }
 
-    const completion = buildAthleteProfileCompletion(existing);
     const missingFieldKeys = getPublishMissingFieldKeys(existing);
     if (missingFieldKeys.length > 0) {
       return {
         profile: null,
         completion,
         published: false,
-      };
-    }
-
-    if (canMapPublicAthleteProfile(existing)) {
-      return {
-        profile: toPublicAthleteProfile(existing, null),
-        completion,
-        published: true,
       };
     }
 
@@ -162,7 +255,11 @@ export class AthleteService {
       }
 
       return {
-        profile: toPublicAthleteProfile(result.profile, null),
+        profile: toPublicAthleteProfile(
+          result.profile,
+          null,
+          await this.getAthleteSupportRead(result.profile.id)
+        ),
         completion: buildAthleteProfileCompletion(result.profile),
         published: true,
       };
@@ -459,12 +556,11 @@ export class AthleteService {
     return toLegacyAthleteProfileDto(requireCompletePublicProfile(created));
   }
 
-  private async buildDirectoryItem(athlete: AthleteProfile): Promise<AthleteDirectoryItem> {
+  private buildDirectoryItem(
+    athlete: AthleteDirectoryRead,
+    campaignMetrics?: CampaignSupportMetrics
+  ): AthleteDirectoryItem {
     const publicAthlete = requireCompletePublicProfile(athlete);
-    const [activeCampaignCount, totalRaisedCents] = await Promise.all([
-      this.campaignRepository.countActiveForAthlete(publicAthlete.id),
-      this.campaignRepository.sumRaisedForAthlete(publicAthlete.id),
-    ]);
     return {
       athleteId: publicAthlete.id,
       athleteSlug: publicAthlete.athleteSlug,
@@ -477,9 +573,29 @@ export class AthleteService {
       countryCode: publicAthlete.countryCode,
       heroMediaUrl: publicAthlete.heroMediaUrl,
       values: publicAthlete.values,
-      supportEnabled: publicAthlete.supportEnabled,
-      activeCampaignCount,
-      totalRaisedCents,
+      supportEnabled:
+        publicAthlete.supportEnabled &&
+        (campaignMetrics?.activeCampaignCount ?? 0) > 0,
+      followerCount: athlete._count.follows,
+      activeCampaignCount: campaignMetrics?.activeCampaignCount ?? 0,
+      totalRaisedCents: campaignMetrics?.totalRaisedCents ?? 0,
+    };
+  }
+
+  private async getAthleteSupportRead(athleteId: string): Promise<AthleteSupportRead> {
+    const [activeCampaigns, recentBackers] = await Promise.all([
+      this.campaignRepository.listActiveForAthlete(athleteId),
+      this.campaignRepository.listRecentBackersForAthlete(athleteId, 12),
+    ]);
+    const activeCampaignSummaries = activeCampaigns.map(toCampaignSummaryDto);
+
+    return {
+      supporterCount: activeCampaignSummaries.reduce(
+        (totalSupporterCount, campaign) => totalSupporterCount + campaign.supporterCount,
+        0
+      ),
+      activeCampaigns: activeCampaignSummaries,
+      recentBackers: recentBackers.map(toRecentBackerDto),
     };
   }
 
@@ -559,6 +675,33 @@ function requireCompletePublicProfile(athlete: AthleteProfile): CompletePublicAt
   return athlete;
 }
 
+function toRecentBackerDto(backer: RecentCampaignBacker): AthleteRecentBacker {
+  const displayName = toBackerDisplayName(backer);
+  return {
+    displayName,
+    backedAt: backer.createdAt.toISOString(),
+    amountCents: backer.donationAmountCents,
+    initials: backer.isAnonymous ? null : toBackerInitials(displayName),
+    isAnonymous: backer.isAnonymous,
+  };
+}
+
+function toBackerDisplayName(backer: RecentCampaignBacker): string {
+  if (backer.isAnonymous) return 'Anonymous';
+  const displayName = backer.supporterDisplayName.trim();
+  return displayName || 'Supporter';
+}
+
+function toBackerInitials(displayName: string): string | null {
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((namePart) => namePart[0]?.toUpperCase() ?? '')
+    .join('');
+  return initials || null;
+}
+
 function isCompletePublicProfile(
   athlete: AthleteProfile
 ): athlete is CompletePublicAthleteProfile {
@@ -570,4 +713,29 @@ function isUniqueConstraintError(error: unknown): boolean {
     error instanceof Prisma.PrismaClientKnownRequestError &&
     error.code === 'P2002'
   );
+}
+
+function buildDashboardQuickActions(
+  publicProfileUrl: string | null,
+  manageProfileUrl: string | null
+): AthleteDashboard['quickActions'] {
+  const actions: AthleteDashboard['quickActions'] = [
+    {
+      label: 'Edit profile',
+      href: manageProfileUrl ?? '/register',
+    },
+    {
+      label: 'Community feed',
+      href: '/community',
+    },
+  ];
+
+  if (publicProfileUrl) {
+    actions.unshift({
+      label: 'View public profile',
+      href: publicProfileUrl,
+    });
+  }
+
+  return actions;
 }

@@ -1,6 +1,4 @@
-// Placeholder data used while the API is being wired up. The shapes mirror
-// what `fad-common`'s `athleteDirectoryItemSchema` will return.
-// Launch roster is runners-only; rich profile content lives in athleteProfiles.ts.
+// Development seed/reference roster only. Production routes use backend APIs.
 
 export type MockAthlete = {
   athleteSlug: string;

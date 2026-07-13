@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Icon } from '@/components/ui/Icon';
 import { useOnboarding } from './OnboardingContext';
-import { useSession } from '@/lib/prototype/session';
+import { useSession } from '@/lib/session';
 import { slugifyName } from '@/lib/slugify';
 import { profileUrl } from '@/lib/profileUrl';
 

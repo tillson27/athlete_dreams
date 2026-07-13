@@ -1,21 +1,34 @@
 'use client';
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Icon } from '@/components/ui/Icon';
-import { findAthleteProfile } from '@/lib/athleteProfiles';
 import {
-  deriveEdits,
-  loadEdits,
-  saveEdits,
-  clearEdits,
-  type AthleteEdits,
-  type EditHighlight as Highlight,
-  type EditRace as Race,
-  type EditRoadmapItem as RoadmapItem,
-} from '@/lib/prototype/athleteEdits';
-import { uid } from '@/lib/uid';
+  AthleteMediaKind,
+  AthleteMediaRole,
+  AthleteResultKind,
+  type AthleteProfileDraft,
+} from 'fad-common';
+import {
+  deleteMyMediaAsset,
+  deleteMyResult,
+  deleteMyRoadmapEvent,
+  getMyDraft,
+  reorderMyResults,
+  reorderMyRoadmapEvents,
+  upsertMyMediaAsset,
+  upsertMyResult,
+  upsertMyRoadmapEvent,
+} from '@/lib/api/athletes';
+import {
+  toEditableView,
+  type ProfileEditableView,
+  type ProfileHighlightView,
+  type ProfileRaceView,
+  type ProfileRoadmapView,
+} from '@/lib/api/athleteViews';
+import { useSession } from '@/lib/session';
+import { Icon } from '@/components/ui/Icon';
 import {
   AddButton,
   EmptyState,
@@ -31,7 +44,9 @@ import {
 const inputClass =
   'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/25';
 
-const toObjectUrls = (files: FileList) => Array.from(files).map((file) => URL.createObjectURL(file));
+function toObjectUrls(files: FileList): string[] {
+  return Array.from(files).map((file) => URL.createObjectURL(file));
+}
 
 function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
   const target = index + direction;
@@ -41,110 +56,277 @@ function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
   return next;
 }
 
+function httpUrls(urls: string[]): string[] {
+  return urls.filter((url) => url.startsWith('http://') || url.startsWith('https://'));
+}
+
+function sourceLinks(resultsUrl: string): { label: string; href: string }[] | undefined {
+  if (!resultsUrl.startsWith('http://') && !resultsUrl.startsWith('https://')) return undefined;
+  return [{ label: 'Results', href: resultsUrl }];
+}
+
+const emptyEditableView: ProfileEditableView = {
+  highlights: [],
+  races: [],
+  roadmap: [],
+  gallery: [],
+};
+
 export function ManageProfile({
   athleteSlug,
-  athleteName,
-  initialCoverPhoto,
+  fallbackAthleteName,
+  fallbackCoverPhoto,
 }: {
   athleteSlug: string;
-  athleteName: string;
-  initialCoverPhoto: string;
+  fallbackAthleteName: string;
+  fallbackCoverPhoto: string;
 }) {
-  const published = useMemo<AthleteEdits>(() => {
-    const profile = findAthleteProfile(athleteSlug);
-    return profile ? deriveEdits(profile) : { highlights: [], races: [], roadmap: [], gallery: [] };
-  }, [athleteSlug]);
-
-  const [highlights, setHighlights] = useState<Highlight[]>(published.highlights);
-  const [races, setRaces] = useState<Race[]>(published.races);
-  const [roadmap, setRoadmap] = useState<RoadmapItem[]>(published.roadmap);
-  const [coverPhoto, setCoverPhoto] = useState<string>(initialCoverPhoto);
-  const [gallery, setGallery] = useState<string[]>(published.gallery);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const saved = loadEdits(athleteSlug);
-    if (saved) {
-      setHighlights(saved.highlights);
-      setRaces(saved.races);
-      setRoadmap(saved.roadmap);
-      setGallery(saved.gallery);
-    }
-    setHydrated(true);
-  }, [athleteSlug]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    saveEdits(athleteSlug, { highlights, races, roadmap, gallery });
-  }, [hydrated, athleteSlug, highlights, races, roadmap, gallery]);
-
-  const resetToPublished = () => {
-    clearEdits(athleteSlug);
-    setHighlights(published.highlights);
-    setRaces(published.races);
-    setRoadmap(published.roadmap);
-    setGallery(published.gallery);
-    setCoverPhoto(initialCoverPhoto);
-  };
-
+  const { session, ready } = useSession();
+  const accessToken = session?.accessToken;
+  const [draft, setDraft] = useState<AthleteProfileDraft | null>(null);
+  const [editable, setEditable] = useState<ProfileEditableView>(emptyEditableView);
+  const [coverPhoto, setCoverPhoto] = useState<string>(fallbackCoverPhoto);
   const [highlightPhotos, setHighlightPhotos] = useState<string[]>([]);
   const [racePhotos, setRacePhotos] = useState<string[]>([]);
+  const [pending, setPending] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [mutationFailed, setMutationFailed] = useState(false);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    let cancelled = false;
+    getMyDraft(accessToken)
+      .then((profileDraft) => {
+        if (cancelled) return;
+        setDraft(profileDraft);
+        setEditable(toEditableView(profileDraft));
+        setCoverPhoto(profileDraft.heroMediaUrl ?? profileDraft.profileImageUrl ?? fallbackCoverPhoto);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, fallbackCoverPhoto]);
+
+  const athleteName = draft?.fullName ?? fallbackAthleteName;
+  const profileVersion = draft?.profileVersion ?? 0;
+
+  const applyDraft = (nextDraft: AthleteProfileDraft) => {
+    setDraft(nextDraft);
+    setEditable(toEditableView(nextDraft));
+    setCoverPhoto(nextDraft.heroMediaUrl ?? nextDraft.profileImageUrl ?? fallbackCoverPhoto);
+  };
+
+  const resetToSaved = () => {
+    if (!draft) return;
+    setEditable(toEditableView(draft));
+    setCoverPhoto(draft.heroMediaUrl ?? draft.profileImageUrl ?? fallbackCoverPhoto);
+  };
+
+  const runMutation = async (mutation: () => Promise<AthleteProfileDraft>): Promise<boolean> => {
+    if (pending) return false;
+    setPending(true);
+    setMutationFailed(false);
+    try {
+      applyDraft(await mutation());
+      return true;
+    } catch {
+      setMutationFailed(true);
+      return false;
+    } finally {
+      setPending(false);
+    }
+  };
 
   const addHighlight = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!accessToken) return;
     const form = event.currentTarget;
     const data = new FormData(form);
     const title = String(data.get('title') ?? '').trim();
     const detail = String(data.get('detail') ?? '').trim();
+    const date = String(data.get('date') ?? '').trim();
+    const resultsUrl = String(data.get('resultsUrl') ?? '').trim();
     if (!title || !detail) return;
-    setHighlights((prev) => [
-      ...prev,
-      {
-        id: uid(),
+    void runMutation(() =>
+      upsertMyResult(accessToken, {
+        expectedProfileVersion: profileVersion,
+        resultKind: AthleteResultKind.Highlight,
         title,
-        detail,
-        date: String(data.get('date') ?? '').trim() || undefined,
-        resultsUrl: String(data.get('resultsUrl') ?? '').trim() || undefined,
-        photos: highlightPhotos,
-      },
-    ]);
-    form.reset();
-    setHighlightPhotos([]);
+        resultText: detail,
+        eventDateLabel: date || null,
+        sourceLinks: sourceLinks(resultsUrl),
+        mediaUrls: httpUrls(highlightPhotos),
+      })
+    ).then((saved) => {
+      if (saved) {
+        form.reset();
+        setHighlightPhotos([]);
+      }
+    });
   };
 
   const addRace = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!accessToken) return;
     const form = event.currentTarget;
     const data = new FormData(form);
     const name = String(data.get('name') ?? '').trim();
     const date = String(data.get('date') ?? '').trim();
     const result = String(data.get('result') ?? '').trim();
+    const resultsUrl = String(data.get('resultsUrl') ?? '').trim();
     if (!name || !date || !result) return;
-    setRaces((prev) => [
-      ...prev,
-      {
-        id: uid(),
-        name,
-        date,
-        result,
-        resultsUrl: String(data.get('resultsUrl') ?? '').trim() || undefined,
-        photos: racePhotos,
-      },
-    ]);
-    form.reset();
-    setRacePhotos([]);
+    void runMutation(() =>
+      upsertMyResult(accessToken, {
+        expectedProfileVersion: profileVersion,
+        resultKind: AthleteResultKind.Race,
+        title: name,
+        resultText: result,
+        eventDateLabel: date,
+        sourceLinks: sourceLinks(resultsUrl),
+        mediaUrls: httpUrls(racePhotos),
+      })
+    ).then((saved) => {
+      if (saved) {
+        form.reset();
+        setRacePhotos([]);
+      }
+    });
   };
 
   const addRoadmap = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!accessToken) return;
     const form = event.currentTarget;
     const data = new FormData(form);
     const name = String(data.get('name') ?? '').trim();
     const date = String(data.get('date') ?? '').trim();
     if (!name || !date) return;
-    setRoadmap((prev) => [...prev, { id: uid(), name, date }]);
-    form.reset();
+    void runMutation(() =>
+      upsertMyRoadmapEvent(accessToken, {
+        expectedProfileVersion: profileVersion,
+        eventName: name,
+        eventDateLabel: date,
+      })
+    ).then((saved) => {
+      if (saved) form.reset();
+    });
   };
+
+  const addGalleryUrl = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!accessToken) return;
+    const form = event.currentTarget;
+    const mediaUrl = String(new FormData(form).get('mediaUrl') ?? '').trim();
+    if (!mediaUrl.startsWith('http://') && !mediaUrl.startsWith('https://')) return;
+    void runMutation(() =>
+      upsertMyMediaAsset(accessToken, {
+        expectedProfileVersion: profileVersion,
+        mediaKind: AthleteMediaKind.Image,
+        mediaRole: AthleteMediaRole.Gallery,
+        mediaUrl,
+        sortOrder: editable.gallery.length,
+      })
+    ).then((saved) => {
+      if (saved) form.reset();
+    });
+  };
+
+  const removeResult = (athleteResultId: string) => {
+    if (!accessToken) return;
+    void runMutation(() =>
+      deleteMyResult(accessToken, athleteResultId, { expectedProfileVersion: profileVersion })
+    );
+  };
+
+  const removeRoadmap = (athleteRoadmapEventId: string) => {
+    if (!accessToken) return;
+    void runMutation(() =>
+      deleteMyRoadmapEvent(accessToken, athleteRoadmapEventId, {
+        expectedProfileVersion: profileVersion,
+      })
+    );
+  };
+
+  const removeGallery = (athleteMediaAssetId: string) => {
+    if (!accessToken) return;
+    void runMutation(() =>
+      deleteMyMediaAsset(accessToken, athleteMediaAssetId, {
+        expectedProfileVersion: profileVersion,
+      })
+    );
+  };
+
+  const reorderResults = (orderedItems: Array<ProfileHighlightView | ProfileRaceView>) => {
+    if (!accessToken) return;
+    void runMutation(() =>
+      reorderMyResults(accessToken, {
+        expectedProfileVersion: profileVersion,
+        orderedChildIds: orderedItems.map((item) => item.id),
+      })
+    );
+  };
+
+  const reorderRoadmap = (orderedItems: ProfileRoadmapView[]) => {
+    if (!accessToken) return;
+    void runMutation(() =>
+      reorderMyRoadmapEvents(accessToken, {
+        expectedProfileVersion: profileVersion,
+        orderedChildIds: orderedItems.map((item) => item.id),
+      })
+    );
+  };
+
+  if (!ready || (accessToken && !draft && !loadFailed)) {
+    return (
+      <div className="mx-auto w-full max-w-4xl px-5 py-12 md:px-16">
+        <div className="h-8 w-44 animate-pulse rounded-pill bg-surface-container" />
+        <div className="mt-5 h-48 animate-pulse rounded-card bg-surface-container" />
+      </div>
+    );
+  }
+
+  if (!accessToken) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
+        <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+          <Icon name="lock" className="mx-auto h-10 w-10 text-primary" />
+          <h1 className="mt-4 font-display text-2xl font-extrabold text-on-surface">
+            Sign in to manage your page
+          </h1>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            Profile edits are saved to your athlete draft.
+          </p>
+          <Link
+            href="/sign-in"
+            className="label-bold mt-6 inline-flex rounded-lg bg-primary px-6 py-3 text-on-primary transition-all hover:bg-primary-strong"
+          >
+            Sign in
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="mx-auto w-full max-w-md px-5 py-16 text-center">
+        <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+          <Icon name="help" className="mx-auto h-10 w-10 text-error" />
+          <h1 className="mt-4 font-display text-2xl font-extrabold text-on-surface">
+            Editor unavailable
+          </h1>
+          <p className="mt-2 text-sm text-on-surface-variant">
+            We couldn&rsquo;t load your draft profile. Try again from the dashboard.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const combinedResults = [...editable.highlights, ...editable.races];
 
   return (
     <div className="mx-auto w-full max-w-4xl px-5 py-12 md:px-16">
@@ -171,11 +353,12 @@ export function ManageProfile({
           </Link>
           <button
             type="button"
-            onClick={resetToPublished}
-            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface-variant transition-colors hover:border-error hover:text-error"
+            onClick={resetToSaved}
+            disabled={pending}
+            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface-variant transition-colors hover:border-error hover:text-error disabled:opacity-50"
           >
             <Icon name="history" className="h-4 w-4" />
-            Reset to published
+            Reset to saved
           </button>
           <Link
             href={`/athletes/${athleteSlug}`}
@@ -187,8 +370,14 @@ export function ManageProfile({
         </div>
       </div>
 
+      {mutationFailed ? (
+        <div className="mb-6 rounded-input border border-error/30 bg-error-container/20 p-4 text-sm font-semibold text-error">
+          We couldn&rsquo;t save that change. Refresh your draft and try again.
+        </div>
+      ) : null}
+
       <div className="space-y-6">
-        <SectionCard icon="camera" title="Photos" count={gallery.length + 1}>
+        <SectionCard icon="camera" title="Photos" count={editable.gallery.length + 1}>
           <div className="mb-6">
             <p className="label-bold mb-2 text-on-surface">Cover photo</p>
             <div className="relative aspect-video w-full overflow-hidden rounded-input bg-surface-container">
@@ -220,28 +409,19 @@ export function ManageProfile({
           <div>
             <p className="label-bold mb-2 text-on-surface">Gallery</p>
             <div className="flex flex-wrap gap-3">
-              <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-input border-2 border-dashed border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:border-primary hover:text-primary">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={(event) => {
-                    if (event.target.files?.length) {
-                      setGallery((prev) => [...prev, ...toObjectUrls(event.target.files as FileList)]);
-                    }
-                    event.target.value = '';
-                  }}
-                />
-                <Icon name="plus" className="h-5 w-5" />
-                <span className="mt-1 text-[10px] font-bold">Add photos</span>
-              </label>
-              {gallery.map((url, index) => (
-                <div key={url} className="relative h-24 w-24 overflow-hidden rounded-input">
-                  <Image src={url} alt={`Gallery photo ${index + 1}`} fill unoptimized sizes="96px" className="object-cover" />
+              {editable.gallery.map((photo, index) => (
+                <div key={photo.id} className="relative h-24 w-24 overflow-hidden rounded-input">
+                  <Image
+                    src={photo.url}
+                    alt={`Gallery photo ${index + 1}`}
+                    fill
+                    unoptimized
+                    sizes="96px"
+                    className="object-cover"
+                  />
                   <button
                     type="button"
-                    onClick={() => setGallery((prev) => prev.filter((entry) => entry !== url))}
+                    onClick={() => removeGallery(photo.id)}
                     aria-label="Remove photo"
                     className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
                   >
@@ -250,12 +430,21 @@ export function ManageProfile({
                 </div>
               ))}
             </div>
-            <Recommendation text="Gallery photos display as squares — upload 1:1 crops at least 800 × 800 px so they stay sharp on high-resolution screens." />
+            <form onSubmit={addGalleryUrl} className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
+              <input
+                name="mediaUrl"
+                type="url"
+                placeholder="Photo URL (https://...)"
+                className={inputClass}
+              />
+              <AddButton />
+            </form>
+            <Recommendation text="Gallery photos save when they use an HTTPS image URL. Local uploads stay as previews until ARC adds hosted media storage." />
           </div>
         </SectionCard>
-        <SectionCard icon="medal" title="Career Highlights" count={highlights.length}>
+        <SectionCard icon="medal" title="Career Highlights" count={editable.highlights.length}>
           <ul className="space-y-3">
-            {highlights.map((item, index) => (
+            {editable.highlights.map((item, index) => (
               <li
                 key={item.id}
                 className="space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4"
@@ -277,17 +466,17 @@ export function ManageProfile({
                   <div className="flex items-center gap-1">
                     <ReorderControls
                       isFirst={index === 0}
-                      isLast={index === highlights.length - 1}
-                      onUp={() => setHighlights((prev) => moveItem(prev, index, -1))}
-                      onDown={() => setHighlights((prev) => moveItem(prev, index, 1))}
+                      isLast={index === editable.highlights.length - 1}
+                      onUp={() => reorderResults(moveItem(combinedResults, index, -1))}
+                      onDown={() => reorderResults(moveItem(combinedResults, index, 1))}
                     />
-                    <RemoveButton onClick={() => setHighlights((prev) => prev.filter((entry) => entry.id !== item.id))} />
+                    <RemoveButton onClick={() => removeResult(item.id)} />
                   </div>
                 </div>
                 <PhotoStrip photos={item.photos} />
               </li>
             ))}
-            {highlights.length === 0 ? <EmptyState label="No highlights yet." /> : null}
+            {editable.highlights.length === 0 ? <EmptyState label="No highlights yet." /> : null}
           </ul>
 
           <form onSubmit={addHighlight} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-4">
@@ -307,35 +496,38 @@ export function ManageProfile({
             </div>
           </form>
         </SectionCard>
-        <SectionCard icon="history" title="Previous Races" count={races.length}>
+        <SectionCard icon="history" title="Previous Races" count={editable.races.length}>
           <ul className="space-y-3">
-            {races.map((item, index) => (
-              <li
-                key={item.id}
-                className="space-y-3 rounded-r-input border-l-4 border-primary bg-surface-container-low/60 p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="label-bold text-on-surface">{item.name}</p>
-                    <p className="text-xs text-on-surface-variant">
-                      {item.date} • {item.result}
-                    </p>
-                    <ResultsLink url={item.resultsUrl} />
+            {editable.races.map((item, index) => {
+              const resultIndex = editable.highlights.length + index;
+              return (
+                <li
+                  key={item.id}
+                  className="space-y-3 rounded-r-input border-l-4 border-primary bg-surface-container-low/60 p-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="label-bold text-on-surface">{item.name}</p>
+                      <p className="text-xs text-on-surface-variant">
+                        {item.date} • {item.result}
+                      </p>
+                      <ResultsLink url={item.resultsUrl} />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ReorderControls
+                        isFirst={index === 0}
+                        isLast={index === editable.races.length - 1}
+                        onUp={() => reorderResults(moveItem(combinedResults, resultIndex, -1))}
+                        onDown={() => reorderResults(moveItem(combinedResults, resultIndex, 1))}
+                      />
+                      <RemoveButton onClick={() => removeResult(item.id)} />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <ReorderControls
-                      isFirst={index === 0}
-                      isLast={index === races.length - 1}
-                      onUp={() => setRaces((prev) => moveItem(prev, index, -1))}
-                      onDown={() => setRaces((prev) => moveItem(prev, index, 1))}
-                    />
-                    <RemoveButton onClick={() => setRaces((prev) => prev.filter((entry) => entry.id !== item.id))} />
-                  </div>
-                </div>
-                <PhotoStrip photos={item.photos} />
-              </li>
-            ))}
-            {races.length === 0 ? <EmptyState label="No races yet." /> : null}
+                  <PhotoStrip photos={item.photos} />
+                </li>
+              );
+            })}
+            {editable.races.length === 0 ? <EmptyState label="No races yet." /> : null}
           </ul>
 
           <form onSubmit={addRace} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-4">
@@ -355,9 +547,9 @@ export function ManageProfile({
             </div>
           </form>
         </SectionCard>
-        <SectionCard icon="flag" title="2026 Roadmap" count={roadmap.length}>
+        <SectionCard icon="flag" title="2026 Roadmap" count={editable.roadmap.length}>
           <ul className="space-y-3">
-            {roadmap.map((item, index) => (
+            {editable.roadmap.map((item, index) => (
               <li
                 key={item.id}
                 className="flex items-center justify-between gap-4 rounded-input border border-outline-variant bg-surface-container-low p-4"
@@ -369,15 +561,15 @@ export function ManageProfile({
                 <div className="flex items-center gap-1">
                   <ReorderControls
                     isFirst={index === 0}
-                    isLast={index === roadmap.length - 1}
-                    onUp={() => setRoadmap((prev) => moveItem(prev, index, -1))}
-                    onDown={() => setRoadmap((prev) => moveItem(prev, index, 1))}
+                    isLast={index === editable.roadmap.length - 1}
+                    onUp={() => reorderRoadmap(moveItem(editable.roadmap, index, -1))}
+                    onDown={() => reorderRoadmap(moveItem(editable.roadmap, index, 1))}
                   />
-                  <RemoveButton onClick={() => setRoadmap((prev) => prev.filter((entry) => entry.id !== item.id))} />
+                  <RemoveButton onClick={() => removeRoadmap(item.id)} />
                 </div>
               </li>
             ))}
-            {roadmap.length === 0 ? <EmptyState label="No upcoming races yet." /> : null}
+            {editable.roadmap.length === 0 ? <EmptyState label="No upcoming races yet." /> : null}
           </ul>
 
           <form onSubmit={addRoadmap} className="mt-5 grid gap-3 md:grid-cols-[1.5fr_1.2fr_auto]">
@@ -389,8 +581,7 @@ export function ManageProfile({
       </div>
 
       <p className="mt-8 text-center text-xs text-on-surface-variant">
-        Changes save to this browser and appear on your public profile. Uploaded photos stay on this
-        device until we add photo hosting.
+        Changes save to your profile. Local image uploads are previews until ARC adds photo hosting.
       </p>
     </div>
   );

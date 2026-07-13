@@ -24,7 +24,7 @@ const steps = [
   },
   {
     title: 'Money goes to the athlete',
-    body: 'Direct to the runner after a small platform fee. No holding periods, no middlemen.',
+    body: 'Direct to the runner, with platform fee details finalized before backing opens. No holding periods, no middlemen.',
   },
   {
     title: 'See it land',

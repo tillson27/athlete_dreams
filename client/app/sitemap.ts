@@ -1,9 +1,9 @@
 import type { MetadataRoute } from 'next';
-import { mockAthletes } from '@/lib/mockAthletes';
+import { listAthletes } from '@/lib/api/athletes';
 
 const BASE_URL = 'https://athletearc.ca';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`, changeFrequency: 'weekly', priority: 1 },
     { url: `${BASE_URL}/athletes`, changeFrequency: 'daily', priority: 0.9 },
@@ -19,7 +19,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
   ];
 
-  const athleteRoutes: MetadataRoute.Sitemap = mockAthletes.map((athlete) => ({
+  const athletes = await listAthletes({ limit: 100 }).catch(() => []);
+  const athleteRoutes: MetadataRoute.Sitemap = athletes.map((athlete) => ({
     url: `${BASE_URL}/athletes/${athlete.athleteSlug}`,
     changeFrequency: 'weekly',
     priority: 0.8,

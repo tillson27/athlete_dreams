@@ -1,6 +1,8 @@
 'use client';
 
-import { useFollows } from '@/lib/prototype/follows';
+import { useState } from 'react';
+import { followAthlete, unfollowAthlete } from '@/lib/api/athletes';
+import { useSession } from '@/lib/session';
 import { Icon } from '@/components/ui/Icon';
 
 type Variant = 'hero' | 'block' | 'chip';
@@ -28,20 +30,46 @@ export function FollowButton({
   slug,
   variant = 'chip',
   className,
+  initialIsFollowing = null,
 }: {
   slug: string;
   variant?: Variant;
   className?: string;
+  initialIsFollowing?: boolean | null;
 }) {
-  const { ready, isFollowing, toggle } = useFollows();
-  const following = ready && isFollowing(slug);
+  const { session, ready } = useSession();
+  const [following, setFollowing] = useState(Boolean(initialIsFollowing));
+  const [pending, setPending] = useState(false);
   const label = following ? 'Following' : 'Follow';
+
+  const toggleFollow = async () => {
+    if (!ready || pending) return;
+    if (!session?.accessToken) {
+      window.location.href = '/sign-in';
+      return;
+    }
+
+    const nextFollowing = !following;
+    setFollowing(nextFollowing);
+    setPending(true);
+    try {
+      const result = nextFollowing
+        ? await followAthlete(slug, session.accessToken)
+        : await unfollowAthlete(slug, session.accessToken);
+      setFollowing(result.isFollowing);
+    } catch {
+      setFollowing(!nextFollowing);
+    } finally {
+      setPending(false);
+    }
+  };
 
   return (
     <button
       type="button"
       aria-pressed={following}
-      onClick={() => toggle(slug)}
+      disabled={!ready || pending}
+      onClick={toggleFollow}
       className={`${base[variant]} ${following ? followed[variant] : notFollowed[variant]} ${className ?? ''}`}
     >
       <Icon

@@ -1,25 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { signUp } from '@/lib/prototype/session';
+import { signUp } from '@/lib/session';
+import { isApiError } from '@/lib/api/client';
 import { authInputClass } from '@/components/ui/formStyles';
 
 export function SignUpForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const name = String(form.get('displayName') ?? '').trim();
+    const displayName = String(form.get('displayName') ?? '').trim();
     const email = String(form.get('email') ?? '').trim();
+    const password = String(form.get('password') ?? '');
     setSubmitting(true);
-    signUp({ name, email });
-    setTimeout(() => router.push('/register/personal-basics'), 600);
+    setError(null);
+    try {
+      await signUp({ displayName, email, password });
+      router.push('/register/personal-basics');
+    } catch (submitError) {
+      setError(
+        isApiError(submitError)
+          ? submitError.message
+          : 'We could not create your account. Try again.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -49,6 +63,11 @@ export function SignUpForm() {
         placeholder="At least 8 characters"
         minLength={8}
       />
+      {error ? (
+        <p className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error">
+          {error}
+        </p>
+      ) : null}
       <Button tone="primary" size="lg" className="w-full" type="submit" disabled={submitting}>
         {submitting ? (
           <span className="inline-flex items-center gap-2">

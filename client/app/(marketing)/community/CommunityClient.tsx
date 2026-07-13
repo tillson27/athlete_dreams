@@ -1,17 +1,24 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { buildFeed, buildRacingSoon, type FeedItem, type FeedCategory } from '@/lib/communityFeed';
-import { useFollows } from '@/lib/prototype/follows';
-import { useSession } from '@/lib/prototype/session';
-import { usePrototypeCheers } from '@/lib/prototype/cheers';
+import {
+  ReactionKind,
+  SportCategory,
+  type CommunityFeedItem,
+} from 'fad-common';
+import { cheerCommunityItem, listCommunityFeed, uncheerCommunityItem } from '@/lib/api/community';
+import {
+  toFeedItemView,
+  toRacingSoonView,
+  type FeedItemView,
+} from '@/lib/api/athleteViews';
+import { useSession } from '@/lib/session';
 import { Icon } from '@/components/ui/Icon';
 import { FollowButton } from '@/components/site/FollowButton';
 import { FeedCard } from './FeedCard';
 import { TabButton, EmptyFollowing } from './communityParts';
-import type { MockAthlete } from '@/lib/mockAthletes';
 
 // All-day Google Calendar link for a parseable race date; null keeps the UI honest.
 function calendarHref(title: string, dateText: string): string | null {
@@ -25,35 +32,131 @@ function calendarHref(title: string, dateText: string): string | null {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${day(0)}/${day(1)}`;
 }
 
-const DISCIPLINES: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
+const DISCIPLINES: Array<{ key: SportCategory | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
-  { key: 'RUNNING', label: 'Road, Trail & Ultra' },
+  { key: SportCategory.Running, label: 'Road, Trail & Ultra' },
 ];
 
-const FEED_TYPES: Array<{ key: FeedCategory | 'ALL'; label: string; icon: 'hub' | 'flag' | 'timer' | 'medal' }> = [
+const FEED_TYPES: Array<{
+  key: FeedItemView['category'] | 'ALL';
+  label: string;
+  icon: 'hub' | 'flag' | 'timer' | 'medal';
+}> = [
   { key: 'ALL', label: 'All updates', icon: 'hub' },
   { key: 'race', label: 'Races', icon: 'flag' },
   { key: 'training', label: 'Training runs', icon: 'timer' },
   { key: 'milestone', label: 'Milestones', icon: 'medal' },
 ];
 
-export function CommunityClient() {
-  const feed = useMemo(() => buildFeed(), []);
-  const racingSoon = useMemo(() => buildRacingSoon(), []);
-  const { follows, ready } = useFollows();
-  const { session } = useSession();
+export function CommunityClient({
+  initialFeed,
+  initialRacingSoon,
+}: {
+  initialFeed: CommunityFeedItem[];
+  initialRacingSoon: CommunityFeedItem[];
+}) {
+  const initialItems = useMemo(() => initialFeed.map(toFeedItemView), [initialFeed]);
+  const racingSoon = useMemo(() => toRacingSoonView(initialRacingSoon), [initialRacingSoon]);
+  const { session, ready } = useSession();
 
   const [tab, setTab] = useState<'everyone' | 'following'>('everyone');
-  const [discipline, setDiscipline] = useState<MockAthlete['primarySport'] | 'ALL'>('ALL');
-  const [feedType, setFeedType] = useState<FeedCategory | 'ALL'>('ALL');
-  const { cheered, toggleCheer } = usePrototypeCheers();
+  const [discipline, setDiscipline] = useState<SportCategory | 'ALL'>('ALL');
+  const [feedType, setFeedType] = useState<FeedItemView['category'] | 'ALL'>('ALL');
+  const [feedItems, setFeedItems] = useState<FeedItemView[]>(initialItems);
+  const [loading, setLoading] = useState(false);
+  const accessToken = session?.accessToken;
 
-  const visible = feed.filter((item) => {
+  useEffect(() => {
+    if (tab === 'everyone') {
+      setFeedItems(initialItems);
+      return;
+    }
+
+    if (!accessToken) {
+      setFeedItems([]);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    listCommunityFeed({ scope: 'FOLLOWING', limit: 50 }, accessToken)
+      .then((response) => {
+        if (!cancelled) setFeedItems(response.items.map(toFeedItemView));
+      })
+      .catch(() => {
+        if (!cancelled) setFeedItems([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, initialItems, tab]);
+
+  const visible = feedItems.filter((item) => {
     if (discipline !== 'ALL' && item.primarySport !== discipline) return false;
     if (feedType !== 'ALL' && item.category !== feedType) return false;
-    if (tab === 'following' && !follows.includes(item.athleteSlug)) return false;
     return true;
   });
+
+  const toggleCheer = async (item: FeedItemView) => {
+    if (!accessToken) {
+      window.location.href = '/sign-in';
+      return;
+    }
+
+    const nextCheered = !item.cheered;
+    setFeedItems((currentItems) =>
+      currentItems.map((currentItem) =>
+        currentItem.id === item.id
+          ? {
+              ...currentItem,
+              cheered: nextCheered,
+              cheers: Math.max(0, currentItem.cheers + (nextCheered ? 1 : -1)),
+            }
+          : currentItem
+      )
+    );
+
+    try {
+      const response = nextCheered
+        ? await cheerCommunityItem(accessToken, {
+            targetType: item.targetType,
+            targetId: item.targetId,
+            reactionKind: ReactionKind.Cheer,
+          })
+        : await uncheerCommunityItem(accessToken, {
+            targetType: item.targetType,
+            targetId: item.targetId,
+            reactionKind: ReactionKind.Cheer,
+          });
+      setFeedItems((currentItems) =>
+        currentItems.map((currentItem) =>
+          currentItem.id === item.id
+            ? {
+                ...currentItem,
+                cheered: response.hasReacted,
+                cheers: response.reactionCount,
+              }
+            : currentItem
+        )
+      );
+    } catch {
+      setFeedItems((currentItems) =>
+        currentItems.map((currentItem) =>
+          currentItem.id === item.id
+            ? {
+                ...currentItem,
+                cheered: item.cheered,
+                cheers: item.cheers,
+              }
+            : currentItem
+        )
+      );
+    }
+  };
 
   return (
     <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-10 md:px-16 md:py-12">
@@ -77,7 +180,7 @@ export function CommunityClient() {
             Everyone
           </TabButton>
           <TabButton active={tab === 'following'} onClick={() => setTab('following')}>
-            Following{ready && follows.length > 0 ? ` · ${follows.length}` : ''}
+            Following
           </TabButton>
         </div>
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 no-scrollbar md:mx-0 md:px-0">
@@ -123,8 +226,12 @@ export function CommunityClient() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         <div className="space-y-5 lg:col-span-8">
-          {tab === 'following' && ready && follows.length === 0 ? (
-            <EmptyFollowing signedIn={Boolean(session)} />
+          {loading ? (
+            <p className="rounded-card border border-outline-variant bg-surface-container-lowest p-10 text-center text-on-surface-variant">
+              Loading updates...
+            </p>
+          ) : tab === 'following' && ready && !accessToken ? (
+            <EmptyFollowing signedIn={Boolean(accessToken)} />
           ) : visible.length === 0 ? (
             <p className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center text-on-surface-variant">
               Nothing here yet for this filter.
@@ -134,8 +241,7 @@ export function CommunityClient() {
               <FeedCard
                 key={item.id}
                 item={item}
-                cheered={Boolean(cheered[item.id])}
-                onCheer={() => toggleCheer(item.id)}
+                onCheer={() => toggleCheer(item)}
               />
             ))
           )}
@@ -151,7 +257,14 @@ export function CommunityClient() {
                     href={`/athletes/${entry.athleteSlug}`}
                     className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-container"
                   >
-                    <Image src={entry.avatar} alt={entry.athleteName} fill sizes="40px" className="object-cover" />
+                    <Image
+                      src={entry.avatar}
+                      alt={entry.athleteName}
+                      fill
+                      unoptimized
+                      sizes="40px"
+                      className="object-cover"
+                    />
                   </Link>
                   <div className="min-w-0 flex-1">
                     <Link

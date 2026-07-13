@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { LinkButton } from '../ui/Button';
-import { useSession } from '@/lib/prototype/session';
+import { useSession } from '@/lib/session';
 
 const mobileItemClass =
   'block px-5 py-3 text-base font-semibold text-on-surface hover:bg-surface-container';

@@ -2,20 +2,17 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { FeedItem } from '@/lib/communityFeed';
+import type { FeedItemView } from '@/lib/api/athleteViews';
 import { Icon } from '@/components/ui/Icon';
 import { FollowButton } from '@/components/site/FollowButton';
 
 export function FeedCard({
   item,
-  cheered,
   onCheer,
 }: {
-  item: FeedItem;
-  cheered: boolean;
+  item: FeedItemView;
   onCheer: () => void;
 }) {
-  const cheerCount = item.cheers + (cheered ? 1 : 0);
   return (
     <article className="card-lift overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest">
       <div className="flex items-start gap-3 p-5">
@@ -23,7 +20,14 @@ export function FeedCard({
           href={`/athletes/${item.athleteSlug}`}
           className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-surface-container"
         >
-          <Image src={item.avatar} alt={item.athleteName} fill sizes="44px" className="object-cover" />
+          <Image
+            src={item.avatar}
+            alt={item.athleteName}
+            fill
+            unoptimized
+            sizes="44px"
+            className="object-cover"
+          />
         </Link>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -61,7 +65,14 @@ export function FeedCard({
 
       {item.photo ? (
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-container">
-          <Image src={item.photo} alt="" fill sizes="(max-width: 1024px) 100vw, 640px" className="object-cover" />
+          <Image
+            src={item.photo}
+            alt=""
+            fill
+            unoptimized
+            sizes="(max-width: 1024px) 100vw, 640px"
+            className="object-cover"
+          />
         </div>
       ) : null}
 
@@ -69,13 +80,13 @@ export function FeedCard({
         <button
           type="button"
           onClick={onCheer}
-          aria-pressed={cheered}
+          aria-pressed={item.cheered}
           className={`inline-flex items-center gap-1.5 text-sm font-bold transition-colors ${
-            cheered ? 'text-primary' : 'text-on-surface-variant hover:text-primary'
+            item.cheered ? 'text-primary' : 'text-on-surface-variant hover:text-primary'
           }`}
         >
-          <Icon name={cheered ? 'heart' : 'heart-outline'} className="h-5 w-5" />
-          {cheerCount}
+          <Icon name={item.cheered ? 'heart' : 'heart-outline'} className="h-5 w-5" />
+          {item.cheers}
         </button>
         <Link
           href={`/athletes/${item.athleteSlug}`}

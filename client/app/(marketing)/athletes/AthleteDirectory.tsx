@@ -1,34 +1,40 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { AthleteLevel, SportCategory, type AthleteDirectoryItem } from 'fad-common';
 import { AthleteRow } from '@/components/site/AthleteCard';
 import { LinkButton } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { runnerAthletes, type MockAthlete } from '@/lib/mockAthletes';
 
-const SPORTS: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
+const SPORTS: Array<{ key: AthleteDirectoryItem['primarySport'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
-  { key: 'RUNNING', label: 'Road, Trail & Ultra' },
-  { key: 'TRACK_AND_FIELD', label: 'Track & Field' },
+  { key: SportCategory.Running, label: 'Road, Trail & Ultra' },
+  { key: SportCategory.TrackAndField, label: 'Track & Field' },
 ];
 
-const LEVELS: Array<{ key: MockAthlete['runnerLevel'] | 'ALL'; label: string }> = [
+const LEVELS: Array<{
+  key: NonNullable<AthleteDirectoryItem['athleteLevel']> | 'ALL';
+  label: string;
+}> = [
   { key: 'ALL', label: 'Every Level' },
-  { key: 'ELITE', label: 'Pro & Elite' },
-  { key: 'COMPETITIVE', label: 'Competitive' },
-  { key: 'EVERYDAY', label: 'Everyday' },
+  { key: AthleteLevel.Elite, label: 'Pro & Elite' },
+  { key: AthleteLevel.Competitive, label: 'Competitive' },
+  { key: AthleteLevel.Everyday, label: 'Everyday' },
 ];
 
-const COUNTRIES: Array<{ code: MockAthlete['countryCode'] | 'ALL'; label: string }> = [
+const COUNTRIES: Array<{
+  code: NonNullable<AthleteDirectoryItem['countryCode']> | 'ALL';
+  label: string;
+}> = [
   { code: 'ALL', label: 'Anywhere' },
   { code: 'CA', label: 'Canada' },
   { code: 'US', label: 'United States' },
 ];
 
 type Filters = {
-  sport: MockAthlete['primarySport'] | 'ALL';
-  level: MockAthlete['runnerLevel'] | 'ALL';
-  country: MockAthlete['countryCode'] | 'ALL';
+  sport: AthleteDirectoryItem['primarySport'] | 'ALL';
+  level: NonNullable<AthleteDirectoryItem['athleteLevel']> | 'ALL';
+  country: NonNullable<AthleteDirectoryItem['countryCode']> | 'ALL';
   search: string;
 };
 
@@ -39,7 +45,7 @@ const initialFilters: Filters = {
   search: '',
 };
 
-export function AthleteDirectory() {
+export function AthleteDirectory({ initialAthletes }: { initialAthletes: AthleteDirectoryItem[] }) {
   const [filters, setFilters] = useState<Filters>(initialFilters);
 
   // Sync initial state from URL (?sport=RUNNING&level=EVERYDAY) for deep-linkability.
@@ -55,9 +61,9 @@ export function AthleteDirectory() {
   }, []);
 
   const filtered = useMemo(() => {
-    return runnerAthletes.filter((athlete) => {
+    return initialAthletes.filter((athlete) => {
       if (filters.sport !== 'ALL' && athlete.primarySport !== filters.sport) return false;
-      if (filters.level !== 'ALL' && athlete.runnerLevel !== filters.level) return false;
+      if (filters.level !== 'ALL' && athlete.athleteLevel !== filters.level) return false;
       if (filters.country !== 'ALL' && athlete.countryCode !== filters.country) return false;
       if (filters.search) {
         const needle = filters.search.toLowerCase();
@@ -66,10 +72,10 @@ export function AthleteDirectory() {
       }
       return true;
     });
-  }, [filters]);
+  }, [filters, initialAthletes]);
 
   const clear = () => setFilters(initialFilters);
-  const isFiltered = filtered.length !== runnerAthletes.length;
+  const isFiltered = filtered.length !== initialAthletes.length;
 
   return (
     <div className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-col md:flex-row">
@@ -191,7 +197,9 @@ export function AthleteDirectory() {
         </div>
         {filtered.length === 0 ? (
           <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-12 text-center">
-            <Badge tone="soft">No matching runners</Badge>
+            <Badge tone="soft">
+              {initialAthletes.length === 0 ? 'No runners yet' : 'No matching runners'}
+            </Badge>
             <p className="mt-4 text-on-surface-variant">
               We&rsquo;re still onboarding runners that fit these filters. Check back soon — or forward
               ARC to someone who fits.

@@ -1,14 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession } from '@/lib/prototype/session';
-import { slugifyName } from '@/lib/slugify';
+import { useSession } from '@/lib/session';
 import { Icon } from '@/components/ui/Icon';
 
-// Edit-entry button shown only to the signed-in owner of this profile.
-export function OwnerManageLink({ athleteSlug }: { athleteSlug: string }) {
+export function OwnerManageLink({
+  athleteSlug,
+  ownerUserId,
+}: {
+  athleteSlug: string;
+  ownerUserId: string;
+}) {
   const { session, ready } = useSession();
-  if (!ready || !session || slugifyName(session.name) !== athleteSlug) return null;
+  if (!ready || session?.userId !== ownerUserId) return null;
 
   return (
     <Link

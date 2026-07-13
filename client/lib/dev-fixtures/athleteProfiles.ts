@@ -1,6 +1,4 @@
-// Rich, presentation-level profile data for the runner-launch roster.
-// Mirrors what a future `athleteProfileSchema` in fad-common will return;
-// keyed by athleteSlug and consumed by AthleteProfile.
+// Development seed/reference profiles only. Production routes use backend APIs.
 
 export type ProfileTone = 'primary' | 'secondary';
 export type ChapterTone = 'primary' | 'secondary' | 'tertiary';

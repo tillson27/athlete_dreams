@@ -1,24 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { signIn } from '@/lib/prototype/session';
+import { signIn } from '@/lib/session';
+import { isApiError } from '@/lib/api/client';
 import { authInputClass } from '@/components/ui/formStyles';
 
 export function SignInForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const email = String(form.get('email') ?? '').trim();
+    const password = String(form.get('password') ?? '');
     setSubmitting(true);
-    signIn({ email });
-    setTimeout(() => router.push('/dashboard'), 600);
+    setError(null);
+    try {
+      await signIn({ email, password });
+      router.push('/dashboard');
+    } catch (submitError) {
+      setError(
+        isApiError(submitError)
+          ? submitError.message
+          : 'We could not sign you in. Try again.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -47,6 +61,11 @@ export function SignInForm() {
         placeholder="••••••••"
         minLength={8}
       />
+      {error ? (
+        <p className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error">
+          {error}
+        </p>
+      ) : null}
       <Button tone="primary" size="lg" className="w-full" type="submit" disabled={submitting}>
         {submitting ? (
           <span className="inline-flex items-center gap-2">

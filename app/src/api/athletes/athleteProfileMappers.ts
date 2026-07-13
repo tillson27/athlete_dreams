@@ -2,6 +2,7 @@ import type {
   AthleteProfile as LegacyAthleteProfileDto,
   AthleteProfileCompletion,
   AthleteProfileDraft,
+  AthleteSupportSummary,
   PublicAthleteProfile,
 } from 'fad-common';
 import {
@@ -17,6 +18,11 @@ import {
   type AthleteTrainingSnapshot,
 } from '@prisma/client';
 import type { AthleteProfileRead } from '../../repositories/AthleteRepository';
+
+export type AthleteSupportRead = Pick<
+  AthleteSupportSummary,
+  'supporterCount' | 'activeCampaigns' | 'recentBackers'
+>;
 
 const publishRequiredFieldKeys = [
   'athleteSlug',
@@ -67,7 +73,8 @@ export function canMapPublicAthleteProfile(profile: AthleteProfileRead): boolean
 
 export function toPublicAthleteProfile(
   profile: AthleteProfileRead,
-  viewerIsFollowing: boolean | null
+  viewerIsFollowing: boolean | null,
+  supportRead?: AthleteSupportRead
 ): PublicAthleteProfile {
   if (!profile.athleteSlug || !profile.fullName || !profile.primarySport || !profile.publishedAt) {
     throw new Error('Cannot map incomplete public athlete profile');
@@ -124,19 +131,16 @@ export function toPublicAthleteProfile(
     mediaAssets: profile.media.map(toMediaAssetDto),
     followerCount: profile._count.follows,
     viewerIsFollowing,
-    support: {
-      supportEnabled: profile.supportEnabled,
-      backCtaBlurb: profile.backCtaBlurb,
-      supporterCount: 0,
-      activeCampaigns: [],
-      recentBackers: [],
-    },
+    support: toSupportSummary(profile, supportRead, { requireActiveCampaign: true }),
     createdAt: profile.createdAt.toISOString(),
     updatedAt: profile.updatedAt.toISOString(),
   };
 }
 
-export function toAthleteProfileDraft(profile: AthleteProfileRead): AthleteProfileDraft {
+export function toAthleteProfileDraft(
+  profile: AthleteProfileRead,
+  supportRead?: AthleteSupportRead
+): AthleteProfileDraft {
   return {
     athleteId: profile.id,
     userId: profile.userId,
@@ -185,13 +189,7 @@ export function toAthleteProfileDraft(profile: AthleteProfileRead): AthleteProfi
         }
       : null,
     mediaAssets: profile.media.map(toMediaAssetDto),
-    support: {
-      supportEnabled: profile.supportEnabled,
-      backCtaBlurb: profile.backCtaBlurb,
-      supporterCount: 0,
-      activeCampaigns: [],
-      recentBackers: [],
-    },
+    support: toSupportSummary(profile, supportRead),
     completion: buildAthleteProfileCompletion(profile),
     publishedAt: profile.publishedAt ? profile.publishedAt.toISOString() : null,
     createdAt: profile.createdAt.toISOString(),
@@ -270,6 +268,24 @@ function toStoryDto(profile: AthleteProfileRead): { intro: string | null; body: 
   return {
     intro: profile.storyIntro ?? profile.bio,
     body: profile.storyBody,
+  };
+}
+
+function toSupportSummary(
+  profile: AthleteProfileRead,
+  supportRead?: AthleteSupportRead,
+  options?: { requireActiveCampaign?: boolean }
+): AthleteSupportSummary {
+  const activeCampaigns = supportRead?.activeCampaigns ?? [];
+  const supportEnabled =
+    profile.supportEnabled &&
+    (!options?.requireActiveCampaign || activeCampaigns.length > 0);
+  return {
+    supportEnabled,
+    backCtaBlurb: profile.backCtaBlurb,
+    supporterCount: supportEnabled ? supportRead?.supporterCount ?? 0 : 0,
+    activeCampaigns: supportEnabled ? activeCampaigns : [],
+    recentBackers: supportEnabled ? supportRead?.recentBackers ?? [] : [],
   };
 }
 

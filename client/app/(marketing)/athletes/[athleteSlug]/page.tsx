@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { findMockAthlete, mockAthletes } from '@/lib/mockAthletes';
-import { findAthleteProfile } from '@/lib/athleteProfiles';
+import { getPublicAthleteProfile } from '@/lib/api/athletes';
+import { isApiError } from '@/lib/api/client';
 import { formatSport } from '@/lib/format';
 import { AthleteProfile } from './AthleteProfile';
 
-export async function generateStaticParams() {
-  return mockAthletes.map((athlete) => ({ athleteSlug: athlete.athleteSlug }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -15,11 +13,14 @@ export async function generateMetadata({
   params: Promise<{ athleteSlug: string }>;
 }): Promise<Metadata> {
   const { athleteSlug } = await params;
-  const athlete = findMockAthlete(athleteSlug);
-  if (!athlete) return { title: 'Athlete not found' };
+  const profile = await getPublicAthleteProfile(athleteSlug).catch((error) => {
+    if (isApiError(error) && error.status === 404) return null;
+    throw error;
+  });
+  if (!profile) return { title: 'Athlete not found' };
   return {
-    title: `${athlete.fullName} · ${formatSport(athlete.primarySport)}`,
-    description: athlete.headline,
+    title: `${profile.fullName} · ${formatSport(profile.primarySport)}`,
+    description: profile.headline ?? profile.tagline ?? undefined,
   };
 }
 
@@ -29,9 +30,11 @@ export default async function AthleteProfilePage({
   params: Promise<{ athleteSlug: string }>;
 }) {
   const { athleteSlug } = await params;
-  const athlete = findMockAthlete(athleteSlug);
-  const profile = findAthleteProfile(athleteSlug);
-  if (!athlete || !profile) notFound();
+  const profile = await getPublicAthleteProfile(athleteSlug).catch((error) => {
+    if (isApiError(error) && error.status === 404) return null;
+    throw error;
+  });
+  if (!profile) notFound();
 
-  return <AthleteProfile athlete={athlete} profile={profile} />;
+  return <AthleteProfile profile={profile} />;
 }

@@ -19,6 +19,11 @@ export class AthleteRouterFactory extends BaseRouterFactory {
     const router = Router();
     router.get('/', this.wrap(this.athleteController.listDirectory));
     router.get('/me/draft', this.auth.required, this.wrap(this.athleteController.getMyDraft));
+    router.get(
+      '/me/dashboard',
+      this.auth.required,
+      this.wrap(this.athleteController.getMyDashboard)
+    );
     router.put('/me/draft', this.auth.required, this.wrap(this.athleteController.upsertMyDraft));
     router.post(
       '/me/publish',
@@ -134,6 +139,16 @@ export class AthleteRouterFactory extends BaseRouterFactory {
       '/me/media-assets/:athleteMediaAssetId',
       this.auth.required,
       this.wrap(this.athleteController.deleteMyMediaAsset)
+    );
+    router.post(
+      '/:athleteSlug/follow',
+      this.auth.required,
+      this.wrap(this.athleteController.followProfile)
+    );
+    router.delete(
+      '/:athleteSlug/follow',
+      this.auth.required,
+      this.wrap(this.athleteController.unfollowProfile)
     );
     router.get('/:athleteSlug', this.auth.optional, this.wrap(this.athleteController.getProfile));
     router.post('/', this.auth.required, this.wrap(this.athleteController.createMyProfile));

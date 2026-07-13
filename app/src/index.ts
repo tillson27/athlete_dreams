@@ -12,6 +12,7 @@ import { UserRouterFactory } from './api/users/UserRouterFactory';
 import { TeamRouterFactory } from './api/teams/TeamRouterFactory';
 import { AthleteRouterFactory } from './api/athletes/AthleteRouterFactory';
 import { CampaignRouterFactory } from './api/campaigns/CampaignRouterFactory';
+import { CommunityRouterFactory } from './api/community/CommunityRouterFactory';
 
 function parseAllowedOrigins(): string[] {
   const raw = process.env.CORS_ALLOWED_ORIGINS ?? '';
@@ -31,8 +32,8 @@ function buildApp(): express.Express {
       credentials: true,
     })
   );
-  app.use(express.json({ limit: '1mb' }));
   app.use(requestIdMiddleware);
+  app.use(express.json({ limit: '1mb' }));
 
   app.get('/v1/health', (_req, res) => {
     res.json({ data: { status: 'ok' } });
@@ -44,6 +45,7 @@ function buildApp(): express.Express {
     container.resolve(TeamRouterFactory),
     container.resolve(AthleteRouterFactory),
     container.resolve(CampaignRouterFactory),
+    container.resolve(CommunityRouterFactory),
   ];
   for (const factory of routerFactories) {
     app.use(factory.basePath, factory.build());

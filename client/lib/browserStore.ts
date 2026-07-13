@@ -1,11 +1,13 @@
-// TODO: Remove this prototype storage adapter when backend state replaces browser persistence.
 export type BrowserStore<T> = {
   read: () => T | null;
   write: (value: T | null) => void;
   subscribe: (listener: () => void) => () => void;
 };
 
-export function createBrowserStore<T>(storageKey: string, changeEventName: string): BrowserStore<T> {
+export function createBrowserStore<T>(
+  storageKey: string,
+  changeEventName: string,
+): BrowserStore<T> {
   return {
     read: () => {
       try {
@@ -24,7 +26,7 @@ export function createBrowserStore<T>(storageKey: string, changeEventName: strin
         }
         window.dispatchEvent(new Event(changeEventName));
       } catch {
-        /* localStorage can be disabled; prototype state should not break the page */
+        return;
       }
     },
     subscribe: (listener) => {

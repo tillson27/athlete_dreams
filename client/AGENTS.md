@@ -12,11 +12,11 @@ Next.js 15 (App Router) + React 19 + Tailwind CSS v4. Today's mandate is the **m
 
 ## Folder Layout
 
-- `app/` — Next.js App Router pages and layouts. Routes are currently flat (no route groups yet) — split into `(marketing)/`, `(directory)/`, `(auth)/` groups when the route count justifies the indirection.
+- `app/` — Next.js App Router pages and layouts. Current audience routing uses `app/(marketing)/` for public marketing/app surfaces and `app/register/` for the athlete onboarding flow.
 - `components/` — Shared UI:
   - `site/` — Marketing chrome (Header, Footer, Section primitives, AthleteCard).
   - `ui/` — Generic building blocks (Button, Badge, ProgressBar, etc.).
-- `lib/` — Non-UI utilities (formatters, mock data fixtures, future API client).
+- `lib/` — Non-UI utilities: API helpers, formatters, browser/session helpers, and explicit `dev-fixtures/` reference data.
 - `styles/globals.css` — Tailwind v4 entry + design tokens.
 
 ## Design Principles (Product Mandates)

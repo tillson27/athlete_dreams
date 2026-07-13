@@ -58,6 +58,32 @@ export class AthleteController {
     ResponseHandler.success(res, 200, profile);
   };
 
+  getMyDashboard = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const dashboard = await this.athleteService.getDashboardForUser(req.authenticatedUserId);
+    ResponseHandler.success(res, 200, dashboard);
+  };
+
+  followProfile = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const params = parseRequestParams(athleteSlugParamSchema, req);
+    const result = await this.athleteService.followAthlete(
+      req.authenticatedUserId,
+      params.athleteSlug
+    );
+    ResponseHandler.success(res, 200, result);
+  };
+
+  unfollowProfile = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const params = parseRequestParams(athleteSlugParamSchema, req);
+    const result = await this.athleteService.unfollowAthlete(
+      req.authenticatedUserId,
+      params.athleteSlug
+    );
+    ResponseHandler.success(res, 200, result);
+  };
+
   upsertMyDraft = async (req: Request, res: Response): Promise<void> => {
     if (!req.authenticatedUserId) throw new UnauthorizedError();
     const body = parseRequestBody(upsertAthleteProfileDraftRequestSchema, req);

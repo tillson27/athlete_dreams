@@ -4,6 +4,10 @@
 
 The world's most transparent athlete funding network. A directory-style platform where athletes raise money from their network for specific events, gear, travel, and training — with every dollar tied to a line item and every event closing with a post-event update.
 
+## Current MVP state
+
+The customer-facing MVP uses the ARC/Athlete ARC brand while internal repo and package names still use FAD. The current implementation is profile-first: athlete onboarding, public profiles, directory discovery, follows, dashboard management, community updates, and support-readiness previews are live in the app surface. Payment processing and live donation checkout are not implemented yet; the current architecture state is tracked in `docs/architecture.md`.
+
 ## Three pillars
 
 1. **Crowdfunding** *(go-to-market anchor)* — athlete-led campaigns. We onboard the first 20 athletes ourselves and run as their de-facto agent until the directory has flywheel.
@@ -40,7 +44,7 @@ The world's most transparent athlete funding network. A directory-style platform
 
 ## Pricing
 
-- **Crowdfunding** — 3% platform fee on successful donations. No upfront cost to athletes.
+- **Crowdfunding** — no upfront cost to athletes. The platform fee/application-fee model must be decided before live payments launch.
 - **Brand sponsorships** — facilitation fee per contract; TBD.
 - **Managed ambassador programs** — flat quarterly retainer; TBD per scope.
 

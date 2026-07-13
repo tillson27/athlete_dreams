@@ -57,6 +57,21 @@ export type AthleteProfileRead = Prisma.AthleteProfileGetPayload<{
   include: typeof athleteProfileReadInclude;
 }>;
 
+export type AthleteDirectoryRead = Prisma.AthleteProfileGetPayload<{
+  include: {
+    _count: {
+      select: {
+        follows: true;
+      };
+    };
+  };
+}>;
+
+export type PublicAthleteIdentity = {
+  id: string;
+  athleteSlug: string;
+};
+
 type DraftMutationResult =
   | { stale: false; profile: AthleteProfileRead }
   | { stale: true; profile: null };
@@ -109,6 +124,24 @@ export class AthleteRepository {
     return this.prisma.athleteProfile.findFirst({
       where: { athleteSlug, deletedAt: null },
     });
+  }
+
+  findPublicIdentityBySlug(athleteSlug: string): Promise<PublicAthleteIdentity | null> {
+    return this.prisma.athleteProfile
+      .findFirst({
+        where: {
+          athleteSlug,
+          profileStatus: AthleteProfileStatus.PUBLISHED,
+          publishedAt: { not: null },
+          deletedAt: null,
+          fullName: { not: null },
+          primarySport: { not: null },
+        },
+        select: { id: true, athleteSlug: true },
+      })
+      .then((profile) =>
+        profile?.athleteSlug ? { id: profile.id, athleteSlug: profile.athleteSlug } : null
+      );
   }
 
   findByUserId(userId: string): Promise<AthleteProfile | null> {
@@ -238,12 +271,32 @@ export class AthleteRepository {
       .then(Boolean);
   }
 
+  async follow(userId: string, athleteId: string): Promise<number> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.athleteFollow.upsert({
+        where: { userId_athleteId: { userId, athleteId } },
+        update: {},
+        create: { userId, athleteId },
+      });
+      return tx.athleteFollow.count({ where: { athleteId } });
+    });
+  }
+
+  async unfollow(userId: string, athleteId: string): Promise<number> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.athleteFollow.deleteMany({
+        where: { userId, athleteId },
+      });
+      return tx.athleteFollow.count({ where: { athleteId } });
+    });
+  }
+
   async listDirectory(filters: {
     primarySport?: SportCategory;
     countryCode?: string;
     search?: string;
     limit: number;
-  }): Promise<AthleteProfile[]> {
+  }): Promise<AthleteDirectoryRead[]> {
     const where: Prisma.AthleteProfileWhereInput = {
       deletedAt: null,
       profileStatus: AthleteProfileStatus.PUBLISHED,
@@ -265,6 +318,13 @@ export class AthleteRepository {
 
     return this.prisma.athleteProfile.findMany({
       where,
+      include: {
+        _count: {
+          select: {
+            follows: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
       take: filters.limit,
     });

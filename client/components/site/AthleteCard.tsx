@@ -1,24 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import type { MockAthlete } from '@/lib/mockAthletes';
-import { findAthleteProfile } from '@/lib/athleteProfiles';
+import type { AthleteDirectoryItem } from 'fad-common';
 import { formatSport } from '@/lib/format';
+import { directoryLevelLabel } from '@/lib/api/athleteViews';
 import { Icon } from '@/components/ui/Icon';
 
-const LEVEL_LABEL: Record<MockAthlete['runnerLevel'], string> = {
-  ELITE: 'Pro & Elite',
-  COMPETITIVE: 'Competitive',
-  EVERYDAY: 'Everyday',
-};
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&fit=crop&w=1400&q=70';
 
-// Story-first directory row: photo-left, story-right. Leads with the athlete's
-// discipline, signature result, and story — never funding metrics.
-export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
-  const profile = findAthleteProfile(athlete.athleteSlug);
-  const disciplineLabel = profile?.disciplineLabel ?? formatSport(athlete.primarySport);
-  const followers = profile?.followers;
-  const topHighlight =
-    profile?.careerHighlights[0]?.detail ?? athlete.accomplishments[0]?.title ?? null;
+export function AthleteRow({ athlete }: { athlete: AthleteDirectoryItem }) {
+  const disciplineLabel = athlete.disciplineLabel ?? formatSport(athlete.primarySport);
+  const topHighlight = athlete.values?.[0] ?? null;
 
   return (
     <Link
@@ -27,15 +19,16 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
     >
       <div className="relative h-64 w-full overflow-hidden bg-surface-container md:h-full md:w-80">
         <Image
-          src={athlete.heroMediaUrl}
+          src={athlete.heroMediaUrl ?? FALLBACK_IMAGE}
           alt={`${athlete.fullName} running`}
           fill
+          unoptimized
           sizes="(max-width: 768px) 100vw, 320px"
           className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
         />
         <div className="absolute left-4 top-4">
           <span className="inline-flex items-center rounded-pill bg-inverse-surface/85 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white backdrop-blur">
-            {LEVEL_LABEL[athlete.runnerLevel]}
+            {directoryLevelLabel(athlete.athleteLevel)}
           </span>
         </div>
       </div>
@@ -66,9 +59,9 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
             <span />
           )}
           <span className="inline-flex items-center gap-3 text-sm text-on-surface-variant">
-            {followers ? (
+            {athlete.followerCount !== undefined ? (
               <span>
-                <strong className="text-on-surface">{followers}</strong> followers
+                <strong className="text-on-surface">{athlete.followerCount}</strong> followers
               </span>
             ) : null}
             <span className="label-bold inline-flex items-center gap-1 text-primary transition-transform group-hover:translate-x-0.5">

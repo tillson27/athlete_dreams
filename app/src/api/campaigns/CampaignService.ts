@@ -3,7 +3,7 @@ import type { Campaign as CampaignDto, CreateCampaignRequest } from 'fad-common'
 import { CampaignRepository } from '../../repositories/CampaignRepository';
 import { AthleteRepository } from '../../repositories/AthleteRepository';
 import { ForbiddenError, NotFoundError } from '../../shared/errors';
-import type { Campaign, CampaignCostLine } from '@prisma/client';
+import { toCampaignDto } from './campaignMappers';
 
 @injectable()
 export class CampaignService {
@@ -15,7 +15,7 @@ export class CampaignService {
   async getCampaignBySlug(campaignSlug: string): Promise<CampaignDto> {
     const campaign = await this.campaignRepository.findBySlug(campaignSlug);
     if (!campaign) throw new NotFoundError('Campaign');
-    return toCampaignDto(campaign, campaign.costLines);
+    return toCampaignDto(campaign);
   }
 
   async createForAthlete(userId: string, input: CreateCampaignRequest): Promise<CampaignDto> {
@@ -32,31 +32,6 @@ export class CampaignService {
       costLines: input.costLines,
       closesAt: input.closesAt ? new Date(input.closesAt) : undefined,
     });
-    return toCampaignDto(created, created.costLines);
+    return toCampaignDto(created);
   }
-}
-
-function toCampaignDto(campaign: Campaign, costLines: CampaignCostLine[]): CampaignDto {
-  return {
-    campaignId: campaign.id,
-    campaignSlug: campaign.campaignSlug,
-    athleteId: campaign.athleteId,
-    athleteEventId: campaign.athleteEventId,
-    campaignTitle: campaign.campaignTitle,
-    campaignType: campaign.campaignType,
-    campaignStatus: campaign.campaignStatus,
-    campaignStory: campaign.campaignStory,
-    targetAmountCents: campaign.targetAmountCents,
-    raisedAmountCents: campaign.raisedAmountCents,
-    supporterCount: campaign.supporterCount,
-    costLines: costLines.map((line) => ({
-      campaignCostLineId: line.id,
-      label: line.label,
-      amountCents: line.amountCents,
-      notes: line.notes,
-    })),
-    closesAt: campaign.closesAt ? campaign.closesAt.toISOString() : null,
-    createdAt: campaign.createdAt.toISOString(),
-    updatedAt: campaign.updatedAt.toISOString(),
-  };
 }

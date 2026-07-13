@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
-import { findMockAthlete } from '@/lib/mockAthletes';
 import { slugifyName } from '@/lib/slugify';
 import { profileUrl } from '@/lib/profileUrl';
-import { markPublished } from '@/lib/prototype/session';
+import { publishMyProfile } from '@/lib/api/athletes';
+import { useSession } from '@/lib/session';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 type Status = 'idle' | 'publishing' | 'published';
@@ -35,17 +35,19 @@ function useConfetti() {
 }
 
 export function PublishPanel() {
-  const { profile } = useOnboarding();
+  const { profile, draftVersion, saveDraft } = useOnboarding();
+  const { session } = useSession();
   const [agreed, setAgreed] = useState(false);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
   const confetti = useConfetti();
 
   const firstName = profile.name.trim().split(' ')[0] || 'Athlete';
   const hasName = profile.name.trim().length > 0;
-  const slug = slugifyName(profile.name) || 'your-name';
-  const profileExists = Boolean(findMockAthlete(slug));
+  const profileSlug = slugifyName(profile.name);
+  const slug = publishedSlug ?? (profileSlug || 'your-name');
   const manageHref = `/athletes/${slug}/manage`;
   const publicUrl = profileUrl(slug);
 
@@ -77,16 +79,29 @@ export function PublishPanel() {
     (completionChecks.filter(Boolean).length / completionChecks.length) * 100,
   );
 
-  const publish = () => {
-    if (!agreed || !hasName) {
+  const publish = async () => {
+    if (!agreed || !hasName || !session?.accessToken) {
       setError(true);
       return;
     }
     setStatus('publishing');
-    setTimeout(() => {
-      markPublished();
+    setError(false);
+    try {
+      const savedDraft = await saveDraft();
+      const result = await publishMyProfile(session.accessToken, {
+        expectedProfileVersion: savedDraft?.profileVersion ?? draftVersion ?? undefined,
+      });
+      if (!result.published || !result.profile) {
+        setError(true);
+        setStatus('idle');
+        return;
+      }
+      setPublishedSlug(result.profile.athleteSlug);
       setStatus('published');
-    }, 1500);
+    } catch {
+      setError(true);
+      setStatus('idle');
+    }
   };
 
   const copyLink = async () => {
@@ -182,10 +197,10 @@ export function PublishPanel() {
               <Icon name="arrow-forward" className="h-5 w-5" />
             </Link>
             <Link
-              href={profileExists ? `/athletes/${slug}` : '/athletes'}
+              href={`/athletes/${slug}`}
               className="label-bold flex flex-1 items-center justify-center rounded-lg border-2 border-outline px-6 py-4 text-on-surface transition-all hover:bg-surface-container"
             >
-              {profileExists ? 'View your profile' : 'Explore the network'}
+              View your profile
             </Link>
           </div>
         </div>
@@ -235,7 +250,7 @@ export function PublishPanel() {
       <button
         type="button"
         onClick={publish}
-        disabled={status === 'publishing' || !hasName}
+        disabled={status === 'publishing' || !hasName || !session?.accessToken}
         className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
       >
         {status === 'publishing' ? (
