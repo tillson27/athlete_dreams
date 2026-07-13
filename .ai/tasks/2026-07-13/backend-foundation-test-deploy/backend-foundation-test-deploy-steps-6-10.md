@@ -10,19 +10,21 @@
 
 ### Context
 
-**Objective:** Produce the single `init` migration (evolved schema) and a seed that reproduces the nate launch roster.
+**Objective:** Produce the single `init` migration (evolved schema) and a seed that reproduces the nate launch roster — the first execution of the `$db-migrate-and-seed` (`/db-migrate-and-seed`) skill.
 **Done When:**
 - `app/prisma/migrations/<ts>_init/` exists, created **only** via `npm run migrate:create --prefix app -- --name init`, and its SQL contains the nate-alignment models/fields from Step 4.
+- The datasource enables the `citext` extension via the `postgresqlExtensions` preview feature **before drafting**, so the migration emits `CREATE EXTENSION IF NOT EXISTS "citext"` and applies on vanilla Postgres/RDS (see skill → Gotchas; `User.email` is `@db.Citext`).
 - `app/prisma/seed.ts` upserts (idempotent re-run) the 8-athlete roster from `client/lib/mockAthletes.ts` + `client/lib/athleteProfiles.ts` — users (placeholder emails + argon2 hashes), personal teams, profiles (published), PBs, race results, highlights, roadmap events, campaigns + cost lines, presentation JSON.
 - `app/package.json` gains `"prisma": { "seed": "tsx prisma/seed.ts" }`.
 - **USER ACTIONS flagged in the PR:** run a local Postgres, then `prisma migrate dev` and `prisma db seed` (AI must not apply).
 
 **References:**
+- **Procedure:** the `$db-migrate-and-seed` (`/db-migrate-and-seed`) skill — roles boundary, prerequisites, draft→apply→seed→verify workflow, gotchas. This step adds only the step-specific content below.
 - Context §6 (local Postgres assumption), §11 (seed idempotency); `docs/backend-build-sheet.md` → Phase 0 *Prisma / migrations* + *Seed*.
 - [STRICT] Prisma CLI rules (root `AGENTS.md`): create-only drafting; migration files immutable once created.
 
 ### Plan
-- Draft the migration with the sanctioned command against the local DB; do not hand-edit the generated SQL.
+- Execute per the `$db-migrate-and-seed` (`/db-migrate-and-seed`) skill (including the `citext`/`postgresqlExtensions` schema prep before drafting); do not hand-edit the generated SQL.
 - Seed imports the client data modules directly (pure-data TS, no React) so the roster has one source of truth:
     - Snippet:
       ```ts

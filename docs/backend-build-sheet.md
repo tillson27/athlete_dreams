@@ -53,7 +53,7 @@ Contract reconciliations: the client narrows sports to `RUNNING | TRACK_AND_FIEL
 **Goal:** make the API runnable against Postgres, testable, and seedable.
 
 **Prisma / migrations**
-- `npm run migrate:create --prefix app -- --name init` → produces `app/prisma/migrations/<ts>_init/` (I draft; **you** run `prisma migrate dev`/`deploy` to apply). This is the #1 blocker today — no migrations exist.
+- `npm run migrate:create --prefix app -- --name init` → produces `app/prisma/migrations/<ts>_init/` (I draft; **you** run `prisma migrate dev`/`deploy` to apply). This is the #1 blocker today — no migrations exist. Full recurring procedure: the `$db-migrate-and-seed` (`/db-migrate-and-seed`) skill.
 - The `init` migration **includes the nate profile-model evolution** (Phase 1 Δschema below) so the first applied schema is the right one — nothing is deployed yet, so there is no reason to migrate twice.
 
 **App entry refactor** (`app/src/`)
