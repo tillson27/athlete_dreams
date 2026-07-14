@@ -248,6 +248,21 @@ aws s3 sync client/out/ s3://arc-test-web --delete
 aws cloudfront create-invalidation --distribution-id <distribution-id> --paths '/*'
 ```
 
+To serve the **live API** on the read surfaces (directory/profile/community),
+build in api data-source mode instead — the flags are build-time, inlined into
+the export (use the environment's `SiteUrl` as the base; same-origin, no CORS):
+
+```bash
+STATIC_EXPORT=true NEXT_PUBLIC_DATA_SOURCE=api \
+  NEXT_PUBLIC_API_BASE_URL=<SiteUrl> npm run build --prefix client
+```
+
+The pipeline (`deploy-web.yml`) reads `NEXT_PUBLIC_DATA_SOURCE` /
+`NEXT_PUBLIC_API_BASE_URL` from GitHub **environment variables** — set them on
+the `test` environment (section 5) or its deploys revert the site to mock mode.
+Note the auth/onboarding UI stays on the mock session either way until M6
+(`docs/delivery-plan.md`).
+
 Invalidations take ~30–60s to propagate; the `/v1/*` behaviors are uncached and
 unaffected.
 
