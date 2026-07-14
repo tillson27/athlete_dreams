@@ -33,5 +33,9 @@ export const testConfig: EnvironmentConfig = {
   signupEmailAllowlist: [
     '@seed.athletearc.ca',
     '@smoke.athletearc.ca',
+    'miketom@gmail.com',
+    'cassandraorr55@gmail.com',
+    'nathaniel@natefit.ca',
+    'tillson27@gmail.com',
   ],
 };
