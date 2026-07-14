@@ -135,7 +135,11 @@ npx cdk deploy Arc-test-Data    -c env=test --require-approval never
 # 4. Api — ECR, Fargate+ALB, migration/seed task defs, alarms.
 #    First bring-up: no image exists yet, so the service will not stabilize
 #    until deploy-api.yml (or a manual build+push) publishes an image tag.
-#    See section 4 for the first-image bootstrap.
+#    PRE-BUILD the image BEFORE starting this deploy and push it the moment the
+#    ECR repo exists (~first minute) — see section 4, Option B. If the create
+#    still fails on stabilization, the RETAINed repo collides with a re-create:
+#    `aws ecr delete-repository --repository-name arc-test-api --force`, then
+#    redeploy. (Field-validated 2026-07-14: push-during-deploy stabilized fine.)
 npx cdk deploy Arc-test-Api     -c env=test --require-approval never
 
 # 5. Web — S3 (OAC) + CloudFront + ACM + Route 53 records.
@@ -178,8 +182,11 @@ redeploy automatically (seed off by default).
 
 ### Option B — manual first bring-up
 
-Build and push the image yourself (repo root is the Docker context because
-`app/Dockerfile` resolves `fad-common` from `../common`):
+Works entirely from a local checkout — no branch needs to be pushed to GitHub
+(the pipeline path only exists for `nate`). Build the image **before** starting
+the `Arc-test-Api` deploy (`--load` keeps it local), then tag/push the moment
+the repo exists; repo root is the Docker context because `app/Dockerfile`
+resolves `fad-common` from `../common`:
 
 ```bash
 ACCOUNT=<account-id>
@@ -226,6 +233,23 @@ aws ecs run-task --cluster "$CLUSTER" --launch-type FARGATE \
 the pipeline uses; the workflow always runs the migration task and gates the seed
 behind the `run_seed` input. Migrations are **never** run on container boot — only
 as this discrete pre-traffic task (`docs/delivery-plan.md`; Context §12).
+
+On a non-zero exit code, the container logs are in the `/arc/<env>/api`
+CloudWatch log group (stream prefix `migrationtask/` or `seedtask/`).
+
+### Manual web deploy (no pipeline)
+
+The local equivalent of `deploy-web.yml`, from the repo root (bucket and
+distribution id come from the `Arc-test-Web` outputs — section 3):
+
+```bash
+npm run build --prefix common && STATIC_EXPORT=true npm run build --prefix client
+aws s3 sync client/out/ s3://arc-test-web --delete
+aws cloudfront create-invalidation --distribution-id <distribution-id> --paths '/*'
+```
+
+Invalidations take ~30–60s to propagate; the `/v1/*` behaviors are uncached and
+unaffected.
 
 ---
 
