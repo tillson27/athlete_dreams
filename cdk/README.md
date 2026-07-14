@@ -329,7 +329,7 @@ PL_ID="$(aws ec2 describe-managed-prefix-lists --region us-east-1 \
 # 2. Find the ALB security group id (NetworkStack AlbSecurityGroup).
 ALB_SG="$(aws ec2 describe-security-groups --region us-east-1 \
   --filters Name=tag:project,Values=arc Name=tag:env,Values=test \
-            Name=description,Values='Public ALB — HTTPS/HTTP from the internet.' \
+            Name=description,Values='Public ALB - HTTPS/HTTP from the internet.' \
   --query 'SecurityGroups[0].GroupId' --output text)"
 
 # 3. Allow only CloudFront's origin-facing ranges on 80/443, then revoke the

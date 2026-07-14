@@ -77,7 +77,8 @@ export class NetworkStack extends Stack {
 
     this.albSecurityGroup = new SecurityGroup(this, 'AlbSecurityGroup', {
       vpc: this.vpc,
-      description: 'Public ALB — HTTPS/HTTP from the internet.',
+      // EC2 GroupDescription is ASCII-only — keep these descriptions plain ASCII.
+      description: 'Public ALB - HTTPS/HTTP from the internet.',
       allowAllOutbound: true,
     });
     this.albSecurityGroup.addIngressRule(
@@ -93,7 +94,7 @@ export class NetworkStack extends Stack {
 
     this.serviceSecurityGroup = new SecurityGroup(this, 'ServiceSecurityGroup', {
       vpc: this.vpc,
-      description: 'Fargate service — ingress only from the ALB.',
+      description: 'Fargate service - ingress only from the ALB.',
       allowAllOutbound: true,
     });
     this.serviceSecurityGroup.addIngressRule(
@@ -104,7 +105,7 @@ export class NetworkStack extends Stack {
 
     this.databaseSecurityGroup = new SecurityGroup(this, 'DatabaseSecurityGroup', {
       vpc: this.vpc,
-      description: 'RDS PostgreSQL — ingress only from the Fargate service.',
+      description: 'RDS PostgreSQL - ingress only from the Fargate service.',
       allowAllOutbound: false,
     });
     this.databaseSecurityGroup.addIngressRule(
