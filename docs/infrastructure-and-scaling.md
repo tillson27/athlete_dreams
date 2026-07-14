@@ -23,7 +23,7 @@ Why containers over Lambda: the API uses the **argon2** native binary and must r
 Provisioning is **your** step: per the repo's STRICT rules I author all IaC and pipelines but never run `cdk bootstrap`, `cdk deploy`, or migration applies. None of the app code (Phases 0–4) or CDK authoring needs AWS access — it's a gate only at deploy time.
 
 - **Region:** `us-east-1` (also required for the CloudFront ACM certificate).
-- **Custom domain:** **`athletearc.ca`** (hardcoded across the client — sitemap, metadata, profile links). Route 53 hosted zone required (NS delegation from the .ca registrar if registered elsewhere). One domain fronts everything — apex/`www` → CloudFront (client); `/v1/*` and `/webhooks/stripe` → ALB; test environment on `test.athletearc.ca` / `api.test.athletearc.ca`. **ACM certs in `us-east-1`** for both CloudFront and the ALB. The stable host also benefits auth cookies and the (later) Stripe webhook.
+- **Custom domain (optional per environment):** **`athletearc.ca`** (hardcoded across the client — sitemap, metadata, profile links) is the target domain, but DNS currently lives at GoDaddy with no AWS configuration, so the **test environment defaults to temporary-URL mode** — the CloudFront default domain (`https://<id>.cloudfront.net`), no Route 53 zone or ACM cert needed, single-origin `/v1/*` routing intact. Enabling the custom domain later (Route 53 zone + NS delegation from GoDaddy, then restore the `domain` block in `cdk/config/`) is documented in `cdk/README.md` → §1a. When enabled: one domain fronts everything — apex/`www` → CloudFront (client); `/v1/*` and `/webhooks/stripe` → ALB; test on `test.athletearc.ca`; **ACM certs in `us-east-1`**. The stable host also benefits auth cookies and the (later) Stripe webhook.
 
 **AWS access needed at deploy time**
 
@@ -33,7 +33,7 @@ Provisioning is **your** step: per the repo's STRICT rules I author all IaC and 
 | Bootstrap identity | Elevated identity to run `cdk bootstrap aws://<account>/us-east-1` once (creates the CDK toolkit: assets bucket, ECR, roles) |
 | Deploy creds — local | SSO / `aws configure` profile with access to VPC, RDS, ECS/ECR/ELB, CloudFront, S3, ACM, Route 53, Secrets Manager/SSM, IAM, EventBridge, Logs |
 | Deploy creds — CI | GitHub **OIDC** role (no static keys) — authored in CDK: IAM OIDC provider + scoped deploy role assumed by Actions |
-| DNS | Route 53 hosted zone for the custom domain |
+| DNS | None in temporary-URL mode; Route 53 hosted zone only when enabling the custom domain (`cdk/README.md` → §1a) |
 
 **Deferred to later work (not needed now)**
 

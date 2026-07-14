@@ -152,7 +152,7 @@ Summary here; full reliability tradeoffs + PCI/PII notes in `docs/infrastructure
 | CI/CD | GitHub Actions + OIDC | short-lived creds, arm64, safe migrations | — |
 
 ## Open items before authoring CDK
-- ✅ **Domain:** `athletearc.ca` — hardcoded across the client (sitemap, metadata, profile links, `hello@athletearc.ca`). Needs a Route 53 hosted zone (or NS delegation from the .ca registrar). Test env hosts: `test.athletearc.ca` / `api.test.athletearc.ca` per `docs/delivery-plan.md`.
+- ✅ **Domain:** `athletearc.ca` — hardcoded across the client (sitemap, metadata, profile links, `hello@athletearc.ca`). DNS is at GoDaddy with no AWS configuration yet, so the **test env runs in temporary-URL mode** (CloudFront default domain; no zone/cert). `test.athletearc.ca` activates via Route 53 delegation + restoring the `domain` block in `cdk/config/` — see `cdk/README.md` → §1a.
 - ✅ **Environments:** `test` first (the first AWS deployment target), `production` later — branching/promotion in `docs/delivery-plan.md`.
 - **Web build note (M3):** the client's static export currently rides the `GITHUB_PAGES` flag, which sets a `/athlete_dreams` basePath — wrong for `athletearc.ca`. The S3/CloudFront deploy needs a plain static-export mode with **no basePath** (small `next.config.ts` knob). And once directory data is API-driven, static pre-rendering stops reflecting new athletes — the SSR/ISR move (Stage 2) becomes SEO-driven rather than optional.
 - Stripe + SES access remain **deferred** (see prerequisites) — do not block infra bring-up.
