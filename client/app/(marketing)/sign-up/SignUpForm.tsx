@@ -1,25 +1,43 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signUp } from '@/lib/session';
+import { DATA_SOURCE } from '@/lib/dataSource';
+import { toAuthErrorView, type AuthErrorView } from '@/lib/authErrors';
 import { authInputClass } from '@/components/ui/formStyles';
 
 export function SignUpForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<AuthErrorView | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const name = String(form.get('displayName') ?? '').trim();
     const email = String(form.get('email') ?? '').trim();
+    const password = String(form.get('password') ?? '');
+    setError(null);
     setSubmitting(true);
-    signUp({ name, email });
-    setTimeout(() => router.push('/register/personal-basics'), 600);
+
+    if (DATA_SOURCE !== 'api') {
+      signUp({ name, email });
+      setTimeout(() => router.push('/register/personal-basics'), 600);
+      return;
+    }
+
+    try {
+      await signUp({ name, email, password });
+      router.push('/community');
+    } catch (cause) {
+      setError(toAuthErrorView('sign-up', cause));
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -59,6 +77,23 @@ export function SignUpForm() {
           'Start my profile'
         )}
       </Button>
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          {error.message}
+          {error.linkToSignIn ? (
+            <>
+              {' '}
+              <Link href="/sign-in" className="underline">
+                sign in instead
+              </Link>
+              .
+            </>
+          ) : null}
+        </p>
+      ) : null}
     </form>
   );
 }

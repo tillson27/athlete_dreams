@@ -28,7 +28,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | --- | --- | --- | --- | --- |
 | 1 | Backend gaps: personal-bests set-replace + GET /v1/athletes/me | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
 | 2 | Client session core: real session.ts + api.ts auth layer | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
-| 3 | Auth pages: real submission + invite-only/409/401 error UX | Incomplete | unassigned | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
+| 3 | Auth pages: real submission + invite-only/409/401 error UX | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
 | 4 | Follows cutover: signed-in via API, anonymous prompts sign-in | Incomplete | unassigned | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
 | 5 | Onboarding wizard persistence: create, per-step PATCH/set-replace, publish | Incomplete | unassigned | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
 | 6 | Dashboard + manage editor cutover to the real profile | Incomplete | unassigned | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-6-8.md` |

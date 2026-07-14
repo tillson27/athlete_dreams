@@ -5,20 +5,37 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signIn } from '@/lib/session';
+import { DATA_SOURCE } from '@/lib/dataSource';
+import { toAuthErrorView, type AuthErrorView } from '@/lib/authErrors';
 import { authInputClass } from '@/components/ui/formStyles';
 
 export function SignInForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<AuthErrorView | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const email = String(form.get('email') ?? '').trim();
+    const password = String(form.get('password') ?? '');
+    setError(null);
     setSubmitting(true);
-    signIn({ email });
-    setTimeout(() => router.push('/dashboard'), 600);
+
+    if (DATA_SOURCE !== 'api') {
+      signIn({ email });
+      setTimeout(() => router.push('/dashboard'), 600);
+      return;
+    }
+
+    try {
+      await signIn({ email, password });
+      router.push('/dashboard');
+    } catch (cause) {
+      setError(toAuthErrorView('sign-in', cause));
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -57,6 +74,14 @@ export function SignInForm() {
           'Sign in'
         )}
       </Button>
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          {error.message}
+        </p>
+      ) : null}
     </form>
   );
 }

@@ -87,10 +87,18 @@
 ## Step 3 - Auth pages: real submission + invite-only/409/401 error UX
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 2
 **Size:** small
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-14
+**Completion Notes:**
+- New shared helper `client/lib/authErrors.ts` (`toAuthErrorView(kind, error)`) maps a thrown `ApiError` to one curated, plain sentence keyed on the auth kind — never a raw payload/code (Context §11, `client/AGENTS.md` minimalism). Deviated from the Plan's "pages render `error.message`" on purpose: surfacing the API's raw message would leak backend prose for 422/500/network, so the helper returns fixed sentences and a single `linkToSignIn` flag (sign-up 409 only). Mapping by `ApiError.status`: 403 → invite-only; sign-up 409 → duplicate + `/sign-in` link; sign-in 401 → invalid-credentials; everything else (network/unknown/non-`ApiError`) → generic try-again.
+- `SignUpForm.tsx` / `SignInForm.tsx`: submit is now async and passes `password` (read from the form) into the session core. Mock mode is a pre-`try` early return preserving today's fire-and-forget `signIn/signUp` + `setTimeout(600)` push verbatim (byte-safe); api mode `await`s, then routes on success — sign-up → `/community`, sign-in → `/dashboard`. On error: re-enable submit + render the mapped sentence in a `role="alert"` `<p>` reusing the established `bg-error/10 … text-error` style (from `PublishPanel.tsx`); the sign-up 409 renders "sign in instead" as the `/sign-in` link. The existing "Build your profile" CTA path to `/register` is untouched. Success keeps the button disabled through the navigation (no double-submit).
+- Only page-level env branch is the one genuinely page-owned decision (mock vs api success route); the mock-vs-api auth *behavior* stays inside the session core.
+- **Live verification (tsx driver against a locally-booted API, seeded `fad_dev`):** drove the real `session.ts` → `api.ts` → `authErrors.ts` in `DATA_SOURCE=api`. Allowlist-open boot: sign-up success (session persisted → `/community`), sign-up 409 duplicate → `"An account already exists for this email —"` + `linkToSignIn=true` (form renders "…email — sign in instead."), sign-in 401 wrong password → `"Invalid email or password."`. Allowlist-gated boot (`SIGNUP_EMAIL_ALLOWLIST=@invited.example`): sign-up 403 AND sign-in 403 → `"Access is currently invite-only — contact hello@athletearc.ca"`. Generic fallback (network `ApiError` + plain `Error` + non-error value, both kinds) → `"Something went wrong — please try again."`. All checks PASS. Fixture user + orphan team deleted (DB restored 11→10 users, zero `m6s3-` leakage); API stopped; temp drivers removed.
+- **Mock-mode DOM byte-safety (step-12 method):** built the `GITHUB_PAGES=true` mock export at the branch base vs with these changes; the server-rendered visible DOM for `/sign-up` (14247 chars) and `/sign-in` (13652 chars) is **byte-identical** after stripping the hydration flight payload + `_next` asset tags. The only build-output delta is Next's expected chunk-graph nondeterminism (content-hashed filenames + one extra shared JS chunk `42-*.js` in the preload tags/hydration manifest from the new imports) — inert asset loading, not rendered markup.
+- **CI:** `npm run ci` green (exit 0) — type-check (common/app/client), lint:fix (`✔ No ESLint warnings or errors`), full build, app tests 13 passed / 60 skipped (DB-gated). Did not touch `follows.ts`/FollowButton/community/register/dashboard/manage (steps 4-6), nor `app/src`, `common/`, `cdk/`, `.github/`.
 
 ### Context
 
@@ -107,12 +115,12 @@
 - Error mapping lives beside the session core (shared helper), not in page components; pages render `error.message`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
