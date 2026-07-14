@@ -35,4 +35,7 @@ export const prodConfig: EnvironmentConfig = {
     hostedZoneId: 'Z0PLACEHOLDER000000',
     zoneName: 'athletearc.ca',
   },
+
+  // Open until the M7 go-live decision on invite gating.
+  signupEmailAllowlist: [],
 };

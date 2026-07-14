@@ -26,12 +26,12 @@ export const testConfig: EnvironmentConfig = {
   nodeEnv: 'production',
   logLevel: 'info',
 
-  domain: {
-    rootDomain: 'athletearc.ca',
-    clientDomain: 'test.athletearc.ca',
-    apiDomain: 'api.test.athletearc.ca',
-    // PLACEHOLDER — replace with the real athletearc.ca hosted-zone id before deploying WebStack.
-    hostedZoneId: 'Z0PLACEHOLDER000000',
-    zoneName: 'athletearc.ca',
-  },
+  // Temporary-URL mode: no `domain` until athletearc.ca DNS reaches Route 53
+  // (currently at GoDaddy). The stack serves https://<distribution>.cloudfront.net;
+  // re-enable per cdk/README.md → "Custom domain".
+
+  signupEmailAllowlist: [
+    '@seed.athletearc.ca',
+    '@smoke.athletearc.ca',
+  ],
 };

@@ -57,7 +57,21 @@ export interface EnvironmentConfig {
   readonly nodeEnv: string;
   readonly logLevel: string;
 
-  readonly domain: DomainConfig;
+  /**
+   * CONTRACT: omit to run the environment on the CloudFront default domain
+   * (`https://<distribution>.cloudfront.net`) — no Route 53 zone, ACM cert, or
+   * alias records are created, and the front door stays same-origin for the
+   * API paths. Set it once DNS for `rootDomain` is available in (or delegated
+   * to) Route 53; see `cdk/README.md` → "Custom domain".
+   */
+  readonly domain?: DomainConfig;
+
+  /**
+   * CONTRACT: sign-up/sign-in email allowlist injected as
+   * `SIGNUP_EMAIL_ALLOWLIST`. Entries are exact emails (`a@b.c`) or whole
+   * domains (`@b.c`), case-insensitive. Empty/omitted = open (no gate).
+   */
+  readonly signupEmailAllowlist?: readonly string[];
 }
 
 export const DATABASE_NAME = 'arc';

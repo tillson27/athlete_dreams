@@ -23,18 +23,62 @@ Not repeated here. In short, before you start you need:
 
 1. An AWS account and an elevated identity (SSO or `aws configure` profile) able
    to bootstrap and deploy in `us-east-1`.
-2. A **Route 53 hosted zone for `athletearc.ca`** (delegate the `.ca` NS records
-   from your registrar if the domain is registered elsewhere).
-3. `node` 22+, the repo installed (`npm install` at the root; `npm install --prefix cdk`).
+2. `node` 22+, the repo installed (`npm install` at the root; `npm install --prefix cdk`).
 
-### 1a. Set the real hosted-zone id (required before WebStack)
+A Route 53 hosted zone is **not** required to bring the test environment up —
+see 1a.
 
-`cdk/config/test.ts` and `cdk/config/prod.ts` ship `hostedZoneId` as an obvious
-placeholder (`Z0PLACEHOLDER000000`). Replace it with the real id for
-`athletearc.ca` (Route 53 console -> the zone -> **Hosted zone ID**). WebStack
-imports the zone by attributes (never `fromLookup`, to keep `cdk synth`
-credential-free), so deploying with the placeholder fails to create the ACM
-validation and alias records.
+### 1a. Domain: temporary URL now, custom domain later
+
+`athletearc.ca` currently lives at GoDaddy with no AWS DNS configuration, so
+`cdk/config/test.ts` ships **without** a `domain` block (temporary-URL mode):
+WebStack serves the environment on its CloudFront default domain with the
+default viewer certificate — no Route 53 zone, ACM cert, or alias records are
+created, and nothing at GoDaddy changes. There is **nothing to configure in
+this mode.** After the Web deploy, read the URL from the stack's `SiteUrl` /
+`DistributionDomainName` outputs (section 3) — that
+`https://<id>.cloudfront.net` address is the test environment. The front door
+is single-origin, so `/v1/*` API paths are served from the same URL (CORS
+allowlist is intentionally empty in this mode).
+
+Two caveats while on the temporary URL: the client's SEO/share metadata
+(`metadataBase`, profile share links) still points at `athletearc.ca` —
+cosmetic for a test environment — and the URL changes if the distribution is
+ever recreated.
+
+**Upgrading to the custom domain later** (either path, then redeploy
+`Arc-test-Web`):
+
+- **Path A — delegate DNS to Route 53 (recommended):** create a public hosted
+  zone for `athletearc.ca` in Route 53, copy its four NS values into GoDaddy's
+  nameserver settings (full DNS moves to Route 53; recreate any existing
+  GoDaddy records in the zone first), then restore the `domain` block in
+  `cdk/config/test.ts` (shape: `DomainConfig` in `cdk/config/types.ts` —
+  `clientDomain: 'test.athletearc.ca'`, zone name `athletearc.ca`) with the
+  real **Hosted zone ID**. WebStack then provisions the ACM cert (DNS-validated
+  in the zone) and alias records automatically.
+- **Path B — keep DNS at GoDaddy:** possible (ACM cert with manual CNAME
+  validation + a GoDaddy CNAME `test.athletearc.ca -> <id>.cloudfront.net`),
+  but the stack currently only automates Path A; Path B would need a
+  cert-only stack variant plus two hand-managed GoDaddy records. Prefer Path A
+  unless GoDaddy DNS must stay authoritative.
+
+`cdk/config/prod.ts` keeps its `domain` block (with the placeholder
+`hostedZoneId`) for the M7 production bring-up — replace the placeholder before
+any prod Web deploy. WebStack imports zones by attributes (never `fromLookup`,
+to keep `cdk synth` credential-free), so deploying a configured domain with the
+placeholder id fails to create the ACM validation and alias records.
+
+### 1b. Invite gate (signup allowlist)
+
+Sign-up **and** sign-in are gated by `SIGNUP_EMAIL_ALLOWLIST` (exact emails or
+`@domain` entries, case-insensitive; empty = open — see `app/.env.example`).
+The deployed value comes from `signupEmailAllowlist` in `cdk/config/<env>.ts`,
+which for `test` ships with `@seed.athletearc.ca` (seeded demo athletes) and
+`@smoke.athletearc.ca` (the smoke suite's throwaway accounts). **Add your own
+testers' emails to that list before deploying** (or later — edit and redeploy
+`Arc-test-Api`); anyone not on the list receives 403 "Access is currently
+invite-only" at both auth endpoints.
 
 ---
 
@@ -93,7 +137,8 @@ After the deploys, record these (console, or `aws cloudformation describe-stacks
 aws cloudformation describe-stacks --stack-name Arc-test-Cicd \
   --query "Stacks[0].Outputs[?OutputKey=='GithubDeployRoleArn'].OutputValue" --output text
 
-# Web bucket + CloudFront distribution id (section 5):
+# Web bucket, CloudFront distribution id, and the site URL (sections 5 and 6 —
+# in temporary-URL mode `SiteUrl` IS the environment's address):
 aws cloudformation describe-stacks --stack-name Arc-test-Web --query "Stacks[0].Outputs" --output table
 ```
 
@@ -198,8 +243,17 @@ the auth round-trip (sign-up -> sign-in -> `GET /v1/users/me`), and a follow
 round-trip. A failed smoke means **no traffic shift**.
 
 ```bash
+# Temporary-URL mode: use the Arc-test-Web `SiteUrl` output.
+scripts/smoke-test.sh "$(aws cloudformation describe-stacks --stack-name Arc-test-Web \
+  --query "Stacks[0].Outputs[?OutputKey=='SiteUrl'].OutputValue" --output text)"
+
+# Custom-domain mode (after section 1a's upgrade):
 scripts/smoke-test.sh https://test.athletearc.ca
 ```
+
+The smoke suite's auth round-trip uses a `@smoke.athletearc.ca` address, which
+the shipped test allowlist admits (section 1b) — keep that entry or the auth
+checks will 403.
 
 It exits non-zero on any failure and prints a PASS/FAIL summary table that
 doubles as the post-deploy verification record (Context §13). Point the client

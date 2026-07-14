@@ -133,6 +133,7 @@ export class ApiStack extends Stack {
       LOG_LEVEL: config.logLevel,
       PORT: String(CONTAINER_PORT),
       CORS_ALLOWED_ORIGINS: buildCorsAllowedOrigins(config),
+      SIGNUP_EMAIL_ALLOWLIST: (config.signupEmailAllowlist ?? []).join(','),
     };
 
     const containerSecrets: Record<string, EcsSecret> = {
@@ -375,9 +376,14 @@ export class ApiStack extends Stack {
 
 /**
  * The client is served from the same custom domain(s); allow those origins so
- * browser calls to `/v1/*` pass the API's CORS allowlist.
+ * browser calls to `/v1/*` pass the API's CORS allowlist. Temporary-URL mode
+ * (no custom domain) is same-origin behind CloudFront, so the cross-origin
+ * allowlist is empty there by design.
  */
 function buildCorsAllowedOrigins(config: EnvironmentConfig): string {
+  if (!config.domain) {
+    return '';
+  }
   const origins = [
     `https://${config.domain.clientDomain}`,
     config.domain.clientAlternateDomain

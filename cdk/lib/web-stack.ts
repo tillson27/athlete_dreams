@@ -1,5 +1,5 @@
-import { Duration, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
-import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
+import { Certificate, CertificateValidation, type ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import {
   AllowedMethods,
   CachePolicy,
@@ -21,6 +21,7 @@ import {
   AaaaRecord,
   HostedZone,
   RecordTarget,
+  type IHostedZone,
 } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import {
@@ -61,6 +62,11 @@ const NOT_FOUND_PAGE = '/404.html';
  * Credential-free synth: the hosted zone is imported by attributes from config
  * (never `fromLookup`); the placeholder `hostedZoneId` must be replaced with the
  * real zone id before deploying (see `DomainConfig`).
+ *
+ * Temporary-URL mode: when `config.domain` is omitted the distribution serves on
+ * its CloudFront default domain (`https://<id>.cloudfront.net`) with the default
+ * viewer certificate — no Route 53 zone, ACM cert, or alias records — so the
+ * environment deploys before any DNS exists in Route 53 (see `EnvironmentConfig`).
  */
 export class WebStack extends Stack {
   public readonly bucket: Bucket;
@@ -88,29 +94,35 @@ export class WebStack extends Stack {
       autoDeleteObjects: config.rdsRemovalPolicy !== 'snapshot',
     });
 
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId: domain.hostedZoneId,
-      zoneName: domain.zoneName,
-    });
+    const domainNames = domain
+      ? [domain.clientDomain, domain.clientAlternateDomain].filter(
+          (name): name is string => Boolean(name)
+        )
+      : [];
 
-    const domainNames = [domain.clientDomain, domain.clientAlternateDomain].filter(
-      (name): name is string => Boolean(name)
-    );
+    let certificate: ICertificate | undefined;
+    let hostedZone: IHostedZone | undefined;
+    if (domain) {
+      hostedZone = HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+        hostedZoneId: domain.hostedZoneId,
+        zoneName: domain.zoneName,
+      });
 
-    const certificate = new Certificate(this, 'SiteCertificate', {
-      domainName: domain.clientDomain,
-      subjectAlternativeNames: domain.clientAlternateDomain
-        ? [domain.clientAlternateDomain]
-        : undefined,
-      validation: CertificateValidation.fromDns(hostedZone),
-    });
+      certificate = new Certificate(this, 'SiteCertificate', {
+        domainName: domain.clientDomain,
+        subjectAlternativeNames: domain.clientAlternateDomain
+          ? [domain.clientAlternateDomain]
+          : undefined,
+        validation: CertificateValidation.fromDns(hostedZone),
+      });
+    }
 
     const apiBehavior = this.buildApiBehavior(loadBalancer);
 
     this.distribution = new Distribution(this, 'Distribution', {
       comment: `ARC front door (${config.envName}).`,
       priceClass: PRICE_CLASS_BY_NAME[config.priceClass],
-      domainNames,
+      domainNames: domainNames.length > 0 ? domainNames : undefined,
       certificate,
       defaultRootObject: 'index.html',
       defaultBehavior: {
@@ -141,20 +153,33 @@ export class WebStack extends Stack {
       ],
     });
 
-    const aliasTarget = RecordTarget.fromAlias(new CloudFrontTarget(this.distribution));
-    for (const domainName of domainNames) {
-      const recordScope = domainName === domain.clientDomain ? 'Primary' : 'Alternate';
-      new ARecord(this, `${recordScope}AliasRecord`, {
-        zone: hostedZone,
-        recordName: domainName,
-        target: aliasTarget,
-      });
-      new AaaaRecord(this, `${recordScope}AliasRecordIpv6`, {
-        zone: hostedZone,
-        recordName: domainName,
-        target: aliasTarget,
-      });
+    if (domain && hostedZone) {
+      const aliasTarget = RecordTarget.fromAlias(new CloudFrontTarget(this.distribution));
+      for (const domainName of domainNames) {
+        const recordScope = domainName === domain.clientDomain ? 'Primary' : 'Alternate';
+        new ARecord(this, `${recordScope}AliasRecord`, {
+          zone: hostedZone,
+          recordName: domainName,
+          target: aliasTarget,
+        });
+        new AaaaRecord(this, `${recordScope}AliasRecordIpv6`, {
+          zone: hostedZone,
+          recordName: domainName,
+          target: aliasTarget,
+        });
+      }
     }
+
+    new CfnOutput(this, 'WebBucketName', { value: this.bucket.bucketName });
+    new CfnOutput(this, 'DistributionId', { value: this.distribution.distributionId });
+    new CfnOutput(this, 'DistributionDomainName', {
+      value: this.distribution.distributionDomainName,
+    });
+    new CfnOutput(this, 'SiteUrl', {
+      value: domain
+        ? `https://${domain.clientDomain}`
+        : `https://${this.distribution.distributionDomainName}`,
+    });
 
     Tags.of(this).add('project', 'arc');
     Tags.of(this).add('env', config.envName);
