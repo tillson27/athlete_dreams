@@ -72,13 +72,31 @@ placeholder id fails to create the ACM validation and alias records.
 ### 1b. Invite gate (signup allowlist)
 
 Sign-up **and** sign-in are gated by `SIGNUP_EMAIL_ALLOWLIST` (exact emails or
-`@domain` entries, case-insensitive; empty = open — see `app/.env.example`).
-The deployed value comes from `signupEmailAllowlist` in `cdk/config/<env>.ts`,
-which for `test` ships with `@seed.athletearc.ca` (seeded demo athletes) and
-`@smoke.athletearc.ca` (the smoke suite's throwaway accounts). **Add your own
-testers' emails to that list before deploying** (or later — edit and redeploy
-`Arc-test-Api`); anyone not on the list receives 403 "Access is currently
-invite-only" at both auth endpoints.
+`@domain` entries, case-insensitive; empty = open — syntax and local-dev usage
+in `app/.env.example`). The deployed value comes from `signupEmailAllowlist` in
+`cdk/config/<env>.ts`, which for `test` ships with `@seed.athletearc.ca`
+(seeded demo athletes) and `@smoke.athletearc.ca` (the smoke suite's throwaway
+accounts — remove it and the smoke auth checks 403). Anyone not on the list
+receives 403 "Access is currently invite-only" at both auth endpoints.
+
+**Adding/removing users (deployed environment)** — the list is IaC, so every
+change is edit → commit → redeploy of the Api stack (only the task-definition
+environment changes; ECS rolls the tasks in ~2–3 minutes):
+
+1. Edit `signupEmailAllowlist` in `cdk/config/test.ts` (keep the seed/smoke
+   entries) and commit.
+2. Redeploy either way:
+   - **Pipeline:** push/merge to `nate` — `cdk/**` changes trigger
+     `deploy-api.yml`, which redeploys pinned to the new commit's image.
+   - **Manual:** `npx cdk deploy Arc-test-Api -c env=test -c imageTag=<currently-deployed-sha> --require-approval never`
+     — **pin `imageTag` to the tag currently running** (see the ECR repo or the
+     last deploy), otherwise the deploy falls back to `latest`, which may not
+     exist.
+3. Never hand-edit the task definition in the AWS console — it drifts from IaC
+   and the next deploy silently reverts it.
+
+Locally, `SIGNUP_EMAIL_ALLOWLIST` in `app/.env` takes effect immediately (the
+service re-reads the variable per call — no restart needed).
 
 ---
 
