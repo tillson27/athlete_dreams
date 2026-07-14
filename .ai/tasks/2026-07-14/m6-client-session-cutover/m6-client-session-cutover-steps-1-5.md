@@ -127,10 +127,19 @@
 ## Step 4 - Follows cutover: signed-in via API, anonymous prompts sign-in
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 2
 **Size:** small
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-14
+**Completion Notes:**
+- `client/lib/follows.ts`: kept the exported hook surface additive-compatible (`follows`/`ready`/`isFollowing`/`toggle` unchanged; added `requiresSignIn`/`error` to the new `FollowsState` type), one `useFollows` branching internally on `DATA_SOURCE` (mirrors `session.ts`). **Mock** path is byte-identical prototype behaviour (`arc-follows` localStorage; `toggleFollow` export preserved). **Api** path: signed-in → initial `fetchMyFollows` mapped to `athleteSlug[]`, and `toggle` optimistically updates then calls `followAthlete`/`unfollowAthlete` and adopts the returned full list (single round-trip sync) — a `requestSeq` ref discards stale concurrent responses, and a failed toggle reverts the optimistic list + sets a one-sentence `error`. A 401 is handled by the api layer's unauthorized listener (session self-clears), which re-runs the effect signed-out. Signed-in state is read via `useSession()` (no token leak).
+- `client/components/site/FollowButton.tsx` (the single follow-interaction seam for directory cards, profile hero/quick-actions, community feed + racing-soon): when `requiresSignIn` (api mode, anonymous) it renders a `<Link href="/sign-in">` styled identically to the "Follow" chip with a "Sign in to follow" hint — never a silent local write; on toggle `error` it renders the button plus a one-sentence `role="status"` message. Both new branches are inert in mock and api-signed-in, so the default button DOM is unchanged.
+- Community "Following" tab needed no edit: it already filters by `useFollows().follows` (now the server list in api mode) and passes `signedIn` to `EmptyFollowing`, which already shows the signed-out "Sign in" state when anonymous.
+- Did not touch sign-in/up pages, `register/*`, `dashboard/*`, `app/src`, `common/`, `cdk/`, `.github/` (other steps own those).
+- **Verification — mock-mode DOM byte-safety (step-12 method):** built the `GITHUB_PAGES` (mock) export at the branch base vs with these changes; visible rendered DOM is **34/34 identical** after stripping Next's inline flight-data scripts + hashed asset tags (the only whole-file deltas — on the 7 profile pages + community — are RSC flight-payload hashes from the new `next/link` import, carrying no user-visible markup: a script-stripped diff on the athlete + community pages is 0 lines).
+- **Verification — live exercise (tsx driving the real `session.ts`/`api.ts` in `DATA_SOURCE=api` against a locally-booted API, seeded `fad_dev`, allowlist open):** sign-up (unique `m6s4-<epoch>@example.com`) → empty follow list → `followAthlete('emma-chen')` returns a list containing it AND an independent `fetchMyFollows` confirms server-side persistence → `unfollowAthlete` drops it (returned + re-listed) → `signOut` clears `arc-auth` → an authed follow while signed-out throws `ApiError status:401` and fires the unauthorized listener → mock `toggleFollow` still round-trips `arc-follows`. **12/12 checks PASS.** Anonymous-prompt confirmed from the built api-mode page: the FollowButton compiles the `if(requiresSignIn) return <Link href="/sign-in" title="Sign in to follow">` branch into the community + profile bundles, and the server HTML renders the SSR-safe default button (no premature prompt). Fixture user deleted (cascade removed follow/session rows; DB back to the 10-user baseline, zero `m6s4-`/`@example.com` leakage); API stopped; temp scripts removed.
+- **CI:** `npm run ci` green (exit 0) — common build, type-check (common/app/client), lint:fix (no warnings), full build across all three modes, `app` tests 13 passed / 60 skipped (DB-gated). `git status` shows only the two intended client files; no lockfile drift.
 
 ### Context
 
@@ -147,12 +156,12 @@
 - Same seam style as `dataSource.ts`: one hook, two implementations selected by `DATA_SOURCE` + session presence.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

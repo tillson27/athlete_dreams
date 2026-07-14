@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useFollows } from '@/lib/follows';
 import { Icon } from '@/components/ui/Icon';
 
@@ -33,11 +34,27 @@ export function FollowButton({
   variant?: Variant;
   className?: string;
 }) {
-  const { ready, isFollowing, toggle } = useFollows();
+  const { ready, isFollowing, toggle, requiresSignIn, error } = useFollows();
   const following = ready && isFollowing(slug);
   const label = following ? 'Following' : 'Follow';
 
-  return (
+  // Anonymous in api mode: the follow affordance invites sign-in instead of
+  // silently writing to local storage (Context §11).
+  if (requiresSignIn) {
+    return (
+      <Link
+        href="/sign-in"
+        title="Sign in to follow"
+        aria-label="Sign in to follow"
+        className={`${base[variant]} ${notFollowed[variant]} ${className ?? ''}`}
+      >
+        <Icon name="person-add" className={variant === 'chip' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+        Follow
+      </Link>
+    );
+  }
+
+  const button = (
     <button
       type="button"
       aria-pressed={following}
@@ -50,5 +67,16 @@ export function FollowButton({
       />
       {label}
     </button>
+  );
+
+  if (!error) return button;
+
+  return (
+    <span className="inline-flex flex-col items-start gap-1">
+      {button}
+      <span role="status" className="text-xs text-error">
+        {error}
+      </span>
+    </span>
   );
 }
