@@ -1,5 +1,4 @@
 import {
-  athleteDirectoryItemSchema,
   athleteDirectoryResponseSchema,
   athleteProfileDraftSchema,
   athleteDashboardSchema,
@@ -29,24 +28,12 @@ import { apiFetch } from './client';
 
 export type AthleteDirectoryFilters = Partial<AthleteDirectoryQuery>;
 
-const athleteDirectoryPayloadSchema = {
-  parse(value: unknown): AthleteDirectoryResponse {
-    const parsedResponse = athleteDirectoryResponseSchema.safeParse(value);
-    if (parsedResponse.success) return parsedResponse.data;
-
-    return {
-      items: athleteDirectoryItemSchema.array().parse(value),
-      nextCursor: null,
-    };
-  },
-};
-
 export async function listAthletes(
   filters: AthleteDirectoryFilters = {}
 ): Promise<AthleteDirectoryItem[]> {
   const response = await apiFetch<AthleteDirectoryResponse>('/v1/athletes', {
     query: filters,
-    schema: athleteDirectoryPayloadSchema,
+    schema: athleteDirectoryResponseSchema,
   });
   return response.items;
 }

@@ -3,6 +3,7 @@ import type {
   AthleteDashboard,
   AthleteDirectoryItem,
   AthleteDirectoryQuery,
+  AthleteDirectoryResponse,
   AthleteProfile as AthleteProfileDto,
   AthleteProfileDraft,
   AthleteRecentBacker,
@@ -63,7 +64,7 @@ export class AthleteService {
     private readonly userRepository: UserRepository
   ) {}
 
-  async listDirectory(query: AthleteDirectoryQuery): Promise<AthleteDirectoryItem[]> {
+  async listDirectory(query: AthleteDirectoryQuery): Promise<AthleteDirectoryResponse> {
     const athletes = await this.athleteRepository.listDirectory({
       primarySport: query.sport,
       countryCode: query.countryCode,
@@ -74,9 +75,12 @@ export class AthleteService {
       await this.campaignRepository.getSupportMetricsForAthletes(
         athletes.map((athlete) => athlete.id)
       );
-    return athletes.map((athlete) =>
-      this.buildDirectoryItem(athlete, campaignMetricsByAthleteId.get(athlete.id))
-    );
+    return {
+      items: athletes.map((athlete) =>
+        this.buildDirectoryItem(athlete, campaignMetricsByAthleteId.get(athlete.id))
+      ),
+      nextCursor: null,
+    };
   }
 
   async getProfileBySlug(

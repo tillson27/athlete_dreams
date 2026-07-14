@@ -39,8 +39,8 @@ export class AthleteController {
 
   listDirectory = async (req: Request, res: Response): Promise<void> => {
     const query = parseRequestQuery(athleteDirectoryQuerySchema, req);
-    const items = await this.athleteService.listDirectory(query);
-    ResponseHandler.success(res, 200, items);
+    const directory = await this.athleteService.listDirectory(query);
+    ResponseHandler.success(res, 200, directory);
   };
 
   getProfile = async (req: Request, res: Response): Promise<void> => {
