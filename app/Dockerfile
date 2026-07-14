@@ -89,6 +89,11 @@ RUN ln -sf ../prisma/build/index.js node_modules/.bin/prisma \
 # Pure-data modules the Prisma seed imports via ../../client/lib/*.
 COPY client/lib/mockAthletes.ts client/lib/athleteProfiles.ts ./../client/lib/
 
+# Pure helpers the seed imports via ../src/shared/* (e.g. displayDate).
+# CONTRACT: seed imports must stay within client data modules + src/shared
+# pure helpers — anything else won't exist in this runtime image.
+COPY app/src/shared ./src/shared
+
 # HOME must exist and be writable: Prisma/npx write caches there at runtime.
 RUN groupadd --system --gid 1001 arc \
   && useradd --system --uid 1001 --gid arc --home-dir /home/arc --create-home arc \
