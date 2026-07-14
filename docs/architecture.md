@@ -1,13 +1,13 @@
 # FAD Architecture Overview
 
-A snapshot of how the codebase is organized today. Updated 2026-07-13.
+A snapshot of how the codebase is organized today. Updated 2026-07-14.
 
 ## Workspaces
 
 - **`client/`** — Next.js 15 App Router (React 19, Tailwind v4). Marketing site + the start of the authenticated experience. Today's priority.
 - **`app/`** — Express 5 + Prisma backend. Uses the same Controller/Service/Repository pattern used in the parent emly repo. Covers auth, users, teams, athlete profiles, campaigns, follows, community feed, and dashboard data at the API layer.
 - **`common/`** — Shared Zod schemas (published as `fad-common`). Single source of truth for request/response shapes.
-- **`cdk/`** — Reserved for AWS CDK infrastructure. Not yet implemented.
+- **`cdk/`** — AWS CDK v2 hosting baseline for the dynamic Next app, Express API, private Postgres data tier, and CloudFront edge entry point.
 
 ## Account Model
 
@@ -71,6 +71,17 @@ HTTP → Express Router → <Feature>RouterFactory
 - Follow/unfollow, publish, and community reactions are designed to be retry-safe and backed by unique constraints or idempotent service behavior.
 - Request IDs are attached to responses and backend logs. Passwords, tokens, full request bodies, profile drafts, bulk emails, and sensitive media URLs must not be logged.
 
+## Hosting Baseline
+
+The current AWS target is a lean container baseline rather than static hosting. GitHub Pages/static export is no longer a fit because the client uses dynamic Next.js routes and the product depends on the Express API.
+
+- The Next app and Express API are packaged as separate Docker images from the monorepo, with `common/` built first so both services consume the shared contracts.
+- AWS CDK composes a public edge and load-balancing layer in front of private ECS Fargate services. CloudFront caches immutable Next static assets while dynamic app and API requests use conservative/no caching.
+- The API and client share one public application load balancer. `/v1/*` routes to the API service; the default target is the Next service. Health checks are `/v1/health` and `/health`.
+- Postgres runs as private RDS with generated credentials in Secrets Manager. Production enables an RDS Proxy to reduce connection pressure as ECS tasks scale.
+- Runtime secrets stay in Secrets Manager and task secret injection. Plain task environment is limited to non-secret runtime configuration such as ports, log level, API host, and database host/name metadata.
+- The baseline intentionally does not include Redis, queues, schedulers, CMS media buckets, or uploaded-media storage until product code needs those capabilities.
+
 ## Marketing Site Layout (Frontend)
 
 - `/` — Landing (hero, three pillars, athlete spotlights, transparency pitch, athlete CTA).
@@ -106,6 +117,5 @@ Directory, public profile, dashboard, community feed, follow, cheer, profile-man
 ## Open Questions / Next Up
 
 1. **Payments provider.** Stripe Connect is the obvious choice for "money goes to the athlete," but we need to scope the onboarding burden for first-time athletes.
-2. **Hosting.** Vercel for the client + Fly.io/Render for the API is the cheapest path to live, but CDK is wired into emlyreal for a reason — revisit before scaling.
-3. **Email.** Resend for transactional + Postmark for donation receipts is a good default.
-4. **CMS for athlete stories.** Today athletes write through forms in the app; consider a structured editor later.
+2. **Email.** Resend for transactional + Postmark for donation receipts is a good default.
+3. **CMS for athlete stories.** Today athletes write through forms in the app; consider a structured editor later.

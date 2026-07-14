@@ -57,7 +57,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
 }
 
 function buildApiUrl(path: string, query?: Record<string, QueryValue>): string {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL;
+  const baseUrl = getApiBaseUrl();
   const url = new URL(path.startsWith('/') ? path : `/${path}`, baseUrl);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== null && value !== '') {
@@ -65,6 +65,13 @@ function buildApiUrl(path: string, query?: Record<string, QueryValue>): string {
     }
   }
   return url.toString();
+}
+
+function getApiBaseUrl(): string {
+  const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.API_BASE_URL;
+  if (configuredApiBaseUrl) return configuredApiBaseUrl;
+  if (typeof window !== 'undefined') return window.location.origin;
+  return DEFAULT_API_BASE_URL;
 }
 
 function isDataEnvelope(value: unknown): value is { data: unknown } {
