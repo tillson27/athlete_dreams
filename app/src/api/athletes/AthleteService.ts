@@ -13,6 +13,7 @@ import type {
   CreateAthleteProfileRequest,
   PersonalBest as PersonalBestDto,
   PublishAthleteProfileResponse,
+  ReplacePersonalBestsRequest,
   SetAthleteGalleryRequest,
   SetAthleteHighlightsRequest,
   SetAthleteRaceResultsRequest,
@@ -73,6 +74,11 @@ export class AthleteService {
     return toProfileDto(athlete);
   }
 
+  async getMyProfile(userId: string): Promise<AthleteProfileDto> {
+    const athlete = await this.requireOwnProfile(userId);
+    return toProfileDto(athlete);
+  }
+
   async createProfileForUser(
     userId: string,
     input: CreateAthleteProfileRequest
@@ -112,6 +118,22 @@ export class AthleteService {
       athleteSlug: published.athleteSlug,
       publishedAt: (published.publishedAt ?? new Date()).toISOString(),
     };
+  }
+
+  async replaceMyPersonalBests(
+    userId: string,
+    input: ReplacePersonalBestsRequest
+  ): Promise<AthleteProfileDto> {
+    const athlete = await this.requireOwnProfile(userId);
+    const updated = await this.athleteRepository.replacePersonalBests(
+      athlete.id,
+      input.personalBests.map((personalBest) => ({
+        label: personalBest.label,
+        value: personalBest.value,
+        resultUrl: personalBest.resultUrl,
+      }))
+    );
+    return toProfileDto(updated);
   }
 
   async replaceMyHighlights(

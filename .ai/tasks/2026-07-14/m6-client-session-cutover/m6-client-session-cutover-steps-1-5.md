@@ -3,10 +3,17 @@
 ## Step 1 - Backend gaps: personal-bests set-replace + GET /v1/athletes/me
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-14
+
+### Completion Notes
+- Added `replacePersonalBestsRequestSchema` (`.strict()`, `personalBests` max 8 of `{label ≤40, value ≤40, resultUrl?: url}`) and the clarity alias `myAthleteProfileResponseSchema` (= `athleteProfileSchema`, which already carries `publishedAt`) to `common/src/zod/athlete.ts`, exported via the existing barrel.
+- Mirrored the highlights/races set-replace end-to-end: `AthleteRepository.replacePersonalBests` (transactional deleteMany + createMany, `sortOrder` = array index, patterned on `replaceRaceResults`), `AthleteService.replaceMyPersonalBests` + `getMyProfile` (reuses `requireOwnProfile` → `toProfileDto`; 404 `NotFoundError('Athlete profile')` when absent), controller handlers, and routes `PUT /v1/athletes/me/personal-bests` + `GET /v1/athletes/me` (the `/me` GET registered before `/:athleteSlug`). `findByUserId` already carried `richProfileInclude`, so no include change was needed.
+- New DB-gated suite `app/src/api/athletes/athletes.ownProfile.test.ts` (7 tests): the previously-impossible pure-HTTP loop (sign-up → POST /v1/athletes → PATCH me storyIntro+disciplineLabel → PUT me/personal-bests → publish 200 → fixture slug appears in GET /v1/athletes), PB order round-trip through GET /me, GET /me draft state, GET /me 404, PB max-8 (422), and both 401 auth gates. Fixture etiquette: unique `m6s1-<epoch>` ids, name-scoped directory lookup (no global-count assertions), afterAll user + orphan-team cleanup (verified DB back to the 7-published baseline, zero `m6s1-` leakage). Allowlist forced open in `beforeAll`, restored in `afterAll`.
+- `npm run ci` green (type-check + lint:fix + build across common/app/client; `✔ No ESLint warnings or errors`). `RUN_DB_TESTS=1 npx vitest run` from `app/` fully green: 8 files / 73 tests (66 prior + 7 new).
 
 ### Context
 
@@ -26,12 +33,12 @@
 - `getMyProfile` reuses the existing rich mapper with a `findByUserId` include (extend the include only if `findByUserId` lacks the rich relations).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

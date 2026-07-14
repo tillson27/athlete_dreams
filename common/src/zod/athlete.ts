@@ -116,6 +116,13 @@ export const athleteProfileSchema = z.object({
 
 export type AthleteProfile = z.infer<typeof athleteProfileSchema>;
 
+// GET /v1/athletes/me returns the caller's own rich profile, including the
+// unpublished draft state (`publishedAt: null`); the shape is identical to the
+// public profile, so this alias names the owner-scoped contract for clarity.
+export const myAthleteProfileResponseSchema = athleteProfileSchema;
+
+export type MyAthleteProfileResponse = z.infer<typeof myAthleteProfileResponseSchema>;
+
 export const athleteDirectoryItemSchema = z.object({
   athleteId: idSchema,
   athleteSlug: slugSchema,
@@ -186,6 +193,20 @@ export const athleteDirectoryQuerySchema = z.object({
 });
 
 export type AthleteDirectoryQuery = z.infer<typeof athleteDirectoryQuerySchema>;
+
+const setPersonalBestInputSchema = z.object({
+  label: z.string().min(1).max(40),
+  value: z.string().min(1).max(40),
+  resultUrl: z.string().url().optional(),
+});
+
+export const replacePersonalBestsRequestSchema = z
+  .object({
+    personalBests: z.array(setPersonalBestInputSchema).max(8),
+  })
+  .strict();
+
+export type ReplacePersonalBestsRequest = z.infer<typeof replacePersonalBestsRequestSchema>;
 
 const setHighlightInputSchema = z.object({
   title: z.string().min(1).max(200),

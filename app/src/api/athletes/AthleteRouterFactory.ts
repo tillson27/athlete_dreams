@@ -19,11 +19,19 @@ export class AthleteRouterFactory extends BaseRouterFactory {
     const router = Router();
     router.get('/', this.wrap(this.athleteController.listDirectory));
     router.post('/', this.auth.required, this.wrap(this.athleteController.createMyProfile));
+    // `/me` must be registered before `/:athleteSlug` so the literal owner route
+    // is matched instead of being captured as a slug param.
+    router.get('/me', this.auth.required, this.wrap(this.athleteController.getMyProfile));
     router.patch('/me', this.auth.required, this.wrap(this.athleteController.updateMyProfile));
     router.post(
       '/me/publish',
       this.auth.required,
       this.wrap(this.athleteController.publishMyProfile)
+    );
+    router.put(
+      '/me/personal-bests',
+      this.auth.required,
+      this.wrap(this.athleteController.replaceMyPersonalBests)
     );
     router.put(
       '/me/highlights',

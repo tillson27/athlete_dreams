@@ -94,6 +94,12 @@ export interface HighlightInput {
   photoRefs: string[];
 }
 
+export interface PersonalBestInput {
+  label: string;
+  value: string;
+  resultUrl?: string;
+}
+
 export interface RaceResultInput {
   resultName: string;
   displayDate: string;
@@ -207,6 +213,30 @@ export class AthleteRepository {
             resultUrl: highlight.resultUrl,
             photoRefs: highlight.photoRefs,
             createdAt: orderedAt[index],
+          })),
+        });
+      }
+      return tx.athleteProfile.findUniqueOrThrow({
+        where: { id: athleteId },
+        include: richProfileInclude,
+      });
+    });
+  }
+
+  replacePersonalBests(
+    athleteId: string,
+    personalBests: PersonalBestInput[]
+  ): Promise<AthleteProfileWithRelations> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.personalBest.deleteMany({ where: { athleteId } });
+      if (personalBests.length > 0) {
+        await tx.personalBest.createMany({
+          data: personalBests.map((personalBest, index) => ({
+            athleteId,
+            label: personalBest.label,
+            value: personalBest.value,
+            resultUrl: personalBest.resultUrl,
+            sortOrder: index,
           })),
         });
       }

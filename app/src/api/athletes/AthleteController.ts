@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   athleteDirectoryQuerySchema,
   createAthleteProfileRequestSchema,
+  replacePersonalBestsRequestSchema,
   setAthleteGalleryRequestSchema,
   setAthleteHighlightsRequestSchema,
   setAthleteRaceResultsRequestSchema,
@@ -41,6 +42,12 @@ export class AthleteController {
     ResponseHandler.success(res, 200, profile);
   };
 
+  getMyProfile = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const profile = await this.athleteService.getMyProfile(req.authenticatedUserId);
+    ResponseHandler.success(res, 200, profile);
+  };
+
   createMyProfile = async (req: Request, res: Response): Promise<void> => {
     if (!req.authenticatedUserId) throw new UnauthorizedError();
     const body = parseRequestBody(createAthleteProfileRequestSchema, req);
@@ -59,6 +66,13 @@ export class AthleteController {
     if (!req.authenticatedUserId) throw new UnauthorizedError();
     const result = await this.athleteService.publishMyProfile(req.authenticatedUserId);
     ResponseHandler.success(res, 200, result);
+  };
+
+  replaceMyPersonalBests = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const body = parseRequestBody(replacePersonalBestsRequestSchema, req);
+    const profile = await this.athleteService.replaceMyPersonalBests(req.authenticatedUserId, body);
+    ResponseHandler.success(res, 200, profile);
   };
 
   replaceMyHighlights = async (req: Request, res: Response): Promise<void> => {
