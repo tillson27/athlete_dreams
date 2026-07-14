@@ -45,10 +45,19 @@
 ## Step 2 - Client session core: real session.ts + api.ts auth layer
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-14
+**Completion Notes:**
+- `client/lib/api.ts`: added the auth layer — module-level token-provider seam (`setAuthTokenProvider`) + unauthorized-listener seam (`setOnUnauthorized`) so `session.ts` wires the token in without a static import cycle; generalized `apiGet` into `apiRequest` (method/body/`authed`), injecting `Authorization: Bearer <token>` on authed helpers and, on a 401 to an authed call, invoking `onUnauthorized` before throwing a typed `ApiError`; `ApiError` now carries `details` (surfaces the publish 422 `{ missing }` for later steps). New typed helpers (all `fad-common`): `signUp`, `signIn`, `fetchMe`, `followAthlete`/`unfollowAthlete`/`fetchMyFollows`, `createMyProfile`, `patchMyProfile`, `replaceMyPersonalBests`/`Highlights`/`Races`/`Roadmap`/`Gallery`, `publishMyProfile`, `fetchMyProfile`.
+- `client/lib/session.ts`: preserved the exact exported surface (`signUp`/`signIn`/`signOut`/`markPublished`/`useSession`/`Session`). Api mode calls the API and persists `{ accessToken, user, published }` in `createBrowserStore('arc-auth','arc-auth-change')`; `useSession` returns the same `{ name, email, published }` consumer shape (name/email derived from the stored user) and validates the token on mount via `fetchMe` (refreshes the user on success, self-clears on failure); `signOut` clears + notifies; `markPublished` reflects publish into the session hint. Mock mode branches on `DATA_SOURCE` and is today's behaviour verbatim. `signUp`/`signIn` params widened with an optional `password?` (mock ignores it; step 3 passes it) so current callers still compile.
+- **Merge note (Step 1 parallel):** `replaceMyPersonalBests` and `fetchMyProfile` target endpoints Step 1 owns (`PUT /v1/athletes/me/personal-bests`, `GET /v1/athletes/me`), absent on this base branch. Typed against Context §9 shapes (PB body `{ personalBests: [{ label, value, resultUrl? }] }`; both return `athleteProfileSchema`) using a local `ReplacePersonalBestInput` type — flagged with `TODO(m6-step-1-merge)`; swap for the fad-common export when Step 1 lands. No `common/` edits made.
+- **Verification — mock-mode DOM byte-safety (step-12 method):** built the `GITHUB_PAGES=true` (mock) export at the branch base vs with these changes; after stripping Next's per-build nondeterminism (script/preload tags, `_next` asset paths, BUILD_ID, random server-component segment-marker comments) the rendered DOM is **34/34 identical**. Normalizer calibrated by the step-12 control (identical code built twice: 34/34 raw-differ but 34/34 normalized-identical), confirming it strips only nondeterministic artifacts.
+- **Verification — live exercise (tsx against a locally-booted API, seeded `fad_dev`, allowlist open):** a shimmed-`window` script drove the real `api.ts`/`session.ts` in `DATA_SOURCE=api`: `session.signUp` (unique `m6s2-<epoch>@example.com`) → persisted `arc-auth` = `{ accessToken (non-empty), user{email,displayName}, published:false }` → token-provider seam → `fetchMe` returns the signed-up user → `api.signUp` returns the full `AuthSession` (`accessToken`, `user.userId`, `accessTokenExpiresAt`) → `signOut` clears `arc-auth` → `fetchMe` throws `ApiError` `status:401` and the registered `onUnauthorized` fires → duplicate sign-up → `ApiError` `status:409 code:conflict`. **16/16 checks PASS.** Fixture users deleted from the local DB (count restored to 10); API stopped; temp scripts removed.
+- **CI:** `npm run ci` green (exit 0) — common build, type-check (common/app/client), lint:fix (no warnings), full build, `app` tests 13 passed / 53 skipped (DB-gated).
+- Did not touch `app/src`, `common/`, `cdk/`, `.github/`, or page components (steps 3-6 own pages).
 
 ### Context
 
@@ -66,12 +75,12 @@
 - No test runner in client (do not introduce one): verify via a tsx exercise script against the locally-booted API (sign-up→me→sign-out) and report results.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
