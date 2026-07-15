@@ -193,6 +193,35 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete own-profile and personal-bests
     });
   });
 
+  describe('POST /v1/athletes slug collisions', () => {
+    it('returns 409 with a field discriminator when the slug is taken by another athlete', async () => {
+      const holder = await signUpFixtureUser('slug-holder');
+      const challenger = await signUpFixtureUser('slug-challenger');
+      const contestedSlug = `${FIXTURE_PREFIX}-contested-slug`;
+
+      const first = await request(app)
+        .post('/v1/athletes')
+        .set('authorization', `Bearer ${holder.accessToken}`)
+        .send({ athleteSlug: contestedSlug, fullName: 'Slug Holder', primarySport: SportCategory.RUNNING });
+      expect(first.status).toBe(201);
+
+      const collision = await request(app)
+        .post('/v1/athletes')
+        .set('authorization', `Bearer ${challenger.accessToken}`)
+        .send({ athleteSlug: contestedSlug, fullName: 'Slug Challenger', primarySport: SportCategory.RUNNING });
+      expect(collision.status).toBe(409);
+      expect(collision.body.error.code).toBe('conflict');
+      expect(collision.body.error.details).toEqual({ field: 'athleteSlug' });
+
+      const duplicateProfile = await request(app)
+        .post('/v1/athletes')
+        .set('authorization', `Bearer ${holder.accessToken}`)
+        .send({ athleteSlug: `${contestedSlug}-2`, fullName: 'Slug Holder', primarySport: SportCategory.RUNNING });
+      expect(duplicateProfile.status).toBe(409);
+      expect(duplicateProfile.body.error.details ?? null).not.toEqual({ field: 'athleteSlug' });
+    });
+  });
+
   describe('the full HTTP-only onboarding-to-publish loop', () => {
     it('signs up, creates, patches, sets PBs, publishes, and appears in the directory', async () => {
       const fixture = await signUpFixtureUser('publish-loop');

@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { PlatformRole } from '@prisma/client';
+import { PlatformRole, Prisma } from '@prisma/client';
 import type {
   AthleteAccomplishment as AthleteAccomplishmentDto,
   AthleteCoreValue,
@@ -85,17 +85,27 @@ export class AthleteService {
   ): Promise<AthleteProfileDto> {
     const existing = await this.athleteRepository.findByUserId(userId);
     if (existing) throw new ConflictError('Athlete profile already exists for this user');
-    const created = await this.athleteRepository.create({
-      userId,
-      athleteSlug: input.athleteSlug,
-      fullName: input.fullName,
-      primarySport: input.primarySport,
-      headline: input.headline,
-      bio: input.bio,
-      hometown: input.hometown,
-      countryCode: input.countryCode,
-      values: input.values,
-    });
+    let created;
+    try {
+      created = await this.athleteRepository.create({
+        userId,
+        athleteSlug: input.athleteSlug,
+        fullName: input.fullName,
+        primarySport: input.primarySport,
+        headline: input.headline,
+        bio: input.bio,
+        hometown: input.hometown,
+        countryCode: input.countryCode,
+        values: input.values,
+      });
+    } catch (error) {
+      // A taken slug is a client-resolvable conflict, not a server fault; the
+      // details.field discriminator lets callers retry with a new slug.
+      if (isUniqueViolationOn(error, 'athleteSlug')) {
+        throw new ConflictError('Athlete slug is already taken', { field: 'athleteSlug' });
+      }
+      throw error;
+    }
     await this.platformRoleRepository.assignRole(userId, PlatformRole.ATHLETE);
     return toProfileDto(created);
   }
@@ -383,4 +393,13 @@ function toPresentation(value: unknown): Record<string, unknown> | null {
 
 function toDateOnly(value: Date | null): string | null {
   return value ? value.toISOString().slice(0, 10) : null;
+}
+
+function isUniqueViolationOn(error: unknown, field: string): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === 'P2002' &&
+    Array.isArray(error.meta?.target) &&
+    (error.meta.target as string[]).includes(field)
+  );
 }

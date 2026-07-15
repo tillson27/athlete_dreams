@@ -207,13 +207,10 @@ export async function loadDraftProfile(): Promise<AthleteProfile | null> {
 // collision (`<slug>-2` .. `<slug>-5`) so a claimed name never blocks a new
 // athlete on a common name; if the caller already has a profile, resume it.
 //
-// The API signals the two create conflicts differently: a duplicate *user*
-// profile is a 409 (resume the existing draft — a fresh slug would not help),
-// while a duplicate *slug* surfaces as a 500 (the Prisma unique-constraint
-// violation on `athleteSlug` is not mapped to 409 server-side), so the slug
-// retry keys on 500. Every attempt is bounded and idempotent (each 500 changes
-// the slug), so a genuine server error simply exhausts the candidates and
-// surfaces a readable "URL taken" sentence rather than looping.
+// The API signals the two create conflicts as 409s with a discriminator: a
+// taken slug carries `details.field === 'athleteSlug'` (retry with the next
+// candidate), while a duplicate *user* profile has no field discriminator
+// (resume the existing draft — a fresh slug would not help).
 export async function createProfileWithSlugRetry(
   profile: OnboardingProfile
 ): Promise<AthleteProfile> {
@@ -223,28 +220,30 @@ export async function createProfileWithSlugRetry(
     ...Array.from({ length: MAX_SLUG_SUFFIX - 1 }, (_, index) => `${root}-${index + 2}`),
   ];
 
-  let sawSlugConflict = false;
   for (const athleteSlug of candidates) {
     try {
       return await createMyProfile(toCreateRequest(profile, athleteSlug));
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
+        if (isSlugConflict(error.details)) {
+          continue;
+        }
         // The user already has a profile: resume it instead of reserving a new slug.
         return fetchMyProfile();
-      }
-      if (error instanceof ApiError && error.status === 500) {
-        sawSlugConflict = true;
-        continue;
       }
       throw error;
     }
   }
   // Exhausted every candidate on a slug collision: surface a conflict so the UI
   // reads it as "URL taken" rather than a generic error.
-  throw new ApiError(
-    'Could not reserve a profile URL after several attempts.',
-    'conflict',
-    sawSlugConflict ? 409 : 500
+  throw new ApiError('Could not reserve a profile URL after several attempts.', 'conflict', 409);
+}
+
+function isSlugConflict(details: unknown): boolean {
+  return (
+    typeof details === 'object' &&
+    details !== null &&
+    (details as { field?: unknown }).field === 'athleteSlug'
   );
 }
 
