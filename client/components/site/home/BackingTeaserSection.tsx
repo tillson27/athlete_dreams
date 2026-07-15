@@ -23,6 +23,7 @@ export function BackingTeaserSection() {
       </Reveal>
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
         <div className="grid gap-8 md:grid-cols-2">
+          {/* Itemized-season preview — transparency you can audit */}
           <div className="flex flex-col items-start gap-6 rounded-card border border-outline-variant bg-white p-8 shadow-sm md:flex-row">
             <div className="flex-1">
               <Icon name="fact-check" className="mb-4 h-8 w-8 text-primary" />
@@ -77,6 +78,8 @@ export function BackingTeaserSection() {
               </p>
             </div>
           </div>
+
+          {/* Until-then card */}
           <div className="flex flex-col justify-center rounded-card bg-inverse-surface p-8 text-white shadow-sm">
             <Icon name="heart" className="mb-6 h-9 w-9 text-primary-container" />
             <h4 className="mb-4 font-display text-2xl font-bold">

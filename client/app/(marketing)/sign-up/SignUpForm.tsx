@@ -1,37 +1,41 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signUp } from '@/lib/session';
-import { isApiError } from '@/lib/api/client';
+import { DATA_SOURCE } from '@/lib/dataSource';
+import { toAuthErrorView, type AuthErrorView } from '@/lib/authErrors';
 import { authInputClass } from '@/components/ui/formStyles';
 
 export function SignUpForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AuthErrorView | null>(null);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const displayName = String(form.get('displayName') ?? '').trim();
+    const name = String(form.get('displayName') ?? '').trim();
     const email = String(form.get('email') ?? '').trim();
     const password = String(form.get('password') ?? '');
-    setSubmitting(true);
     setError(null);
+    setSubmitting(true);
+
+    if (DATA_SOURCE !== 'api') {
+      signUp({ name, email });
+      setTimeout(() => router.push('/register/personal-basics'), 600);
+      return;
+    }
+
     try {
-      await signUp({ displayName, email, password });
+      await signUp({ name, email, password });
       router.push('/register/personal-basics');
-    } catch (submitError) {
-      setError(
-        isApiError(submitError)
-          ? submitError.message
-          : 'We could not create your account. Try again.',
-      );
-    } finally {
+    } catch (cause) {
+      setError(toAuthErrorView('sign-up', cause));
       setSubmitting(false);
     }
   };
@@ -63,11 +67,6 @@ export function SignUpForm() {
         placeholder="At least 8 characters"
         minLength={8}
       />
-      {error ? (
-        <p className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error">
-          {error}
-        </p>
-      ) : null}
       <Button tone="primary" size="lg" className="w-full" type="submit" disabled={submitting}>
         {submitting ? (
           <span className="inline-flex items-center gap-2">
@@ -78,6 +77,23 @@ export function SignUpForm() {
           'Start my profile'
         )}
       </Button>
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          {error.message}
+          {error.linkToSignIn ? (
+            <>
+              {' '}
+              <Link href="/sign-in" className="underline">
+                sign in instead
+              </Link>
+              .
+            </>
+          ) : null}
+        </p>
+      ) : null}
     </form>
   );
 }

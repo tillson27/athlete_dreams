@@ -17,12 +17,12 @@ export function ProfilePreview({
   sticky?: boolean;
   showMeta?: boolean;
 }) {
-  const { profile } = useOnboarding();
+  const { profile, mode, draftSlug } = useOnboarding();
   const { session } = useSession();
   const { discipline, location, bio, mission, values, personalBests, careerHighlights, previousRaces } =
     profile;
   const name = profile.name || session?.name || '';
-  const slug = slugifyName(name) || 'your-name';
+  const slug = (mode === 'api' ? draftSlug : null) ?? (slugifyName(name) || 'your-name');
   const filledBests = personalBests.filter((best) => best.distance && best.time).slice(0, 3);
   const filledHighlights = careerHighlights.filter((item) => item.title.trim()).slice(0, 4);
   const filledRaces = previousRaces.filter((item) => item.name.trim()).slice(0, 4);
@@ -36,6 +36,7 @@ export function ProfilePreview({
         </p>
       ) : null}
       <div className="overflow-hidden rounded-[1.25rem] border border-outline-variant bg-surface-container-lowest shadow-2xl">
+        {/* browser chrome */}
         <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container px-4 py-3">
           <span className="h-3 w-3 rounded-full bg-error/70" />
           <span className="h-3 w-3 rounded-full bg-primary-container/70" />
@@ -44,6 +45,7 @@ export function ProfilePreview({
             {profileUrl(slug)}
           </span>
         </div>
+        {/* hero */}
         <div className="relative h-56 bg-surface-container">
           <Image src={previewPhoto} alt="" fill sizes="(max-width: 768px) 100vw, 500px" className="object-cover" />
           <div
@@ -66,6 +68,7 @@ export function ProfilePreview({
             </p>
           </div>
         </div>
+        {/* body — grows as you complete steps */}
         <div className="space-y-4 p-5">
           {mission ? (
             <p className="border-l-4 border-primary pl-3 text-sm italic text-on-surface">

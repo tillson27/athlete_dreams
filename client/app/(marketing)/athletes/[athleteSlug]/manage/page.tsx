@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+import { findMockAthlete, mockAthletes } from '@/lib/mockAthletes';
 import { unsplashPhoto } from '@/lib/unsplash';
 import { nameFromSlug } from '@/lib/slugify';
 import { ManageProfile } from './ManageProfile';
 
 const FALLBACK_COVER = unsplashPhoto('1594882645126-14020914d58d', 1400);
 
-export const dynamic = 'force-dynamic';
+export function generateStaticParams() {
+  return mockAthletes.map((athlete) => ({ athleteSlug: athlete.athleteSlug }));
+}
 
 export async function generateMetadata({
   params,
@@ -13,7 +16,8 @@ export async function generateMetadata({
   params: Promise<{ athleteSlug: string }>;
 }): Promise<Metadata> {
   const { athleteSlug } = await params;
-  return { title: `Manage — ${nameFromSlug(athleteSlug)}` };
+  const athlete = findMockAthlete(athleteSlug);
+  return { title: `Manage — ${athlete?.fullName ?? nameFromSlug(athleteSlug)}` };
 }
 
 export default async function ManageProfilePage({
@@ -22,12 +26,13 @@ export default async function ManageProfilePage({
   params: Promise<{ athleteSlug: string }>;
 }) {
   const { athleteSlug } = await params;
+  const athlete = findMockAthlete(athleteSlug);
 
   return (
     <ManageProfile
       athleteSlug={athleteSlug}
-      fallbackAthleteName={nameFromSlug(athleteSlug)}
-      fallbackCoverPhoto={FALLBACK_COVER}
+      athleteName={athlete?.fullName ?? nameFromSlug(athleteSlug)}
+      initialCoverPhoto={athlete?.heroMediaUrl ?? FALLBACK_COVER}
     />
   );
 }

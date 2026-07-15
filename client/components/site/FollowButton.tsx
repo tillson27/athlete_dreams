@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { followAthlete, unfollowAthlete } from '@/lib/api/athletes';
-import { useSession } from '@/lib/session';
+import Link from 'next/link';
+import { useFollows } from '@/lib/follows';
 import { Icon } from '@/components/ui/Icon';
 
 type Variant = 'hero' | 'block' | 'chip';
@@ -30,46 +29,36 @@ export function FollowButton({
   slug,
   variant = 'chip',
   className,
-  initialIsFollowing = null,
 }: {
   slug: string;
   variant?: Variant;
   className?: string;
-  initialIsFollowing?: boolean | null;
 }) {
-  const { session, ready } = useSession();
-  const [following, setFollowing] = useState(Boolean(initialIsFollowing));
-  const [pending, setPending] = useState(false);
+  const { ready, isFollowing, toggle, requiresSignIn, error } = useFollows();
+  const following = ready && isFollowing(slug);
   const label = following ? 'Following' : 'Follow';
 
-  const toggleFollow = async () => {
-    if (!ready || pending) return;
-    if (!session?.accessToken) {
-      window.location.href = '/sign-in';
-      return;
-    }
+  // Anonymous in api mode: the follow affordance invites sign-in instead of
+  // silently writing to local storage (Context §11).
+  if (requiresSignIn) {
+    return (
+      <Link
+        href="/sign-in"
+        title="Sign in to follow"
+        aria-label="Sign in to follow"
+        className={`${base[variant]} ${notFollowed[variant]} ${className ?? ''}`}
+      >
+        <Icon name="person-add" className={variant === 'chip' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+        Follow
+      </Link>
+    );
+  }
 
-    const nextFollowing = !following;
-    setFollowing(nextFollowing);
-    setPending(true);
-    try {
-      const result = nextFollowing
-        ? await followAthlete(slug, session.accessToken)
-        : await unfollowAthlete(slug, session.accessToken);
-      setFollowing(result.isFollowing);
-    } catch {
-      setFollowing(!nextFollowing);
-    } finally {
-      setPending(false);
-    }
-  };
-
-  return (
+  const button = (
     <button
       type="button"
       aria-pressed={following}
-      disabled={!ready || pending}
-      onClick={toggleFollow}
+      onClick={() => toggle(slug)}
       className={`${base[variant]} ${following ? followed[variant] : notFollowed[variant]} ${className ?? ''}`}
     >
       <Icon
@@ -78,5 +67,16 @@ export function FollowButton({
       />
       {label}
     </button>
+  );
+
+  if (!error) return button;
+
+  return (
+    <span className="inline-flex flex-col items-start gap-1">
+      {button}
+      <span role="status" className="text-xs text-error">
+        {error}
+      </span>
+    </span>
   );
 }

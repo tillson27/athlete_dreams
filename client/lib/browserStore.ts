@@ -1,13 +1,14 @@
+// Tiny localStorage-backed store shared by the mock persistence layers
+// (session, follows, athlete edits, onboarding). Server-safe: every method
+// no-ops (or returns null) when window/storage is unavailable, and change
+// notification uses a same-tab custom event plus the cross-tab storage event.
 export type BrowserStore<T> = {
   read: () => T | null;
   write: (value: T | null) => void;
   subscribe: (listener: () => void) => () => void;
 };
 
-export function createBrowserStore<T>(
-  storageKey: string,
-  changeEventName: string,
-): BrowserStore<T> {
+export function createBrowserStore<T>(storageKey: string, changeEventName: string): BrowserStore<T> {
   return {
     read: () => {
       try {
@@ -26,7 +27,7 @@ export function createBrowserStore<T>(
         }
         window.dispatchEvent(new Event(changeEventName));
       } catch {
-        return;
+        /* storage unavailable — value simply won't persist */
       }
     },
     subscribe: (listener) => {

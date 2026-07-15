@@ -5,12 +5,16 @@
 // Multi-member teams (e.g., an athlete + their manager/coach) join via TeamMembership rows.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // citext is required by User.email (@db.Citext); declaring it here makes every
+  // migration environment (local, RDS) self-provision the extension.
+  extensions = [citext]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -29,14 +33,13 @@ model User {
   deletedAt       DateTime?
 
   athleteProfile     AthleteProfile?
-  athleteFollows     AthleteFollow[]
   teamMemberships    TeamMembership[]
   teamInvitations    TeamInvitation[] @relation("InvitedBy")
   sessions           AuthSession[]
   donations          Donation[]
+  follows            Follow[]
   brandMemberships   BrandMembership[]
   platformRoleAssignments PlatformRoleAssignment[]
-  communityReactions CommunityReaction[]
 
   @@map("users")
 }
@@ -54,6 +57,7 @@ model AuthSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId, revokedAt, expiresAt])
   @@map("auth_sessions")
 }
 
@@ -152,6 +156,7 @@ enum SportCategory {
   RUNNING
   TRIATHLON
   CYCLING
+  ROAD_CYCLING
   SWIMMING
   CLIMBING
   SKIING
@@ -164,151 +169,108 @@ enum SportCategory {
   OTHER
 }
 
-enum AthleteProfileStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
 enum AthleteLevel {
   ELITE
   COMPETITIVE
   EVERYDAY
 }
 
-enum VerificationStatus {
-  UNVERIFIED
-  PENDING
-  VERIFIED
-  REJECTED
-}
-
-enum AthleteResultKind {
-  HIGHLIGHT
-  RACE
-  MILESTONE
-}
-
-enum AthleteStoryChapterIcon {
-  MEDAL
-  HEART
-  HISTORY
-  TROPHY
-  FLAG
-  TIMER
-  BOOK
-  GROUPS
-}
-
-enum AthleteStoryChapterTone {
-  PRIMARY
-  SECONDARY
-  TERTIARY
-}
-
-enum AthleteMediaRole {
-  HERO
-  PROFILE
-  GALLERY
-  RESULT
-  STORY_CHAPTER
-  TRAINING
-  FEATURED_VIDEO
-}
-
-enum CommunityFeedTargetType {
-  ATHLETE_RESULT
-  ATHLETE_EVENT
-  ATHLETE_TRAINING_SNAPSHOT
-  ATHLETE_PROFILE_MILESTONE
-}
-
-enum ReactionKind {
-  CHEER
-}
-
 model AthleteProfile {
   id                    String        @id @default(uuid()) @db.Uuid
   userId                String        @unique @db.Uuid
-  athleteSlug           String?       @unique
-  fullName              String?
-  profileStatus         AthleteProfileStatus @default(DRAFT)
-  publishedAt           DateTime?
-  profileVersion        Int           @default(0)
+  athleteSlug           String        @unique
+  handle                String?       @unique
+  fullName              String
   headline              String?
-  tagline               String?
   bio                   String?
-  storyIntro            String?
-  storyBody             String[]      @default([])
-  primarySport          SportCategory?
-  secondarySports       SportCategory[] @default([])
-  athleteLevel          AthleteLevel?
+  primarySport          SportCategory
+  secondarySports       SportCategory[]
+  runnerLevel           AthleteLevel  @default(EVERYDAY)
   disciplineLabel       String?
   hometown              String?
   countryCode           String?       @db.VarChar(2)
-  values                String[]      @default([])
-  arcSubtitle           String?
-  roadmapTitle          String?
-  supportEnabled        Boolean       @default(false)
-  backCtaBlurb          String?
+  values                String[]
+  storyIntro            String?
+  storyBody             String[]
+  coreValues            Json?
+  presentation          Json?
   socialInstagramHandle String?
   socialTwitterHandle   String?
   socialStravaUrl       String?
   heroMediaUrl          String?
-  profileImageUrl       String?
+  publishedAt           DateTime?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   deletedAt             DateTime?
 
   user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  coreValues      AthleteCoreValue[]
-  storyChapters   AthleteStoryChapter[]
-  personalBests   AthletePersonalBest[]
-  results         AthleteResult[]
-  trainingSnapshots AthleteTrainingSnapshot[]
-  powerProfile    AthletePowerProfile?
-  profileMilestones AthleteProfileMilestone[]
   accomplishments AthleteAccomplishment[]
+  personalBests   PersonalBest[]
+  raceResults     AthleteRaceResult[]
   media           AthleteMedia[]
   events          AthleteEvent[]
-  follows         AthleteFollow[]
   campaigns       Campaign[]
+  followers       Follow[]
   sponsorshipInquiries SponsorshipInquiry[]
+  ambassadorApplications AmbassadorApplication[]
 
-  @@index([profileStatus, primarySport])
-  @@index([profileStatus, countryCode])
-  @@index([profileStatus, createdAt])
-  @@index([publishedAt])
+  @@index([publishedAt, createdAt, id])
+  @@index([primarySport, publishedAt, createdAt, id])
+  @@index([runnerLevel, publishedAt, createdAt, id])
+  @@index([countryCode, publishedAt, createdAt, id])
   @@map("athlete_profiles")
 }
 
-model AthleteCoreValue {
-  id        String   @id @default(uuid()) @db.Uuid
-  athleteId String   @db.Uuid
-  title     String
-  body      String
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-
-  @@index([athleteId, sortOrder])
-  @@map("athlete_core_values")
-}
-
 model AthleteAccomplishment {
-  id          String   @id @default(uuid()) @db.Uuid
-  athleteId   String   @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  athleteId   String    @db.Uuid
   title       String
   description String?
+  detail      String?
+  resultUrl   String?
+  photoRefs   String[]
   occurredOn  DateTime? @db.Date
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   @@index([athleteId])
   @@map("athlete_accomplishments")
+}
+
+model AthleteRaceResult {
+  id            String    @id @default(uuid()) @db.Uuid
+  athleteId     String    @db.Uuid
+  resultName    String
+  displayDate   String
+  occurredOn    DateTime? @db.Date
+  resultSummary String
+  resultUrl     String?
+  links         Json?
+  photoRefs     String[]
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId])
+  @@map("athlete_race_results")
+}
+
+model PersonalBest {
+  id        String @id @default(uuid()) @db.Uuid
+  athleteId String @db.Uuid
+  label     String
+  value     String
+  resultUrl String?
+  sortOrder Int    @default(0)
+
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([athleteId, label])
+  @@index([athleteId])
+  @@map("personal_bests")
 }
 
 enum MediaKind {
@@ -317,29 +279,16 @@ enum MediaKind {
 }
 
 model AthleteMedia {
-  id                    String            @id @default(uuid()) @db.Uuid
-  athleteId             String            @db.Uuid
-  mediaUrl              String
-  mediaKind             MediaKind
-  mediaRole             AthleteMediaRole  @default(GALLERY)
-  thumbnailUrl          String?
-  altText               String?
-  caption               String?
-  durationLabel         String?
-  relatedAthleteResultId String?           @db.Uuid
-  relatedStoryChapterId String?           @db.Uuid
-  sortOrder             Int               @default(0)
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
-  deletedAt             DateTime?
+  id        String    @id @default(uuid()) @db.Uuid
+  athleteId String    @db.Uuid
+  mediaUrl  String
+  mediaKind MediaKind
+  caption   String?
+  createdAt DateTime  @default(now())
 
-  athlete     AthleteProfile       @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  result      AthleteResult?       @relation(fields: [relatedAthleteResultId], references: [id], onDelete: SetNull)
-  storyChapter AthleteStoryChapter? @relation(fields: [relatedStoryChapterId], references: [id], onDelete: SetNull)
+  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
-  @@index([athleteId, mediaRole, sortOrder])
-  @@index([relatedAthleteResultId])
-  @@index([relatedStoryChapterId])
+  @@index([athleteId])
   @@map("athlete_media")
 }
 
@@ -348,211 +297,36 @@ model AthleteEvent {
   athleteId        String    @db.Uuid
   eventName        String
   eventLocation    String?
-  eventStartDate   DateTime? @db.Date
+  eventStartDate   DateTime  @db.Date
   eventEndDate     DateTime? @db.Date
-  eventDateLabel   String?
+  displayDate      String?
   eventDescription String?
-  sortOrder        Int       @default(0)
   createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  deletedAt        DateTime?
 
-  athlete    AthleteProfile           @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  sourceLinks AthleteEventSourceLink[]
-  campaigns  Campaign[]
+  athlete   AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  campaigns Campaign[]
 
   @@index([athleteId, eventStartDate])
-  @@index([athleteId, sortOrder])
   @@map("athlete_events")
 }
 
-model AthleteEventSourceLink {
-  id             String @id @default(uuid()) @db.Uuid
-  athleteEventId String @db.Uuid
-  label          String
-  href           String
-  sortOrder      Int    @default(0)
+// ─────────────────────────────────────────────────────────────────────────────
+// Social graph
+// ─────────────────────────────────────────────────────────────────────────────
 
-  event AthleteEvent @relation(fields: [athleteEventId], references: [id], onDelete: Cascade)
+model Follow {
+  id             String   @id @default(uuid()) @db.Uuid
+  followerUserId String   @db.Uuid
+  athleteId      String   @db.Uuid
+  createdAt      DateTime @default(now())
 
-  @@index([athleteEventId, sortOrder])
-  @@map("athlete_event_source_links")
-}
+  follower User           @relation(fields: [followerUserId], references: [id], onDelete: Cascade)
+  athlete  AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
-model AthletePersonalBest {
-  id                 String             @id @default(uuid()) @db.Uuid
-  athleteId          String             @db.Uuid
-  label              String
-  value              String
-  sourceUrl          String?
-  verificationStatus VerificationStatus @default(UNVERIFIED)
-  verifiedAt         DateTime?
-  sortOrder          Int                @default(0)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-
-  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-
-  @@index([athleteId, sortOrder])
-  @@index([athleteId, verificationStatus])
-  @@map("athlete_personal_bests")
-}
-
-model AthleteResult {
-  id                 String             @id @default(uuid()) @db.Uuid
-  athleteId          String             @db.Uuid
-  resultKind         AthleteResultKind
-  title              String
-  resultText         String
-  eventDate          DateTime?          @db.Date
-  eventDateLabel     String?
-  verificationStatus VerificationStatus @default(UNVERIFIED)
-  verifiedAt         DateTime?
-  sortOrder          Int                @default(0)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  deletedAt          DateTime?
-
-  athlete     AthleteProfile            @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  sourceLinks AthleteResultSourceLink[]
-  media       AthleteMedia[]
-
-  @@index([athleteId, resultKind, sortOrder])
-  @@index([athleteId, eventDate])
-  @@index([athleteId, verificationStatus])
-  @@map("athlete_results")
-}
-
-model AthleteResultSourceLink {
-  id              String @id @default(uuid()) @db.Uuid
-  athleteResultId String @db.Uuid
-  label           String
-  href            String
-  sortOrder       Int    @default(0)
-
-  result AthleteResult @relation(fields: [athleteResultId], references: [id], onDelete: Cascade)
-
-  @@index([athleteResultId, sortOrder])
-  @@map("athlete_result_source_links")
-}
-
-model AthleteStoryChapter {
-  id          String                  @id @default(uuid()) @db.Uuid
-  athleteId   String                  @db.Uuid
-  eraLabel    String
-  title       String
-  body        String
-  chapterIcon AthleteStoryChapterIcon
-  chapterTone AthleteStoryChapterTone
-  imageUrl    String?
-  isCurrent   Boolean                 @default(false)
-  sortOrder   Int                     @default(0)
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
-  deletedAt   DateTime?
-
-  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  media   AthleteMedia[]
-
-  @@index([athleteId, sortOrder])
-  @@map("athlete_story_chapters")
-}
-
-model AthleteTrainingSnapshot {
-  id                       String   @id @default(uuid()) @db.Uuid
-  athleteId                String   @db.Uuid
-  weeklyDistanceLabel      String?
-  weeklyTimeLabel          String?
-  weeklyElevationGainLabel String?
-  weeklyLoadLabel          String?
-  latestSessionTitle       String?
-  latestSessionMeta        String?
-  capturedAt               DateTime @default(now())
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-  deletedAt                DateTime?
-
-  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-
-  @@index([athleteId, capturedAt])
-  @@map("athlete_training_snapshots")
-}
-
-model AthletePowerProfile {
-  id          String   @id @default(uuid()) @db.Uuid
-  athleteId   String   @unique @db.Uuid
-  ftpWatts    String?
-  wattsPerKg  String?
-  riderWeight String?
-  riderType   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  athlete AthleteProfile     @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  peaks   AthletePowerPeak[]
-
-  @@map("athlete_power_profiles")
-}
-
-model AthletePowerPeak {
-  id                    String @id @default(uuid()) @db.Uuid
-  athletePowerProfileId String @db.Uuid
-  label                 String
-  watts                 String
-  sortOrder             Int    @default(0)
-
-  powerProfile AthletePowerProfile @relation(fields: [athletePowerProfileId], references: [id], onDelete: Cascade)
-
-  @@index([athletePowerProfileId, sortOrder])
-  @@map("athlete_power_peaks")
-}
-
-model AthleteProfileMilestone {
-  id         String    @id @default(uuid()) @db.Uuid
-  athleteId  String    @db.Uuid
-  headline   String
-  detail     String?
-  photoUrl   String?
-  occurredAt DateTime  @default(now())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
-
-  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-
-  @@index([athleteId, occurredAt])
-  @@map("athlete_profile_milestones")
-}
-
-model AthleteFollow {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @db.Uuid
-  athleteId  String   @db.Uuid
-  followedAt DateTime @default(now())
-
-  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  athlete AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, athleteId])
-  @@index([athleteId, followedAt])
-  @@index([userId, followedAt])
-  @@map("athlete_follows")
-}
-
-model CommunityReaction {
-  id           String                  @id @default(uuid()) @db.Uuid
-  userId       String                  @db.Uuid
-  targetType   CommunityFeedTargetType
-  targetId     String                  @db.Uuid
-  reactionKind ReactionKind            @default(CHEER)
-  createdAt    DateTime                @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, targetType, targetId])
-  @@index([targetType, targetId])
-  @@index([userId, createdAt])
-  @@map("community_reactions")
+  @@unique([followerUserId, athleteId])
+  @@index([athleteId])
+  @@index([followerUserId, createdAt])
+  @@map("follows")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -599,9 +373,11 @@ model Campaign {
   donations    Donation[]
   updates      CampaignUpdate[]
 
-  @@index([athleteId, campaignStatus])
+  @@index([athleteId])
   @@index([campaignStatus])
-  @@index([campaignStatus, createdAt])
+  @@index([campaignStatus, createdAt, id])
+  @@index([athleteId, campaignStatus, createdAt, id])
+  @@index([athleteEventId])
   @@map("campaigns")
 }
 
@@ -611,11 +387,10 @@ model CampaignCostLine {
   label       String
   amountCents Int
   notes       String?
-  sortOrder   Int    @default(0)
 
   campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
-  @@index([campaignId, sortOrder])
+  @@index([campaignId])
   @@map("campaign_cost_lines")
 }
 
@@ -701,6 +476,7 @@ model BrandMembership {
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([brandId, userId])
+  @@index([userId])
   @@map("brand_memberships")
 }
 
@@ -766,7 +542,9 @@ model AmbassadorApplication {
   updatedAt                   DateTime                     @updatedAt
 
   program AmbassadorProgram @relation(fields: [ambassadorProgramId], references: [id], onDelete: Cascade)
+  athlete AthleteProfile @relation(fields: [applicantAthleteId], references: [id], onDelete: Cascade)
 
   @@index([ambassadorProgramId, ambassadorApplicationStatus])
+  @@index([applicantAthleteId, ambassadorApplicationStatus], map: "ambassador_applications_applicant_status_idx")
   @@map("ambassador_applications")
 }

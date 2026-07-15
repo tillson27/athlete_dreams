@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - nate
+      - main
+  workflow_dispatch:
+  # Reusable: the deploy workflows invoke this via `jobs.<id>.uses` so the
+  # pre-deploy gate runs the identical build + DB-backed test jobs (no copy-paste).
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            common/package-lock.json
+            app/package-lock.json
+            client/package-lock.json
+            cdk/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build common
+        run: npm run build --prefix common
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Synth CDK test stacks
+        run: npm run synth:test --prefix cdk
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fad
+          POSTGRES_PASSWORD: fad
+          POSTGRES_DB: fad_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fad -d fad_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://fad:fad@localhost:5432/fad_test
+      RUN_DB_TESTS: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            common/package-lock.json
+            app/package-lock.json
+            client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build common
+        run: npm run build --prefix common
+
+      - name: Generate Prisma client
+        run: npm run build-client --prefix app
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+        working-directory: app
+
+      - name: Seed database
+        run: npx prisma db seed
+        working-directory: app
+
+      - name: Test
+        run: npm run test

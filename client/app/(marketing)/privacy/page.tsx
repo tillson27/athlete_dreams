@@ -14,7 +14,7 @@ const sections: { title: string; paragraphs: string[]; bullets?: string[] }[] = 
     bullets: [
       'Account details — your name and email address when you sign up.',
       'Profile content — the story, results, races, values, and photos you choose to publish. This content is public by design; that’s what a profile is for.',
-      'On-device data — your browser may store your sign-in session and a temporary backup of in-progress profile edits so work is not lost.',
+      'On-device data — while we build out our backend, in-progress profile edits and preferences (like who you follow) are stored in your own browser’s local storage, not on our servers.',
       'Basic technical data — logs the hosting infrastructure records to keep the site running and secure.',
     ],
   },
@@ -37,13 +37,13 @@ const sections: { title: string; paragraphs: string[]; bullets?: string[] }[] = 
   {
     title: 'Cookies and local storage',
     paragraphs: [
-      'ARC uses your browser’s local storage to keep you signed in and to keep a temporary, non-authoritative backup of in-progress profile edits. We don’t use advertising trackers.',
+      'ARC uses your browser’s local storage to keep you signed in and to save in-progress work, like a profile you’re building. We don’t use advertising trackers.',
     ],
   },
   {
     title: 'Your choices',
     paragraphs: [
-      'Your profile content is yours. You can edit it anytime, and you can ask us to delete your account and the data we hold by emailing us. Clearing browser storage signs you out and removes local draft backups; it does not delete account or profile data we hold.',
+      'Your profile content is yours. You can edit it anytime, and you can ask us to delete your account and the data we hold by emailing us. Since some data lives in your own browser, clearing your browser storage removes it too.',
     ],
   },
   {
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
       <h1 className="mt-2 font-display text-4xl font-extrabold text-on-surface md:text-5xl">
         Privacy Policy
       </h1>
-      <p className="mt-3 text-sm text-on-surface-variant">Last updated: July 13, 2026</p>
+      <p className="mt-3 text-sm text-on-surface-variant">Last updated: July 9, 2026</p>
       <p className="mt-6 text-lg leading-relaxed text-on-surface-variant">
         Transparency is the heart of ARC, and that includes how we handle your information. Here’s
         the plain-English version of what we collect and why.

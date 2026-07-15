@@ -53,6 +53,7 @@ export default function OnboardingGuidePage() {
       <RegHeader backHref="/" showHelp />
 
       <main className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 pb-28 pt-12 md:px-16">
+        {/* High-impact header */}
         <section className="mb-12">
           <h1 className="mb-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-on-surface md:text-5xl">
             How to Build <span className="text-primary-container">Your Epic</span>
@@ -62,6 +63,8 @@ export default function OnboardingGuidePage() {
             transparent crowdfunding campaign.
           </p>
         </section>
+
+        {/* Vertical stepper */}
         <section className="relative">
           <div
             aria-hidden="true"
@@ -128,6 +131,8 @@ export default function OnboardingGuidePage() {
             ))}
           </div>
         </section>
+
+        {/* CTA */}
         <section className="mt-16 text-center">
           <Link
             href="/register/personal-basics"
@@ -138,6 +143,8 @@ export default function OnboardingGuidePage() {
           <p className="mt-4 text-xs text-on-surface-variant">Estimated time: 15 minutes</p>
         </section>
       </main>
+
+      {/* Onboarding bottom nav */}
       <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around bg-surface px-4 py-2 shadow-[0_-4px_20px_0_rgba(0,0,0,0.04)]">
         {bottomNav.map((item) => (
           <span

@@ -1,111 +1,68 @@
 import { injectable } from 'tsyringe';
 import {
-  CampaignStatus,
-  DonationStatus,
-  Prisma,
+  type AthleteProfile,
   type Campaign,
   type CampaignCostLine,
+  CampaignStatus,
   type CampaignType,
+  type Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../services/infrastructure/PrismaService';
 
-const supportSummaryCampaignStatuses = [CampaignStatus.ACTIVE, CampaignStatus.FUNDED];
-const campaignWithCostLinesInclude = {
-  costLines: {
-    orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
-  },
-} satisfies Prisma.CampaignInclude;
-const recentCampaignBackerSelect = {
-  supporterDisplayName: true,
-  donationAmountCents: true,
-  isAnonymous: true,
-  createdAt: true,
-} satisfies Prisma.DonationSelect;
-
-export type CampaignWithCostLines = Campaign & { costLines: CampaignCostLine[] };
-export type CampaignSupportMetrics = {
-  activeCampaignCount: number;
-  totalRaisedCents: number;
+export type CampaignWithAthlete = Campaign & {
+  costLines: CampaignCostLine[];
+  athlete: AthleteProfile;
 };
-export type RecentCampaignBacker = Prisma.DonationGetPayload<{
-  select: typeof recentCampaignBackerSelect;
-}>;
+
+export type ActiveFeedCursor = { createdAt: Date; campaignId: string };
 
 @injectable()
 export class CampaignRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  listActiveForAthlete(athleteId: string): Promise<CampaignWithCostLines[]> {
+  async listActiveFeed(params: {
+    limit: number;
+    cursor?: ActiveFeedCursor;
+  }): Promise<{ campaigns: CampaignWithAthlete[]; hasMore: boolean }> {
+    const where: Prisma.CampaignWhereInput = {
+      campaignStatus: CampaignStatus.ACTIVE,
+      deletedAt: null,
+      ...(params.cursor
+        ? {
+            OR: [
+              { createdAt: { lt: params.cursor.createdAt } },
+              { createdAt: params.cursor.createdAt, id: { lt: params.cursor.campaignId } },
+            ],
+          }
+        : {}),
+    };
+
+    const rows = await this.prisma.campaign.findMany({
+      where,
+      include: { costLines: true, athlete: true },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: params.limit + 1,
+    });
+
+    const hasMore = rows.length > params.limit;
+    return { campaigns: hasMore ? rows.slice(0, params.limit) : rows, hasMore };
+  }
+
+  listActiveForAthlete(athleteId: string, limit: number): Promise<CampaignWithAthlete[]> {
     return this.prisma.campaign.findMany({
-      where: {
-        athleteId,
-        deletedAt: null,
-        campaignStatus: { in: supportSummaryCampaignStatuses },
-      },
-      include: campaignWithCostLinesInclude,
-      orderBy: { createdAt: 'desc' },
+      where: { athleteId, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE },
+      include: { costLines: true, athlete: true },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit,
     });
   }
 
-  async getSupportMetricsForAthletes(
-    athleteIds: string[]
-  ): Promise<Map<string, CampaignSupportMetrics>> {
-    if (athleteIds.length === 0) return new Map();
-
-    const campaignMetricRows = await this.prisma.campaign.groupBy({
-      by: ['athleteId'],
-      where: {
-        athleteId: { in: athleteIds },
-        deletedAt: null,
-        campaignStatus: { in: supportSummaryCampaignStatuses },
-      },
-      _count: { _all: true },
-      _sum: {
-        raisedAmountCents: true,
-      },
-    });
-
-    return new Map(
-      campaignMetricRows.map((row) => [
-        row.athleteId,
-        {
-          activeCampaignCount: row._count._all,
-          totalRaisedCents: row._sum.raisedAmountCents ?? 0,
-        },
-      ])
-    );
-  }
-
-  listRecentBackersForAthlete(
-    athleteId: string,
-    limit: number
-  ): Promise<RecentCampaignBacker[]> {
-    const recentBackerLimit = Math.min(Math.max(limit, 0), 12);
-    if (recentBackerLimit === 0) return Promise.resolve([]);
-
-    return this.prisma.donation.findMany({
-      where: {
-        donationStatus: DonationStatus.SUCCEEDED,
-        campaign: {
-          athleteId,
-          deletedAt: null,
-          campaignStatus: { in: supportSummaryCampaignStatuses },
-        },
-      },
-      select: recentCampaignBackerSelect,
-      orderBy: { createdAt: 'desc' },
-      take: recentBackerLimit,
-    });
-  }
-
-  findBySlug(campaignSlug: string): Promise<CampaignWithCostLines | null> {
+  findActiveBySlug(
+    campaignSlug: string
+  ): Promise<(Campaign & { costLines: CampaignCostLine[] }) | null> {
     return this.prisma.campaign.findFirst({
-      where: {
-        campaignSlug,
-        deletedAt: null,
-        campaignStatus: { in: supportSummaryCampaignStatuses },
-      },
-      include: campaignWithCostLinesInclude,
+      where: { campaignSlug, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE },
+      include: { costLines: true },
     });
   }
 
@@ -119,7 +76,7 @@ export class CampaignRepository {
     targetAmountCents: number;
     costLines?: { label: string; amountCents: number; notes?: string }[];
     closesAt?: Date;
-  }): Promise<CampaignWithCostLines> {
+  }): Promise<Campaign & { costLines: CampaignCostLine[] }> {
     return this.prisma.campaign.create({
       data: {
         athleteId: input.athleteId,
@@ -132,16 +89,15 @@ export class CampaignRepository {
         closesAt: input.closesAt,
         costLines: input.costLines
           ? {
-              create: input.costLines.map((line, sortOrder) => ({
+              create: input.costLines.map((line) => ({
                 label: line.label,
                 amountCents: line.amountCents,
                 notes: line.notes,
-                sortOrder,
               })),
             }
           : undefined,
       },
-      include: campaignWithCostLinesInclude,
+      include: { costLines: true },
     });
   }
 }

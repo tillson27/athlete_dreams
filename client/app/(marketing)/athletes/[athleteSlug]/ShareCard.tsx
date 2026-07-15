@@ -208,6 +208,8 @@ export function ShareCard({
                 <CloseGlyph />
               </button>
             </div>
+
+            {/* Platform selector */}
             <div className="mb-6 flex flex-wrap gap-2">
               {PLATFORMS.map((entry) => {
                 const active = entry.key === platform;
@@ -228,6 +230,8 @@ export function ShareCard({
                 );
               })}
             </div>
+
+            {/* What to include */}
             <div className="mb-6 rounded-card border border-outline-variant bg-surface-container-low p-4">
               <p className="label-bold mb-3 text-on-surface">Include on your card</p>
               <div className="space-y-3">
@@ -257,6 +261,8 @@ export function ShareCard({
                 />
               </div>
             </div>
+
+            {/* Preview */}
             <div className="flex items-center justify-center rounded-card bg-surface-container p-4">
               <canvas
                 ref={canvasRef}
@@ -264,6 +270,8 @@ export function ShareCard({
                 aria-label={`${resume.name} share card preview`}
               />
             </div>
+
+            {/* Actions */}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
@@ -293,6 +301,8 @@ export function ShareCard({
     </>
   );
 }
+
+/* ---------- include toggles ---------- */
 
 function ToggleGroup({
   title,
@@ -351,6 +361,8 @@ function PlusGlyph() {
     </svg>
   );
 }
+
+/* ---------- glyphs ---------- */
 
 function ShareGlyph() {
   return (

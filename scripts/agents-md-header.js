@@ -12,18 +12,9 @@
 
 const fs = require("fs");
 const path = require("path");
+const { getRepoRoot, collectAgentsFiles } = require("./repo-paths");
 
-const REPO_ROOT = path.resolve(__dirname, "..");
-
-const IGNORED_DIRS = new Set([
-  ".git",
-  "node_modules",
-  "dist",
-  ".next",
-  "out",
-  "coverage",
-  "build",
-]);
+const REPO_ROOT = getRepoRoot(__dirname);
 
 const HEADER_START = "> **`AGENTS.md` Instruction Precedence (DO NOT EDIT)**";
 const SEPARATOR = "\n\n---\n\n";
@@ -120,38 +111,6 @@ function processFile(agentsPath) {
     return true;
   }
   return false;
-}
-
-/**
- * Find all AGENTS.md files in the repo.
- */
-function collectAgentsFiles(startDir) {
-  const results = [];
-  const stack = [startDir];
-
-  while (stack.length) {
-    const currentDir = stack.pop();
-    let entries;
-    try {
-      entries = fs.readdirSync(currentDir, { withFileTypes: true });
-    } catch {
-      continue;
-    }
-
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        if (IGNORED_DIRS.has(entry.name)) continue;
-        stack.push(path.join(currentDir, entry.name));
-        continue;
-      }
-
-      if (entry.isFile() && entry.name === "AGENTS.md") {
-        results.push(path.join(currentDir, entry.name));
-      }
-    }
-  }
-
-  return results;
 }
 
 function main() {

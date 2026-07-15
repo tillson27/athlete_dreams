@@ -4,8 +4,11 @@ import { UserRepository } from '../../repositories/UserRepository';
 import { TeamRepository } from '../../repositories/TeamRepository';
 import { PasswordHashService } from '../../services/infrastructure/PasswordHashService';
 import { JwtService } from '../../services/infrastructure/JwtService';
-import { ConflictError, UnauthorizedError } from '../../shared/errors';
+import { SignupAllowlistService } from '../../services/infrastructure/SignupAllowlistService';
+import { ConflictError, ForbiddenError, UnauthorizedError } from '../../shared/errors';
 import type { User } from '@prisma/client';
+
+const INVITE_ONLY_MESSAGE = 'Access is currently invite-only';
 
 @injectable()
 export class AuthService {
@@ -13,10 +16,14 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly teamRepository: TeamRepository,
     private readonly passwordHashService: PasswordHashService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly signupAllowlistService: SignupAllowlistService
   ) {}
 
   async signUp(input: SignUpRequest): Promise<AuthSession> {
+    if (!this.signupAllowlistService.isAllowed(input.email)) {
+      throw new ForbiddenError(INVITE_ONLY_MESSAGE);
+    }
     const existing = await this.userRepository.findByEmail(input.email);
     if (existing) {
       throw new ConflictError('An account already exists for this email');
@@ -39,6 +46,9 @@ export class AuthService {
   }
 
   async signIn(input: SignInRequest): Promise<AuthSession> {
+    if (!this.signupAllowlistService.isAllowed(input.email)) {
+      throw new ForbiddenError(INVITE_ONLY_MESSAGE);
+    }
     const user = await this.userRepository.findByEmail(input.email);
     if (!user) throw new UnauthorizedError('Invalid email or password');
     const ok = await this.passwordHashService.verify(user.passwordHash, input.password);

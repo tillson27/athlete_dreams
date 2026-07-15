@@ -1,24 +1,21 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  ReactionKind,
-  SportCategory,
-  type CommunityFeedItem,
-} from 'fad-common';
-import { cheerCommunityItem, listCommunityFeed, uncheerCommunityItem } from '@/lib/api/community';
-import {
-  toFeedItemView,
-  toRacingSoonView,
-  type FeedItemView,
-} from '@/lib/api/athleteViews';
+import type { FeedCategory } from '@/lib/communityFeed';
+import { useCommunityData } from '@/lib/dataSource';
+import { useFollows } from '@/lib/follows';
 import { useSession } from '@/lib/session';
+import { createBrowserStore } from '@/lib/browserStore';
+import { athleteProfileHref } from '@/lib/profileUrl';
 import { Icon } from '@/components/ui/Icon';
 import { FollowButton } from '@/components/site/FollowButton';
 import { FeedCard } from './FeedCard';
 import { TabButton, EmptyFollowing } from './communityParts';
+import type { MockAthlete } from '@/lib/mockAthletes';
+
+const cheersStore = createBrowserStore<Record<string, boolean>>('arc-cheers', 'arc-cheers-change');
 
 // All-day Google Calendar link for a parseable race date; null keeps the UI honest.
 function calendarHref(title: string, dateText: string): string | null {
@@ -32,134 +29,48 @@ function calendarHref(title: string, dateText: string): string | null {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${day(0)}/${day(1)}`;
 }
 
-const DISCIPLINES: Array<{ key: SportCategory | 'ALL'; label: string }> = [
+const DISCIPLINES: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
-  { key: SportCategory.Running, label: 'Road, Trail & Ultra' },
+  { key: 'RUNNING', label: 'Road, Trail & Ultra' },
 ];
 
-const FEED_TYPES: Array<{
-  key: FeedItemView['category'] | 'ALL';
-  label: string;
-  icon: 'hub' | 'flag' | 'timer' | 'medal';
-}> = [
+const FEED_TYPES: Array<{ key: FeedCategory | 'ALL'; label: string; icon: 'hub' | 'flag' | 'timer' | 'medal' }> = [
   { key: 'ALL', label: 'All updates', icon: 'hub' },
   { key: 'race', label: 'Races', icon: 'flag' },
   { key: 'training', label: 'Training runs', icon: 'timer' },
   { key: 'milestone', label: 'Milestones', icon: 'medal' },
 ];
 
-export function CommunityClient({
-  initialFeed,
-  initialRacingSoon,
-}: {
-  initialFeed: CommunityFeedItem[];
-  initialRacingSoon: CommunityFeedItem[];
-}) {
-  const initialItems = useMemo(() => initialFeed.map(toFeedItemView), [initialFeed]);
-  const racingSoon = useMemo(() => toRacingSoonView(initialRacingSoon), [initialRacingSoon]);
-  const { session, ready } = useSession();
+export function CommunityClient() {
+  const { feed, racingSoon } = useCommunityData();
+  const { follows, ready } = useFollows();
+  const { session } = useSession();
 
   const [tab, setTab] = useState<'everyone' | 'following'>('everyone');
-  const [discipline, setDiscipline] = useState<SportCategory | 'ALL'>('ALL');
-  const [feedType, setFeedType] = useState<FeedItemView['category'] | 'ALL'>('ALL');
-  const [feedItems, setFeedItems] = useState<FeedItemView[]>(initialItems);
-  const [loading, setLoading] = useState(false);
-  const accessToken = session?.accessToken;
-
+  const [discipline, setDiscipline] = useState<MockAthlete['primarySport'] | 'ALL'>('ALL');
+  const [feedType, setFeedType] = useState<FeedCategory | 'ALL'>('ALL');
+  const [cheered, setCheered] = useState<Record<string, boolean>>({});
   useEffect(() => {
-    if (tab === 'everyone') {
-      setFeedItems(initialItems);
-      return;
-    }
+    setCheered(cheersStore.read() ?? {});
+  }, []);
 
-    if (!accessToken) {
-      setFeedItems([]);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    listCommunityFeed({ scope: 'FOLLOWING', limit: 50 }, accessToken)
-      .then((response) => {
-        if (!cancelled) setFeedItems(response.items.map(toFeedItemView));
-      })
-      .catch(() => {
-        if (!cancelled) setFeedItems([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken, initialItems, tab]);
-
-  const visible = feedItems.filter((item) => {
+  const visible = feed.filter((item) => {
     if (discipline !== 'ALL' && item.primarySport !== discipline) return false;
     if (feedType !== 'ALL' && item.category !== feedType) return false;
+    if (tab === 'following' && !follows.includes(item.athleteSlug)) return false;
     return true;
   });
 
-  const toggleCheer = async (item: FeedItemView) => {
-    if (!accessToken) {
-      window.location.href = '/sign-in';
-      return;
-    }
-
-    const nextCheered = !item.cheered;
-    setFeedItems((currentItems) =>
-      currentItems.map((currentItem) =>
-        currentItem.id === item.id
-          ? {
-              ...currentItem,
-              cheered: nextCheered,
-              cheers: Math.max(0, currentItem.cheers + (nextCheered ? 1 : -1)),
-            }
-          : currentItem
-      )
-    );
-
-    try {
-      const response = nextCheered
-        ? await cheerCommunityItem(accessToken, {
-            targetType: item.targetType,
-            targetId: item.targetId,
-            reactionKind: ReactionKind.Cheer,
-          })
-        : await uncheerCommunityItem(accessToken, {
-            targetType: item.targetType,
-            targetId: item.targetId,
-            reactionKind: ReactionKind.Cheer,
-          });
-      setFeedItems((currentItems) =>
-        currentItems.map((currentItem) =>
-          currentItem.id === item.id
-            ? {
-                ...currentItem,
-                cheered: response.hasReacted,
-                cheers: response.reactionCount,
-              }
-            : currentItem
-        )
-      );
-    } catch {
-      setFeedItems((currentItems) =>
-        currentItems.map((currentItem) =>
-          currentItem.id === item.id
-            ? {
-                ...currentItem,
-                cheered: item.cheered,
-                cheers: item.cheers,
-              }
-            : currentItem
-        )
-      );
-    }
-  };
+  const toggleCheer = (id: string) =>
+    setCheered((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      cheersStore.write(next);
+      return next;
+    });
 
   return (
     <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-10 md:px-16 md:py-12">
+      {/* Header */}
       <header className="mb-8">
         <span className="inline-flex items-center gap-2 rounded-pill bg-secondary-soft px-3 py-1 text-xs font-bold uppercase tracking-[0.05em] text-secondary">
           <Icon name="timer" className="h-3.5 w-3.5" />
@@ -174,13 +85,15 @@ export function CommunityClient({
           start line. The journey is better with people in it.
         </p>
       </header>
+
+      {/* Tabs + discipline filters */}
       <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-4 md:flex-row md:items-center md:justify-between">
         <div className="flex gap-1 rounded-pill bg-surface-container p-1">
           <TabButton active={tab === 'everyone'} onClick={() => setTab('everyone')}>
             Everyone
           </TabButton>
           <TabButton active={tab === 'following'} onClick={() => setTab('following')}>
-            Following
+            Following{ready && follows.length > 0 ? ` · ${follows.length}` : ''}
           </TabButton>
         </div>
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 no-scrollbar md:mx-0 md:px-0">
@@ -203,6 +116,8 @@ export function CommunityClient({
           })}
         </div>
       </div>
+
+      {/* Content-type filters */}
       <div className="mb-6 -mx-5 flex gap-2 overflow-x-auto px-5 no-scrollbar md:mx-0 md:px-0">
         {FEED_TYPES.map((entry) => {
           const active = feedType === entry.key;
@@ -225,13 +140,10 @@ export function CommunityClient({
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Feed */}
         <div className="space-y-5 lg:col-span-8">
-          {loading ? (
-            <p className="rounded-card border border-outline-variant bg-surface-container-lowest p-10 text-center text-on-surface-variant">
-              Loading updates...
-            </p>
-          ) : tab === 'following' && ready && !accessToken ? (
-            <EmptyFollowing signedIn={Boolean(accessToken)} />
+          {tab === 'following' && ready && follows.length === 0 ? (
+            <EmptyFollowing signedIn={Boolean(session)} />
           ) : visible.length === 0 ? (
             <p className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center text-on-surface-variant">
               Nothing here yet for this filter.
@@ -241,11 +153,14 @@ export function CommunityClient({
               <FeedCard
                 key={item.id}
                 item={item}
-                onCheer={() => toggleCheer(item)}
+                cheered={Boolean(cheered[item.id])}
+                onCheer={() => toggleCheer(item.id)}
               />
             ))
           )}
         </div>
+
+        {/* Sidebar */}
         <aside className="space-y-6 lg:sticky lg:top-24 lg:col-span-4 lg:self-start">
           <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
             <h2 className="mb-1 font-display text-lg font-bold text-on-surface">Racing soon</h2>
@@ -253,26 +168,19 @@ export function CommunityClient({
             <ul className="space-y-4">
               {racingSoon.map((entry) => (
                 <li key={entry.athleteSlug} className="flex items-center gap-3">
-                  <Link
-                    href={`/athletes/${entry.athleteSlug}`}
+                  <a
+                    href={athleteProfileHref(entry.athleteSlug)}
                     className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-container"
                   >
-                    <Image
-                      src={entry.avatar}
-                      alt={entry.athleteName}
-                      fill
-                      unoptimized
-                      sizes="40px"
-                      className="object-cover"
-                    />
-                  </Link>
+                    <Image src={entry.avatar} alt={entry.athleteName} fill sizes="40px" className="object-cover" />
+                  </a>
                   <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/athletes/${entry.athleteSlug}`}
+                    <a
+                      href={athleteProfileHref(entry.athleteSlug)}
                       className="label-bold block truncate text-on-surface hover:text-primary"
                     >
                       {entry.athleteName}
-                    </Link>
+                    </a>
                     <p className="truncate text-xs text-on-surface-variant">
                       {entry.event} · {entry.date}
                     </p>

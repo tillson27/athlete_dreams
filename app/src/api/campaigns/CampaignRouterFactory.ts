@@ -17,6 +17,7 @@ export class CampaignRouterFactory extends BaseRouterFactory {
 
   build(): Router {
     const router = Router();
+    router.get('/', this.wrap(this.campaignController.listActiveFeed));
     router.get('/:campaignSlug', this.wrap(this.campaignController.getBySlug));
     router.post('/', this.auth.required, this.wrap(this.campaignController.create));
     return router;

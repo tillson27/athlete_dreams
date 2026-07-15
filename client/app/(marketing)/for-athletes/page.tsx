@@ -80,6 +80,7 @@ const comparisons = [
 export default function ForAthletesPage() {
   return (
     <>
+      {/* HERO */}
       <section className="relative flex min-h-[560px] items-center overflow-hidden bg-inverse-surface md:min-h-[640px]">
         <div className="absolute inset-0 opacity-55">
           <Image
@@ -127,6 +128,8 @@ export default function ForAthletesPage() {
           </div>
         </div>
       </section>
+
+      {/* VALUE PILLARS */}
       <section className="bg-surface py-20 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
@@ -158,6 +161,8 @@ export default function ForAthletesPage() {
           </div>
         </div>
       </section>
+
+      {/* PROFILE SHOWCASE */}
       <section className="border-y border-outline-variant bg-surface-container-low py-20 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
@@ -175,6 +180,7 @@ export default function ForAthletesPage() {
 
           <Reveal>
             <div className="mx-auto mt-14 max-w-3xl overflow-hidden rounded-[1.5rem] border border-outline-variant bg-surface-container-lowest shadow-2xl">
+              {/* browser chrome */}
               <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container px-4 py-3">
                 <span className="h-3 w-3 rounded-full bg-error/70" />
                 <span className="h-3 w-3 rounded-full bg-primary-container/70" />
@@ -183,6 +189,7 @@ export default function ForAthletesPage() {
                   {profileUrl('cassandra-de-winter')}
                 </span>
               </div>
+              {/* mini profile */}
               <div>
                 <div className="relative h-56 md:h-64">
                   <Image
@@ -247,6 +254,8 @@ export default function ForAthletesPage() {
           </div>
         </div>
       </section>
+
+      {/* MORE THAN A BIO LINK */}
       <section className="bg-surface py-20 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
@@ -280,6 +289,8 @@ export default function ForAthletesPage() {
           </div>
         </div>
       </section>
+
+      {/* FOR EVERY RUNNER */}
       <section className="bg-surface py-20 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
@@ -315,6 +326,8 @@ export default function ForAthletesPage() {
           </div>
         </div>
       </section>
+
+      {/* HOW IT WORKS */}
       <section className="border-y border-outline-variant bg-surface-container-low py-20 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
@@ -351,6 +364,8 @@ export default function ForAthletesPage() {
           </div>
         </div>
       </section>
+
+      {/* PEER PROOF */}
       <section className="bg-surface py-20 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
@@ -381,6 +396,8 @@ export default function ForAthletesPage() {
           </Reveal>
         </div>
       </section>
+
+      {/* FINAL CTA */}
       <section className="bg-surface-bright px-5 py-20 md:px-16">
         <div className="relative overflow-hidden rounded-[2rem] bg-inverse-surface p-12 text-center md:p-20">
           <div

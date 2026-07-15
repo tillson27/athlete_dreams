@@ -15,6 +15,7 @@ export function ReviewSummary() {
 
   return (
     <>
+      {/* Milestone header */}
       <header className="mb-12">
         <div className="flex flex-col gap-4 text-center md:flex-row md:items-start md:justify-between md:text-left">
           <div>
@@ -32,6 +33,8 @@ export function ReviewSummary() {
           <StartOverButton className="label-bold inline-flex shrink-0 items-center justify-center gap-1.5 self-center rounded-lg border border-outline-variant px-4 py-2.5 text-on-surface-variant transition-colors hover:border-error hover:text-error md:self-start" />
         </div>
       </header>
+
+      {/* Completion bar */}
       <div className="mb-12">
         <div className="mb-2 flex items-center justify-between">
           <span className="label-bold text-primary">Profile complete</span>
@@ -41,6 +44,7 @@ export function ReviewSummary() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Left: review */}
         <div className="space-y-6 lg:col-span-8">
           <ReviewCard icon="person" title="Basics" editHref="/register/personal-basics?from=review">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -111,6 +115,8 @@ export function ReviewSummary() {
             </div>
           </ReviewCard>
         </div>
+
+        {/* Right: the built profile + publish */}
         <div className="lg:col-span-4">
           <div className="sticky top-24 space-y-6">
             <ProfilePreview sticky={false} />

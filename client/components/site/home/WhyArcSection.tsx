@@ -12,6 +12,7 @@ const noiseRows: { icon: IconName; barWidth: string; opacity: string }[] = [
 export function WhyArcSection() {
   return (
     <section className="relative overflow-hidden bg-surface">
+      {/* Photographic header band */}
       <div className="relative overflow-hidden bg-inverse-surface">
         <div className="absolute inset-0">
           <Image
@@ -41,7 +42,10 @@ export function WhyArcSection() {
           </Reveal>
         </div>
       </div>
+
+      {/* Body */}
       <div className="relative z-10 mx-auto -mt-12 w-full max-w-[var(--spacing-container-max)] px-5 pb-24 md:px-16">
+        {/* The problem — two forces Arc bridges */}
         <div className="relative">
           <div className="grid gap-6 md:grid-cols-2 md:gap-16">
             <Reveal className="h-full">
@@ -108,6 +112,8 @@ export function WhyArcSection() {
               </div>
             </Reveal>
           </div>
+
+          {/* Connector — bridges the two problems on wide screens */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-6 left-1/2 hidden -translate-x-1/2 flex-col items-center md:flex"
@@ -121,6 +127,8 @@ export function WhyArcSection() {
             </span>
           </div>
         </div>
+
+        {/* What Arc builds instead */}
         <div className="mt-20 grid gap-12 md:grid-cols-2">
           <Reveal>
             <div>
@@ -156,7 +164,7 @@ export function WhyArcSection() {
               <p className="text-lg leading-relaxed text-on-surface-variant">
                 Athletes who share their authentic stories create a powerful opportunity for
                 supporters to follow their journey, feel like an integral part of it, and
-                contribute meaningfully through donations and subscriptions.
+                contribute meaningfully when backing opens.
               </p>
             </div>
           </Reveal>

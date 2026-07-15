@@ -2,10 +2,6 @@ import { z } from 'zod';
 
 export const idSchema = z.string().uuid();
 export const isoDateTimeSchema = z.string().datetime();
-export const httpUrlSchema = z.string().url().refine((value) => {
-  const { protocol } = new URL(value);
-  return protocol === 'http:' || protocol === 'https:';
-}, 'HTTP(S) URL required');
 export const slugSchema = z
   .string()
   .min(2)
@@ -26,6 +22,23 @@ export const paginationResponseSchema = <T extends z.ZodTypeAny>(item: T) =>
   });
 
 export const moneyCentsSchema = z.number().int().nonnegative();
+
+// Public API contract: a media reference is an absolute http(s) URL, a persisted
+// data-image ref for the no-storage MVP path, or a bare storage/photo ref.
+// The seed and DB carry bare refs for gallery/feed photos; clients compose a display
+// URL from a bare ref (see `client/lib/unsplash.ts`). Kept permissive so real API
+// responses validate without forcing a URL rewrite at the API boundary.
+export const mediaRefSchema = z
+  .string()
+  .min(1)
+  .max(1_250_000)
+  .refine(
+    (value) =>
+      /^https?:\/\//.test(value) ||
+      /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value) ||
+      /^[A-Za-z0-9._-]+$/.test(value),
+    'Must be an absolute http(s) URL, a persisted data image, or a bare media reference'
+  );
 
 export const errorResponseSchema = z.object({
   error: z.object({

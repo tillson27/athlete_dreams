@@ -1,6 +1,15 @@
 import { z } from 'zod';
-import { idSchema, isoDateTimeSchema, moneyCentsSchema, slugSchema } from './shared';
-import { CampaignStatus, CampaignType } from '../types/enums';
+import {
+  idSchema,
+  isoDateTimeSchema,
+  mediaRefSchema,
+  moneyCentsSchema,
+  paginationResponseSchema,
+  slugSchema,
+} from './shared';
+import { CampaignStatus, CampaignType, SportCategory } from '../types/enums';
+
+const sportSchema = z.nativeEnum(SportCategory);
 
 const campaignStatusSchema = z.nativeEnum(CampaignStatus);
 const campaignTypeSchema = z.nativeEnum(CampaignType);
@@ -34,29 +43,6 @@ export const campaignSchema = z.object({
 
 export type Campaign = z.infer<typeof campaignSchema>;
 
-export const campaignSummarySchema = campaignSchema
-  .pick({
-    campaignId: true,
-    campaignSlug: true,
-    athleteId: true,
-    athleteEventId: true,
-    campaignTitle: true,
-    campaignType: true,
-    campaignStatus: true,
-    targetAmountCents: true,
-    raisedAmountCents: true,
-    supporterCount: true,
-    costLines: true,
-    closesAt: true,
-    createdAt: true,
-    updatedAt: true,
-  })
-  .extend({
-    campaignStoryExcerpt: z.string().max(1200).nullable(),
-  });
-
-export type CampaignSummary = z.infer<typeof campaignSummarySchema>;
-
 export const createCampaignRequestSchema = z
   .object({
     campaignSlug: slugSchema,
@@ -80,3 +66,40 @@ export const createCampaignRequestSchema = z
   .strict();
 
 export type CreateCampaignRequest = z.infer<typeof createCampaignRequestSchema>;
+
+export const campaignSummarySchema = z.object({
+  campaignId: idSchema,
+  campaignSlug: slugSchema,
+  campaignTitle: z.string(),
+  campaignType: campaignTypeSchema,
+  campaignStatus: campaignStatusSchema,
+  athleteId: idSchema,
+  athleteSlug: slugSchema,
+  athleteName: z.string(),
+  primarySport: sportSchema,
+  heroMediaUrl: mediaRefSchema.nullable(),
+  targetAmountCents: moneyCentsSchema,
+  raisedAmountCents: moneyCentsSchema,
+  supporterCount: z.number().int().nonnegative(),
+  closesAt: isoDateTimeSchema.nullable(),
+});
+
+export type CampaignSummary = z.infer<typeof campaignSummarySchema>;
+
+// Public API contract: `GET /v1/athletes/:athleteSlug/campaigns` returns the
+// athlete's active campaigns as a bare array (not a paginated wrapper).
+export const athleteCampaignsResponseSchema = z.array(campaignSummarySchema);
+
+export type AthleteCampaignsResponse = z.infer<typeof athleteCampaignsResponseSchema>;
+
+export const activeCampaignFeedResponseSchema = paginationResponseSchema(campaignSummarySchema);
+
+export type ActiveCampaignFeedResponse = z.infer<typeof activeCampaignFeedResponseSchema>;
+
+export const activeCampaignFeedQuerySchema = z.object({
+  status: z.literal('active').optional().default('active'),
+  limit: z.coerce.number().int().positive().max(100).optional().default(20),
+  cursor: z.string().optional(),
+});
+
+export type ActiveCampaignFeedQuery = z.infer<typeof activeCampaignFeedQuerySchema>;

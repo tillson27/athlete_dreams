@@ -24,7 +24,7 @@ const steps = [
   },
   {
     title: 'Money goes to the athlete',
-    body: 'Direct to the runner, with platform fee details finalized before backing opens. No holding periods, no middlemen.',
+    body: 'Payment details, fees, refunds, and timing will be published before backing goes live.',
   },
   {
     title: 'See it land',
@@ -51,6 +51,7 @@ export default function SupportComingSoonPage() {
 
       <Section tone="surface-low" pad="md" className="border-y border-outline-variant">
         <div className="grid gap-10 md:grid-cols-[1fr_1.2fr] md:items-center">
+          {/* Sample itemized campaign — transparency is the whole point */}
           <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
             <p className="eyebrow text-primary">What backing will look like</p>
             <h2 className="mt-2 font-display text-xl font-bold text-on-surface">

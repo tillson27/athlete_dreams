@@ -7,9 +7,8 @@ import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { slugifyName } from '@/lib/slugify';
-import { profileUrl } from '@/lib/profileUrl';
-import { publishMyProfile } from '@/lib/api/athletes';
-import { useSession } from '@/lib/session';
+import { athleteManageHref, athleteProfileHref, profileUrl } from '@/lib/profileUrl';
+import { markPublished } from '@/lib/session';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 type Status = 'idle' | 'publishing' | 'published';
@@ -35,20 +34,28 @@ function useConfetti() {
 }
 
 export function PublishPanel() {
-  const { profile, draftVersion, saveDraft } = useOnboarding();
-  const { session } = useSession();
+  const {
+    profile,
+    mode,
+    publish: publishToApi,
+    publishChecklist,
+    saveError,
+    saving,
+    draftSlug,
+  } = useOnboarding();
   const [agreed, setAgreed] = useState(false);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
   const confetti = useConfetti();
 
   const firstName = profile.name.trim().split(' ')[0] || 'Athlete';
   const hasName = profile.name.trim().length > 0;
-  const profileSlug = slugifyName(profile.name);
-  const slug = publishedSlug ?? (profileSlug || 'your-name');
-  const manageHref = `/athletes/${slug}/manage`;
+  // In api mode the slug is the server-reserved one (it may carry a -2..-5 suffix
+  // after a collision); mock keeps the name-derived slug.
+  const slug = (mode === 'api' ? draftSlug : null) ?? (slugifyName(profile.name) || 'your-name');
+  const profileRouteReady = mode === 'api' ? Boolean(draftSlug) : hasName;
+  const manageHref = athleteManageHref(slug);
   const publicUrl = profileUrl(slug);
 
   const missing = [
@@ -80,28 +87,28 @@ export function PublishPanel() {
   );
 
   const publish = async () => {
-    if (!agreed || !hasName || !session?.accessToken) {
+    if (!agreed || !hasName) {
       setError(true);
       return;
     }
-    setStatus('publishing');
-    setError(false);
-    try {
-      const savedDraft = await saveDraft();
-      const result = await publishMyProfile(session.accessToken, {
-        expectedProfileVersion: savedDraft?.profileVersion ?? draftVersion ?? undefined,
-      });
-      if (!result.published || !result.profile) {
-        setError(true);
+    if (mode === 'api') {
+      setStatus('publishing');
+      const published = await publishToApi();
+      if (published) {
+        markPublished();
+        setStatus('published');
+      } else {
+        // The guard checklist / save error renders below; return to idle so the
+        // athlete can fix what's missing and publish again.
         setStatus('idle');
-        return;
       }
-      setPublishedSlug(result.profile.athleteSlug);
-      setStatus('published');
-    } catch {
-      setError(true);
-      setStatus('idle');
+      return;
     }
+    setStatus('publishing');
+    setTimeout(() => {
+      markPublished();
+      setStatus('published');
+    }, 1500);
   };
 
   const copyLink = async () => {
@@ -178,13 +185,13 @@ export function PublishPanel() {
                 Still to add: <strong>{missingSections.join(', ')}</strong>. Profiles with a full
                 race history get followed — and backed — far more often.
               </p>
-              <Link
+              <a
                 href={manageHref}
                 className="mt-4 inline-flex items-center gap-2 rounded-button bg-primary px-6 py-3 font-display text-base font-bold text-on-primary shadow-lg shadow-primary/25 transition-all hover:bg-primary-strong active:scale-95"
               >
                 Finish your profile
                 <Icon name="arrow-forward" className="h-5 w-5" />
-              </Link>
+              </a>
             </div>
           ) : null}
 
@@ -196,12 +203,12 @@ export function PublishPanel() {
               Go to your dashboard
               <Icon name="arrow-forward" className="h-5 w-5" />
             </Link>
-            <Link
-              href={`/athletes/${slug}`}
+            <a
+              href={profileRouteReady ? athleteProfileHref(slug) : '/athletes'}
               className="label-bold flex flex-1 items-center justify-center rounded-lg border-2 border-outline px-6 py-4 text-on-surface transition-all hover:bg-surface-container"
             >
-              View your profile
-            </Link>
+              {profileRouteReady ? 'View your profile' : 'Explore the network'}
+            </a>
           </div>
         </div>
       </div>,
@@ -242,15 +249,35 @@ export function PublishPanel() {
           </Link>{' '}
           before publishing.
         </p>
-      ) : missing.length > 0 ? (
+      ) : mode === 'mock' && missing.length > 0 ? (
         <p className="text-xs text-on-surface-variant">
           Still missing {missing.join(', ')} — you can add them after publishing.
+        </p>
+      ) : null}
+      {mode === 'api' && publishChecklist.length > 0 ? (
+        <div
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          <p>Before you can publish, finish these:</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5 font-normal">
+            {publishChecklist.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : mode === 'api' && saveError ? (
+        <p
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          {saveError}
         </p>
       ) : null}
       <button
         type="button"
         onClick={publish}
-        disabled={status === 'publishing' || !hasName || !session?.accessToken}
+        disabled={status === 'publishing' || saving || !hasName}
         className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
       >
         {status === 'publishing' ? (

@@ -15,10 +15,12 @@ export function HomeHero() {
           className="ken-burns object-cover object-[center_30%]"
         />
       </div>
+      {/* warm directional wash for legibility */}
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-r from-[#140b08]/90 via-[#160d09]/60 to-[#160d09]/20"
       />
+      {/* vignette to focus the frame */}
       <div
         aria-hidden="true"
         className="absolute inset-0"
@@ -54,6 +56,8 @@ export function HomeHero() {
           </div>
         </div>
       </div>
+
+      {/* scroll cue */}
       <div aria-hidden="true" className="absolute inset-x-0 bottom-5 z-10 flex justify-center">
         <span className="scroll-cue flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-white/80">
           <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">

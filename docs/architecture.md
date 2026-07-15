@@ -1,13 +1,13 @@
-# FAD Architecture Overview
+# ARC Architecture Overview
 
-A snapshot of how the codebase is organized today. Updated 2026-07-14.
+A snapshot of how the codebase is organized today. Updated 2026-07-13 (against the `nate` integration branch).
 
 ## Workspaces
 
 - **`client/`** — Next.js 15 App Router (React 19, Tailwind v4). Marketing site + the start of the authenticated experience. Today's priority.
-- **`app/`** — Express 5 + Prisma backend. Uses the same Controller/Service/Repository pattern used in the parent emly repo. Covers auth, users, teams, athlete profiles, campaigns, follows, community feed, and dashboard data at the API layer.
+- **`app/`** — Express 5 + Prisma backend. Same Controller/Service/Repository pattern used in the parent emly repo. The Phase 0–1 read/write path is implemented and integration-tested: auth, users, teams, athletes (rich profile + directory), follows, community feed, campaigns, and health at the API layer.
 - **`common/`** — Shared Zod schemas (published as `fad-common`). Single source of truth for request/response shapes.
-- **`cdk/`** — AWS CDK v2 hosting baseline for the dynamic Next app, Express API, private Postgres data tier, and CloudFront edge entry point.
+- **`cdk/`** — AWS CDK v2 infrastructure (Network/Data/Api/Web stacks + CI/CD OIDC role, `test`/`prod` configs). Authored and synth-verified credential-free; deployment is user-executed (see `cdk/README.md`).
 
 ## Account Model
 
@@ -25,10 +25,8 @@ User
 
 ## Domain Aggregates
 
-- `AthleteProfile` — public-facing and draft athlete profile state: slug, story, sport, values, social links, publish status, support readiness, and profile versioning.
-- `AthleteStoryChapter`, `AthletePersonalBest`, `AthleteResult`, `AthleteTrainingSnapshot`, and `AthleteMedia` — structured profile sections for the story-first public profile and management editor.
+- `AthleteProfile` — public-facing athlete (slug, bio, sport, values, social links).
 - `AthleteEvent` — upcoming races/competitions an athlete plans to attend.
-- `AthleteFollow` and `CommunityReaction` — follower graph and idempotent feed reactions.
 - `Campaign` — a fundraising campaign tied to an athlete and optionally to an event. Has itemized `CampaignCostLine` rows for transparency.
 - `Donation` — supporter contribution to a campaign.
 - `Brand` + `SponsorshipInquiry` — inbound interest from a brand to an athlete.
@@ -50,61 +48,21 @@ HTTP → Express Router → <Feature>RouterFactory
 - All Zod schemas live in `common/src/zod/`.
 - Controllers parse `req.body` / `req.query` / `req.params` through `parseRequestBody` etc.
 - The global `errorHandler` middleware translates `DomainError` subclasses into HTTP responses.
-- Route factories are registered directly in `app/src/index.ts`; there is no separate router loader or dependency-injector file.
+- Health is split into `GET /v1/health/live` (process) and `GET /v1/health/ready` (DB `SELECT 1`, 503 when unreachable); the ALB targets `ready`.
+- Directory and feed reads use opaque keyset pagination (`(createdAt desc, id desc)`, no OFFSET); directory and feed return **published athletes only**.
 
-## MVP API Surface
+## Site Layout (Frontend — `nate`)
 
-- `/v1/auth` handles sign-up and sign-in and returns the backend `AuthSession` used by the client session layer.
-- `/v1/athletes` handles public directory/profile reads, authenticated draft/publish operations, profile child edits, follow/unfollow, and dashboard data.
-- `/v1/campaigns` handles campaign reads and campaign creation for authenticated athletes; live donation checkout remains out of scope.
-- `/v1/community` handles paginated feed reads and idempotent cheer/uncheer reactions.
+Runner-first launch surface on `athletearc.ca` (the `/brands`, `/ambassadors`, `/presentation` corporate routes were removed):
 
-## Operational Guardrails
+- **Marketing:** `/` (story-led home), `/for-athletes` (recruiting), `/mission`, `/about`, `/how-it-works` (runners + followers personas), `/support` (backing preview — itemized cost lines, "coming soon"), `/terms`, `/privacy`.
+- **Discovery:** `/athletes` (directory: discipline / level / region filters), `/athletes/[athleteSlug]` (rich profile: Arc chapters, verified results, highlights, roadmap), `/community` (feed: races / training / milestones, follows, cheers).
+- **Athlete loop:** `/sign-up`, `/sign-in`, `/register` + 4-step `/register/{personal-basics,athletics,values-social,review}` onboarding, `/dashboard`, `/athletes/[athleteSlug]/manage` (editor).
+- **SEO:** `sitemap.ts`, `robots.ts` (private routes disallowed), dynamic OG images, `metadataBase = https://athletearc.ca`.
 
-- API request bodies are limited to `1mb` in `app/src/index.ts`.
-- Directory queries are bounded by `common/src/zod/athlete.ts` to at most 100 athletes per page.
-- Community feed queries are bounded by `common/src/zod/community.ts` to at most 50 items per page and a 512-character cursor.
-- Profile draft and child-section payloads are bounded in `common/src/zod/athlete.ts`; large lists such as results, roadmap events, media assets, and reordered child IDs have explicit maximum counts.
-- Media and source-link fields use HTTP(S)-only URL schemas for MVP persistence. Browser `blob:` URLs are preview-only in the client and must not become durable profile data.
-- Auth-sensitive routes require bearer-token authentication through `AuthenticationMiddleware`; public profile and feed routes may use optional auth only to personalize viewer state.
-- Profile edits and child mutations use profile-version checks so stale tabs cannot silently overwrite newer data.
-- Follow/unfollow, publish, and community reactions are designed to be retry-safe and backed by unique constraints or idempotent service behavior.
-- Request IDs are attached to responses and backend logs. Passwords, tokens, full request bodies, profile drafts, bulk emails, and sensitive media URLs must not be logged.
+Data source is flag-driven via `NEXT_PUBLIC_DATA_SOURCE` (`mock` default, `api`). In `mock` mode all data is mock/localStorage: roster + rich profiles from `client/lib/{mockAthletes,athleteProfiles}.ts`; session, follows, cheers, onboarding drafts, and manage-editor edits in localStorage stores that each name their backend replacement. In `api` mode the read surfaces (directory, profile, community) **and the authenticated write surfaces** are real against `GET/POST/PATCH/PUT /v1/…` via `client/lib/api.ts`: sessions (`lib/session.ts` — access-token-only, token + user in `arc-auth` localStorage, validated on mount via `GET /v1/users/me`), follows (server-persisted; anonymous users are prompted to sign in), the 4-step onboarding wizard (create-on-first-save + per-step PATCH/set-replace + real publish), the dashboard, and the manage editor all persist server-side (M6 client cutover, 2026-07-14). Access-token-only sessions are the accepted interim until Phase 4 backend hardening (refresh tokens, SES email verification, rate limiting, teams). The GitHub Pages export stays on mock. The seam-by-seam mapping to API phases lives in `docs/backend-build-sheet.md` → *Frontend contract alignment*.
 
-## Hosting Baseline
-
-The current AWS target is a lean container baseline rather than static hosting. GitHub Pages/static export is no longer a fit because the client uses dynamic Next.js routes and the product depends on the Express API.
-
-- The Next app and Express API are packaged as separate Docker images from the monorepo, with `common/` built first so both services consume the shared contracts.
-- AWS CDK composes a public edge and load-balancing layer in front of private ECS Fargate services. CloudFront caches immutable Next static assets while dynamic app and API requests use conservative/no caching.
-- The API and client share one public application load balancer. `/v1/*` routes to the API service; the default target is the Next service. Health checks are `/v1/health` and `/health`.
-- Postgres runs as private RDS with generated credentials in Secrets Manager. Production enables an RDS Proxy to reduce connection pressure as ECS tasks scale.
-- Runtime secrets stay in Secrets Manager and task secret injection. Plain task environment is limited to non-secret runtime configuration such as ports, log level, API host, and database host/name metadata.
-- The baseline intentionally does not include Redis, queues, schedulers, CMS media buckets, or uploaded-media storage until product code needs those capabilities.
-
-## Marketing Site Layout (Frontend)
-
-- `/` — Landing (hero, three pillars, athlete spotlights, transparency pitch, athlete CTA).
-- `/athletes` — Runner-first directory with sport, level, region, and search filters.
-- `/athletes/[athleteSlug]` — Rich public athlete profile with story, arc chapters, results, roadmap, media, follows, and support readiness.
-- `/athletes/[athleteSlug]/manage` — Authenticated profile management for highlights, previous races, roadmap, and media metadata.
-- `/community` — Community feed from verified results, upcoming events, training snapshots, and profile milestones.
-- `/dashboard` — Authenticated athlete dashboard with profile completion, quick actions, and draft preview.
-- `/support` — Support/backing preview while live payments remain out of scope.
-- `/for-athletes` — Athlete-focused marketing page.
-- `/how-it-works` — Persona breakdown (athletes, supporters, brands).
-- `/mission` — Company mission and product stance.
-- `/about` — Company values + contact.
-- `/sign-in`, `/sign-up` — Auth forms.
-- `/register` — Athlete onboarding flow.
-
-Directory, public profile, dashboard, community feed, follow, cheer, profile-management, sign-in, sign-up, and onboarding surfaces read and write through typed helpers in `client/lib/api/` against the `/v1/auth`, `/v1/athletes`, and `/v1/community` backend APIs. The MVP session layer stores the backend `AuthSession` bearer token in the browser, clears expired sessions client-side, and uses local browser storage only for real auth state plus a non-authoritative unsaved onboarding draft backup; the profile draft source of truth is `/v1/athletes/me/draft`.
-
-## Demo Data and Branch Docs
-
-- `client/lib/dev-fixtures/` keeps the imported pilot roster/profile examples as development seed/reference data only. Production routes should not import it as runtime truth.
-- There is no backend seed script yet. If the pilot roster becomes seed data, it should be mapped into the backend contracts and Prisma schema through a separate reviewed task.
-- The `origin/nate` legal/business reference docs are not part of the implementation docs in this repo. Incorporation, trademark, terms, and payment-flow legal work should be reviewed separately before importing or publishing that content.
+**Known static-export boundary (api mode):** the client still ships as a static export, so `/athletes/[athleteSlug]` pages are pre-rendered from the mock roster via `generateStaticParams`. A newly-created api-mode athlete's *dedicated profile page* therefore 404s in the static export (its slug wasn't in the build-time roster); the directory (`/athletes`), the dashboard, and the profile **API** (`GET /v1/athletes/{slug}`) are unaffected and reflect the new athlete immediately. This resolves when the client moves to SSR/ISR — see `docs/infrastructure-and-scaling.md` → *Stage 2 — Growth* (SSR/ISR for athlete-profile SEO).
 
 ## AI Toolkit
 
@@ -116,6 +74,9 @@ Directory, public profile, dashboard, community feed, follow, cheer, profile-man
 
 ## Open Questions / Next Up
 
-1. **Payments provider.** Stripe Connect is the obvious choice for "money goes to the athlete," but we need to scope the onboarding burden for first-time athletes.
-2. **Email.** Resend for transactional + Postmark for donation receipts is a good default.
-3. **CMS for athlete stories.** Today athletes write through forms in the app; consider a structured editor later.
+Implementation and hosting are now planned in detail — see `docs/backend-build-sheet.md` (per-file plan, Phases 0–4 + Infra & Deploy) and `docs/infrastructure-and-scaling.md` (AWS design, cost levers, scaling stages).
+
+1. **Payments provider.** ✅ Decided: **Stripe Connect (Express)** — see build sheet Phase 2. First-time athlete onboarding handled via Stripe hosted account links.
+2. **Hosting.** ✅ Decided: **AWS via CDK v2** — ECS Fargate + ALB (API), RDS PostgreSQL (Multi-AZ toggle), S3 + CloudFront (client). See `docs/infrastructure-and-scaling.md`.
+3. **Email.** ✅ Decided: **Amazon SES** (AWS-native) — see build sheet Phase 4.
+4. **CMS for athlete stories.** Open — today athletes write through forms in the app; consider a structured editor later.

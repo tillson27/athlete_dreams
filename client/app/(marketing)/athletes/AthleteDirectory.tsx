@@ -1,40 +1,41 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { AthleteLevel, SportCategory, type AthleteDirectoryItem } from 'fad-common';
 import { AthleteRow } from '@/components/site/AthleteCard';
 import { LinkButton } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { findMockAthlete, type MockAthlete } from '@/lib/mockAthletes';
+import { findAthleteProfile } from '@/lib/athleteProfiles';
+import { useDirectoryAthletes } from '@/lib/dataSource';
+import { athleteRouteFromPath, type AthleteRoute } from '@/lib/profileUrl';
+import { nameFromSlug } from '@/lib/slugify';
+import { unsplashPhoto } from '@/lib/unsplash';
+import { AthleteProfileHydrator } from './[athleteSlug]/AthleteProfileHydrator';
+import { ManageProfile } from './[athleteSlug]/manage/ManageProfile';
 
-const SPORTS: Array<{ key: AthleteDirectoryItem['primarySport'] | 'ALL'; label: string }> = [
+const SPORTS: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'All Runners' },
-  { key: SportCategory.Running, label: 'Road, Trail & Ultra' },
-  { key: SportCategory.TrackAndField, label: 'Track & Field' },
+  { key: 'RUNNING', label: 'Road, Trail & Ultra' },
+  { key: 'TRACK_AND_FIELD', label: 'Track & Field' },
 ];
 
-const LEVELS: Array<{
-  key: NonNullable<AthleteDirectoryItem['athleteLevel']> | 'ALL';
-  label: string;
-}> = [
+const LEVELS: Array<{ key: MockAthlete['runnerLevel'] | 'ALL'; label: string }> = [
   { key: 'ALL', label: 'Every Level' },
-  { key: AthleteLevel.Elite, label: 'Pro & Elite' },
-  { key: AthleteLevel.Competitive, label: 'Competitive' },
-  { key: AthleteLevel.Everyday, label: 'Everyday' },
+  { key: 'ELITE', label: 'Pro & Elite' },
+  { key: 'COMPETITIVE', label: 'Competitive' },
+  { key: 'EVERYDAY', label: 'Everyday' },
 ];
 
-const COUNTRIES: Array<{
-  code: NonNullable<AthleteDirectoryItem['countryCode']> | 'ALL';
-  label: string;
-}> = [
+const COUNTRIES: Array<{ code: MockAthlete['countryCode'] | 'ALL'; label: string }> = [
   { code: 'ALL', label: 'Anywhere' },
   { code: 'CA', label: 'Canada' },
   { code: 'US', label: 'United States' },
 ];
 
 type Filters = {
-  sport: AthleteDirectoryItem['primarySport'] | 'ALL';
-  level: NonNullable<AthleteDirectoryItem['athleteLevel']> | 'ALL';
-  country: NonNullable<AthleteDirectoryItem['countryCode']> | 'ALL';
+  sport: MockAthlete['primarySport'] | 'ALL';
+  level: MockAthlete['runnerLevel'] | 'ALL';
+  country: MockAthlete['countryCode'] | 'ALL';
   search: string;
 };
 
@@ -45,13 +46,18 @@ const initialFilters: Filters = {
   search: '',
 };
 
-export function AthleteDirectory({ initialAthletes }: { initialAthletes: AthleteDirectoryItem[] }) {
+const FALLBACK_COVER = unsplashPhoto('1594882645126-14020914d58d', 1400);
+
+export function AthleteDirectory() {
+  const { athletes } = useDirectoryAthletes();
   const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [runtimeRoute, setRuntimeRoute] = useState<AthleteRoute | null>(null);
 
   // Sync initial state from URL (?sport=RUNNING&level=EVERYDAY) for deep-linkability.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
+    setRuntimeRoute(athleteRouteFromPath(window.location.pathname, params));
     setFilters((current) => ({
       ...current,
       sport: (params.get('sport') as Filters['sport']) ?? current.sport,
@@ -61,9 +67,9 @@ export function AthleteDirectory({ initialAthletes }: { initialAthletes: Athlete
   }, []);
 
   const filtered = useMemo(() => {
-    return initialAthletes.filter((athlete) => {
+    return athletes.filter((athlete) => {
       if (filters.sport !== 'ALL' && athlete.primarySport !== filters.sport) return false;
-      if (filters.level !== 'ALL' && athlete.athleteLevel !== filters.level) return false;
+      if (filters.level !== 'ALL' && athlete.runnerLevel !== filters.level) return false;
       if (filters.country !== 'ALL' && athlete.countryCode !== filters.country) return false;
       if (filters.search) {
         const needle = filters.search.toLowerCase();
@@ -72,13 +78,37 @@ export function AthleteDirectory({ initialAthletes }: { initialAthletes: Athlete
       }
       return true;
     });
-  }, [filters, initialAthletes]);
+  }, [athletes, filters]);
 
   const clear = () => setFilters(initialFilters);
-  const isFiltered = filtered.length !== initialAthletes.length;
+  const isFiltered = filtered.length !== athletes.length;
+
+  if (runtimeRoute?.kind === 'manage') {
+    const athlete = findMockAthlete(runtimeRoute.athleteSlug);
+    return (
+      <ManageProfile
+        athleteSlug={runtimeRoute.athleteSlug}
+        athleteName={athlete?.fullName ?? nameFromSlug(runtimeRoute.athleteSlug)}
+        initialCoverPhoto={athlete?.heroMediaUrl ?? FALLBACK_COVER}
+      />
+    );
+  }
+
+  if (runtimeRoute?.kind === 'profile') {
+    const athlete = findMockAthlete(runtimeRoute.athleteSlug);
+    const profile = findAthleteProfile(runtimeRoute.athleteSlug);
+    return (
+      <AthleteProfileHydrator
+        athleteSlug={runtimeRoute.athleteSlug}
+        athlete={athlete}
+        profile={profile}
+      />
+    );
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-col md:flex-row">
+      {/* SIDEBAR — desktop only */}
       <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-72 shrink-0 border-r border-outline-variant bg-surface-container-lowest md:flex md:flex-col">
         <div className="border-b border-outline-variant p-6">
           <h2 className="font-display text-lg font-bold text-on-surface">Filters</h2>
@@ -134,6 +164,8 @@ export function AthleteDirectory({ initialAthletes }: { initialAthletes: Athlete
           ) : null}
         </div>
       </aside>
+
+      {/* MAIN */}
       <main className="flex-1 px-5 py-10 md:px-8 md:py-12">
         <header className="mb-8">
           <h1 className="font-display text-3xl font-extrabold leading-tight text-on-surface md:text-5xl">
@@ -144,6 +176,8 @@ export function AthleteDirectory({ initialAthletes }: { initialAthletes: Athlete
             ones whose journey you want to be part of.
           </p>
         </header>
+
+        {/* SEARCH */}
         <div className="mb-8 flex flex-col gap-3 md:flex-row">
           <label className="relative flex-1">
             <span className="sr-only">Search</span>
@@ -156,6 +190,7 @@ export function AthleteDirectory({ initialAthletes }: { initialAthletes: Athlete
               className="w-full rounded-input border border-outline-variant bg-surface-container-lowest px-12 py-4 text-base text-on-surface shadow-sm transition-all placeholder:text-on-surface-variant focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
             />
           </label>
+          {/* Mobile filter pills */}
           <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar md:hidden">
             {SPORTS.map((sport) => {
               const active = filters.sport === sport.key;
@@ -176,6 +211,8 @@ export function AthleteDirectory({ initialAthletes }: { initialAthletes: Athlete
             })}
           </div>
         </div>
+
+        {/* Mobile level pills */}
         <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar md:hidden">
           {LEVELS.map((level) => {
             const active = filters.level === level.key;
@@ -195,11 +232,11 @@ export function AthleteDirectory({ initialAthletes }: { initialAthletes: Athlete
             );
           })}
         </div>
+
+        {/* RESULTS */}
         {filtered.length === 0 ? (
           <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-12 text-center">
-            <Badge tone="soft">
-              {initialAthletes.length === 0 ? 'No runners yet' : 'No matching runners'}
-            </Badge>
+            <Badge tone="soft">No matching runners</Badge>
             <p className="mt-4 text-on-surface-variant">
               We&rsquo;re still onboarding runners that fit these filters. Check back soon — or forward
               ARC to someone who fits.

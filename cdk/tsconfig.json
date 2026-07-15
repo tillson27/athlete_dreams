@@ -4,16 +4,15 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "lib": ["ES2022"],
-    "outDir": "dist",
-    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": false,
-    "sourceMap": true
+    "noEmit": true,
+    "types": ["node"]
   },
-  "include": ["bin/**/*.ts", "src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "cdk.out"]
+  "include": ["bin/**/*", "lib/**/*", "config/**/*"],
+  "exclude": ["node_modules", "cdk.out"]
 }

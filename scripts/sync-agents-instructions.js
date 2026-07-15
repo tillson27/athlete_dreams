@@ -3,9 +3,9 @@
 const fs = require('fs/promises');
 const path = require('path');
 const agentsMdHeader = require('./agents-md-header');
+const { getRepoRoot, collectAgentsFiles } = require('./repo-paths');
 
-const repoRoot = path.resolve(__dirname, '..');
-const ignoredDirectories = new Set(['.git', 'node_modules', 'dist', '.next', 'out', 'coverage', 'build']);
+const repoRoot = getRepoRoot(__dirname);
 
 const aiDocContent =
     '# USE @AGENTS.md (`AGENTS.md`)\n\n' +
@@ -13,30 +13,6 @@ const aiDocContent =
     '* AGENTS.md documents are hierarchical and additive: apply the closest `AGENTS.md` to the file(s) you are editing plus all parent `AGENTS.md` files up to the repo root.\n' +
     '* On conflicts, the most specific document wins: **file/dir-level > package/root-level (e.g., app/) > repo root**.\n' +
     '* Common roots with their own `AGENTS.md`: `app/`, `client/`, `common/`, `cdk/`, etc.\n';
-
-async function collectAgents(startDir) {
-  const agents = [];
-  const stack = [startDir];
-
-  while (stack.length) {
-    const currentDir = stack.pop();
-    const entries = await fs.readdir(currentDir, { withFileTypes: true });
-
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        if (ignoredDirectories.has(entry.name)) continue;
-        stack.push(path.join(currentDir, entry.name));
-        continue;
-      }
-
-      if (entry.isFile() && entry.name === 'AGENTS.md') {
-        agents.push(path.join(currentDir, entry.name));
-      }
-    }
-  }
-
-  return agents;
-}
 
 async function syncAgentInstructionFiles(agentsPath) {
   const baseDir = path.dirname(agentsPath);
@@ -53,7 +29,7 @@ async function main() {
   agentsMdHeader.main();
   console.log('');
 
-  const agentsFiles = await collectAgents(repoRoot);
+  const agentsFiles = collectAgentsFiles(repoRoot);
 
   await Promise.all(agentsFiles.map(syncAgentInstructionFiles));
   console.log(`Synced ${agentsFiles.length} AGENTS.md files to CLAUDE.md and GEMINI.md`);

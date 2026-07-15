@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { injectable } from 'tsyringe';
-import { AuthenticationMiddleware } from '../../middleware/AuthenticationMiddleware';
 import { BaseRouterFactory } from '../../shared/BaseRouterFactory';
 import { CommunityController } from './CommunityController';
+import { AuthenticationMiddleware } from '../../middleware/AuthenticationMiddleware';
 
 @injectable()
 export class CommunityRouterFactory extends BaseRouterFactory {
@@ -17,9 +17,7 @@ export class CommunityRouterFactory extends BaseRouterFactory {
 
   build(): Router {
     const router = Router();
-    router.get('/feed', this.auth.optional, this.wrap(this.communityController.listFeed));
-    router.post('/reactions', this.auth.required, this.wrap(this.communityController.cheer));
-    router.delete('/reactions', this.auth.required, this.wrap(this.communityController.uncheer));
+    router.get('/feed', this.auth.optional, this.wrap(this.communityController.getFeed));
     return router;
   }
 }
