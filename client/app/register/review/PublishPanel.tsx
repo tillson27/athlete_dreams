@@ -35,7 +35,15 @@ function useConfetti() {
 }
 
 export function PublishPanel() {
-  const { profile } = useOnboarding();
+  const {
+    profile,
+    mode,
+    publish: publishToApi,
+    publishChecklist,
+    saveError,
+    saving,
+    draftSlug,
+  } = useOnboarding();
   const [agreed, setAgreed] = useState(false);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState(false);
@@ -44,8 +52,11 @@ export function PublishPanel() {
 
   const firstName = profile.name.trim().split(' ')[0] || 'Athlete';
   const hasName = profile.name.trim().length > 0;
-  const slug = slugifyName(profile.name) || 'your-name';
-  const profileExists = Boolean(findMockAthlete(slug));
+  // In api mode the slug is the server-reserved one (it may carry a -2..-5 suffix
+  // after a collision); mock keeps the name-derived slug.
+  const slug = (mode === 'api' ? draftSlug : null) ?? (slugifyName(profile.name) || 'your-name');
+  // In api mode the profile exists once created; mock checks the static roster.
+  const profileExists = mode === 'api' ? Boolean(draftSlug) : Boolean(findMockAthlete(slug));
   const manageHref = `/athletes/${slug}/manage`;
   const publicUrl = profileUrl(slug);
 
@@ -77,9 +88,22 @@ export function PublishPanel() {
     (completionChecks.filter(Boolean).length / completionChecks.length) * 100,
   );
 
-  const publish = () => {
+  const publish = async () => {
     if (!agreed || !hasName) {
       setError(true);
+      return;
+    }
+    if (mode === 'api') {
+      setStatus('publishing');
+      const published = await publishToApi();
+      if (published) {
+        markPublished();
+        setStatus('published');
+      } else {
+        // The guard checklist / save error renders below; return to idle so the
+        // athlete can fix what's missing and publish again.
+        setStatus('idle');
+      }
       return;
     }
     setStatus('publishing');
@@ -227,15 +251,35 @@ export function PublishPanel() {
           </Link>{' '}
           before publishing.
         </p>
-      ) : missing.length > 0 ? (
+      ) : mode === 'mock' && missing.length > 0 ? (
         <p className="text-xs text-on-surface-variant">
           Still missing {missing.join(', ')} — you can add them after publishing.
+        </p>
+      ) : null}
+      {mode === 'api' && publishChecklist.length > 0 ? (
+        <div
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          <p>Before you can publish, finish these:</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5 font-normal">
+            {publishChecklist.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : mode === 'api' && saveError ? (
+        <p
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          {saveError}
         </p>
       ) : null}
       <button
         type="button"
         onClick={publish}
-        disabled={status === 'publishing' || !hasName}
+        disabled={status === 'publishing' || saving || !hasName}
         className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
       >
         {status === 'publishing' ? (

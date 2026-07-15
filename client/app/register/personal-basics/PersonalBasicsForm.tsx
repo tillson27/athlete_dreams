@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { EditReturnBanner } from '../_components/EditReturnBanner';
+import { StepAdvance } from '../_components/StepAdvance';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { formInputClass as inputClass } from '@/components/ui/formStyles';
 
@@ -153,13 +154,14 @@ export function PersonalBasicsForm() {
             </div>
 
             <div className="pt-4">
-              <Link
+              <StepAdvance
+                step={1}
                 href={fromReview ? '/register/review' : '/register/athletics'}
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 text-sm font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-[0.98]"
               >
                 {fromReview ? 'Save & return to review' : 'Next: Achievements'}
                 <Icon name={fromReview ? 'check' : 'arrow-forward'} className="h-5 w-5" />
-              </Link>
+              </StepAdvance>
               <p className="mt-4 text-center text-xs text-tertiary">
                 By continuing, you agree to Arc&rsquo;s{' '}
                 <Link href="/terms" target="_blank" className="underline hover:text-primary">

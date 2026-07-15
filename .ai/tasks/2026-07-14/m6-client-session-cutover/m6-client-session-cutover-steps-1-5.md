@@ -168,10 +168,36 @@
 ## Step 5 - Onboarding wizard persistence: create, per-step PATCH/set-replace, publish
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1, 2
 **Size:** large
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-14
+
+### Completion Notes
+- New pure/typed `client/lib/onboardingApi.ts` holds every wizard→API mapping + persistence call; `OnboardingContext` consumes it and the four page components change minimally (each "Next" link becomes a shared `client/app/register/_components/StepAdvance.tsx` control — a plain `<Link>` in mock, a save-on-advance button in api). Extracted the shared wizard view-model types into a framework-free `client/app/register/_components/onboardingProfile.ts` so the pure lib never imports the `'use client'` context (re-exported from `OnboardingContext` so existing imports keep compiling). `OnboardingContext` branches at the provider seam (`MockOnboardingProvider` = today's localStorage flow verbatim; `ApiOnboardingProvider` = create-on-first-save, PATCH/set-replace per step, real publish), keeping `profile`/`update`/`reset` identical and adding an inert-in-mock persistence surface (`mode`/`hydrating`/`signedOut`/`saving`/`saveError`/`saveAndAdvance`/`publish`/`publishChecklist`/`draftSlug`).
+
+- **Field mapping (wizard field → API field)** — faithful to the seed semantics (`app/prisma/seed.ts`) and the publish guard (`storyIntro` + ≥1 PB + `disciplineLabel`), documented in the lib header:
+
+  | Wizard field | API field | Endpoint / step | Notes |
+  | --- | --- | --- | --- |
+  | `name` | `athleteSlug` (slugified) + `fullName` | CREATE (slug+fullName+primarySport), step-1 PATCH (fullName) | `slugifyName(name)`; padded to ≥2 chars for `slugSchema` |
+  | `discipline` | `disciplineLabel` (free text) **and** `primarySport='RUNNING'` | CREATE (primarySport), step-1 PATCH (disciplineLabel) | wizard is runners-only, so sport is always RUNNING; the chosen running discipline is the free-text label |
+  | `location` | `hometown` | CREATE + step-1 PATCH | `countryCode` not captured by the wizard, left null |
+  | `bio` ("Your story") | `storyBody` (paragraph array) | step-1 PATCH | split on blank lines into paragraphs, matching seed's multi-paragraph `storyBody` |
+  | `mission` ("Your tagline") | `storyIntro` (short hook the profile leads with) | step-3 PATCH | seed's `storyIntro` is the tagline-style hook; the guard requires it |
+  | `values` | `values` | CREATE + step-3 PATCH | short word chips |
+  | `personalBests[{distance,time,resultUrl}]` | `personalBests[{label,value,resultUrl}]` | step-2 PUT personal-bests | order preserved (sortOrder); result URL carried |
+  | `careerHighlights[{title,detail,resultUrl}]` | `highlights[{title,detail,resultUrl}]` | step-2 PUT highlights | optional |
+  | `previousRaces[{name,result,resultUrl}]` | `races[{resultName,displayDate,resultSummary,resultUrl}]` | step-2 PUT races | wizard has no race date → `displayDate: 'Date TBD'` placeholder (the manage editor adds the real date; renders cleanly, satisfies the min-1 contract) |
+
+  Review (step 4) reads the draft from the API: in api mode `ApiOnboardingProvider` hydrates `profile` from `fetchMyProfile` on entry, so `ReviewSummary`/`ProfilePreview` (which read the context) show server data with no per-page change; a fresh reload re-hydrates from the server. Publish renders the guard 422 `details.missing` as a human checklist (`storyIntro`→"Add your tagline in Step 3", `personalBests`→"Add at least one personal best in Step 2", `disciplineLabel`→"Choose your discipline in Step 1"); success keeps today's confetti/next-actions UX and calls `markPublished()`. Token-expiry mid-wizard: the api layer's 401 listener clears the session (session.ts), which flips `signedOut`; `OnboardingSessionNotice` (rendered from the register layout, inert in mock / when signed in) prompts re-sign-in while in-memory answers stay held by the context.
+
+- **Slug-conflict deviation (backend returns 500, not 409):** the plan (Context §4/§11) assumed a duplicate `athleteSlug` on `POST /v1/athletes` returns 409, but the API only maps a duplicate **user** profile to 409 (`ConflictError`); a duplicate **slug** hits the Prisma `athleteSlug` unique constraint → `P2002` → **500** (`internal_error`), and its envelope carries no slug signal. Per the "do not touch `app/src`" boundary I did **not** change the backend; instead `createProfileWithSlugRetry` keys the slug retry on **500** (bounded `<slug>-2..-5`, each attempt idempotent since the slug changes) and treats a **409** as "user already has a profile → resume via `fetchMyProfile`" (the more-correct semantics). Exhausting the candidates surfaces a synthetic conflict → "That profile URL is taken — try a slightly different name in Step 1." **Recommendation for a follow-up backend touch:** map the `athleteSlug` unique violation to `ConflictError` (409) in `AthleteService.createProfileForUser`/repository so the contract matches §4/§11 and the client can drop the 500 branch.
+
+- **Live verification (report honest):** scripted esbuild-bundled driver exercising the REAL `onboardingApi.ts`/`api.ts` in `DATA_SOURCE=api` against a locally-booted, seeded API (`fad_dev`, allowlist open) — full loop **30/30 PASS**: sign-up → fresh wizard (404→null) → step-1 create with a pre-reserved colliding slug forcing the retry onto `-2` → step-1 PATCH (disciplineLabel/hometown, bio→2 storyBody paragraphs, primarySport RUNNING, storyIntro deferred) → step-2 set-replace (2 PBs w/ order+resultUrl, 1 highlight, 1 race with name→resultName + result→resultSummary) → **publish 422** before storyIntro with the tagline checklist → step-3 (storyIntro from mission, values) → review `fetchMyProfile` round-trips every field incl. bio paragraphs → **publish 200** (publishedAt set) → fixture slug **appears in GET /v1/athletes** → re-entry `loadDraftProfile` returns the profile. All `m6s5-` fixtures (users + profiles + relations, both the tester and the collider) deleted after each run; DB verified back to baseline (10 users / 7 athletes / 7 published / 0 leak). Temp driver/cleanup/shim files removed.
+- **Mock-mode DOM byte-safety (step-12 method):** built the `GITHUB_PAGES=true` mock export at the branch base vs with these changes; after stripping Next's per-build nondeterminism (RSC flight-data scripts, `_next` content-hashed asset paths, preload tags, segment-marker comments) the rendered visible DOM is **7/7 IDENTICAL** across `/register`, `/register/personal-basics`, `/register/athletics`, `/register/values-social`, `/register/review`, `/sign-up`, `/sign-in` (the raw ~635-byte deltas on the register pages are purely the asset-graph shift from the new module imports; sign-up/sign-in are identical byte counts). Normalizer confirmed non-empty (review page 14.7 KB normalized, retaining the form markup).
+- **CI:** `npm run ci` green (exit 0) — type-check (common/app/client), lint:fix (`✔ No ESLint warnings or errors`), full build across all three modes, `app` tests 13 passed / 60 skipped (DB-gated). `RUN_DB_TESTS=1 npx vitest run` from `app/` fully green: 8 files / 73 tests. Did not touch `dashboard/*`, the manage editor, `athleteEdits.ts`, `app/src`, `common/`, `cdk/`, or `.github/`.
 
 ### Context
 
@@ -191,9 +217,9 @@
 - Save-on-step-advance (not per-keystroke); surface per-step save errors inline.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

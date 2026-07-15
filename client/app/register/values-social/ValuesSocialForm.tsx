@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
 import { EditReturnBanner } from '../_components/EditReturnBanner';
+import { StepAdvance } from '../_components/StepAdvance';
 import { useOnboarding } from '../_components/OnboardingContext';
 
 const VALUES = [
@@ -116,12 +117,13 @@ export function ValuesSocialForm() {
               <Icon name="arrow-back" className="h-5 w-5" />
               Back
             </Link>
-            <Link
+            <StepAdvance
+              step={3}
               href="/register/review"
               className="w-full rounded-lg bg-primary px-12 py-4 text-center font-bold text-white shadow-lg transition-all hover:bg-primary-strong active:scale-95 sm:w-auto"
             >
               {fromReview ? 'Save & return to review' : 'Next: Final Review'}
-            </Link>
+            </StepAdvance>
           </div>
         </div>
       </div>
