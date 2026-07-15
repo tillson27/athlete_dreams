@@ -25,6 +25,7 @@ export const testConfig: EnvironmentConfig = {
   logRetentionDays: 14,
   nodeEnv: 'production',
   logLevel: 'info',
+  jwtAccessTokenTtlSeconds: 86400,
 
   // Temporary-URL mode: no `domain` until athletearc.ca DNS reaches Route 53
   // (currently at GoDaddy). The stack serves https://<distribution>.cloudfront.net;

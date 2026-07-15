@@ -134,6 +134,7 @@ export class ApiStack extends Stack {
       PORT: String(CONTAINER_PORT),
       CORS_ALLOWED_ORIGINS: buildCorsAllowedOrigins(config),
       SIGNUP_EMAIL_ALLOWLIST: (config.signupEmailAllowlist ?? []).join(','),
+      JWT_ACCESS_TOKEN_TTL_SECONDS: String(config.jwtAccessTokenTtlSeconds),
     };
 
     const containerSecrets: Record<string, EcsSecret> = {

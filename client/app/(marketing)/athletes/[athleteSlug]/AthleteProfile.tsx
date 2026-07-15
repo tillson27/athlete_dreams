@@ -86,14 +86,16 @@ export function AthleteProfile({
     <div className="pb-40 md:pb-16">
       {/* HERO */}
       <section className="relative h-[46vh] min-h-[360px] w-full overflow-hidden md:h-[70vh] md:min-h-0">
-        <Image
-          src={athlete.heroMediaUrl}
-          alt={`${athlete.fullName} — ${profile.disciplineLabel}`}
-          fill
-          priority
-          sizes="100vw"
-          className="ken-burns object-cover object-center"
-        />
+        {athlete.heroMediaUrl ? (
+          <Image
+            src={athlete.heroMediaUrl}
+            alt={`${athlete.fullName} — ${profile.disciplineLabel}`}
+            fill
+            priority
+            sizes="100vw"
+            className="ken-burns object-cover object-center"
+          />
+        ) : null}
         {/* warm bottom-up wash + vignette + grain for an editorial feel */}
         <div
           aria-hidden="true"

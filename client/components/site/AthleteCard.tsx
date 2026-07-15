@@ -26,13 +26,15 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
       className="card-lift card-lift-hover group flex flex-col overflow-hidden rounded-card bg-surface-container-lowest ring-1 ring-inset ring-outline-variant/60 md:h-72 md:flex-row"
     >
       <div className="relative h-64 w-full overflow-hidden bg-surface-container md:h-full md:w-80">
-        <Image
-          src={athlete.heroMediaUrl}
-          alt={`${athlete.fullName} running`}
-          fill
-          sizes="(max-width: 768px) 100vw, 320px"
-          className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-        />
+        {athlete.heroMediaUrl ? (
+          <Image
+            src={athlete.heroMediaUrl}
+            alt={`${athlete.fullName} running`}
+            fill
+            sizes="(max-width: 768px) 100vw, 320px"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+          />
+        ) : null}
         <div className="absolute left-4 top-4">
           <span className="inline-flex items-center rounded-pill bg-inverse-surface/85 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white backdrop-blur">
             {LEVEL_LABEL[athlete.runnerLevel]}

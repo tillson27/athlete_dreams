@@ -58,6 +58,17 @@ export interface EnvironmentConfig {
   readonly logLevel: string;
 
   /**
+   * CONTRACT: access-token lifetime (seconds), injected as
+   * `JWT_ACCESS_TOKEN_TTL_SECONDS` (consumed by `JwtService`, default 3600 when
+   * unset). Sessions are access-token-only until Phase 4 adds refresh tokens, so
+   * `test` runs a long 24h (86400) window: an accepted trade-off for the
+   * invite-gated test env — tokens live in `localStorage` (XSS-exposed) and
+   * testers re-sign-in on expiry rather than silently refresh. `prod` keeps the
+   * short 3600 default until refresh-token rotation lands.
+   */
+  readonly jwtAccessTokenTtlSeconds: number;
+
+  /**
    * CONTRACT: omit to run the environment on the CloudFront default domain
    * (`https://<distribution>.cloudfront.net`) — no Route 53 zone, ACM cert, or
    * alias records are created, and the front door stays same-origin for the

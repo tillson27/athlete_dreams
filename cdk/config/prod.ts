@@ -25,6 +25,7 @@ export const prodConfig: EnvironmentConfig = {
   logRetentionDays: 30,
   nodeEnv: 'production',
   logLevel: 'info',
+  jwtAccessTokenTtlSeconds: 3600,
 
   domain: {
     rootDomain: 'athletearc.ca',

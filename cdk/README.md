@@ -98,6 +98,14 @@ environment changes; ECS rolls the tasks in ~2–3 minutes):
 Locally, `SIGNUP_EMAIL_ALLOWLIST` in `app/.env` takes effect immediately (the
 service re-reads the variable per call — no restart needed).
 
+**Session TTL for testers** — access tokens are the only session credential
+until Phase 4 adds refresh tokens, so `test` sets `jwtAccessTokenTtlSeconds`
+(injected as `JWT_ACCESS_TOKEN_TTL_SECONDS`) to a long 24h (`86400`) window so
+invite-gated testers stay signed in through a full onboarding session without a
+silent refresh path. That is an accepted trade-off: the client stores the token
+in `localStorage` (XSS-exposed), and on expiry testers simply re-sign-in — `prod`
+keeps the short 3600 default until refresh-token rotation lands.
+
 ---
 
 ## 2. One-time bootstrap
