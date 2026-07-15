@@ -3,10 +3,25 @@
 ## Step 6 - Dashboard + manage editor cutover to the real profile
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1, 5
 **Size:** medium
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-14
+
+### Completion Notes
+
+- New pure mapper module `client/lib/manageApi.ts` (mirrors `client/lib/onboardingApi.ts`): `profileToEdits` (DTO → `AthleteEdits`, load) + `saveEditsToApi` (four set-replace PUTs, sequential) + `toManageSaveError` (one curated sentence). Field mapping: highlights `title/detail/resultsUrl/photos ↔ title/detail/resultUrl/photoRefs`; races `name/date/result/resultsUrl/links/photos ↔ resultName/displayDate/resultSummary/resultUrl/links/photoRefs`; roadmap `name/date ↔ eventName/displayDate`; gallery display-URL ↔ media ref. The editor's per-highlight `date` has no API column (highlights set-replace carries no date), so it is dropped on save like `blob:` photos (noted; matches the wizard, which also drops highlight dates).
+- `client/lib/athleteEdits.ts` unchanged — its exported contract (`loadEdits/saveEdits/deriveEdits/clearEdits/subscribeToEdits` + `AthleteEdits`) is the mock/static seam and stays byte-safe; the api-mode seam lives in `manageApi.ts` alongside it (same pattern step 5 used).
+- `ManageProfile.tsx` refactored to a `DATA_SOURCE` branch over one shared `EditorLayout`. Mock path is byte-identical (auto-save to `arc-manage-<slug>`, "Reset to published"). Api path: owner-only (loads `fetchMyProfile`, gates non-owner/anonymous/404-no-profile to a "view public page" card), explicit "Save changes" button issuing the set-replace PUTs, `blob:` stripped pre-save, one-sentence save error, loading skeleton.
+- `DashboardClient.tsx` refactored to a `DATA_SOURCE` branch over one shared `DashboardView`. Mock path byte-identical (onboarding store + `ProfilePreview`). Api path: identity from the session, profile from `fetchMyProfile`, Draft/Live from `publishedAt`, checklist derived from real fields (storyBody, ≥1 PB, discipline, values, highlights/races), share link uses the real slug, sign-out works, loading skeleton, and a `GET /v1/athletes/me` 404 → "no profile yet → Start your story (/register)" state.
+
+**Verification (local, booted API + seeded Postgres):**
+- Scripted API driver (Node): sign-up → `GET /me` 404 pre-create → create → PATCH story/discipline → PUT PBs → `GET /me` Draft with all checklist fields → publish → `GET /me` Live → set-replace highlights/races/roadmap/gallery → `GET /me` + public `GET /v1/athletes/{slug}` reflect every field with correct mapping. All assertions passed.
+- In-browser (headless Chrome over CDP, api-mode client on :3000 = CORS-allowed origin): dashboard shows "Profile live" + real first name + completeness % + real-slug share link + checklist rows; owner sees the editor with the real name + Save button; non-owner slug is gated (no Save button); profile-less user gets the no-profile state. **Editor save round-trip**: added a highlight + roadmap item via the real forms, clicked Save, saw the saved acknowledgement, and confirmed both landed via `GET /v1/athletes/me` and on the public profile API.
+- Mock-mode DOM byte-safety (step-12 method): `STATIC_EXPORT=true` export before vs after — dashboard, manage, and profile page bodies are byte-identical (only build-id/chunk-hash noise differs).
+- All E2E fixtures cleaned up; DB back to baseline (users=10, athlete_profiles=7, accomplishments=27, race_results=36, personal_bests=28, athlete_events=21, follows=0).
+- `npm run ci` green; `RUN_DB_TESTS=1 npx vitest run` (app/) green — 74/74.
 
 ### Context
 
@@ -23,12 +38,12 @@
 - `athleteEdits.ts` keeps its exported contract (`loadEdits/saveEdits/deriveEdits/subscribeToEdits`) with an api-mode implementation behind the seam; map API DTOs ↔ the editor's `AthleteEdits` shape in pure functions.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

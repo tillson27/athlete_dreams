@@ -31,7 +31,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 3 | Auth pages: real submission + invite-only/409/401 error UX | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
 | 4 | Follows cutover: signed-in via API, anonymous prompts sign-in | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
 | 5 | Onboarding wizard persistence: create, per-step PATCH/set-replace, publish | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-1-5.md` |
-| 6 | Dashboard + manage editor cutover to the real profile | Incomplete | unassigned | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-6-8.md` |
+| 6 | Dashboard + manage editor cutover to the real profile | Complete | claude-opus-4.8 | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-6-8.md` |
 | 7 | Config + local api-mode E2E verification: 24h test tokens, full loop | Incomplete | unassigned | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-6-8.md` |
 | 8 | Final validation & cleanup (required, always last) | Incomplete | unassigned | `.ai/tasks/2026-07-14/m6-client-session-cutover/m6-client-session-cutover-steps-6-8.md` |
 

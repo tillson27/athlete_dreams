@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { findAthleteProfile } from '@/lib/athleteProfiles';
+import { DATA_SOURCE } from '@/lib/dataSource';
+import { useSession } from '@/lib/session';
 import {
   deriveEdits,
   loadEdits,
@@ -15,12 +17,28 @@ import {
   type EditRace as Race,
   type EditRoadmapItem as RoadmapItem,
 } from '@/lib/athleteEdits';
+import { fetchMyProfile } from '@/lib/api';
+import { profileToEdits, saveEditsToApi, toManageSaveError } from '@/lib/manageApi';
 import { uid } from '@/lib/uid';
 
 const inputClass =
   'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/25';
 
+const EMPTY_EDITS: AthleteEdits = { highlights: [], races: [], roadmap: [], gallery: [] };
+
 const toObjectUrls = (files: FileList) => Array.from(files).map((file) => URL.createObjectURL(file));
+
+// Uploaded photos live in `blob:` URLs that cannot survive a reload; strip them
+// before the api set-replace PUTs (mock mode strips them in `saveEdits`).
+function stripBlobPhotos(edits: AthleteEdits): AthleteEdits {
+  const keep = (url: string) => !url.startsWith('blob:');
+  return {
+    highlights: edits.highlights.map((h) => ({ ...h, photos: h.photos.filter(keep) })),
+    races: edits.races.map((r) => ({ ...r, photos: r.photos.filter(keep) })),
+    roadmap: edits.roadmap,
+    gallery: edits.gallery.filter(keep),
+  };
+}
 
 // Swap an item with its neighbour to move it up (-1) or down (+1) the list.
 function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
@@ -31,7 +49,35 @@ function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
   return next;
 }
 
+// Mode seam. Mock mode (default, GitHub Pages / static export) is byte-identical
+// to the prototype: seed from the published athleteProfiles data and auto-save
+// edits to `arc-manage-<slug>` localStorage. Api mode loads the owner's four
+// editable sets from `GET /v1/athletes/me` and Saves them via the set-replace
+// PUTs, gated to the signed-in owner of the slug.
 export function ManageProfile({
+  athleteSlug,
+  athleteName,
+  initialCoverPhoto,
+}: {
+  athleteSlug: string;
+  athleteName: string;
+  initialCoverPhoto: string;
+}) {
+  if (DATA_SOURCE === 'api') {
+    return <ManageProfileApi athleteSlug={athleteSlug} initialCoverPhoto={initialCoverPhoto} />;
+  }
+  return (
+    <ManageProfileMock
+      athleteSlug={athleteSlug}
+      athleteName={athleteName}
+      initialCoverPhoto={initialCoverPhoto}
+    />
+  );
+}
+
+// --- Mock mode: today's localStorage-backed editor, unchanged ---
+
+function ManageProfileMock({
   athleteSlug,
   athleteName,
   initialCoverPhoto,
@@ -43,42 +89,237 @@ export function ManageProfile({
   // Seed from the athlete's published profile, then hydrate any saved edits.
   const published = useMemo<AthleteEdits>(() => {
     const profile = findAthleteProfile(athleteSlug);
-    return profile ? deriveEdits(profile) : { highlights: [], races: [], roadmap: [], gallery: [] };
+    return profile ? deriveEdits(profile) : EMPTY_EDITS;
   }, [athleteSlug]);
 
-  const [highlights, setHighlights] = useState<Highlight[]>(published.highlights);
-  const [races, setRaces] = useState<Race[]>(published.races);
-  const [roadmap, setRoadmap] = useState<RoadmapItem[]>(published.roadmap);
+  const [edits, setEdits] = useState<AthleteEdits>(published);
   const [coverPhoto, setCoverPhoto] = useState<string>(initialCoverPhoto);
-  const [gallery, setGallery] = useState<string[]>(published.gallery);
   const [hydrated, setHydrated] = useState(false);
 
   // Load any previously saved edits for this athlete (client-only, avoids SSR mismatch).
   useEffect(() => {
     const saved = loadEdits(athleteSlug);
-    if (saved) {
-      setHighlights(saved.highlights);
-      setRaces(saved.races);
-      setRoadmap(saved.roadmap);
-      setGallery(saved.gallery);
-    }
+    if (saved) setEdits(saved);
     setHydrated(true);
   }, [athleteSlug]);
 
   // Persist edits whenever they change, once hydration has settled.
   useEffect(() => {
     if (!hydrated) return;
-    saveEdits(athleteSlug, { highlights, races, roadmap, gallery });
-  }, [hydrated, athleteSlug, highlights, races, roadmap, gallery]);
+    saveEdits(athleteSlug, edits);
+  }, [hydrated, athleteSlug, edits]);
 
   const resetToPublished = () => {
     clearEdits(athleteSlug);
-    setHighlights(published.highlights);
-    setRaces(published.races);
-    setRoadmap(published.roadmap);
-    setGallery(published.gallery);
+    setEdits(published);
     setCoverPhoto(initialCoverPhoto);
   };
+
+  return (
+    <EditorLayout
+      athleteName={athleteName}
+      publicHref={`/athletes/${athleteSlug}`}
+      edits={edits}
+      setEdits={setEdits}
+      coverPhoto={coverPhoto}
+      setCoverPhoto={setCoverPhoto}
+      headerActions={<ResetButton onClick={resetToPublished} label="Reset to published" />}
+      footer={
+        <p className="mt-8 text-center text-xs text-on-surface-variant">
+          Changes save to this browser and appear on your public profile. Uploaded photos stay on
+          this device until we add photo hosting.
+        </p>
+      }
+    />
+  );
+}
+
+// --- Api mode: load from GET /v1/athletes/me, Save via set-replace PUTs ---
+
+type ApiEditorState =
+  | { kind: 'loading' }
+  | { kind: 'signed-out' }
+  | { kind: 'not-owner'; ownerSlug: string | null }
+  | { kind: 'load-error' }
+  | { kind: 'ready'; athleteName: string; edits: AthleteEdits };
+
+function ManageProfileApi({
+  athleteSlug,
+  initialCoverPhoto,
+}: {
+  athleteSlug: string;
+  initialCoverPhoto: string;
+}) {
+  const { session, ready } = useSession();
+  const signedIn = Boolean(session);
+  const [state, setState] = useState<ApiEditorState>({ kind: 'loading' });
+
+  // Resolve ownership and the seed edits from the caller's own profile. The
+  // editor is owner-only: the set-replace PUTs always target the caller's own
+  // profile, so a non-owner (or anonymous visitor) can never edit this slug.
+  useEffect(() => {
+    if (!ready) return;
+    if (!signedIn) {
+      setState({ kind: 'signed-out' });
+      return;
+    }
+    let active = true;
+    setState({ kind: 'loading' });
+    fetchMyProfile()
+      .then((profile) => {
+        if (!active) return;
+        if (profile.athleteSlug !== athleteSlug) {
+          setState({ kind: 'not-owner', ownerSlug: profile.athleteSlug });
+          return;
+        }
+        setState({ kind: 'ready', athleteName: profile.fullName, edits: profileToEdits(profile) });
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        // A 404 means the signed-in user has no profile at all — they cannot own
+        // this slug, so route them like any other non-owner.
+        setState(isNotFound(error) ? { kind: 'not-owner', ownerSlug: null } : { kind: 'load-error' });
+      });
+    return () => {
+      active = false;
+    };
+    // Re-run only when sign-in state or the routed slug changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, signedIn, athleteSlug]);
+
+  if (state.kind === 'loading') return <EditorLoading />;
+  if (state.kind === 'signed-out') return <EditorGate variant="signed-out" athleteSlug={athleteSlug} />;
+  if (state.kind === 'not-owner')
+    return <EditorGate variant="not-owner" athleteSlug={athleteSlug} ownerSlug={state.ownerSlug} />;
+  if (state.kind === 'load-error') return <EditorGate variant="error" athleteSlug={athleteSlug} />;
+
+  return (
+    <ApiEditorReady
+      athleteSlug={athleteSlug}
+      athleteName={state.athleteName}
+      initialCoverPhoto={initialCoverPhoto}
+      initialEdits={state.edits}
+    />
+  );
+}
+
+function ApiEditorReady({
+  athleteSlug,
+  athleteName,
+  initialCoverPhoto,
+  initialEdits,
+}: {
+  athleteSlug: string;
+  athleteName: string;
+  initialCoverPhoto: string;
+  initialEdits: AthleteEdits;
+}) {
+  const [edits, setEdits] = useState<AthleteEdits>(initialEdits);
+  const [coverPhoto, setCoverPhoto] = useState<string>(initialCoverPhoto);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    setSaveError(null);
+    setSaved(false);
+    const stripped = stripBlobPhotos(edits);
+    try {
+      await saveEditsToApi(stripped);
+      setEdits(stripped);
+      setSaved(true);
+    } catch (error) {
+      setSaveError(toManageSaveError(error));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Any edit invalidates the "Saved" acknowledgement so it never lingers stale.
+  const setEditsAndClearSaved = (
+    updater: AthleteEdits | ((current: AthleteEdits) => AthleteEdits)
+  ) => {
+    setSaved(false);
+    setEdits(updater);
+  };
+
+  return (
+    <EditorLayout
+      athleteName={athleteName}
+      publicHref={`/athletes/${athleteSlug}`}
+      edits={edits}
+      setEdits={setEditsAndClearSaved}
+      coverPhoto={coverPhoto}
+      setCoverPhoto={setCoverPhoto}
+      headerActions={
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="label-bold inline-flex items-center gap-2 rounded-pill bg-primary px-5 py-2 text-on-primary transition-all hover:bg-primary-strong disabled:opacity-60"
+        >
+          <Icon name={saving ? 'history' : 'check'} className="h-4 w-4" />
+          {saving ? 'Saving…' : 'Save changes'}
+        </button>
+      }
+      footer={
+        <div className="mt-8 text-center text-xs">
+          {saveError ? (
+            <p className="text-error">{saveError}</p>
+          ) : saved ? (
+            <p className="text-success">Saved. Your public profile is up to date.</p>
+          ) : (
+            <p className="text-on-surface-variant">
+              Changes save to your profile when you tap Save. Uploaded photos stay on this device
+              until we add photo hosting.
+            </p>
+          )}
+        </div>
+      }
+    />
+  );
+}
+
+function isNotFound(error: unknown): boolean {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'status' in error &&
+    (error as { status: unknown }).status === 404
+  );
+}
+
+// --- Shared editor layout (identical body for both modes) ---
+
+function EditorLayout({
+  athleteName,
+  publicHref,
+  edits,
+  setEdits,
+  coverPhoto,
+  setCoverPhoto,
+  headerActions,
+  footer,
+}: {
+  athleteName: string;
+  publicHref: string;
+  edits: AthleteEdits;
+  setEdits: (updater: AthleteEdits | ((current: AthleteEdits) => AthleteEdits)) => void;
+  coverPhoto: string;
+  setCoverPhoto: (url: string) => void;
+  headerActions: ReactNode;
+  footer: ReactNode;
+}) {
+  const { highlights, races, roadmap, gallery } = edits;
+  const setHighlights = (updater: (prev: Highlight[]) => Highlight[]) =>
+    setEdits((current) => ({ ...current, highlights: updater(current.highlights) }));
+  const setRaces = (updater: (prev: Race[]) => Race[]) =>
+    setEdits((current) => ({ ...current, races: updater(current.races) }));
+  const setRoadmap = (updater: (prev: RoadmapItem[]) => RoadmapItem[]) =>
+    setEdits((current) => ({ ...current, roadmap: updater(current.roadmap) }));
+  const setGallery = (updater: (prev: string[]) => string[]) =>
+    setEdits((current) => ({ ...current, gallery: updater(current.gallery) }));
 
   // Staged photos for the two "add" forms (previewed before the row is added).
   const [highlightPhotos, setHighlightPhotos] = useState<string[]>([]);
@@ -164,16 +405,9 @@ export function ManageProfile({
             <Icon name="arrow-back" className="h-4 w-4" />
             Dashboard
           </Link>
-          <button
-            type="button"
-            onClick={resetToPublished}
-            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface-variant transition-colors hover:border-error hover:text-error"
-          >
-            <Icon name="history" className="h-4 w-4" />
-            Reset to published
-          </button>
+          {headerActions}
           <Link
-            href={`/athletes/${athleteSlug}`}
+            href={publicHref}
             className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
           >
             View public page
@@ -393,10 +627,7 @@ export function ManageProfile({
         </SectionCard>
       </div>
 
-      <p className="mt-8 text-center text-xs text-on-surface-variant">
-        Changes save to this browser and appear on your public profile. Uploaded photos stay on this
-        device until we add photo hosting.
-      </p>
+      {footer}
     </div>
   );
 }
@@ -517,6 +748,19 @@ function AddButton() {
   );
 }
 
+function ResetButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface-variant transition-colors hover:border-error hover:text-error"
+    >
+      <Icon name="history" className="h-4 w-4" />
+      {label}
+    </button>
+  );
+}
+
 function ReorderControls({
   onUp,
   onDown,
@@ -560,5 +804,76 @@ function EmptyState({ label }: { label: string }) {
     <li className="rounded-input border border-dashed border-outline-variant/60 p-4 text-center text-sm text-on-surface-variant">
       {label}
     </li>
+  );
+}
+
+// --- Api-mode chrome (loading + owner gates) ---
+
+function EditorLoading() {
+  return (
+    <div className="mx-auto w-full max-w-4xl px-5 py-12 md:px-16">
+      <div className="h-6 w-32 animate-pulse rounded-pill bg-surface-container" />
+      <div className="mt-4 h-10 w-64 animate-pulse rounded-input bg-surface-container" />
+      <div className="mt-8 space-y-6">
+        <div className="h-56 animate-pulse rounded-card bg-surface-container" />
+        <div className="h-40 animate-pulse rounded-card bg-surface-container" />
+      </div>
+    </div>
+  );
+}
+
+function EditorGate({
+  variant,
+  athleteSlug,
+  ownerSlug,
+}: {
+  variant: 'signed-out' | 'not-owner' | 'error';
+  athleteSlug: string;
+  ownerSlug?: string | null;
+}) {
+  const copy = {
+    'signed-out': {
+      icon: 'lock' as IconName,
+      title: 'Sign in to edit your page',
+      body: 'The athlete view is only available to the athlete who owns this profile.',
+    },
+    'not-owner': {
+      icon: 'lock' as IconName,
+      title: 'This isn’t your page to edit',
+      body: 'You can only edit your own athlete profile. View this athlete’s public page instead.',
+    },
+    error: {
+      icon: 'history' as IconName,
+      title: 'We couldn’t load the editor',
+      body: 'Something went wrong loading your profile. Please try again.',
+    },
+  }[variant];
+
+  return (
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+        <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/20 text-primary">
+          <Icon name={copy.icon} className="h-7 w-7" />
+        </span>
+        <h1 className="font-display text-2xl font-extrabold text-on-surface">{copy.title}</h1>
+        <p className="mt-2 text-sm text-on-surface-variant">{copy.body}</p>
+        <div className="mt-6 flex flex-col gap-3">
+          {variant === 'signed-out' ? (
+            <Link
+              href="/sign-in"
+              className="label-bold rounded-lg bg-primary px-6 py-3 text-on-primary transition-all hover:bg-primary-strong"
+            >
+              Sign in
+            </Link>
+          ) : null}
+          <Link
+            href={`/athletes/${ownerSlug ?? athleteSlug}`}
+            className="label-bold rounded-lg border-2 border-outline px-6 py-3 text-on-surface transition-all hover:bg-surface-container"
+          >
+            View public page
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

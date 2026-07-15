@@ -1,35 +1,35 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import type { AthleteProfile } from 'fad-common';
 import { useSession, signOut, type Session } from '@/lib/session';
+import { DATA_SOURCE } from '@/lib/dataSource';
 import { findMockAthlete } from '@/lib/mockAthletes';
 import { slugifyName } from '@/lib/slugify';
 import { profileUrl } from '@/lib/profileUrl';
 import { loadEdits, subscribeToEdits } from '@/lib/athleteEdits';
+import { fetchMyProfile, ApiError } from '@/lib/api';
 import { OnboardingProvider, useOnboarding } from '@/app/register/_components/OnboardingContext';
 import { ProfilePreview } from '@/app/register/_components/ProfilePreview';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
+type ChecklistItem = { label: string; done: boolean; href: string; cta: string };
+
 export function DashboardClient() {
   const { session, ready } = useSession();
 
   if (!ready) {
-    return (
-      <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-12 md:px-16">
-        <div className="h-8 w-40 animate-pulse rounded-pill bg-surface-container" />
-        <div className="mt-4 h-10 w-72 animate-pulse rounded-input bg-surface-container" />
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="h-64 animate-pulse rounded-card bg-surface-container lg:col-span-8" />
-          <div className="h-64 animate-pulse rounded-card bg-surface-container lg:col-span-4" />
-        </div>
-      </div>
-    );
+    return <DashboardLoading />;
   }
 
   if (!session) {
     return <SignedOutGate />;
+  }
+
+  if (DATA_SOURCE === 'api') {
+    return <DashboardApi session={session} />;
   }
 
   return (
@@ -38,6 +38,21 @@ export function DashboardClient() {
     </OnboardingProvider>
   );
 }
+
+function DashboardLoading() {
+  return (
+    <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-12 md:px-16">
+      <div className="h-8 w-40 animate-pulse rounded-pill bg-surface-container" />
+      <div className="mt-4 h-10 w-72 animate-pulse rounded-input bg-surface-container" />
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="h-64 animate-pulse rounded-card bg-surface-container lg:col-span-8" />
+        <div className="h-64 animate-pulse rounded-card bg-surface-container lg:col-span-4" />
+      </div>
+    </div>
+  );
+}
+
+// --- Mock mode: today's onboarding-store-backed dashboard, unchanged ---
 
 function DashboardInner({ session }: { session: Session }) {
   const { profile } = useOnboarding();
@@ -60,25 +75,173 @@ function DashboardInner({ session }: { session: Session }) {
   }, [slug]);
 
   const filledBests = profile.personalBests.filter((best) => best.distance && best.time);
-  const checklist: { label: string; done: boolean; href: string; cta: string }[] = [
+  const checklist: ChecklistItem[] = [
     { label: 'Write your story', done: Boolean(profile.bio), href: '/register/personal-basics?from=review', cta: 'Add bio' },
     { label: 'Add personal bests', done: filledBests.length > 0, href: '/register/athletics?from=review', cta: 'Add bests' },
     { label: 'Pick your values', done: profile.values.length > 0, href: '/register/values-social?from=review', cta: 'Add values' },
     { label: 'Write a tagline', done: Boolean(profile.mission), href: '/register/values-social?from=review', cta: 'Add tagline' },
     { label: 'Add career highlights & previous races', done: hasRaceEdits, href: manageHref, cta: 'Open editor' },
   ];
+
+  const copyLink = makeCopyLink(publicUrl, setCopied);
+
+  return (
+    <DashboardView
+      firstName={firstName}
+      published={session.published}
+      draftCtaHref="/register/review"
+      profileExists={profileExists}
+      profileHref={profileHref}
+      manageHref={manageHref}
+      publicUrl={publicUrl}
+      checklist={checklist}
+      copied={copied}
+      copyLink={copyLink}
+      profileCard={<ProfilePreview sticky={false} showMeta={false} />}
+    />
+  );
+}
+
+// --- Api mode: identity from the session, profile state from GET /v1/athletes/me ---
+
+type ApiProfileState =
+  | { kind: 'loading' }
+  | { kind: 'none' }
+  | { kind: 'error' }
+  | { kind: 'ready'; profile: AthleteProfile };
+
+function DashboardApi({ session }: { session: Session }) {
+  const [state, setState] = useState<ApiProfileState>({ kind: 'loading' });
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setState({ kind: 'loading' });
+    fetchMyProfile()
+      .then((profile) => {
+        if (active) setState({ kind: 'ready', profile });
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        // 404 = the signed-in user has not created a profile yet (Context §11).
+        setState(
+          error instanceof ApiError && error.status === 404 ? { kind: 'none' } : { kind: 'error' }
+        );
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (state.kind === 'loading') return <DashboardLoading />;
+  if (state.kind === 'none') return <NoProfileGate firstName={firstNameOf(session.name)} />;
+  if (state.kind === 'error') return <ProfileErrorGate firstName={firstNameOf(session.name)} />;
+
+  const { profile } = state;
+  const published = Boolean(profile.publishedAt);
+  const slug = profile.athleteSlug;
+  const profileHref = published ? `/athletes/${slug}` : '#profile-preview';
+  const manageHref = `/athletes/${slug}/manage`;
+  const publicUrl = profileUrl(slug);
+  const checklist = deriveApiChecklist(profile, manageHref);
+  const copyLink = makeCopyLink(publicUrl, setCopied);
+
+  return (
+    <DashboardView
+      firstName={firstNameOf(profile.fullName || session.name)}
+      published={published}
+      draftCtaHref="/register/review"
+      profileExists={published}
+      profileHref={profileHref}
+      manageHref={manageHref}
+      publicUrl={publicUrl}
+      checklist={checklist}
+      copied={copied}
+      copyLink={copyLink}
+      profileCard={<ApiProfileSummary profile={profile} />}
+    />
+  );
+}
+
+// Real-field completeness (Context §7): the same five rows the wizard tracks,
+// derived from the persisted profile instead of the onboarding store. The last
+// row is satisfied once the athlete has added highlights or previous races,
+// which the manage editor writes.
+function deriveApiChecklist(profile: AthleteProfile, manageHref: string): ChecklistItem[] {
+  const hasStory = Boolean(profile.storyBody && profile.storyBody.length > 0);
+  const hasBests = (profile.personalBests?.length ?? 0) > 0;
+  const hasValues = profile.values.length > 0;
+  const hasTagline = Boolean(profile.storyIntro);
+  const hasRaceEdits =
+    profile.accomplishments.length > 0 || (profile.raceResults?.length ?? 0) > 0;
+  return [
+    { label: 'Write your story', done: hasStory, href: '/register/personal-basics?from=review', cta: 'Add bio' },
+    { label: 'Add personal bests', done: hasBests, href: '/register/athletics?from=review', cta: 'Add bests' },
+    { label: 'Pick your values', done: hasValues, href: '/register/values-social?from=review', cta: 'Add values' },
+    { label: 'Write a tagline', done: hasTagline, href: '/register/values-social?from=review', cta: 'Add tagline' },
+    { label: 'Add career highlights & previous races', done: hasRaceEdits, href: manageHref, cta: 'Open editor' },
+  ];
+}
+
+function ApiProfileSummary({ profile }: { profile: AthleteProfile }) {
+  const discipline = profile.disciplineLabel ?? '';
+  const tagline = profile.storyIntro ?? '';
+  return (
+    <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-6">
+      <p className="font-display text-xl font-bold text-on-surface">{profile.fullName}</p>
+      {discipline ? <p className="mt-1 text-sm text-on-surface-variant">{discipline}</p> : null}
+      {profile.hometown ? (
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-on-surface-variant">
+          <Icon name="location" className="h-4 w-4 shrink-0" />
+          {profile.hometown}
+        </p>
+      ) : null}
+      {tagline ? <p className="mt-4 text-sm text-on-surface">{tagline}</p> : null}
+      {profile.values.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {profile.values.map((value) => (
+            <span
+              key={value}
+              className="rounded-pill bg-surface-container px-3 py-1 text-xs font-bold text-on-surface-variant"
+            >
+              {value}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// --- Shared dashboard view (identical body for both modes) ---
+
+function DashboardView({
+  firstName,
+  published,
+  draftCtaHref,
+  profileExists,
+  profileHref,
+  manageHref,
+  publicUrl,
+  checklist,
+  copied,
+  copyLink,
+  profileCard,
+}: {
+  firstName: string;
+  published: boolean;
+  draftCtaHref: string;
+  profileExists: boolean;
+  profileHref: string;
+  manageHref: string;
+  publicUrl: string;
+  checklist: ChecklistItem[];
+  copied: boolean;
+  copyLink: () => void;
+  profileCard: ReactNode;
+}) {
   const completedCount = checklist.filter((item) => item.done).length;
   const completeness = Math.round((completedCount / checklist.length) * 100);
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(`https://${publicUrl}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard unavailable — link is still visible to copy manually */
-    }
-  };
 
   return (
     <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-12 md:px-16">
@@ -87,13 +250,11 @@ function DashboardInner({ session }: { session: Session }) {
         <div>
           <span
             className={`mb-3 inline-flex items-center gap-2 rounded-pill px-3 py-1.5 text-xs font-bold ${
-              session.published
-                ? 'bg-success/15 text-success'
-                : 'bg-primary-container/20 text-primary'
+              published ? 'bg-success/15 text-success' : 'bg-primary-container/20 text-primary'
             }`}
           >
-            <Icon name={session.published ? 'check-circle' : 'history'} className="h-4 w-4" />
-            {session.published ? 'Profile live' : 'Draft — not published yet'}
+            <Icon name={published ? 'check-circle' : 'history'} className="h-4 w-4" />
+            {published ? 'Profile live' : 'Draft — not published yet'}
           </span>
           <h1 className="font-display text-4xl font-extrabold text-on-surface">
             Welcome back, {firstName}.
@@ -115,13 +276,13 @@ function DashboardInner({ session }: { session: Session }) {
         {/* Left column */}
         <div className="space-y-6 lg:col-span-8">
           {/* Draft banner */}
-          {!session.published ? (
+          {!published ? (
             <div className="flex flex-col items-start gap-3 rounded-card border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-on-surface">
                 Your profile isn&rsquo;t live yet. Finish the last step to publish it to the network.
               </p>
               <Link
-                href="/register/review"
+                href={draftCtaHref}
                 className="label-bold shrink-0 rounded-lg bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-primary-strong"
               >
                 Finish &amp; publish
@@ -191,7 +352,7 @@ function DashboardInner({ session }: { session: Session }) {
         {/* Right column — the profile card */}
         <div className="lg:col-span-4">
           <div id="profile-preview" className="sticky top-24 scroll-mt-24 space-y-4">
-            <ProfilePreview sticky={false} showMeta={false} />
+            {profileCard}
             <div className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-2 pl-4">
               <Icon name="link" className="h-5 w-5 shrink-0 text-on-surface-variant" />
               <span className="flex-1 truncate text-sm text-on-surface-variant">{publicUrl}</span>
@@ -208,6 +369,22 @@ function DashboardInner({ session }: { session: Session }) {
       </div>
     </div>
   );
+}
+
+function firstNameOf(name: string): string {
+  return name.trim().split(' ')[0] || 'there';
+}
+
+function makeCopyLink(publicUrl: string, setCopied: (value: boolean) => void) {
+  return async () => {
+    try {
+      await navigator.clipboard.writeText(`https://${publicUrl}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable — link is still visible to copy manually */
+    }
+  };
 }
 
 function ActionTile({
@@ -258,6 +435,52 @@ function SignedOutGate() {
             Start your story
           </Link>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Signed in with no profile yet (api-mode `GET /v1/athletes/me` 404): route into
+// onboarding to create one (Context §11).
+function NoProfileGate({ firstName }: { firstName: string }) {
+  return (
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+        <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/20 text-primary">
+          <Icon name="rocket" className="h-7 w-7" />
+        </span>
+        <h1 className="font-display text-2xl font-extrabold text-on-surface">
+          Welcome, {firstName}. Let&rsquo;s build your page.
+        </h1>
+        <p className="mt-2 text-sm text-on-surface-variant">
+          You don&rsquo;t have an athlete profile yet. It takes about five minutes to tell your story.
+        </p>
+        <div className="mt-6 flex flex-col gap-3">
+          <Link
+            href="/register"
+            className="label-bold rounded-lg bg-primary px-6 py-3 text-on-primary transition-all hover:bg-primary-strong"
+          >
+            Start your story
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileErrorGate({ firstName }: { firstName: string }) {
+  return (
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+        <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/20 text-primary">
+          <Icon name="history" className="h-7 w-7" />
+        </span>
+        <h1 className="font-display text-2xl font-extrabold text-on-surface">
+          We couldn&rsquo;t load your dashboard, {firstName}.
+        </h1>
+        <p className="mt-2 text-sm text-on-surface-variant">
+          Something went wrong reaching your profile. Please refresh to try again.
+        </p>
       </div>
     </div>
   );
