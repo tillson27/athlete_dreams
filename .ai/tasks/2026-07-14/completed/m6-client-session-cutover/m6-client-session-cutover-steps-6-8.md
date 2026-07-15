@@ -108,18 +108,38 @@
 ## Step 8 - Final Validation & Cleanup
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1, 2, 3, 4, 5, 6, 7
-**Owner:** unassigned
+**Owner:** claude-opus-4.8
+**Completed At:** 2026-07-14
+
+### Completion Notes
+
+**Close-out inventory (verified against code, then acted on):**
+
+1. **Test-suite hygiene (step-7 flag) — FIXED + verified.** Root cause pinned to `app/src/api/auth/auth.allowlist.test.ts`: its `afterAll` deleted only `"Allowlist Fixture's Team"`, but the suite completes **three** successful sign-ups (`beforeAll` → Allowlist Fixture; the "listed" test → Listed Fixture; the "domain" test → Domain Fixture), each of which `AuthService.signUp` auto-creates a personal team via `TeamRepository.createWithOwner`. Deleting the fixture users cascades their `TeamMembership` rows (schema: `TeamMembership.user onDelete: Cascade`) but leaves the standalone `Team` rows orphaned (`Team` has no user FK) → exactly **2 orphan teams/run** (`Listed Fixture's Team`, `Domain Fixture's Team`). All other sign-up suites (`athletes.ownProfile`, `follows`, `community`, `campaign`, and the `beforeAll` team in `auth.allowlist`) already captured/cleaned their teams; `athletes.write`/`athletes.read` create users directly via `prisma.user.create` (no team, no orphan). Fix: extended the `auth.allowlist` `afterAll` team-delete to `name: { in: ["Allowlist Fixture's Team", "Listed Fixture's Team", "Domain Fixture's Team"] }` with the existing `memberships: { none: {} }` orphan guard (matches the `in`-list pattern in `athletes.ownProfile.test.ts`). **Verified:** baseline `teams` count is now **unchanged run-over-run** across two consecutive full `RUN_DB_TESTS=1` runs (28 → 28, delta 0); pre-fix a run grew `teams` +2. `users`/`team_memberships`/`athlete_profiles` were already stable at 10/10/7. (The dev DB also carried ~40 pre-existing orphans from prior agents' runs — 24 of them the systematic `Listed`/`Domain` accrual, now swept to 0 by the fixed `afterAll`; the remaining ~18 are one-off leftovers from earlier steps' manual E2E sessions, out of the suite's cleanup scope and not something the automated tests re-create. A manual purge of those historical rows was intentionally not performed — see "Note to user".)
+
+2. **TODO sweep — CLEAN.** `grep -rn "TODO\|FIXME" app/src client/lib client/app cdk/lib common/src` → **zero hits** (broadened to HACK/XXX and to `client/components`/`cdk/config` — still zero). The two deviations flagged in earlier steps were both resolved by later steps before this gate: (a) step-2's `TODO(m6-step-1-merge)` local `ReplacePersonalBestInput` type in `client/lib/api.ts` is gone — `replaceMyPersonalBests` now imports and uses `ReplacePersonalBestsRequest` from `fad-common`; (b) step-5's slug-conflict 500-branch workaround is gone — `AthleteService.createProfileForUser` now maps the `athleteSlug` unique violation (P2002) to `ConflictError` (409) with a `{ field: 'athleteSlug' }` discriminator (test-covered in `athletes.ownProfile.test.ts`), and `client/lib/onboardingApi.ts` keys its bounded slug retry on that 409+discriminator (no dead 500 path).
+
+3. **Doc alignment — DONE.** `docs/delivery-plan.md` M6 row → status `◐ Client cutover complete (2026-07-14); Phase 4 backend hardening pending`, Contents split into **Done** (client session/follows/onboarding/dashboard/manage-editor cutover + the two backend gaps) vs **Pending** (refresh tokens, SES verification, rate limiting, teams) — kept honest, not claimed as full M6. `docs/architecture.md` frontend section → rewritten to state sessions/follows/onboarding/dashboard/editor are real against `/v1/*` in api mode (access-token-only interim), plus a new **"Known static-export boundary"** paragraph documenting that a newly-created api athlete's dedicated `/athletes/[slug]` page 404s in the static export (mock-roster `generateStaticParams`) while the directory/dashboard/profile-API are unaffected — cross-referenced to `docs/infrastructure-and-scaling.md` → *Stage 2 — Growth* (SSR/ISR resolution) rather than duplicating the plan.
+
+4. **Redeploy-readiness (build only, deploys user-executed) — VERIFIED.** (a) api-mode static export `STATIC_EXPORT=true NEXT_PUBLIC_DATA_SOURCE=api NEXT_PUBLIC_API_BASE_URL=https://d2p71rep7t1ch4.cloudfront.net npm run build --prefix client` → exit 0, `client/out/` produced (130 files; deployed CloudFront URL confirmed baked into `_next/static/chunks/*.js`; the 7 mock-roster slug pages + their `/manage` pages pre-rendered as SSG). (b) API Docker image `docker buildx build --platform linux/arm64 -f app/Dockerfile -t arc-api:m6check --load .` → built + loaded clean (arm64, ~218 MB); throwaway tag removed afterward. Nothing pushed/synced/deployed.
+
+**Step-8 gate:**
+- All 7 prior steps show **Complete** in the steps-guide index.
+- **`$e2e-review`** (integration scope, diff `23b01ed..HEAD` — the M6 cutover, 36 files across common/app/client/cdk): traced the full data path client → API → client for the whole loop (sign-up → session → follow/unfollow → onboarding create/PATCH/set-replace → publish → dashboard → manage editor). **Contract alignment perfect** across all 12 authed helpers + the 2 new endpoints (each client `apiRequest` method+path+response-schema matches the app router; all types from `fad-common`; PB body correctly wrapped as `{ personalBests }`; follow slug `encodeURIComponent`'d). **CDK↔app aligned:** `JWT_ACCESS_TOKEN_TTL_SECONDS` injected by `api-stack.ts` == `JwtService` consumption (test 86400 / prod 3600; correctly plaintext env, not a secret). Error propagation controlled via typed `ApiError` carrying `details` (403/409/401/publish-422 all readable). Mock byte-safety seam intact: every changed client file branches on `DATA_SOURCE === 'api'` (default `mock`), pure libs stay framework-free (no `'use client'`), interactive components keep `'use client'`. Compliance spot-checks clean: no duplicated Request/Response types in app/client, no secret/token logging in the app diff, no ad-hoc money math in changed client files, comments all within allowed categories. **No fundamentally-incorrect logic and no root-AGENTS.md violations found → Phase 3 was a no-op** (the only fix this step made is inventory item 1, which is outside the reviewed flow logic). Prior steps already ran `$backend-review`/`$frontend-review`/`$infra-review` on their committed slices.
+- **`npm run ci`** → green (exit 0): type-check (common/app/client) clean, `✔ No ESLint warnings or errors`, expired-rules check clean, sync scripts clean (no mirror drift), build across all three modes/packages. **`RUN_DB_TESTS=1 npx vitest run`** (app/) → **74/74 green** (8 files).
+
+**Note to user (before redeploying):** ~18 orphan `teams` rows remain in the local `fad_dev` DB from earlier steps' manual E2E runs (not seed data, not re-created by the now-fixed test suite). They are inert and harmless, but if you want a pristine local baseline you can delete orphaned teams manually: `DELETE FROM teams t WHERE NOT EXISTS (SELECT 1 FROM team_memberships m WHERE m."teamId"=t.id);` (all seed/live teams have memberships, so this only removes fixture dross). This does not affect the deployed test env.
 
 ### Final Step Checklist
-* [ ] Confirm all prior steps are complete
-* [ ] Review and resolve any outstanding TODOs introduced during this task
-* [ ] Doc alignment: `docs/delivery-plan.md` M6 row → client cutover complete (Phase 4 backend hardening remains); `docs/architecture.md` frontend section reflects real sessions/follows/onboarding in api mode
-* [ ] Run the `$e2e-review` (`/e2e-review`) skill with all required context provided (scope: this task's diff at integration level)
-* [ ] Run the `$ci` (`/ci`) skill and confirm it passes (plus `RUN_DB_TESTS=1` full suite)
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-* [ ] Build the fresh api-mode static export for the user's redeploy and hand off the redeploy steps (image rebuild+push, migrate n/a, web sync+invalidation) — **deploys are user-executed**
-* [ ] Update task metadata in the steps docs and the steps guide index
-* [ ] Move `.ai/tasks/2026-07-14/m6-client-session-cutover/` to `.ai/tasks/2026-07-14/completed/m6-client-session-cutover/`
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+* [x] Confirm all prior steps are complete
+* [x] Review and resolve any outstanding TODOs introduced during this task
+* [x] Doc alignment: `docs/delivery-plan.md` M6 row → client cutover complete (Phase 4 backend hardening remains); `docs/architecture.md` frontend section reflects real sessions/follows/onboarding in api mode
+* [x] Run the `$e2e-review` (`/e2e-review`) skill with all required context provided (scope: this task's diff at integration level)
+* [x] Run the `$ci` (`/ci`) skill and confirm it passes (plus `RUN_DB_TESTS=1` full suite)
+- [x] Fix any issues caused by `$ci` (`/ci`) (none — CI passed clean)
+* [x] Build the fresh api-mode static export for the user's redeploy and hand off the redeploy steps (image rebuild+push, migrate n/a, web sync+invalidation) — **deploys are user-executed**
+* [x] Update task metadata in the steps docs and the steps guide index
+* [x] Move `.ai/tasks/2026-07-14/m6-client-session-cutover/` to `.ai/tasks/2026-07-14/completed/m6-client-session-cutover/`
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

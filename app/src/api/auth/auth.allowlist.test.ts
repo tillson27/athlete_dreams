@@ -72,7 +72,12 @@ describe.skipIf(!runDbTests)('auth allowlist gating (integration)', () => {
       where: { email: { in: [LISTED_EMAIL, UNLISTED_EMAIL, DOMAIN_EMAIL] } },
     });
     await prisma.team.deleteMany({
-      where: { name: "Allowlist Fixture's Team", memberships: { none: {} } },
+      where: {
+        name: {
+          in: ["Allowlist Fixture's Team", "Listed Fixture's Team", "Domain Fixture's Team"],
+        },
+        memberships: { none: {} },
+      },
     });
     await prisma.$disconnect();
   });
