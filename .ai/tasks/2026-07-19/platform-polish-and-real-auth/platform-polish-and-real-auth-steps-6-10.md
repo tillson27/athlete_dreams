@@ -105,13 +105,13 @@
 ## Step 7 - Backend Resend integration: EmailService + branded HTML templates
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 6
 **Size:** medium
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Added a tsyringe-managed Resend `EmailService`, inline-styled branded templates for verification, welcome, and password reset emails, shared email palette tokens, and provider-shaped fetch payload tests. No centralized dependency-injector file exists in this app; registration is through the existing `@singleton()` pattern.
 
 ### Context
 
@@ -129,6 +129,19 @@
 - Repo `AGENTS.md` and `app/AGENTS.md` (never log secrets; import types from `fad-common`; use ResponseHandler and typed domain errors).
 - `app/src/services/infrastructure/`
 - `app/.env.example`
+
+### Provider contract evidence
+
+- Provider/API: Resend Email API.
+- Source URL: https://resend.com/docs/api-reference/emails/send-email
+- Retrieved with: web official-doc open.
+- Retrieved at: 2026-07-19.
+- Request contract: `POST https://api.resend.com/emails` with `Authorization: Bearer <api key>`, `Content-Type: application/json`, and JSON body containing required `from`, `to`, `subject`; this implementation also sends `html` and `text`.
+- Response contract: success body includes `id` as a string.
+- Evidence source: official cURL/body parameter example and official success response example.
+- Live smoke: Not run; the endpoint sends email and would consume the local secret.
+- Fixture/test coverage: `app/src/services/infrastructure/EmailService.test.ts` uses the provider-shaped `{ id: string }` response and asserts the Resend URL, bearer header, and JSON payload.
+- Remaining risk: Sender-domain verification remains operational and outside this code contract.
 
 ### Plan
 - Introduce a shared `emailTokens` module and template helpers.
@@ -181,12 +194,12 @@
 - Register in DI. Cover with a `vitest` unit test using a `fetch` stub.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
