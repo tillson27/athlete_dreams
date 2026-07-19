@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { loadEdits, subscribeToEdits, type AthleteEdits, type EditRace } from '@/lib/athleteEdits';
 import { HighlightDropdown, RaceDropdown } from './profileParts';
 import { Icon } from '@/components/ui/Icon';
+import { PhotoCarousel } from '@/components/ui/PhotoCarousel';
 import { DATA_SOURCE } from '@/lib/dataSource';
 import { unsplashPhoto } from '@/lib/unsplash';
 
@@ -160,27 +161,41 @@ export function EditedRoadmap({ slug, defaults }: { slug: string; defaults: Athl
 
 export function EditedGallery({ slug, defaults }: { slug: string; defaults: AthleteEdits }) {
   const { gallery } = useAthleteEdits(slug, defaults);
+  const [openIndex, setOpenIndex] = useState(-1);
+
   if (gallery.length === 0) {
     return <EmptySection label="Photo gallery coming soon." compact />;
   }
+
+  const photos = gallery.map((photo, index) => ({
+    id: photo,
+    src: unsplashPhoto(photo, 1200),
+    alt: `Gallery photo ${index + 1}`,
+  }));
+
   return (
-    <div className="grid grid-cols-2 gap-2">
-      {gallery.map((photo, index) => (
-        <div
-          key={photo}
-          className="relative aspect-square cursor-pointer overflow-hidden rounded bg-surface-container transition-opacity hover:opacity-90"
-        >
-          <Image
-            src={unsplashPhoto(photo, 400)}
-            alt={`Gallery photo ${index + 1}`}
-            fill
-            unoptimized
-            sizes="200px"
-            className="object-cover"
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-2 gap-2">
+        {photos.map((photo, index) => (
+          <button
+            key={photo.id}
+            type="button"
+            className="relative aspect-square overflow-hidden rounded bg-surface-container transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
+            onClick={() => setOpenIndex(index)}
+          >
+            <Image
+              src={unsplashPhoto(photo.id, 400)}
+              alt={photo.alt}
+              fill
+              unoptimized
+              sizes="200px"
+              className="object-cover"
+            />
+          </button>
+        ))}
+      </div>
+      <PhotoCarousel photos={photos} openIndex={openIndex} onClose={() => setOpenIndex(-1)} />
+    </>
   );
 }
 
