@@ -25,4 +25,12 @@ export class UserRepository {
   update(userId: string, input: { displayName?: string; avatarUrl?: string | null }): Promise<User> {
     return this.prisma.user.update({ where: { id: userId }, data: input });
   }
+
+  updatePasswordHash(userId: string, passwordHash: string): Promise<User> {
+    return this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  }
+
+  markEmailVerified(userId: string, emailVerifiedAt: Date): Promise<User> {
+    return this.prisma.user.update({ where: { id: userId }, data: { emailVerifiedAt } });
+  }
 }

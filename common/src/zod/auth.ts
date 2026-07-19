@@ -64,6 +64,15 @@ export const authSessionSchema = z.object({
   user: userSchema,
   accessToken: z.string(),
   accessTokenExpiresAt: z.string().datetime(),
+  mustVerifyEmail: z.boolean(),
 });
 
 export type AuthSession = z.infer<typeof authSessionSchema>;
+
+export const authActionResponseSchema = z
+  .object({
+    ok: z.literal(true),
+  })
+  .strict();
+
+export type AuthActionResponse = z.infer<typeof authActionResponseSchema>;

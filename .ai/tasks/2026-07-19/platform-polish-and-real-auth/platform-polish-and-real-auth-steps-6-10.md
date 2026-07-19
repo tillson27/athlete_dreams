@@ -206,13 +206,15 @@
 ## Step 8 - Backend auth flow: verify, forgot-password, reset-password endpoints
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 6, 7
 **Size:** medium
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Added token repositories, SHA-256 token hashing, verification/reset/resend endpoints, `mustVerifyEmail` session state, and best-effort Resend sends that never roll back signup or reset requests.
+- Added focused unit coverage plus `RUN_DB_TESTS=1` integration coverage for unknown forgot-password requests, verification, and expired reset tokens.
+- Ran `$backend-review` (`/backend-review`) in uncommitted auth/API scope and full `$ci` (`/ci`); CI passed with only pre-existing tooling warnings.
 
 ### Context
 
@@ -276,12 +278,12 @@
 - Add integration tests hitting the new endpoints with a stubbed `EmailService`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
