@@ -69,13 +69,13 @@
 ## Step 2 - Full-viewport home hero
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** small
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Replaced fixed hero heights with `min-h-screen min-h-[100svh]`, added safe-area padding, and pinned the scroll cue above the bottom safe area.
 
 ### Context
 
@@ -99,12 +99,12 @@
 - Verify the scroll cue sits above the bottom bezel — clamp its `bottom` to `max(env(safe-area-inset-bottom), 1.25rem)`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

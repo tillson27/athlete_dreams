@@ -4,7 +4,7 @@ import { unsplashPhoto } from '@/lib/unsplash';
 
 export function HomeHero() {
   return (
-    <section className="relative flex h-[540px] w-full items-center overflow-hidden bg-inverse-surface md:h-[640px]">
+    <section className="relative flex min-h-screen min-h-[100svh] w-full items-center overflow-hidden bg-inverse-surface pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       <div className="absolute inset-0 overflow-hidden">
         <Image
           src={unsplashPhoto('1571008887538-b36bb32f4571', 1920)}
@@ -15,12 +15,10 @@ export function HomeHero() {
           className="ken-burns object-cover object-[center_30%]"
         />
       </div>
-      {/* warm directional wash for legibility */}
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-r from-[#140b08]/90 via-[#160d09]/60 to-[#160d09]/20"
       />
-      {/* vignette to focus the frame */}
       <div
         aria-hidden="true"
         className="absolute inset-0"
@@ -33,7 +31,7 @@ export function HomeHero() {
 
       <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
         <div className="max-w-3xl">
-          <h1 className="font-display text-balance text-4xl font-extrabold leading-[0.98] tracking-tight text-white drop-shadow-sm md:text-6xl">
+          <h1 className="font-display text-balance text-4xl font-extrabold leading-[0.98] text-white drop-shadow-sm md:text-6xl">
             Your <span className="text-primary-container">athletic</span> journey. Your{' '}
             <span className="text-primary-container">Arc</span>. Told in one place.
           </h1>
@@ -57,8 +55,11 @@ export function HomeHero() {
         </div>
       </div>
 
-      {/* scroll cue */}
-      <div aria-hidden="true" className="absolute inset-x-0 bottom-5 z-10 flex justify-center">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 z-10 flex justify-center"
+        style={{ bottom: 'max(env(safe-area-inset-bottom, 0px), 1.25rem)' }}
+      >
         <span className="scroll-cue flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-white/80">
           <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
             <path
