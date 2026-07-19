@@ -69,7 +69,7 @@ FAD's differentiators are transparency, athlete story, and minimalist UX (`AGENT
 
 Auth is the biggest gap. The `client` today ships as a static export against GitHub Pages, where mock mode (`DATA_SOURCE=mock`) accepts any credentials and mints a fake session (`client/lib/session.ts:97-115`). This has to change before we let real athletes and supporters test. The backend already has an `AuthService` with password hashing, JWT issuing, and a `SIGNUP_EMAIL_ALLOWLIST` invite gate — but no email verification, no password reset, no Resend dependency, and no "check the email actually exists" cross-reference on the client because the client short-circuits in mock mode.
 
-Resend is the transactional email provider we already have credentials for (user supplied `re_Eowg9NSt_6kWCaENV6zUDWFUvar6LQ2vC`). Templates must reuse the same colourways as the marketing site so they feel like an ARC email, not a generic transactional.
+Resend is the transactional email provider; credentials must live only in local environment files such as `app/.env` and must not be copied into task docs. Templates must reuse the same colourways as the marketing site so they feel like an ARC email, not a generic transactional.
 
 ---
 
