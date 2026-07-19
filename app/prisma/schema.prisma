@@ -32,13 +32,15 @@ model User {
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
 
-  athleteProfile     AthleteProfile?
-  teamMemberships    TeamMembership[]
-  teamInvitations    TeamInvitation[] @relation("InvitedBy")
-  sessions           AuthSession[]
-  donations          Donation[]
-  follows            Follow[]
-  brandMemberships   BrandMembership[]
+  athleteProfile          AthleteProfile?
+  teamMemberships         TeamMembership[]
+  teamInvitations         TeamInvitation[] @relation("InvitedBy")
+  sessions                AuthSession[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  donations               Donation[]
+  follows                 Follow[]
+  brandMemberships        BrandMembership[]
   platformRoleAssignments PlatformRoleAssignment[]
 
   @@map("users")
@@ -59,6 +61,34 @@ model AuthSession {
   @@index([userId])
   @@index([userId, revokedAt, expiresAt])
   @@map("auth_sessions")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 enum PlatformRole {
