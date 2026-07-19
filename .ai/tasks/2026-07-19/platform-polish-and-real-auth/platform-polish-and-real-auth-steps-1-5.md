@@ -111,13 +111,13 @@
 ## Step 3 - Athlete profile polish: story toggle + move "See more" triggers to bottom
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** small
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Updated the story reveal so the intro stays visible with `See more` / `See less`, and converted highlights/races expanders to bottom-positioned toggles after the displayed rows.
 
 ### Context
 
@@ -165,12 +165,12 @@
       ```
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

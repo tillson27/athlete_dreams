@@ -322,11 +322,12 @@ export function AthleteProfile({
               <div className="mt-4 text-lg leading-relaxed text-on-surface">
                 <p className="mb-4">{profile.storyIntro}</p>
                 <details className="group">
-                  <summary className="label-bold inline-flex cursor-pointer list-none items-center gap-1 text-primary transition-all hover:underline group-open:hidden">
-                    See more
-                    <Icon name="chevron" className="h-4 w-4" />
+                  <summary className="label-bold inline-flex cursor-pointer list-none items-center gap-1 text-primary transition-all hover:underline">
+                    <span className="group-open:hidden">See more</span>
+                    <span className="hidden group-open:inline">See less</span>
+                    <Icon name="chevron" className="h-4 w-4 transition-transform group-open:rotate-180" />
                   </summary>
-                  <div className="space-y-4">
+                  <div className="mt-4 space-y-4">
                     {profile.storyBody.map((paragraph) => (
                       <p key={paragraph.slice(0, 32)}>{paragraph}</p>
                     ))}

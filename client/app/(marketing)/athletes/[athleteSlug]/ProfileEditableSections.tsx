@@ -53,8 +53,10 @@ export function EditedHighlights({
   moreLabel: string;
 }) {
   const { highlights } = useAthleteEdits(slug, defaults);
+  const [showAllHighlights, setShowAllHighlights] = useState(false);
   const visible = highlights.slice(0, HIGHLIGHTS_VISIBLE);
   const rest = highlights.slice(HIGHLIGHTS_VISIBLE);
+  const displayedHighlights = showAllHighlights ? highlights : visible;
 
   if (highlights.length === 0) {
     return <EmptySection label="Career highlights coming soon." />;
@@ -62,7 +64,7 @@ export function EditedHighlights({
 
   return (
     <div className="mt-6 space-y-4">
-      {visible.map((highlight, index) => (
+      {displayedHighlights.map((highlight, index) => (
         <HighlightDropdown
           key={highlight.id}
           title={highlight.title}
@@ -72,23 +74,18 @@ export function EditedHighlights({
         />
       ))}
       {rest.length > 0 ? (
-        <details className="group">
-          <summary className="label-bold flex cursor-pointer list-none items-center justify-center gap-2 py-3 text-primary hover:underline">
-            {moreLabel}
-            <Icon name="chevron" className="h-5 w-5 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="mt-4 space-y-4">
-            {rest.map((highlight) => (
-              <HighlightDropdown
-                key={highlight.id}
-                title={highlight.title}
-                detail={highlight.detail}
-                tone="primary"
-                images={highlight.photos}
-              />
-            ))}
-          </div>
-        </details>
+        <button
+          type="button"
+          aria-expanded={showAllHighlights}
+          className="label-bold flex w-full items-center justify-center gap-2 py-3 text-primary hover:underline"
+          onClick={() => setShowAllHighlights((current) => !current)}
+        >
+          {showAllHighlights ? 'Show fewer' : moreLabel}
+          <Icon
+            name="chevron"
+            className={`h-5 w-5 transition-transform ${showAllHighlights ? 'rotate-180' : ''}`}
+          />
+        </button>
       ) : null}
     </div>
   );
@@ -104,8 +101,10 @@ export function EditedRaces({
   moreLabel: string;
 }) {
   const { races } = useAthleteEdits(slug, defaults);
+  const [showAllRaces, setShowAllRaces] = useState(false);
   const visible = races.slice(0, RACES_VISIBLE);
   const rest = races.slice(RACES_VISIBLE);
+  const displayedRaces = showAllRaces ? races : visible;
 
   if (races.length === 0) {
     return <EmptySection label="Previous races coming soon." />;
@@ -113,7 +112,7 @@ export function EditedRaces({
 
   return (
     <div className="mt-6 space-y-6">
-      {visible.map((race, index) => (
+      {displayedRaces.map((race, index) => (
         <RaceDropdown
           key={race.id}
           name={race.name}
@@ -125,25 +124,18 @@ export function EditedRaces({
         />
       ))}
       {rest.length > 0 ? (
-        <details className="group mt-2">
-          <summary className="label-bold flex cursor-pointer list-none items-center justify-center gap-2 py-3 text-primary hover:underline">
-            {moreLabel}
-            <Icon name="chevron" className="h-5 w-5 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="mt-4 space-y-6">
-            {rest.map((race) => (
-              <RaceDropdown
-                key={race.id}
-                name={race.name}
-                date={race.date}
-                result={race.result}
-                tone="primary"
-                links={raceLinks(race)}
-                images={race.photos}
-              />
-            ))}
-          </div>
-        </details>
+        <button
+          type="button"
+          aria-expanded={showAllRaces}
+          className="label-bold flex w-full items-center justify-center gap-2 py-3 text-primary hover:underline"
+          onClick={() => setShowAllRaces((current) => !current)}
+        >
+          {showAllRaces ? 'Show fewer' : moreLabel}
+          <Icon
+            name="chevron"
+            className={`h-5 w-5 transition-transform ${showAllRaces ? 'rotate-180' : ''}`}
+          />
+        </button>
       ) : null}
     </div>
   );
