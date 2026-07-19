@@ -48,13 +48,17 @@
 ## Step 12 - Autosave parity in api-mode manage editor
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 10
 **Size:** small
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Added API-mode debounced autosave 1 second after edits change, with cleanup on dependency change and unmount.
+- Kept the Save button as an immediate save action that clears any pending debounce.
+- Added deep-equal save snapshots so unchanged edit/cover payloads skip network writes.
+- Added status copy for `Saving…`, `Saved. Your public profile is up to date.`, and a dimmed `Last saved at ...` timestamp after the 5-second confirmation window.
+- Guarded in-flight saves so a completed older save does not clear newer cover-photo dirty state.
 
 ### Context
 
@@ -82,12 +86,12 @@
 - Ensure `save` is idempotent when the payload hasn't changed (skip if a `savedSnapshot` deep-equal check matches).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

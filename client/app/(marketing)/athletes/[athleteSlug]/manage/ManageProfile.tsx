@@ -1,6 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -41,6 +50,10 @@ type ConfirmRequest = {
   confirmLabel: string;
   onConfirm: () => void;
 };
+
+function toSaveSnapshot(edits: AthleteEdits, coverPhoto: string): string {
+  return JSON.stringify({ edits, coverPhoto });
+}
 
 // Swap an item with its neighbour to move it up (-1) or down (+1) the list.
 function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
@@ -229,22 +242,107 @@ function ApiEditorReady({
   const [coverDirty, setCoverDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [recentlySaved, setRecentlySaved] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const savedSnapshotRef = useRef(toSaveSnapshot(initialEdits, initialCoverPhoto));
+  const editsRef = useRef(edits);
+  const coverPhotoRef = useRef(coverPhoto);
+  const coverDirtyRef = useRef(coverDirty);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedConfirmationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipInitialAutosaveRef = useRef(true);
+  const saveRequestIdRef = useRef(0);
 
-  const save = async () => {
+  useEffect(() => {
+    editsRef.current = edits;
+    coverPhotoRef.current = coverPhoto;
+    coverDirtyRef.current = coverDirty;
+  }, [edits, coverPhoto, coverDirty]);
+
+  const clearAutosaveTimer = useCallback(() => {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+  }, []);
+
+  const clearSavedConfirmationTimer = useCallback(() => {
+    if (savedConfirmationTimerRef.current) {
+      clearTimeout(savedConfirmationTimerRef.current);
+      savedConfirmationTimerRef.current = null;
+    }
+  }, []);
+
+  const acknowledgeSaved = useCallback(() => {
+    clearSavedConfirmationTimer();
+    setLastSavedAt(new Date());
+    setRecentlySaved(true);
+    savedConfirmationTimerRef.current = setTimeout(() => {
+      setRecentlySaved(false);
+      savedConfirmationTimerRef.current = null;
+    }, 5000);
+  }, [clearSavedConfirmationTimer]);
+
+  const save = useCallback(async () => {
+    clearAutosaveTimer();
+    const currentEdits = editsRef.current;
+    const currentCoverPhoto = coverPhotoRef.current;
+    const attemptedSnapshot = toSaveSnapshot(currentEdits, currentCoverPhoto);
+    if (attemptedSnapshot === savedSnapshotRef.current) {
+      setSaveError(null);
+      return;
+    }
+    const saveRequestId = ++saveRequestIdRef.current;
     setSaving(true);
     setSaveError(null);
-    setSaved(false);
+    setRecentlySaved(false);
+    clearSavedConfirmationTimer();
     try {
-      await saveEditsToApi(edits, coverDirty ? coverPhoto : undefined);
-      setCoverDirty(false);
-      setSaved(true);
+      await saveEditsToApi(currentEdits, coverDirtyRef.current ? currentCoverPhoto : undefined);
+      if (saveRequestId !== saveRequestIdRef.current) return;
+      savedSnapshotRef.current = attemptedSnapshot;
+      if (toSaveSnapshot(editsRef.current, coverPhotoRef.current) === attemptedSnapshot) {
+        setCoverDirty(false);
+        acknowledgeSaved();
+      }
     } catch (error) {
-      setSaveError(toManageSaveError(error));
+      if (
+        saveRequestId === saveRequestIdRef.current &&
+        toSaveSnapshot(editsRef.current, coverPhotoRef.current) === attemptedSnapshot
+      ) {
+        setSaveError(toManageSaveError(error));
+      }
     } finally {
-      setSaving(false);
+      if (saveRequestId === saveRequestIdRef.current) {
+        setSaving(false);
+      }
     }
-  };
+  }, [acknowledgeSaved, clearAutosaveTimer, clearSavedConfirmationTimer]);
+
+  useEffect(() => {
+    if (skipInitialAutosaveRef.current) {
+      skipInitialAutosaveRef.current = false;
+      return;
+    }
+    clearAutosaveTimer();
+    autosaveTimerRef.current = setTimeout(() => {
+      void save();
+    }, 1000);
+    return clearAutosaveTimer;
+  }, [edits, coverPhoto, clearAutosaveTimer, save]);
+
+  useEffect(
+    () => () => {
+      saveRequestIdRef.current += 1;
+      clearAutosaveTimer();
+      clearSavedConfirmationTimer();
+    },
+    [clearAutosaveTimer, clearSavedConfirmationTimer]
+  );
+
+  const lastSavedCopy = lastSavedAt
+    ? `Last saved at ${lastSavedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`
+    : null;
 
   const renderSaveButton = () => (
     <SaveButton onClick={save} saving={saving} />
@@ -254,7 +352,8 @@ function ApiEditorReady({
   const setEditsAndClearSaved = (
     updater: AthleteEdits | ((current: AthleteEdits) => AthleteEdits)
   ) => {
-    setSaved(false);
+    setRecentlySaved(false);
+    setSaveError(null);
     setEdits(updater);
   };
 
@@ -266,7 +365,8 @@ function ApiEditorReady({
       setEdits={setEditsAndClearSaved}
       coverPhoto={coverPhoto}
       setCoverPhoto={(url) => {
-        setSaved(false);
+        setRecentlySaved(false);
+        setSaveError(null);
         setCoverDirty(true);
         setCoverPhoto(url);
       }}
@@ -276,11 +376,15 @@ function ApiEditorReady({
         <div className="text-xs">
           {saveError ? (
             <p className="text-error">{saveError}</p>
-          ) : saved ? (
+          ) : saving ? (
+            <p className="text-on-surface-variant">Saving…</p>
+          ) : recentlySaved ? (
             <p className="text-success">Saved. Your public profile is up to date.</p>
+          ) : lastSavedCopy ? (
+            <p className="text-on-surface-variant">{lastSavedCopy}</p>
           ) : (
             <p className="text-on-surface-variant">
-              Changes save to your profile when you tap Save.
+              Changes autosave to your profile. Save now to force an update.
             </p>
           )}
         </div>
