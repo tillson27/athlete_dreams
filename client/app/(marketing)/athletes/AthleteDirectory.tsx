@@ -192,7 +192,7 @@ export function AthleteDirectory() {
                   key={country.code}
                   type="button"
                   onClick={() => updateFilters({ country: country.code })}
-                  className={`label-bold whitespace-nowrap rounded-pill px-4 py-2 transition-colors ${
+                  className={`label-bold min-h-11 whitespace-nowrap rounded-pill px-4 py-2 transition-colors ${
                     active
                       ? 'bg-primary text-on-primary'
                     : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'

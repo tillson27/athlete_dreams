@@ -14,7 +14,7 @@ export function MobileMenu({ nav }: { nav: { href: string; label: string }[] }) 
     <details ref={menuRef} data-mobile-menu className="relative md:hidden">
       <summary
         aria-label="Open menu"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-pill text-on-surface hover:bg-surface-container"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-pill text-on-surface hover:bg-surface-container"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

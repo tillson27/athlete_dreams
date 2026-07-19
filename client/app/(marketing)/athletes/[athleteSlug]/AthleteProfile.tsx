@@ -181,7 +181,7 @@ export function AthleteProfile({
 
         {/* VERIFIED — the badge, with proof behind it */}
         <details className="group mt-6 overflow-hidden rounded-card border border-success/30 bg-success/5">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 md:p-5">
+          <summary className="flex cursor-pointer list-none flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center md:p-5">
             <span className="flex items-center gap-2.5 text-sm font-semibold text-on-surface">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success text-white">
                 <Icon name="check-badge" className="h-4 w-4" />

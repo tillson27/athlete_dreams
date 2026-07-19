@@ -29,7 +29,7 @@ export function FeedCard({
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <a
               href={athleteProfileHref(item.athleteSlug)}
-              className="font-display text-base font-bold text-on-surface hover:text-primary"
+              className="inline-flex min-h-11 items-center font-display text-base font-bold text-on-surface hover:text-primary"
             >
               {item.athleteName}
             </a>
@@ -70,7 +70,7 @@ export function FeedCard({
           type="button"
           onClick={onCheer}
           aria-pressed={cheered}
-          className={`inline-flex items-center gap-1.5 text-sm font-bold transition-colors ${
+          className={`inline-flex min-h-11 items-center gap-1.5 text-sm font-bold transition-colors ${
             cheered ? 'text-primary' : 'text-on-surface-variant hover:text-primary'
           }`}
         >
@@ -79,7 +79,7 @@ export function FeedCard({
         </button>
         <a
           href={athleteProfileHref(item.athleteSlug)}
-          className="label-bold ml-auto inline-flex items-center gap-1 text-secondary hover:underline"
+          className="label-bold ml-auto inline-flex min-h-11 items-center gap-1 text-secondary hover:underline"
         >
           View profile
         </a>

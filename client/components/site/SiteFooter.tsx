@@ -57,10 +57,16 @@ export function SiteFooter() {
       <div className="mx-auto mt-4 flex w-full max-w-[var(--spacing-container-max)] flex-col items-center justify-between gap-1 px-5 pt-4 text-center text-xs text-on-surface-variant md:mt-12 md:flex-row md:items-center md:gap-3 md:border-t md:border-outline-variant/60 md:px-16 md:pt-6 md:text-left">
         <span>© {new Date().getFullYear()} ARC. All rights reserved.</span>
         <span className="flex items-center gap-3">
-          <Link href="/privacy" className="transition-colors hover:text-primary">
+          <Link
+            href="/privacy"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center transition-colors hover:text-primary"
+          >
             Privacy
           </Link>
-          <Link href="/terms" className="transition-colors hover:text-primary">
+          <Link
+            href="/terms"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center transition-colors hover:text-primary"
+          >
             Terms
           </Link>
         </span>

@@ -65,7 +65,10 @@ export function VerifyEmailPanel() {
             <Icon name="check-circle" className="mt-0.5 h-5 w-5 shrink-0 text-success" />
             <div>
               <p className="font-semibold">Email verified.</p>
-              <Link href="/dashboard" className="mt-3 inline-flex font-semibold text-primary hover:underline">
+              <Link
+                href="/dashboard"
+                className="mt-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline"
+              >
                 Go to dashboard
               </Link>
             </div>

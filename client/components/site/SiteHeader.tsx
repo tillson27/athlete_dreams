@@ -37,8 +37,9 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <HeaderAuth />
-
+          <div className="hidden items-center gap-2 md:flex">
+            <HeaderAuth />
+          </div>
           <MobileMenu nav={nav} />
         </div>
       </div>

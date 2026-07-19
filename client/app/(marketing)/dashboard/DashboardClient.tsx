@@ -340,7 +340,7 @@ function DashboardView({
         <button
           type="button"
           onClick={signOut}
-          className="label-bold self-start rounded-lg border border-outline-variant px-4 py-2.5 text-on-surface-variant transition-colors hover:border-error hover:text-error sm:self-auto"
+          className="label-bold min-h-11 self-start rounded-lg border border-outline-variant px-4 py-2.5 text-on-surface-variant transition-colors hover:border-error hover:text-error sm:self-auto"
         >
           Sign out
         </button>

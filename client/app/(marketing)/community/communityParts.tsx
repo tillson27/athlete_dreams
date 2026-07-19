@@ -15,7 +15,7 @@ export function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-pill px-4 py-1.5 text-sm font-bold transition-colors ${
+      className={`min-h-11 rounded-pill px-4 py-1.5 text-sm font-bold transition-colors ${
         active ? 'bg-surface text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
       }`}
     >

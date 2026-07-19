@@ -3,13 +3,17 @@
 ## Step 11 - Mobile audit: shrink cards & typography, verify all changes
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1, 2, 3, 4, 5, 10
 **Size:** medium
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Hid desktop header auth controls below `md` so the mobile header uses only the logo and menu button.
+- Reduced mobile auth-panel padding and heading size while preserving desktop spacing.
+- Raised visible mobile controls to at least 44 px targets across header, filters, auth links, community feed controls, dashboard sign-out, profile follow, and manage editor actions.
+- Let the athlete-profile verification summary wrap on small screens and preserved compact editor photo remove visuals with larger tap areas.
+- Captured and audited 22 mobile screenshots (home, discover, profile, dashboard, community, sign-in/up, forgot/reset/verify, manage at 375x667 and 390x844); final DOM audit reported no document overflow and no visible sub-44 px controls.
 
 ### Context
 
@@ -32,12 +36,12 @@
 - Snapshot each surface manually (`npm run dev`) and record any residual issues in Completion Notes.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

@@ -32,7 +32,10 @@ export function ForgotPasswordForm() {
     return (
       <div className="mt-8 rounded-input bg-primary-container/20 px-4 py-4 text-sm text-on-surface">
         <p className="font-semibold">If that email has an ARC account, reset instructions are on the way.</p>
-        <Link href="/sign-in" className="mt-3 inline-flex font-semibold text-primary hover:underline">
+        <Link
+          href="/sign-in"
+          className="mt-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline"
+        >
           Return to sign in
         </Link>
       </div>

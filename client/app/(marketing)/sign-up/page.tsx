@@ -8,20 +8,25 @@ export const metadata: Metadata = {
 
 export default function SignUpPage() {
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-16">
-      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
-        <h1 className="font-display text-3xl font-extrabold leading-tight">Tell your story.</h1>
+    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-10 sm:py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
+        <h1 className="font-display text-2xl font-extrabold leading-tight sm:text-3xl">
+          Tell your story.
+        </h1>
         <p className="mt-2 text-sm text-on-surface-variant">
           Build a verified athlete profile in about 15 minutes — your story, your results, and the
           values you run by. Bring people along for the journey.
         </p>
         <SignUpForm />
-        <p className="mt-6 text-center text-sm text-on-surface-variant">
-          Already have an account?{' '}
-          <Link href="/sign-in" className="font-semibold text-primary hover:underline">
+        <p className="mt-6 flex flex-wrap items-center justify-center gap-x-1 text-center text-sm text-on-surface-variant">
+          <span>Already have an account?</span>
+          <Link
+            href="/sign-in"
+            className="inline-flex min-h-11 items-center font-semibold text-primary hover:underline"
+          >
             Sign in
           </Link>
-          .
+          <span>.</span>
         </p>
       </div>
     </div>

@@ -53,7 +53,7 @@ export function Logo({
     <Link
       href="/"
       aria-label="ARC home"
-      className="flex items-center gap-2.5 select-none"
+      className="flex min-h-11 items-center gap-2.5 select-none"
     >
       <ArcMark tone={tone} className={`${markSize[size]} shrink-0`} />
       <span

@@ -60,7 +60,7 @@ export function SignUpForm() {
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="text-xs font-semibold text-secondary hover:underline"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill px-2 text-xs font-semibold text-secondary hover:bg-surface-container hover:underline"
           >
             {showPassword ? 'Hide' : 'Show'}
           </button>
@@ -125,21 +125,23 @@ function Field({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="flex items-center justify-between">
-        <span className="label-bold text-on-surface">{label}</span>
-        {trailing}
+      <span className="label-bold text-on-surface">{label}</span>
+      <span className="relative block">
+        <input
+          name={name}
+          type={type}
+          autoComplete={autoComplete}
+          required
+          minLength={minLength}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          className={`${authInputClass} ${trailing ? 'pr-16' : ''}`}
+        />
+        {trailing ? (
+          <span className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</span>
+        ) : null}
       </span>
-      <input
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        required
-        minLength={minLength}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className={authInputClass}
-      />
     </label>
   );
 }

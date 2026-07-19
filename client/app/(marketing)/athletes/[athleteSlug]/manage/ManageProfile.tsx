@@ -429,7 +429,7 @@ function EditorLayout({
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
           <Link
             href="/dashboard"
-            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
+            className="label-bold inline-flex min-h-11 items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
           >
             <Icon name="arrow-back" className="h-4 w-4" />
             Dashboard
@@ -437,7 +437,7 @@ function EditorLayout({
           {headerActions}
           <a
             href={publicHref}
-            className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
+            className="label-bold inline-flex min-h-11 items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
           >
             View public page
             <Icon name="external" className="h-4 w-4" />
@@ -516,9 +516,11 @@ function EditorLayout({
                     type="button"
                     onClick={() => setGallery((prev) => prev.filter((entry) => entry !== url))}
                     aria-label="Remove photo"
-                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+                    className="absolute right-0 top-0 flex h-11 w-11 items-start justify-end rounded-input p-1 text-white"
                   >
-                    <Icon name="close" className="h-3 w-3" />
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/60 transition-colors hover:bg-black/80">
+                      <Icon name="close" className="h-3 w-3" />
+                    </span>
                   </button>
                 </div>
               ))}
@@ -828,9 +830,11 @@ function PhotoUploader({
             type="button"
             onClick={() => onRemove(url)}
             aria-label="Remove photo"
-            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+            className="absolute right-0 top-0 flex h-11 w-11 items-start justify-end rounded-input p-1 text-white"
           >
-            <Icon name="close" className="h-3 w-3" />
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/60 transition-colors hover:bg-black/80">
+              <Icon name="close" className="h-3 w-3" />
+            </span>
           </button>
         </div>
       ))}
@@ -917,7 +921,7 @@ function ResetButton({ onClick, label }: { onClick: () => void; label: string })
     <button
       type="button"
       onClick={onClick}
-      className="label-bold inline-flex items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface-variant transition-colors hover:border-error hover:text-error"
+      className="label-bold inline-flex min-h-11 items-center gap-2 rounded-pill border border-outline-variant px-4 py-2 text-on-surface-variant transition-colors hover:border-error hover:text-error"
     >
       <Icon name="history" className="h-4 w-4" />
       {label}

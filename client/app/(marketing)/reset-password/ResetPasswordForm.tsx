@@ -62,7 +62,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
     return (
       <div className="mt-8 rounded-input bg-success/15 px-4 py-4 text-sm text-on-surface">
         <p className="font-semibold">Your password has been updated.</p>
-        <Link href="/sign-in" className="mt-3 inline-flex font-semibold text-primary hover:underline">
+        <Link
+          href="/sign-in"
+          className="mt-3 inline-flex min-h-11 items-center font-semibold text-primary hover:underline"
+        >
           Sign in with your new password
         </Link>
       </div>
@@ -72,27 +75,27 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
       <label className="block space-y-1.5">
-        <span className="flex items-center justify-between">
-          <span className="label-bold text-on-surface">New password</span>
+        <span className="label-bold text-on-surface">New password</span>
+        <span className="relative block">
+          <input
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            required
+            minLength={10}
+            placeholder="At least 10 characters"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className={`${authInputClass} pr-16`}
+          />
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="text-xs font-semibold text-secondary hover:underline"
+            className="absolute right-2 top-1/2 inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-pill px-2 text-xs font-semibold text-secondary hover:bg-surface-container hover:underline"
           >
             {showPassword ? 'Hide' : 'Show'}
           </button>
         </span>
-        <input
-          name="password"
-          type={showPassword ? 'text' : 'password'}
-          autoComplete="new-password"
-          required
-          minLength={10}
-          placeholder="At least 10 characters"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className={authInputClass}
-        />
       </label>
       <PasswordStrengthMeter password={password} />
       <Button

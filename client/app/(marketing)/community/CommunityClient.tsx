@@ -104,7 +104,7 @@ export function CommunityClient() {
                 key={entry.key}
                 type="button"
                 onClick={() => setDiscipline(entry.key)}
-                className={`label-bold whitespace-nowrap rounded-pill px-4 py-2 text-sm transition-colors ${
+                className={`label-bold min-h-11 whitespace-nowrap rounded-pill px-4 py-2 text-sm transition-colors ${
                   active
                     ? 'bg-primary text-on-primary'
                     : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
@@ -126,7 +126,7 @@ export function CommunityClient() {
               key={entry.key}
               type="button"
               onClick={() => setFeedType(entry.key)}
-              className={`label-bold inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill px-4 py-2 text-sm transition-colors ${
+              className={`label-bold inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-pill px-4 py-2 text-sm transition-colors ${
                 active
                   ? 'bg-secondary text-on-secondary'
                   : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
