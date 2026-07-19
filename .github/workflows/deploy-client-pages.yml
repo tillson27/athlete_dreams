@@ -1,15 +1,6 @@
 name: Deploy frontend to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - client/**
-      - common/**
-      - package.json
-      - package-lock.json
-      - .github/workflows/deploy-client-pages.yml
   workflow_dispatch:
 
 permissions:

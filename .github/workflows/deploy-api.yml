@@ -11,15 +11,6 @@ name: Deploy API (test)
 # mutable `latest` would leave the template unchanged and never roll.
 
 on:
-  push:
-    branches:
-      - nate
-    paths:
-      - app/**
-      - common/**
-      - cdk/**
-      - .github/workflows/deploy-api.yml
-      - .github/workflows/ci.yml
   workflow_dispatch:
     inputs:
       run_seed:

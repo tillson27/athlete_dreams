@@ -8,13 +8,6 @@ name: Deploy Web (test)
 # cdk/README.md).
 
 on:
-  push:
-    branches:
-      - nate
-    paths:
-      - client/**
-      - common/**
-      - .github/workflows/deploy-web.yml
   workflow_dispatch:
 
 concurrency:
