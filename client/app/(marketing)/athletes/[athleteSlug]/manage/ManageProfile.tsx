@@ -64,11 +64,10 @@ function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
   return next;
 }
 
-// Mode seam. Mock mode (default, GitHub Pages / static export) is byte-identical
-// to the prototype: seed from the published athleteProfiles data and auto-save
-// edits to `arc-manage-<slug>` localStorage. Api mode loads the owner's four
-// editable sets from `GET /v1/athletes/me` and Saves them via the set-replace
-// PUTs, gated to the signed-in owner of the slug.
+// Mode seam. Mock mode (static preview / prototype) seeds from the published
+// athleteProfiles data and auto-saves edits to `arc-manage-<slug>` localStorage.
+// Api mode loads the owner's four editable sets from `GET /v1/athletes/me` and
+// saves them via the set-replace PUTs, gated to the signed-in owner of the slug.
 export function ManageProfile({
   athleteSlug,
   athleteName,
@@ -252,6 +251,9 @@ function ApiEditorReady({
   const savedConfirmationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipInitialAutosaveRef = useRef(true);
   const saveRequestIdRef = useRef(0);
+  const savingRef = useRef(false);
+  const queuedSaveRef = useRef(false);
+  const saveRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     editsRef.current = edits;
@@ -292,7 +294,12 @@ function ApiEditorReady({
       setSaveError(null);
       return;
     }
+    if (savingRef.current) {
+      queuedSaveRef.current = true;
+      return;
+    }
     const saveRequestId = ++saveRequestIdRef.current;
+    savingRef.current = true;
     setSaving(true);
     setSaveError(null);
     setRecentlySaved(false);
@@ -313,11 +320,24 @@ function ApiEditorReady({
         setSaveError(toManageSaveError(error));
       }
     } finally {
+      savingRef.current = false;
       if (saveRequestId === saveRequestIdRef.current) {
         setSaving(false);
       }
+      if (queuedSaveRef.current) {
+        queuedSaveRef.current = false;
+        if (toSaveSnapshot(editsRef.current, coverPhotoRef.current) !== savedSnapshotRef.current) {
+          setTimeout(() => {
+            void saveRef.current?.();
+          }, 0);
+        }
+      }
     }
   }, [acknowledgeSaved, clearAutosaveTimer, clearSavedConfirmationTimer]);
+
+  useEffect(() => {
+    saveRef.current = save;
+  }, [save]);
 
   useEffect(() => {
     if (skipInitialAutosaveRef.current) {
@@ -334,6 +354,8 @@ function ApiEditorReady({
   useEffect(
     () => () => {
       saveRequestIdRef.current += 1;
+      savingRef.current = false;
+      queuedSaveRef.current = false;
       clearAutosaveTimer();
       clearSavedConfirmationTimer();
     },
@@ -1012,7 +1034,7 @@ function AddButton() {
   return (
     <button
       type="submit"
-      className="inline-flex items-center justify-center gap-1.5 rounded-input bg-primary-container px-4 py-2 text-sm font-bold text-on-primary transition-colors hover:bg-primary active:scale-95"
+      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-input bg-primary-container px-4 py-2 text-sm font-bold text-on-primary transition-colors hover:bg-primary active:scale-95"
     >
       <Icon name="plus" className="h-4 w-4" />
       Add
@@ -1060,7 +1082,7 @@ function DragHandle({
       type="button"
       aria-label={label}
       title="Drag to reorder"
-      className="mt-0.5 flex h-9 w-9 shrink-0 cursor-grab items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition-colors hover:border-primary hover:text-primary active:cursor-grabbing"
+      className="mt-0.5 flex h-11 w-11 shrink-0 cursor-grab items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition-colors hover:border-primary hover:text-primary active:cursor-grabbing"
     >
       <Icon name="drag-handle" className="h-4 w-4" />
     </button>
@@ -1086,14 +1108,14 @@ function ItemMenu({
     action?.();
   };
   const menuItemClass =
-    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
+    'flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 
   return (
     <details className="relative shrink-0">
       <summary
         aria-label={label}
         title={label}
-        className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface [&::-webkit-details-marker]:hidden"
+        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface [&::-webkit-details-marker]:hidden"
       >
         <Icon name="more" className="h-5 w-5" />
       </summary>
@@ -1125,7 +1147,7 @@ function ItemMenu({
           type="button"
           role="menuitem"
           onClick={(event) => runAction(event, onDelete)}
-          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-error transition-colors hover:bg-error/10"
+          className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-error transition-colors hover:bg-error/10"
         >
           <Icon name="trash" className="h-4 w-4" />
           Delete

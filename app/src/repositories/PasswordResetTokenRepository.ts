@@ -31,6 +31,32 @@ export class PasswordResetTokenRepository {
     return result.count === 1;
   }
 
+  async consumeAndUpdatePassword(input: {
+    tokenId: string;
+    userId: string;
+    passwordHash: string;
+    usedAt: Date;
+  }): Promise<boolean> {
+    return this.prisma.$transaction(async (transaction) => {
+      const result = await transaction.passwordResetToken.updateMany({
+        where: {
+          id: input.tokenId,
+          userId: input.userId,
+          usedAt: null,
+          expiresAt: { gt: input.usedAt },
+        },
+        data: { usedAt: input.usedAt },
+      });
+      if (result.count !== 1) return false;
+
+      await transaction.user.update({
+        where: { id: input.userId },
+        data: { passwordHash: input.passwordHash },
+      });
+      return true;
+    });
+  }
+
   async invalidateAllForUser(userId: string, usedAt: Date): Promise<number> {
     const result = await this.prisma.passwordResetToken.updateMany({
       where: { userId, usedAt: null },

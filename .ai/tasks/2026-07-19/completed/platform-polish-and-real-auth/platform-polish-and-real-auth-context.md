@@ -2,12 +2,12 @@
 
 Date: 2026-07-19
 Task slug: platform-polish-and-real-auth
-Status: Draft
+Status: Complete
 
 ## 0) Summary
 
 - **Objective:** Ship a coherent polish pass across marketing + editor UX, tighten discovery to remove noise, and replace the placeholder mock-mode auth with real email-verified accounts + forgot-password flow using Resend.
-- **Why now:** Discovery and profile-editor rough edges are muddying the story-first pitch. The bigger blocker: signing in with any email/password unlocks a random account today (`client/lib/session.ts:97-115` on mock mode), which is unusable for real testers and unsafe for anything close to production.
+- **Why now:** Discovery and profile-editor rough edges were muddying the story-first pitch. The bigger blocker before this task was that signing in with any email/password unlocked a random account in mock mode, which was unusable for real testers and unsafe for anything close to production.
 - **Primary outcomes:**
   - `client/` is visibly tighter on mobile — full-screen hero, shrunken cards, clean filter rail, drag-to-reorder + confirmed-delete editor.
   - Real accounts: `app/` verifies emails, enforces password strength, and drives verification + reset emails through Resend using branded templates.
@@ -50,7 +50,7 @@ Status: Draft
 
 **Out of scope:**
 - Any change to donation/campaign/sponsor flows.
-- CDK infrastructure changes (Resend key handling in cloud is left to the existing SSM/env pattern already used by JWT).
+- CDK infrastructure changes for Resend/`APP_URL` cloud injection; current cloud wiring only covers JWT and database values and remains out of scope.
 - Rebranding beyond the logo mark (typography, palette).
 - Social/OAuth sign-in.
 - Multi-factor auth.
@@ -67,13 +67,13 @@ Status: Draft
 
 FAD's differentiators are transparency, athlete story, and minimalist UX (`AGENTS.md`). Discovery today leads with filter labels that don't help supporters find a specific runner ("Road, Trail & Ultra" vs. "Track & Field" is not how supporters browse), and the profile funnels users into a "See more results" mid-list button that feels like a bug. The manage editor's numbered chevron reorder + one-tap delete is easy to mis-tap on mobile — several career highlights have been lost this way.
 
-Auth is the biggest gap. The `client` today ships as a static export against GitHub Pages, where mock mode (`DATA_SOURCE=mock`) accepts any credentials and mints a fake session (`client/lib/session.ts:97-115`). This has to change before we let real athletes and supporters test. The backend already has an `AuthService` with password hashing, JWT issuing, and a `SIGNUP_EMAIL_ALLOWLIST` invite gate — but no email verification, no password reset, no Resend dependency, and no "check the email actually exists" cross-reference on the client because the client short-circuits in mock mode.
+Auth was the biggest gap. Before this task, the client shipped static exports against GitHub Pages where mock mode accepted any credentials and minted a fake session. The backend already had an `AuthService` with password hashing, JWT issuing, and a `SIGNUP_EMAIL_ALLOWLIST` invite gate, but no email verification, no password reset, no Resend dependency, and no "check the email actually exists" cross-reference on the client because the client short-circuited in mock mode.
 
 Resend is the transactional email provider; credentials must live only in local environment files such as `app/.env` and must not be copied into task docs. Templates must reuse the same colourways as the marketing site so they feel like an ARC email, not a generic transactional.
 
 ---
 
-## 4) Current state and gaps
+## 4) Pre-task state and gaps
 
 ### Current state
 - `client/components/site/home/HomeHero.tsx:5-7` renders a fixed-height (`h-[540px] md:h-[640px]`) hero — never full viewport.
@@ -105,14 +105,14 @@ Resend is the transactional email provider; credentials must live only in local 
 ## 5) Changes and considerations
 
 **Significant changes:**
-- Default local dev to API mode: `client/.env.example` sets `NEXT_PUBLIC_DATA_SOURCE=api`, root `dev` script continues to run `app` + `client` concurrently so devs get real auth by default. Mock mode still ships the GitHub Pages export.
+- Default local dev to API mode: `client/.env.example` sets `NEXT_PUBLIC_DATA_SOURCE=api`, root `dev` script continues to run `app` + `client` concurrently so devs get real auth by default. The GitHub Pages workflow sets `NEXT_PUBLIC_DATA_SOURCE=mock` explicitly for the static preview export.
 - Add two new Prisma models (`EmailVerificationToken`, `PasswordResetToken`) with token hashes + expiry; migrate via `npm run migrate:create --prefix app -- --name add_email_tokens`.
 - Introduce `EmailService` in `app/src/services/infrastructure/EmailService.ts` that calls Resend via `fetch` (no SDK dependency — one endpoint, easy to stub in tests).
 - New Zod schemas: `resendVerificationRequest`, `verifyEmailRequest`, `forgotPasswordRequest`, `resetPasswordRequest`, plus a shared `strongPasswordSchema` reused by sign-up + reset.
 - Client adds `@dnd-kit/core` + `@dnd-kit/sortable` for drag-reorder; introduces a shared `ConfirmDialog` primitive in `client/components/ui/`.
 
 **Impact and considerations:**
-- Static export (GH Pages) still needs to build cleanly with mock mode. The API cutover only changes the default value — mock code paths remain intact for `next build` on the marketing preview.
+- Static export (GH Pages) still needs to build cleanly with mock mode. The API cutover changes the default value, while `.github/workflows/deploy-client-pages.yml` pins `NEXT_PUBLIC_DATA_SOURCE=mock` for the marketing preview.
 - Existing signed-up users in dev DBs will still work; their `emailVerifiedAt` remains null. Sign-in policy: allow sign-in even if unverified, but show a persistent banner + block publish until verified. This keeps invite testing moving.
 - Resend keys must not be logged (see backend `AGENTS.md`: "Never log secrets"). The key must never appear in an error response body either.
 - Discovery filter removal must not break existing deep-links (`?sport=RUNNING&level=EVERYDAY`) — silently ignore unknown params.
@@ -178,7 +178,7 @@ Resend is the transactional email provider; credentials must live only in local 
 - **EmailService:** thin `fetch` wrapper over `POST https://api.resend.com/emails`. Injected via tsyringe; unit tests stub the fetch.
 - **Email templates:** plain-string tagged template functions (no Handlebars — overkill). Inline styles reference the same design tokens as the site (warm terracotta primary `#c65d3e`, inverse warm `#160d09`, etc.).
 - **AuthService:** on sign-up, create user + issue verification token + call `EmailService.sendVerification`. On sign-in, keep behaviour but return a discriminated "unknown-email" vs. "invalid-password" via the standard `UnauthorizedError` variant — client renders friendlier copy.
-- **Client auth cutover:** flip the `client/.env.example` default; delete the "fake login" short-circuit in `SignInForm.tsx` (so API mode is the only path); the mock path still exists for GH Pages builds because `DATA_SOURCE` still reads env at build time.
+- **Client auth cutover:** flip the `client/.env.example` default; delete the "fake login" short-circuit in `SignInForm.tsx` (so API mode is the only path locally); the mock path still exists for GitHub Pages because the workflow pins `NEXT_PUBLIC_DATA_SOURCE=mock` at build time.
 - **Manage editor:** replace `ReorderControls` + `RemoveButton` with a single `<SortableItem>` wrapping a menu button. Menu items: "Move" (visually indicates drag handle now active — actually items are always draggable; menu offers keyboard-accessible move-up/move-down as fallback) + "Delete" (opens `<ConfirmDialog />`).
 - **New logo:** design a warm terracotta ARC mark — arc-swoosh over an "A" formed from an angled stride, using the primary + primary-container palette. Emit SVG at 36×36 (site) and 32×32 (favicon).
 

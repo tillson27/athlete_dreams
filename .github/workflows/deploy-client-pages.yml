@@ -39,6 +39,7 @@ jobs:
         run: npm run build --prefix client
         env:
           GITHUB_PAGES: true
+          NEXT_PUBLIC_DATA_SOURCE: mock
 
       - name: Upload static frontend artifact
         uses: actions/upload-pages-artifact@v3

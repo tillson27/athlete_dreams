@@ -59,6 +59,7 @@
 - Added deep-equal save snapshots so unchanged edit/cover payloads skip network writes.
 - Added status copy for `Saving…`, `Saved. Your public profile is up to date.`, and a dimmed `Last saved at ...` timestamp after the 5-second confirmation window.
 - Guarded in-flight saves so a completed older save does not clear newer cover-photo dirty state.
+- Step 13 follow-up serialized overlapping API saves so queued autosaves cannot interleave set-replace requests.
 
 ### Context
 
@@ -98,19 +99,25 @@
 ## Step 13 - Final Validation & Cleanup
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Confirmed Steps 1-12 were complete and found no outstanding task-introduced TODOs outside this checklist.
+- Ran the `$e2e-review` (`/e2e-review`) checks through backend, frontend, and docs-alignment passes; fixed the blocking findings.
+- Added a backend publish backstop requiring `User.emailVerifiedAt`, updated the publish integration path to assert unverified users receive 403, and kept the client publish button disabled until session readiness is known.
+- Made reset-password and verify-email token consumption transactional with the matching user mutation so consumed tokens cannot be separated from the password/email update.
+- Serialized API-mode manage-editor saves, raised the remaining manage-editor/confirm-dialog tap targets, and fixed Step 13 auth-form tap targets.
+- Pinned GitHub Pages static preview builds to `NEXT_PUBLIC_DATA_SOURCE=mock` and aligned the task docs with the completed state.
+- Remaining residuals: CDK still does not inject Resend/`APP_URL` values in cloud, and sign-up can still leave a partial user if later team/token writes fail; both are broader follow-ups outside this task's scope.
 
 ### Final Step Checklist
-* [ ] Confirm all prior steps are complete
-* [ ] Review and resolve any outstanding TODOs introduced during this task
-* [ ] Run the `$e2e-review` (`/e2e-review`) skill with all required context provided
-* [ ] Run the `$ci` (`/ci`) skill and confirm it passes
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-* [ ] Update task metadata in the steps docs and the steps guide index
-* [ ] Move `.ai/tasks/2026-07-19/platform-polish-and-real-auth/` to `.ai/tasks/2026-07-19/completed/platform-polish-and-real-auth/`
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+* [x] Confirm all prior steps are complete
+* [x] Review and resolve any outstanding TODOs introduced during this task
+* [x] Run the `$e2e-review` (`/e2e-review`) skill with all required context provided
+* [x] Run the `$ci` (`/ci`) skill and confirm it passes
+- [x] Fix any issues caused by `$ci` (`/ci`)
+* [x] Update task metadata in the steps docs and the steps guide index
+* [x] Move `.ai/tasks/2026-07-19/platform-polish-and-real-auth/` to `.ai/tasks/2026-07-19/completed/platform-polish-and-real-auth/`
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

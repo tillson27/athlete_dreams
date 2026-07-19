@@ -111,6 +111,18 @@ function makeService(seedUsers: User[] = []): {
       token.usedAt = usedAt;
       return true;
     }),
+    consumeAndVerifyUser: vi.fn(
+      async (input: { tokenId: string; userId: string; verifiedAt: Date }) => {
+        const token = emailVerificationTokens.find((candidate) => candidate.id === input.tokenId);
+        const user = users.get(input.userId);
+        if (!token || !user || token.userId !== input.userId || token.usedAt || token.expiresAt <= input.verifiedAt) {
+          return false;
+        }
+        token.usedAt = input.verifiedAt;
+        users.set(input.userId, { ...user, emailVerifiedAt: input.verifiedAt });
+        return true;
+      }
+    ),
     invalidateAllForUser: vi.fn(async (userId: string, usedAt: Date) => {
       let count = 0;
       for (const token of emailVerificationTokens) {
@@ -154,6 +166,18 @@ function makeService(seedUsers: User[] = []): {
       token.usedAt = usedAt;
       return true;
     }),
+    consumeAndUpdatePassword: vi.fn(
+      async (input: { tokenId: string; userId: string; passwordHash: string; usedAt: Date }) => {
+        const token = passwordResetTokens.find((candidate) => candidate.id === input.tokenId);
+        const user = users.get(input.userId);
+        if (!token || !user || token.userId !== input.userId || token.usedAt || token.expiresAt <= input.usedAt) {
+          return false;
+        }
+        token.usedAt = input.usedAt;
+        users.set(input.userId, { ...user, passwordHash: input.passwordHash });
+        return true;
+      }
+    ),
     invalidateAllForUser: vi.fn(async (userId: string, usedAt: Date) => {
       let count = 0;
       for (const token of passwordResetTokens) {
@@ -265,6 +289,25 @@ describe('AuthService', () => {
     ).rejects.toThrow(new BadRequestError('Invalid or expired token'));
 
     expect(users.get(user.id)?.passwordHash).toBe('hashed:Correcthorse1');
+  });
+
+  it('resets the password by consuming the token and updating the user together', async () => {
+    const user = userFixture();
+    const { service, passwordResetTokens, users } = makeService([user]);
+    passwordResetTokens.push({
+      id: 'reset-1',
+      userId: user.id,
+      tokenHash: 'hash:valid-token',
+      expiresAt: new Date(Date.now() + 60_000),
+      usedAt: null,
+      createdAt: new Date('2026-07-19T12:00:00.000Z'),
+      user,
+    });
+
+    await service.resetPassword({ token: 'valid-token', password: 'Newpassword1' });
+
+    expect(passwordResetTokens[0]?.usedAt).toBeInstanceOf(Date);
+    expect(users.get(user.id)?.passwordHash).toBe('hashed:Newpassword1');
   });
 
   it('verifies email by consuming the token and timestamping the user', async () => {

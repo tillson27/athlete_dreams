@@ -43,7 +43,7 @@ export function PublishPanel() {
     saving,
     draftSlug,
   } = useOnboarding();
-  const { session } = useSession();
+  const { session, ready: sessionReady } = useSession();
   const [agreed, setAgreed] = useState(false);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState(false);
@@ -58,7 +58,8 @@ export function PublishPanel() {
   const profileRouteReady = mode === 'api' ? Boolean(draftSlug) : hasName;
   const manageHref = athleteManageHref(slug);
   const publicUrl = profileUrl(slug);
-  const mustVerifyEmail = mode === 'api' && Boolean(session?.mustVerifyEmail);
+  const publishBlockedByAccount =
+    mode === 'api' && (!sessionReady || !session || session.mustVerifyEmail);
 
   const missing = [
     !profile.bio && 'your story',
@@ -89,7 +90,7 @@ export function PublishPanel() {
   );
 
   const publish = async () => {
-    if (mustVerifyEmail) {
+    if (publishBlockedByAccount) {
       setError(true);
       return;
     }
@@ -260,7 +261,21 @@ export function PublishPanel() {
           Still missing {missing.join(', ')} — you can add them after publishing.
         </p>
       ) : null}
-      {mustVerifyEmail ? (
+      {mode === 'api' && !sessionReady ? (
+        <p
+          role="status"
+          className="rounded-input bg-primary-container/20 px-4 py-3 text-sm font-semibold text-on-surface"
+        >
+          Checking your account before publishing.
+        </p>
+      ) : mode === 'api' && !session ? (
+        <p
+          role="alert"
+          className="rounded-input bg-error/10 px-4 py-3 text-sm font-semibold text-error"
+        >
+          Sign in before publishing your profile.
+        </p>
+      ) : mode === 'api' && session?.mustVerifyEmail ? (
         <p
           role="alert"
           className="rounded-input bg-primary-container/20 px-4 py-3 text-sm font-semibold text-on-surface"
@@ -295,7 +310,7 @@ export function PublishPanel() {
       <button
         type="button"
         onClick={publish}
-        disabled={status === 'publishing' || saving || !hasName || mustVerifyEmail}
+        disabled={status === 'publishing' || saving || !hasName || publishBlockedByAccount}
         className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
       >
         {status === 'publishing' ? (

@@ -19,7 +19,10 @@ export function ResetPasswordPanel() {
     return (
       <div className="mt-8 rounded-input bg-error/10 px-4 py-4 text-sm text-error">
         <p className="font-semibold">This reset link is missing a token.</p>
-        <Link href="/forgot-password" className="mt-3 inline-flex font-semibold underline">
+        <Link
+          href="/forgot-password"
+          className="mt-3 inline-flex min-h-11 items-center font-semibold underline"
+        >
           Request a new link
         </Link>
       </div>
@@ -121,7 +124,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         >
           {error}{' '}
           {error.startsWith('This reset link') ? (
-            <Link href="/forgot-password" className="underline">
+            <Link href="/forgot-password" className="inline-flex min-h-11 items-center underline">
               Request a new link
             </Link>
           ) : null}

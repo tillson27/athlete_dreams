@@ -31,6 +31,31 @@ export class EmailVerificationTokenRepository {
     return result.count === 1;
   }
 
+  async consumeAndVerifyUser(input: {
+    tokenId: string;
+    userId: string;
+    verifiedAt: Date;
+  }): Promise<boolean> {
+    return this.prisma.$transaction(async (transaction) => {
+      const result = await transaction.emailVerificationToken.updateMany({
+        where: {
+          id: input.tokenId,
+          userId: input.userId,
+          usedAt: null,
+          expiresAt: { gt: input.verifiedAt },
+        },
+        data: { usedAt: input.verifiedAt },
+      });
+      if (result.count !== 1) return false;
+
+      await transaction.user.update({
+        where: { id: input.userId },
+        data: { emailVerifiedAt: input.verifiedAt },
+      });
+      return true;
+    });
+  }
+
   async invalidateAllForUser(userId: string, usedAt: Date): Promise<number> {
     const result = await this.prisma.emailVerificationToken.updateMany({
       where: { userId, usedAt: null },

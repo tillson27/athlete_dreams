@@ -90,7 +90,7 @@ export function SignUpForm() {
           {error.linkToSignIn ? (
             <>
               {' '}
-              <Link href="/sign-in" className="underline">
+              <Link href="/sign-in" className="inline-flex min-h-11 items-center underline">
                 sign in instead
               </Link>
               .

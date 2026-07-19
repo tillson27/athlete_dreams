@@ -121,7 +121,7 @@
 - `EmailService` calls `https://api.resend.com/emails` via `fetch` using `RESEND_API_KEY` from env; never logs the key.
 - Templates live under `app/src/services/email/templates/` as pure functions returning `{ subject, html, text }`.
 - Templates render at ≤600px content width, degrade to 100% width < 480px, and use inline styles pulled from a shared `emailTokens` constant matching the site palette (primary warm terracotta `#c65d3e`, inverse warm `#160d09`, surface neutral `#fdfaf6`).
-- `EmailService` is registered in `app/src/config/DependencyInjector.ts`.
+- `EmailService` is managed through the app's existing tsyringe decorator pattern (`@singleton()` / constructor injection); there is no centralized `app/src/config/DependencyInjector.ts` file.
 - Unit test verifies the `fetch` payload shape and Authorization header.
 
 **References:**

@@ -79,14 +79,14 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="label-bold rounded-lg border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
+            className="label-bold inline-flex min-h-11 items-center justify-center rounded-lg border border-outline-variant px-4 py-2 text-on-surface transition-colors hover:bg-surface-container"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={`label-bold rounded-lg px-4 py-2 transition-colors ${confirmClass}`}
+            className={`label-bold inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 transition-colors ${confirmClass}`}
           >
             {confirmLabel}
           </button>

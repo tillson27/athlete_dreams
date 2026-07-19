@@ -118,13 +118,17 @@ export class AuthService {
       throw new BadRequestError('Invalid or expired token');
     }
 
-    const consumed = await this.passwordResetTokenRepository.markUsed(passwordResetToken.id, now);
+    const passwordHash = await this.passwordHashService.hash(input.password);
+    const consumed = await this.passwordResetTokenRepository.consumeAndUpdatePassword({
+      tokenId: passwordResetToken.id,
+      userId: passwordResetToken.userId,
+      passwordHash,
+      usedAt: now,
+    });
     if (!consumed) {
       throw new BadRequestError('Invalid or expired token');
     }
 
-    const passwordHash = await this.passwordHashService.hash(input.password);
-    await this.userRepository.updatePasswordHash(passwordResetToken.userId, passwordHash);
     this.logger.info(
       { userId: passwordResetToken.userId, tokenId: passwordResetToken.id },
       'auth.password_reset.completed'
@@ -139,15 +143,15 @@ export class AuthService {
       throw new BadRequestError('Invalid or expired token');
     }
 
-    const consumed = await this.emailVerificationTokenRepository.markUsed(
-      emailVerificationToken.id,
-      now
-    );
+    const consumed = await this.emailVerificationTokenRepository.consumeAndVerifyUser({
+      tokenId: emailVerificationToken.id,
+      userId: emailVerificationToken.userId,
+      verifiedAt: now,
+    });
     if (!consumed) {
       throw new BadRequestError('Invalid or expired token');
     }
 
-    await this.userRepository.markEmailVerified(emailVerificationToken.userId, now);
     this.logger.info(
       { userId: emailVerificationToken.userId, tokenId: emailVerificationToken.id },
       'auth.verification.completed'
