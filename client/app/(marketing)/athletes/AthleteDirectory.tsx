@@ -13,19 +13,6 @@ import { unsplashPhoto } from '@/lib/unsplash';
 import { AthleteProfileHydrator } from './[athleteSlug]/AthleteProfileHydrator';
 import { ManageProfile } from './[athleteSlug]/manage/ManageProfile';
 
-const SPORTS: Array<{ key: MockAthlete['primarySport'] | 'ALL'; label: string }> = [
-  { key: 'ALL', label: 'All Runners' },
-  { key: 'RUNNING', label: 'Road, Trail & Ultra' },
-  { key: 'TRACK_AND_FIELD', label: 'Track & Field' },
-];
-
-const LEVELS: Array<{ key: MockAthlete['runnerLevel'] | 'ALL'; label: string }> = [
-  { key: 'ALL', label: 'Every Level' },
-  { key: 'ELITE', label: 'Pro & Elite' },
-  { key: 'COMPETITIVE', label: 'Competitive' },
-  { key: 'EVERYDAY', label: 'Everyday' },
-];
-
 const COUNTRIES: Array<{ code: MockAthlete['countryCode'] | 'ALL'; label: string }> = [
   { code: 'ALL', label: 'Anywhere' },
   { code: 'CA', label: 'Canada' },
@@ -33,55 +20,87 @@ const COUNTRIES: Array<{ code: MockAthlete['countryCode'] | 'ALL'; label: string
 ];
 
 type Filters = {
-  sport: MockAthlete['primarySport'] | 'ALL';
-  level: MockAthlete['runnerLevel'] | 'ALL';
   country: MockAthlete['countryCode'] | 'ALL';
   search: string;
 };
 
 const initialFilters: Filters = {
-  sport: 'ALL',
-  level: 'ALL',
   country: 'ALL',
   search: '',
 };
 
+const ATHLETE_PAGE_SIZE = 12;
 const FALLBACK_COVER = unsplashPhoto('1594882645126-14020914d58d', 1400);
 
 export function AthleteDirectory() {
   const { athletes } = useDirectoryAthletes();
   const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [page, setPage] = useState(1);
+  const [hasReadUrl, setHasReadUrl] = useState(false);
   const [runtimeRoute, setRuntimeRoute] = useState<AthleteRoute | null>(null);
 
-  // Sync initial state from URL (?sport=RUNNING&level=EVERYDAY) for deep-linkability.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
+    const initialPage = Number.parseInt(params.get('page') ?? '1', 10);
+
     setRuntimeRoute(athleteRouteFromPath(window.location.pathname, params));
-    setFilters((current) => ({
-      ...current,
-      sport: (params.get('sport') as Filters['sport']) ?? current.sport,
-      level: (params.get('level') as Filters['level']) ?? current.level,
-      country: (params.get('country') as Filters['country']) ?? current.country,
-    }));
+    setFilters({
+      country: countryFromParam(params.get('country')),
+      search: params.get('search') ?? '',
+    });
+    setPage(Number.isInteger(initialPage) && initialPage > 0 ? initialPage : 1);
+    setHasReadUrl(true);
   }, []);
 
   const filtered = useMemo(() => {
     return athletes.filter((athlete) => {
-      if (filters.sport !== 'ALL' && athlete.primarySport !== filters.sport) return false;
-      if (filters.level !== 'ALL' && athlete.runnerLevel !== filters.level) return false;
       if (filters.country !== 'ALL' && athlete.countryCode !== filters.country) return false;
-      if (filters.search) {
-        const needle = filters.search.toLowerCase();
-        const hay = `${athlete.fullName} ${athlete.hometown} ${athlete.headline}`.toLowerCase();
+      const search = filters.search.trim();
+      if (search) {
+        const needle = search.toLowerCase();
+        const profile = findAthleteProfile(athlete.athleteSlug);
+        const hay =
+          `${athlete.fullName} ${athlete.hometown} ${athlete.headline} ${profile?.disciplineLabel ?? ''}`.toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       return true;
     });
   }, [athletes, filters]);
 
-  const clear = () => setFilters(initialFilters);
-  const isFiltered = filtered.length !== athletes.length;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ATHLETE_PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * ATHLETE_PAGE_SIZE;
+  const pagedAthletes = filtered.slice(pageStart, pageStart + ATHLETE_PAGE_SIZE);
+  const paginationPages = paginationWindow(currentPage, totalPages);
+  const isFiltered = filters.country !== 'ALL' || filters.search.trim().length > 0;
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
+    if (!hasReadUrl || runtimeRoute !== null || typeof window === 'undefined') return;
+    const params = new URLSearchParams();
+    const search = filters.search.trim();
+
+    if (filters.country !== 'ALL') params.set('country', filters.country);
+    if (search) params.set('search', search);
+    if (currentPage > 1) params.set('page', String(currentPage));
+
+    const query = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+  }, [currentPage, filters, hasReadUrl, runtimeRoute]);
+
+  const updateFilters = (nextFilters: Partial<Filters>) => {
+    setFilters((current) => ({ ...current, ...nextFilters }));
+    setPage(1);
+  };
+
+  const clear = () => {
+    setFilters(initialFilters);
+    setPage(1);
+  };
 
   if (runtimeRoute?.kind === 'manage') {
     const athlete = findMockAthlete(runtimeRoute.athleteSlug);
@@ -108,41 +127,18 @@ export function AthleteDirectory() {
 
   return (
     <div className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-col md:flex-row">
-      {/* SIDEBAR — desktop only */}
       <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-72 shrink-0 border-r border-outline-variant bg-surface-container-lowest md:flex md:flex-col">
         <div className="border-b border-outline-variant p-6">
           <h2 className="font-display text-lg font-bold text-on-surface">Filters</h2>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
-          <FilterGroup title="Discipline">
-            {SPORTS.map((sport) => (
-              <RadioOption
-                key={sport.key}
-                name="sport"
-                checked={filters.sport === sport.key}
-                onChange={() => setFilters((prev) => ({ ...prev, sport: sport.key }))}
-                label={sport.label}
-              />
-            ))}
-          </FilterGroup>
-          <FilterGroup title="Level">
-            {LEVELS.map((level) => (
-              <RadioOption
-                key={level.key}
-                name="level"
-                checked={filters.level === level.key}
-                onChange={() => setFilters((prev) => ({ ...prev, level: level.key }))}
-                label={level.label}
-              />
-            ))}
-          </FilterGroup>
           <FilterGroup title="Region">
             {COUNTRIES.map((country) => (
               <RadioOption
                 key={country.code}
                 name="country"
                 checked={filters.country === country.code}
-                onChange={() => setFilters((prev) => ({ ...prev, country: country.code }))}
+                onChange={() => updateFilters({ country: country.code })}
                 label={country.label}
               />
             ))}
@@ -165,7 +161,6 @@ export function AthleteDirectory() {
         </div>
       </aside>
 
-      {/* MAIN */}
       <main className="flex-1 px-5 py-10 md:px-8 md:py-12">
         <header className="mb-8">
           <h1 className="font-display text-3xl font-extrabold leading-tight text-on-surface md:text-5xl">
@@ -177,63 +172,39 @@ export function AthleteDirectory() {
           </p>
         </header>
 
-        {/* SEARCH */}
-        <div className="mb-8 flex flex-col gap-3 md:flex-row">
+        <div className="mb-8 space-y-4">
           <label className="relative flex-1">
             <span className="sr-only">Search</span>
             <SearchIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-on-surface-variant" />
             <input
               type="text"
               value={filters.search}
-              onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
+              onChange={(event) => updateFilters({ search: event.target.value })}
               placeholder="Search by name, discipline, or city…"
               className="w-full rounded-input border border-outline-variant bg-surface-container-lowest px-12 py-4 text-base text-on-surface shadow-sm transition-all placeholder:text-on-surface-variant focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
             />
           </label>
-          {/* Mobile filter pills */}
           <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar md:hidden">
-            {SPORTS.map((sport) => {
-              const active = filters.sport === sport.key;
+            {COUNTRIES.map((country) => {
+              const active = filters.country === country.code;
               return (
                 <button
-                  key={sport.key}
+                  key={country.code}
                   type="button"
-                  onClick={() => setFilters((prev) => ({ ...prev, sport: sport.key }))}
+                  onClick={() => updateFilters({ country: country.code })}
                   className={`label-bold whitespace-nowrap rounded-pill px-4 py-2 transition-colors ${
                     active
                       ? 'bg-primary text-on-primary'
-                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
                   }`}
                 >
-                  {sport.label}
+                  {country.label}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Mobile level pills */}
-        <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar md:hidden">
-          {LEVELS.map((level) => {
-            const active = filters.level === level.key;
-            return (
-              <button
-                key={level.key}
-                type="button"
-                onClick={() => setFilters((prev) => ({ ...prev, level: level.key }))}
-                className={`label-bold whitespace-nowrap rounded-pill px-4 py-2 transition-colors ${
-                  active
-                    ? 'bg-secondary text-on-secondary'
-                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                }`}
-              >
-                {level.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* RESULTS */}
         {filtered.length === 0 ? (
           <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-12 text-center">
             <Badge tone="soft">No matching runners</Badge>
@@ -248,11 +219,38 @@ export function AthleteDirectory() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {filtered.map((athlete) => (
-              <AthleteRow key={athlete.athleteSlug} athlete={athlete} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-6">
+              {pagedAthletes.map((athlete) => (
+                <AthleteRow key={athlete.athleteSlug} athlete={athlete} />
+              ))}
+            </div>
+            {totalPages > 1 ? (
+              <nav
+                aria-label="Pagination"
+                className="mt-8 flex flex-wrap items-center justify-center gap-2"
+              >
+                <PageButton onClick={() => setPage(currentPage - 1)} disabled={currentPage <= 1}>
+                  Prev
+                </PageButton>
+                {paginationPages.map((paginationPage) => (
+                  <PageButton
+                    key={paginationPage}
+                    active={paginationPage === currentPage}
+                    onClick={() => setPage(paginationPage)}
+                  >
+                    {paginationPage}
+                  </PageButton>
+                ))}
+                <PageButton
+                  onClick={() => setPage(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next
+                </PageButton>
+              </nav>
+            ) : null}
+          </>
         )}
       </main>
     </div>
@@ -305,5 +303,48 @@ function SearchIcon({ className }: { className?: string }) {
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.5-3.5" strokeLinecap="round" />
     </svg>
+  );
+}
+
+function countryFromParam(value: string | null): Filters['country'] {
+  const country = COUNTRIES.find((option) => option.code === value);
+  return country?.code ?? 'ALL';
+}
+
+function paginationWindow(currentPage: number, totalPages: number): number[] {
+  const maxVisiblePages = 5;
+  if (totalPages <= maxVisiblePages) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const startPage = Math.max(1, Math.min(currentPage - 2, totalPages - maxVisiblePages + 1));
+  return Array.from({ length: maxVisiblePages }, (_, index) => startPage + index);
+}
+
+function PageButton({
+  active = false,
+  disabled = false,
+  children,
+  onClick,
+}: {
+  active?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-current={active ? 'page' : undefined}
+      disabled={disabled}
+      onClick={onClick}
+      className={`label-bold min-h-10 min-w-10 rounded-input px-3 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+        active
+          ? 'bg-primary text-on-primary'
+          : 'bg-surface-container-lowest text-on-surface-variant ring-1 ring-inset ring-outline-variant hover:text-primary'
+      }`}
+    >
+      {children}
+    </button>
   );
 }

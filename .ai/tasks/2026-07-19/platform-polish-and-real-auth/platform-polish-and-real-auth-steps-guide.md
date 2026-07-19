@@ -28,7 +28,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 1 | New ARC logo mark | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-1-5.md` |
 | 2 | Full-viewport home hero | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-1-5.md` |
 | 3 | Athlete profile polish: story toggle + move "See more" triggers to bottom | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-1-5.md` |
-| 4 | Discovery cleanup: remove filters, add pagination, tighten mobile row | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-1-5.md` |
+| 4 | Discovery cleanup: remove filters, add pagination, tighten mobile row | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-1-5.md` |
 | 5 | Photo gallery block carousel / lightbox | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-1-5.md` |
 | 6 | Backend contracts: Prisma migration + Zod schemas + env additions | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
 | 7 | Backend Resend integration: EmailService + branded HTML templates | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
