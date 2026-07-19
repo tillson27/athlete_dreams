@@ -47,9 +47,8 @@ export function ReviewSummary() {
         {/* Left: review */}
         <div className="space-y-6 lg:col-span-8">
           <ReviewCard icon="person" title="Basics" editHref="/register/personal-basics?from=review">
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <Detail label="Name" value={profile.name} />
-              <Detail label="Discipline" value={profile.discipline} />
               <Detail label="Location" value={profile.location} />
             </div>
           </ReviewCard>

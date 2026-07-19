@@ -77,7 +77,6 @@ export function PublishPanel() {
   const completionChecks = [
     hasName,
     Boolean(profile.bio.trim()),
-    Boolean(profile.discipline.trim()),
     Boolean(profile.location.trim()),
     profile.personalBests.filter((best) => best.distance && best.time).length > 0,
     profile.values.length > 0,

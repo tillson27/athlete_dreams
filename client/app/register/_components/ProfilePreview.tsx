@@ -19,7 +19,7 @@ export function ProfilePreview({
 }) {
   const { profile, mode, draftSlug } = useOnboarding();
   const { session } = useSession();
-  const { discipline, location, bio, mission, values, personalBests, careerHighlights, previousRaces } =
+  const { location, bio, mission, values, personalBests, careerHighlights, previousRaces } =
     profile;
   const name = profile.name || session?.name || '';
   const slug = (mode === 'api' ? draftSlug : null) ?? (slugifyName(name) || 'your-name');
@@ -62,8 +62,6 @@ export function ProfilePreview({
               {name || 'Your name'}
             </h3>
             <p className="label-bold mt-1 text-white/90">
-              <span className={discipline ? '' : 'text-white/50'}>{discipline || 'Your sport'}</span>
-              {' · '}
               <span className={location ? '' : 'text-white/50'}>{location || 'Your city'}</span>
             </p>
           </div>
