@@ -361,13 +361,17 @@
 ## Step 10 - Manage editor UX: save + view-public + three-dot menu + drag reorder + confirm delete
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** None
 **Size:** medium
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Added `@dnd-kit/core` and `@dnd-kit/sortable` plus a shared `SortableList` primitive for mouse, touch, and keyboard reorder.
+- Added a native-dialog `ConfirmDialog` primitive and routed highlight, race, and roadmap deletes through confirmation.
+- Replaced inline up/down/trash controls with drag handles plus three-dot row menus containing move-up, move-down, and delete actions.
+- Added the manage editor footer action band with a second API-mode Save button, status text, and a new-tab public profile link; mock mode keeps autosave copy.
+- Ran frontend review, focused client type-check/lint, mock static export, and full repo CI.
 
 ### Context
 
@@ -424,9 +428,9 @@
 - Ensure api-mode Save button remains present in header **and** footer (share the render via a `save` render-prop or a `saveButton` node).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

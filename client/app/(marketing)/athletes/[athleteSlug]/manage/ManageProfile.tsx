@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { SortableList, type SortableItemRenderProps } from '@/components/ui/SortableList';
 import { findAthleteProfile } from '@/lib/athleteProfiles';
 import { DATA_SOURCE } from '@/lib/dataSource';
 import { useSession } from '@/lib/session';
@@ -32,6 +34,13 @@ const inputClass =
   'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/25';
 
 const EMPTY_EDITS: AthleteEdits = { highlights: [], races: [], roadmap: [], gallery: [] };
+
+type ConfirmRequest = {
+  title: string;
+  body: ReactNode;
+  confirmLabel: string;
+  onConfirm: () => void;
+};
 
 // Swap an item with its neighbour to move it up (-1) or down (+1) the list.
 function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
@@ -120,8 +129,9 @@ function ManageProfileMock({
       coverPhoto={coverPhoto}
       setCoverPhoto={setCoverPhoto}
       headerActions={<ResetButton onClick={resetToPublished} label="Reset to published" />}
+      footerActions={null}
       footer={
-        <p className="mt-8 text-center text-xs text-on-surface-variant">
+        <p className="text-xs text-on-surface-variant">
           Changes save to this browser and appear on your public profile.
         </p>
       }
@@ -236,6 +246,10 @@ function ApiEditorReady({
     }
   };
 
+  const renderSaveButton = () => (
+    <SaveButton onClick={save} saving={saving} />
+  );
+
   // Any edit invalidates the "Saved" acknowledgement so it never lingers stale.
   const setEditsAndClearSaved = (
     updater: AthleteEdits | ((current: AthleteEdits) => AthleteEdits)
@@ -256,19 +270,10 @@ function ApiEditorReady({
         setCoverDirty(true);
         setCoverPhoto(url);
       }}
-      headerActions={
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving}
-          className="label-bold inline-flex items-center gap-2 rounded-pill bg-primary px-5 py-2 text-on-primary transition-all hover:bg-primary-strong disabled:opacity-60"
-        >
-          <Icon name={saving ? 'history' : 'check'} className="h-4 w-4" />
-          {saving ? 'Saving…' : 'Save changes'}
-        </button>
-      }
+      headerActions={renderSaveButton()}
+      footerActions={renderSaveButton()}
       footer={
-        <div className="mt-8 text-center text-xs">
+        <div className="text-xs">
           {saveError ? (
             <p className="text-error">{saveError}</p>
           ) : saved ? (
@@ -303,6 +308,7 @@ function EditorLayout({
   coverPhoto,
   setCoverPhoto,
   headerActions,
+  footerActions,
   footer,
 }: {
   athleteName: string;
@@ -312,6 +318,7 @@ function EditorLayout({
   coverPhoto: string;
   setCoverPhoto: (url: string) => void;
   headerActions: ReactNode;
+  footerActions: ReactNode;
   footer: ReactNode;
 }) {
   const { highlights, races, roadmap, gallery } = edits;
@@ -328,6 +335,7 @@ function EditorLayout({
   const [highlightPhotos, setHighlightPhotos] = useState<string[]>([]);
   const [racePhotos, setRacePhotos] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
 
   const prepareImages = (
     files: FileList | File[],
@@ -394,6 +402,12 @@ function EditorLayout({
     if (!name || !date) return;
     setRoadmap((prev) => [...prev, { id: uid(), name, date }]);
     form.reset();
+  };
+
+  const handleConfirm = () => {
+    const onConfirm = confirmRequest?.onConfirm;
+    setConfirmRequest(null);
+    onConfirm?.();
   };
 
   return (
@@ -515,41 +529,72 @@ function EditorLayout({
 
         {/* Career Highlights */}
         <SectionCard icon="medal" title="Career Highlights" count={highlights.length}>
-          <ul className="space-y-3">
-            {highlights.map((item, index) => (
-              <li
-                key={item.id}
-                className="space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white">
-                      <Icon name="medal" className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <p className="label-bold text-on-surface">{item.title}</p>
-                      <p className="text-xs text-on-surface-variant">
-                        {item.date ? `${item.date} • ` : ''}
-                        {item.detail}
-                      </p>
-                      <ResultsLink url={item.resultsUrl} />
+          {highlights.length > 0 ? (
+            <SortableList
+              items={highlights}
+              getId={(item) => item.id}
+              onReorder={(next) => setHighlights(() => next)}
+            >
+              {(item, index, sortable) => (
+                <div
+                  className={`space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4 ${
+                    sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <DragHandle
+                        label={`Drag ${item.title}`}
+                        dragHandleProps={sortable.dragHandleProps}
+                      />
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+                        <Icon name="medal" className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="label-bold text-on-surface">{item.title}</p>
+                        <p className="text-xs text-on-surface-variant">
+                          {item.date ? `${item.date} • ` : ''}
+                          {item.detail}
+                        </p>
+                        <ResultsLink url={item.resultsUrl} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ReorderControls
-                      isFirst={index === 0}
-                      isLast={index === highlights.length - 1}
-                      onUp={() => setHighlights((prev) => moveItem(prev, index, -1))}
-                      onDown={() => setHighlights((prev) => moveItem(prev, index, 1))}
+                    <ItemMenu
+                      label={`Actions for ${item.title}`}
+                      onMoveUp={
+                        index > 0
+                          ? () => setHighlights((prev) => moveItem(prev, index, -1))
+                          : undefined
+                      }
+                      onMoveDown={
+                        index < highlights.length - 1
+                          ? () => setHighlights((prev) => moveItem(prev, index, 1))
+                          : undefined
+                      }
+                      onDelete={() =>
+                        setConfirmRequest({
+                          title: 'Delete this highlight?',
+                          body: (
+                            <p>
+                              <strong>{item.title}</strong> will be removed from your public profile.
+                            </p>
+                          ),
+                          confirmLabel: 'Delete',
+                          onConfirm: () =>
+                            setHighlights((prev) => prev.filter((entry) => entry.id !== item.id)),
+                        })
+                      }
                     />
-                    <RemoveButton onClick={() => setHighlights((prev) => prev.filter((entry) => entry.id !== item.id))} />
                   </div>
+                  <PhotoStrip photos={item.photos} />
                 </div>
-                <PhotoStrip photos={item.photos} />
-              </li>
-            ))}
-            {highlights.length === 0 ? <EmptyState label="No highlights yet." /> : null}
-          </ul>
+              )}
+            </SortableList>
+          ) : (
+            <ul className="space-y-3">
+              <EmptyState label="No highlights yet." />
+            </ul>
+          )}
 
           <form onSubmit={addHighlight} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-4">
             <div className="grid gap-3 md:grid-cols-3">
@@ -575,35 +620,66 @@ function EditorLayout({
 
         {/* Previous Races */}
         <SectionCard icon="history" title="Previous Races" count={races.length}>
-          <ul className="space-y-3">
-            {races.map((item, index) => (
-              <li
-                key={item.id}
-                className="space-y-3 rounded-r-input border-l-4 border-primary bg-surface-container-low/60 p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="label-bold text-on-surface">{item.name}</p>
-                    <p className="text-xs text-on-surface-variant">
-                      {item.date} • {item.result}
-                    </p>
-                    <ResultsLink url={item.resultsUrl} />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ReorderControls
-                      isFirst={index === 0}
-                      isLast={index === races.length - 1}
-                      onUp={() => setRaces((prev) => moveItem(prev, index, -1))}
-                      onDown={() => setRaces((prev) => moveItem(prev, index, 1))}
+          {races.length > 0 ? (
+            <SortableList
+              items={races}
+              getId={(item) => item.id}
+              onReorder={(next) => setRaces(() => next)}
+            >
+              {(item, index, sortable) => (
+                <div
+                  className={`space-y-3 rounded-r-input border-l-4 border-primary bg-surface-container-low/60 p-4 ${
+                    sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <DragHandle
+                        label={`Drag ${item.name}`}
+                        dragHandleProps={sortable.dragHandleProps}
+                      />
+                      <div className="min-w-0">
+                        <p className="label-bold text-on-surface">{item.name}</p>
+                        <p className="text-xs text-on-surface-variant">
+                          {item.date} • {item.result}
+                        </p>
+                        <ResultsLink url={item.resultsUrl} />
+                      </div>
+                    </div>
+                    <ItemMenu
+                      label={`Actions for ${item.name}`}
+                      onMoveUp={
+                        index > 0 ? () => setRaces((prev) => moveItem(prev, index, -1)) : undefined
+                      }
+                      onMoveDown={
+                        index < races.length - 1
+                          ? () => setRaces((prev) => moveItem(prev, index, 1))
+                          : undefined
+                      }
+                      onDelete={() =>
+                        setConfirmRequest({
+                          title: 'Delete this race?',
+                          body: (
+                            <p>
+                              <strong>{item.name}</strong> will be removed from your public profile.
+                            </p>
+                          ),
+                          confirmLabel: 'Delete',
+                          onConfirm: () =>
+                            setRaces((prev) => prev.filter((entry) => entry.id !== item.id)),
+                        })
+                      }
                     />
-                    <RemoveButton onClick={() => setRaces((prev) => prev.filter((entry) => entry.id !== item.id))} />
                   </div>
+                  <PhotoStrip photos={item.photos} />
                 </div>
-                <PhotoStrip photos={item.photos} />
-              </li>
-            ))}
-            {races.length === 0 ? <EmptyState label="No races yet." /> : null}
-          </ul>
+              )}
+            </SortableList>
+          ) : (
+            <ul className="space-y-3">
+              <EmptyState label="No races yet." />
+            </ul>
+          )}
 
           <form onSubmit={addRace} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-4">
             <div className="grid gap-3 md:grid-cols-3">
@@ -629,29 +705,60 @@ function EditorLayout({
 
         {/* Roadmap */}
         <SectionCard icon="flag" title="2026 Roadmap" count={roadmap.length}>
-          <ul className="space-y-3">
-            {roadmap.map((item, index) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between gap-4 rounded-input border border-outline-variant bg-surface-container-low p-4"
-              >
-                <div>
-                  <p className="label-bold text-on-surface">{item.name}</p>
-                  <p className="text-xs text-on-surface-variant">{item.date}</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <ReorderControls
-                    isFirst={index === 0}
-                    isLast={index === roadmap.length - 1}
-                    onUp={() => setRoadmap((prev) => moveItem(prev, index, -1))}
-                    onDown={() => setRoadmap((prev) => moveItem(prev, index, 1))}
+          {roadmap.length > 0 ? (
+            <SortableList
+              items={roadmap}
+              getId={(item) => item.id}
+              onReorder={(next) => setRoadmap(() => next)}
+            >
+              {(item, index, sortable) => (
+                <div
+                  className={`flex items-center justify-between gap-4 rounded-input border border-outline-variant bg-surface-container-low p-4 ${
+                    sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
+                  }`}
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <DragHandle
+                      label={`Drag ${item.name}`}
+                      dragHandleProps={sortable.dragHandleProps}
+                    />
+                    <div className="min-w-0">
+                      <p className="label-bold text-on-surface">{item.name}</p>
+                      <p className="text-xs text-on-surface-variant">{item.date}</p>
+                    </div>
+                  </div>
+                  <ItemMenu
+                    label={`Actions for ${item.name}`}
+                    onMoveUp={
+                      index > 0 ? () => setRoadmap((prev) => moveItem(prev, index, -1)) : undefined
+                    }
+                    onMoveDown={
+                      index < roadmap.length - 1
+                        ? () => setRoadmap((prev) => moveItem(prev, index, 1))
+                        : undefined
+                    }
+                    onDelete={() =>
+                      setConfirmRequest({
+                        title: 'Delete this roadmap item?',
+                        body: (
+                          <p>
+                            <strong>{item.name}</strong> will be removed from your public profile.
+                          </p>
+                        ),
+                        confirmLabel: 'Delete',
+                        onConfirm: () =>
+                          setRoadmap((prev) => prev.filter((entry) => entry.id !== item.id)),
+                      })
+                    }
                   />
-                  <RemoveButton onClick={() => setRoadmap((prev) => prev.filter((entry) => entry.id !== item.id))} />
                 </div>
-              </li>
-            ))}
-            {roadmap.length === 0 ? <EmptyState label="No upcoming races yet." /> : null}
-          </ul>
+              )}
+            </SortableList>
+          ) : (
+            <ul className="space-y-3">
+              <EmptyState label="No upcoming races yet." />
+            </ul>
+          )}
 
           <form onSubmit={addRoadmap} className="mt-5 grid gap-3 md:grid-cols-[1.5fr_1.2fr_auto]">
             <input name="name" placeholder="Upcoming event" className={inputClass} />
@@ -661,7 +768,30 @@ function EditorLayout({
         </SectionCard>
       </div>
 
-      {footer}
+      <footer className="mt-10 border-t border-outline-variant pt-8 text-center">
+        <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+          {footerActions}
+          <a
+            href={publicHref}
+            target="_blank"
+            rel="noreferrer"
+            className="label-bold inline-flex min-h-11 items-center justify-center gap-2 rounded-pill border-2 border-primary px-5 py-2.5 text-primary transition-colors hover:bg-primary hover:text-on-primary"
+          >
+            View public page
+            <Icon name="external" className="h-4 w-4" />
+          </a>
+        </div>
+        <div className="mt-4">{footer}</div>
+      </footer>
+
+      <ConfirmDialog
+        open={confirmRequest !== null}
+        title={confirmRequest?.title ?? ''}
+        body={confirmRequest?.body ?? null}
+        confirmLabel={confirmRequest?.confirmLabel ?? 'Confirm'}
+        onCancel={() => setConfirmRequest(null)}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 }
@@ -795,41 +925,105 @@ function ResetButton({ onClick, label }: { onClick: () => void; label: string })
   );
 }
 
-function ReorderControls({
-  onUp,
-  onDown,
-  isFirst,
-  isLast,
-}: {
-  onUp: () => void;
-  onDown: () => void;
-  isFirst: boolean;
-  isLast: boolean;
-}) {
-  const buttonClass =
-    'rounded p-1 text-on-surface-variant transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent';
-  return (
-    <div className="flex flex-col">
-      <button type="button" onClick={onUp} disabled={isFirst} aria-label="Move up" className={buttonClass}>
-        <Icon name="chevron-solid" className="h-4 w-4 rotate-180" />
-      </button>
-      <button type="button" onClick={onDown} disabled={isLast} aria-label="Move down" className={buttonClass}>
-        <Icon name="chevron-solid" className="h-4 w-4" />
-      </button>
-    </div>
-  );
-}
-
-function RemoveButton({ onClick }: { onClick: () => void }) {
+function SaveButton({ onClick, saving }: { onClick: () => void; saving: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Remove"
-      className="shrink-0 rounded-full p-2 text-error transition-colors hover:bg-error-container/30"
+      disabled={saving}
+      className="label-bold inline-flex min-h-11 items-center justify-center gap-2 rounded-pill bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-primary-strong disabled:opacity-60"
     >
-      <Icon name="trash" className="h-4 w-4" />
+      <Icon name={saving ? 'history' : 'check'} className="h-4 w-4" />
+      {saving ? 'Saving...' : 'Save changes'}
     </button>
+  );
+}
+
+function DragHandle({
+  label,
+  dragHandleProps,
+}: {
+  label: string;
+  dragHandleProps: SortableItemRenderProps['dragHandleProps'];
+}) {
+  return (
+    <button
+      {...dragHandleProps}
+      type="button"
+      aria-label={label}
+      title="Drag to reorder"
+      className="mt-0.5 flex h-9 w-9 shrink-0 cursor-grab items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition-colors hover:border-primary hover:text-primary active:cursor-grabbing"
+    >
+      <Icon name="drag-handle" className="h-4 w-4" />
+    </button>
+  );
+}
+
+function ItemMenu({
+  label,
+  onMoveUp,
+  onMoveDown,
+  onDelete,
+}: {
+  label: string;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  onDelete: () => void;
+}) {
+  const closeMenu = (event: MouseEvent<HTMLButtonElement>) => {
+    event.currentTarget.closest('details')?.removeAttribute('open');
+  };
+  const runAction = (event: MouseEvent<HTMLButtonElement>, action: (() => void) | undefined) => {
+    closeMenu(event);
+    action?.();
+  };
+  const menuItemClass =
+    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
+
+  return (
+    <details className="relative shrink-0">
+      <summary
+        aria-label={label}
+        title={label}
+        className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface [&::-webkit-details-marker]:hidden"
+      >
+        <Icon name="more" className="h-5 w-5" />
+      </summary>
+      <div
+        role="menu"
+        className="absolute right-0 top-11 z-20 w-44 overflow-hidden rounded-input border border-outline-variant bg-surface-container-lowest py-1 text-on-surface shadow-xl"
+      >
+        <button
+          type="button"
+          role="menuitem"
+          disabled={!onMoveUp}
+          onClick={(event) => runAction(event, onMoveUp)}
+          className={menuItemClass}
+        >
+          <Icon name="chevron-solid" className="h-4 w-4 rotate-180" />
+          Move up
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          disabled={!onMoveDown}
+          onClick={(event) => runAction(event, onMoveDown)}
+          className={menuItemClass}
+        >
+          <Icon name="chevron-solid" className="h-4 w-4" />
+          Move down
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          onClick={(event) => runAction(event, onDelete)}
+          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-error transition-colors hover:bg-error/10"
+        >
+          <Icon name="trash" className="h-4 w-4" />
+          Delete
+        </button>
+      </div>
+    </details>
   );
 }
 
