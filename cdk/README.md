@@ -18,7 +18,7 @@ CDK app is account-agnostic: the account resolves from your deploy credentials.
 ## 1. Prerequisites
 
 See `docs/infrastructure-and-scaling.md` -> *Prerequisites & access* for the full
-list (AWS account, deploy identity, Route 53 hosted zone, deferred Stripe/SES).
+list (AWS account, deploy identity, Route 53 hosted zone, deferred Stripe and production email-sender operations).
 Not repeated here. In short, before you start you need:
 
 1. An AWS account and an elevated identity (SSO or `aws configure` profile) able
@@ -266,10 +266,10 @@ STATIC_EXPORT=true NEXT_PUBLIC_DATA_SOURCE=api \
 ```
 
 The pipeline (`deploy-web.yml`) reads `NEXT_PUBLIC_DATA_SOURCE` /
-`NEXT_PUBLIC_API_BASE_URL` from GitHub **environment variables** — set them on
-the `test` environment (section 5) or its deploys revert the site to mock mode.
-Note the auth/onboarding UI stays on the mock session either way until M6
-(`docs/delivery-plan.md`).
+`NEXT_PUBLIC_API_BASE_URL` from GitHub **environment variables**. API mode is
+the client default, but `NEXT_PUBLIC_API_BASE_URL` should still be set on the
+`test` environment (section 5) so static exports call the intended deployed API
+instead of the local fallback.
 
 Invalidations take ~30–60s to propagate; the `/v1/*` behaviors are uncached and
 unaffected.

@@ -15,15 +15,13 @@ export type { ProfileView } from './dataSourceTypes';
 
 // Data-source seam. Pages consume these hooks and always receive the same
 // view-model shapes; the flag decides whether the data comes from the client's
-// mock modules (default) or the live API. Mock mode is fully synchronous so its
-// render output is byte-identical to before this seam existed. API mode fetches
-// client-side (documented limitation: static-params generation always uses mock
-// data — see the task context §2 out-of-scope SSR gap).
+// mock modules or the live API. API is the local-dev default; static previews
+// set mock explicitly so their render output keeps the prototype fixtures.
 
 export type DataSource = 'mock' | 'api';
 
 export const DATA_SOURCE: DataSource =
-  process.env.NEXT_PUBLIC_DATA_SOURCE === 'api' ? 'api' : 'mock';
+  process.env.NEXT_PUBLIC_DATA_SOURCE === 'mock' ? 'mock' : 'api';
 
 type AsyncState<T> = { data: T; loading: boolean; error: string | null };
 

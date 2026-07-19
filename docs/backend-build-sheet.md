@@ -22,7 +22,7 @@ Concrete, per-file implementation plan for completing the FAD/ARC backend busine
 | Overfunding past target | **Allowed** — mark `FUNDED` at target, keep accepting until `closesAt` |
 | Cost-line vs target | **Strict equality** (Σ `costLines.amountCents` == `targetAmountCents`) |
 | Refresh-token transport | **httpOnly secure cookie** (no `authSessionSchema` change) |
-| Email provider | **Amazon SES** (AWS-native; swappable for Resend) |
+| Email provider | **Resend** for current verification/reset emails; SES remains an AWS-native alternative for later invites/receipts |
 | Compute / client hosting | **ECS Fargate + ALB** / **static S3 + CloudFront** (SSR later) |
 | Base branch | **`nate`** — integration base; all implementation branches cut from it (see `docs/delivery-plan.md`) |
 | Domain / market | **athletearc.ca** (hardcoded across the client) · Canada-first launch · default currency **CAD** |
@@ -175,7 +175,7 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 
 ## Phase 4 — Accounts hardening & teams
 
-**Deps:** `express-rate-limit`, `cookie-parser` (+ `@types/cookie-parser`), `@aws-sdk/client-ses`.
+**Deps:** `express-rate-limit`, `cookie-parser` (+ `@types/cookie-parser`).
 
 **Auth: refresh tokens (no migration — `AuthSession` model already exists but is unused)**
 - `AuthSessionRepository` (new): `create({userId, refreshTokenHash, userAgent, ipAddress, expiresAt})`, `findValidByHash`, `rotate`, `revoke`, `revokeAllForUser`.
@@ -184,11 +184,11 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 - `AuthRouterFactory`: `POST /v1/auth/refresh`, `POST /v1/auth/sign-out`. `buildApp`: `cookieParser()`.
 - Rate limiting: `app/src/middleware/rateLimit.ts` on `/v1/auth/*` (+ light global).
 
-**Email verification & password reset**
-- `Δschema` (`add_user_tokens`): `UserToken` (`tokenHash @unique`, `userId`, `purpose` enum `VERIFY_EMAIL|RESET_PASSWORD`, `expiresAt`, `consumedAt`).
-- `EmailService` (new infra, SES): `sendVerificationEmail`, `sendPasswordReset`, `sendTeamInvite`.
-- `TokenRepository` (new).
-- `AuthService`: send verification on sign-up; `POST /v1/auth/verify-email`, `/request-password-reset`, `/reset-password`; set `emailVerifiedAt` on verify. `Δcontract` additions in `auth.ts`.
+**Email verification & password reset** — implemented with Resend (2026-07-19)
+- `EmailVerificationToken` and `PasswordResetToken` store SHA-256 token hashes, expiry, and single-use consumption state.
+- `EmailService` sends verification, welcome, and password-reset emails through Resend using env-configured sender settings.
+- `AuthService` sends verification on sign-up, supports forgot/reset/resend/verify flows, and exposes verification state in the auth session contract.
+- Remaining account-hardening work: refresh-token rotation, auth rate limiting, cloud sender/domain operations, and team invites.
 
 **Teams (contracts already exist: `createTeamRequestSchema`, `inviteTeamMemberRequestSchema`, `teamInvitationSchema`, `teamMembershipSchema`)**
 - `TeamRepository`: `createTeam({name, ownerUserId})` (non-personal), `addMembership`, `updateRole`, `removeMembership` (soft: `leftAt`), `listMembers`.

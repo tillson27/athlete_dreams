@@ -31,8 +31,14 @@ export function toAuthErrorView(kind: AuthKind, error: unknown): AuthErrorView {
       };
     }
     if (kind === 'sign-in' && error.status === 401) {
-      return { message: 'Invalid email or password.' };
+      if (error.message === 'No account found for this email') {
+        return { message: 'No account found for this email.' };
+      }
+      return { message: 'Invalid password.' };
     }
+  }
+  if (kind === 'sign-in' && error instanceof Error && error.message) {
+    return { message: error.message };
   }
   return { message: GENERIC_MESSAGE };
 }

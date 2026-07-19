@@ -40,10 +40,10 @@ Sizing for each lives in `docs/infrastructure-and-scaling.md` → *Target archit
 - **Why:** no secrets in env files or images. Secrets Manager for DB creds (native rotation), Stripe keys, `JWT_SECRET`; Parameter Store (free) for non-secret config. CDK injects both into the task definition at launch.
 
 ### Networking — **VPC (2 AZ), public + private subnets, one NAT + S3 gateway endpoint**
-- **Why:** standard secure topology — ALB and NAT in public subnets; Fargate and RDS in private subnets. A NAT path is **required** (the API egresses to Stripe/SES, which VPC endpoints can't cover). NAT cost is parameterized (`natStrategy`, see cost doc).
+- **Why:** standard secure topology — ALB and NAT in public subnets; Fargate and RDS in private subnets. A NAT path is **required** (the API egresses to Stripe and transactional email providers, which VPC endpoints can't cover). NAT cost is parameterized (`natStrategy`, see cost doc).
 
-### Email — **Amazon SES** *(deferred with Phase 4)*
-- **Why:** AWS-native transactional email; swappable for Resend. Not needed until account verification/invites ship.
+### Email — **Resend now; SES optional later**
+- **Why:** account verification and password reset currently use Resend through app env configuration. SES remains the AWS-native option for later invites/receipts if we want email fully inside AWS operations.
 
 ### Registry / observability — **ECR + CloudWatch**
 - **Why:** arm64 image registry; pino → CloudWatch logs/metrics with capped retention; alarms on error rate / DB / ALB 5xx.
@@ -66,7 +66,7 @@ Sizing for each lives in `docs/infrastructure-and-scaling.md` → *Target archit
                                         SG :5432 │
                                           RDS PostgreSQL (private, Multi-AZ toggle)
 
-  Egress:  Fargate ──► NAT ──► Internet   (Stripe API, SES)
+  Egress:  Fargate ──► NAT ──► Internet   (Stripe API, transactional email)
            Fargate ──► S3 gateway endpoint (ECR layers)  ·  Secrets Manager / SSM ──► task env
   Telemetry: Fargate ──► CloudWatch (logs, metrics, alarms)
 ```
@@ -148,11 +148,11 @@ Summary here; full reliability tradeoffs + PCI/PII notes in `docs/infrastructure
 | Client | S3 + CloudFront | cheapest global static hosting | profile SEO → SSR/ISR (Stage 2) |
 | Front door | CloudFront + ACM + Route 53 | one domain, stable webhook host, no CORS | — |
 | Secrets | Secrets Manager + SSM | rotation + no secrets in images | — |
-| Networking | VPC 2 AZ, 1 NAT + S3 endpoint | secure, external egress for Stripe/SES | HA NAT (Stage 1) |
+| Networking | VPC 2 AZ, 1 NAT + S3 endpoint | secure, external egress for Stripe/email APIs | HA NAT (Stage 1) |
 | CI/CD | GitHub Actions + OIDC | short-lived creds, arm64, safe migrations | — |
 
 ## Open items before authoring CDK
 - ✅ **Domain:** `athletearc.ca` — hardcoded across the client (sitemap, metadata, profile links, `hello@athletearc.ca`). DNS is at GoDaddy with no AWS configuration yet, so the **test env runs in temporary-URL mode** (CloudFront default domain; no zone/cert). `test.athletearc.ca` activates via Route 53 delegation + restoring the `domain` block in `cdk/config/` — see `cdk/README.md` → §1a.
 - ✅ **Environments:** `test` first (the first AWS deployment target), `production` later — branching/promotion in `docs/delivery-plan.md`.
 - **Web build note (M3):** the client's static export currently rides the `GITHUB_PAGES` flag, which sets a `/athlete_dreams` basePath — wrong for `athletearc.ca`. The S3/CloudFront deploy needs a plain static-export mode with **no basePath** (small `next.config.ts` knob). And once directory data is API-driven, static pre-rendering stops reflecting new athletes — the SSR/ISR move (Stage 2) becomes SEO-driven rather than optional.
-- Stripe + SES access remain **deferred** (see prerequisites) — do not block infra bring-up.
+- Stripe + production email-sender operations remain **deferred** (see prerequisites) — do not block infra bring-up.

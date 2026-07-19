@@ -13,7 +13,7 @@ AWS hosting design for the FAD/ARC API + client, the cost/reliability tradeoffs 
 | Client | **S3 + CloudFront (OAC)** | static export today; SSR/ISR later (Amplify or OpenNext) |
 | Front door / TLS | **CloudFront + ACM + Route 53** | one domain; `/v1/*` + `/webhooks/stripe` → ALB origin |
 | Secrets / config | **Secrets Manager** (DB, Stripe, JWT) + **SSM Parameter Store** (non-secret) | injected into task def by CDK |
-| Email | **Amazon SES** | verification, password reset, team invites, receipts |
+| Email | **Resend now; SES optional later** | verification and password reset now; team invites/receipts later |
 | Registry / logs | **ECR + CloudWatch** | arm64 image; pino → CloudWatch, capped retention |
 
 Why containers over Lambda: the API uses the **argon2** native binary and must reach **Stripe** with a raw-body webhook and persistent DB connections. A small always-warm Fargate service avoids Lambda cold-starts, the Prisma-on-Lambda connection-storm (which would force RDS Proxy), and native-binary packaging. **App Runner** is a valid lower-ops swap (removes the ALB and the NAT dependency); we chose Fargate for ALB-level control (WAF, path routing) and the first-class CDK construct (`ApplicationLoadBalancedFargateService`).
@@ -40,9 +40,9 @@ Provisioning is **your** step: per the repo's STRICT rules I author all IaC and 
 | Item | Gates | Note |
 |---|---|---|
 | **Stripe access** — platform account, Connect `client_id`, secret key, Connect webhook secret | Phase 2 direct-donation money loop **going live** | Build and test against Stripe **test mode** / mocks now; real credentials + Connect app registration are later work. Phases 0, 1, 3 and all infra are unaffected. |
-| **SES** — verify `athletearc.ca` + sandbox-exit (sender: `hello@athletearc.ca`) | Phase 4 email (verification, invites, password reset) | Deferred with the email work; Phases 0–3 unaffected. |
+| **Production sender/domain** — verify the live sender in Resend (or migrate to SES later) | Real athlete email delivery | Local/API implementation works with env-provided Resend credentials; production sender verification remains an operational gate. |
 
-**Not blocked now:** authoring and local dev of Phases 0–4 and the `cdk/` app need zero AWS or Stripe access (a local Postgres covers the DB). AWS access gates only `bootstrap → deploy → migrate deploy`; Stripe and SES gate only their own phases going live.
+**Not blocked now:** authoring and local dev of Phases 0–4 and the `cdk/` app need zero AWS or Stripe access (a local Postgres covers the DB). AWS access gates only `bootstrap → deploy → migrate deploy`; Stripe and transactional-email sender verification gate only their own phases going live.
 
 ## CDK cost/HA parameters
 
@@ -89,7 +89,7 @@ Baseline HA config is ~$130–160/mo, dominated by **RDS Multi-AZ (~$55)**, **NA
 | Component | Free tier | Note |
 |---|---|---|
 | Fargate | ❌ none | ~$18/mo (2 small tasks) |
-| NAT Gateway | ❌ none | ~$33/mo — still required for Stripe/SES egress |
+| NAT Gateway | ❌ none | ~$33/mo — still required for Stripe/email-provider egress |
 | RDS | ⚠️ `t4g.micro` single-AZ, 750h + 20 GB (12mo) only | our `t4g.small` Multi-AZ is not covered |
 | ALB | ⚠️ ~750h/mo, first 12mo (legacy accounts) | paid after |
 | S3 · CloudFront · ACM · SSM Parameter Store · ECR · CloudWatch basics | ✅ mostly | client hosting, config, certs ≈ free |

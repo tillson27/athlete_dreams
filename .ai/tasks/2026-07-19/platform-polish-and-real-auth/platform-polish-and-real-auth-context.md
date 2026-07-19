@@ -30,7 +30,7 @@ Status: Draft
 **Acceptance criteria (definition of done):**
 - With `NEXT_PUBLIC_DATA_SOURCE=api` (the new default for local dev), signing in with a non-existent email surfaces "No account found for this email" and cannot mint a session.
 - Signing up with `password: "short"` is rejected client-side before the request fires; the API also rejects it (defense in depth).
-- Requesting a reset for a known email produces a Resend delivery with a signed link containing a single-use token that expires after 60 minutes; using it navigates to `/reset-password/<token>` and updates the password hash on submit.
+- Requesting a reset for a known email produces a Resend delivery with a signed link containing a single-use token that expires after 60 minutes; using it navigates to `/reset-password?token=...` and updates the password hash on submit.
 - Career Highlights, Races, and Roadmap items can be dragged to reorder on touch and mouse; deleting one shows a confirmation modal before removal.
 - `/athletes` renders at most `ATHLETE_PAGE_SIZE` cards per page with numeric pagination controls that update the URL.
 - `npm run ci` at repo root passes.
@@ -136,7 +136,7 @@ Resend is the transactional email provider; credentials must live only in local 
 **Dependencies (ordered):**
 1. New Zod schemas + Prisma models must land before the AuthService / email endpoints are wired.
 2. `EmailService` must exist before `AuthService` can call it.
-3. Backend auth endpoints must exist before client `/forgot-password` + `/reset-password/[token]` pages can integrate.
+3. Backend auth endpoints must exist before client `/forgot-password` + `/reset-password?token=...` pages can integrate.
 4. Manage editor drag-and-drop depends on `@dnd-kit/*` being added to `client/package.json`.
 5. Mobile audit runs last so it can absorb every visual change from prior steps.
 
@@ -157,7 +157,7 @@ Resend is the transactional email provider; credentials must live only in local 
 - Photo gallery in the public profile: tapping any tile opens a full-screen carousel with swipe (touch) + arrow-key (desktop) navigation.
 - Sign-up requires: valid email (RFC 5322 subset via Zod), password ≥ 10 chars, contains at least one letter and one digit; UI shows a live strength meter.
 - Sign-in returns distinct errors for: unknown email, wrong password, unverified email (soft warning).
-- Forgot-password flow: `/forgot-password` posts to `POST /v1/auth/forgot-password` (always returns 200 to avoid enumeration); user receives an email; `/reset-password/<token>` submits a new password to `POST /v1/auth/reset-password`.
+- Forgot-password flow: `/forgot-password` posts to `POST /v1/auth/forgot-password` (always returns 200 to avoid enumeration); user receives an email; `/reset-password?token=...` submits a new password to `POST /v1/auth/reset-password`.
 - Every new account triggers a verification email + welcome email via Resend, using branded HTML templates.
 
 **Non-functional requirements:**
@@ -232,7 +232,7 @@ Resend is the transactional email provider; credentials must live only in local 
 
 ### client/
 - `.env.example` sets `NEXT_PUBLIC_DATA_SOURCE=api` and `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`.
-- New pages: `app/(marketing)/forgot-password/page.tsx`, `app/(marketing)/reset-password/[token]/page.tsx`, `app/(marketing)/verify-email/page.tsx`.
+- New pages: `app/(marketing)/forgot-password/page.tsx`, `app/(marketing)/reset-password/page.tsx`, `app/(marketing)/verify-email/page.tsx`.
 - `app/(marketing)/sign-up/SignUpForm.tsx` + `sign-in/SignInForm.tsx` add validation + strength meter + "Forgot password?" link.
 - `AthleteDirectory.tsx`: remove filters, add pagination.
 - `AthleteProfile.tsx` + `ProfileEditableSections.tsx`: story toggle + move "See more" triggers.
@@ -250,7 +250,7 @@ Resend is the transactional email provider; credentials must live only in local 
 ## 11) Edge cases and error handling
 
 - **Deep-linked filter params (`?sport=…`):** ignore silently, keep the current page URL.
-- **Reset token expired/used:** `/reset-password/<token>` shows "This reset link has expired. Request a new one."
+- **Reset token expired/used:** `/reset-password?token=...` shows "This reset link has expired. Request a new one."
 - **Verification token expired:** show link to `POST /v1/auth/resend-verification`.
 - **Sign-in when email is unverified:** issue the session anyway, but return a `mustVerifyEmail: true` flag on the session so the client can gate publish + banner.
 - **Sign-up with an already-registered email:** unchanged `ConflictError` from `AuthService`; UI copy: "That email already has an account — sign in instead."

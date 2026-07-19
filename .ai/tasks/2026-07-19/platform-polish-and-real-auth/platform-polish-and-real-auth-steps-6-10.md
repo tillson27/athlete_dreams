@@ -261,7 +261,7 @@
         await this.passwordResetRepo.create(user.id, hash, expiresAt);
         await this.emailService.sendPasswordReset({
           displayName: user.displayName,
-          resetUrl: `${this.appUrl}/reset-password/${plaintext}`,
+          resetUrl: `${this.appUrl}/reset-password?token=${encodeURIComponent(plaintext)}`,
           expiresInMinutes: PASSWORD_RESET_TTL_MINUTES,
         });
       }
@@ -290,13 +290,17 @@
 ## Step 9 - Frontend auth cutover: API-mode default + password rules + verify/forgot/reset pages
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 6, 8
 **Size:** medium
-**Owner:** claude
-**Completed At:** YYYY-MM-DD
+**Owner:** codex
+**Completed At:** 2026-07-19
 **Completion Notes:**
-- [Notes]
+- Defaulted the client data source to API mode with a local API base URL fallback while preserving explicit mock static previews.
+- Added forgot-password, query-token reset-password, and verify-email pages wired to `fad-common` auth contracts and `client/lib/api.ts` helpers.
+- Added a common-backed password strength meter for sign-up/reset and removed the fake sign-in short-circuit; mock sign-in now requires a prior mock account.
+- Propagated `mustVerifyEmail` into client session state, dashboard messaging, and the publish guard.
+- Ran frontend/e2e/doc alignment review, focused auth checks, mock static export, and full repo CI.
 
 ### Context
 
@@ -306,7 +310,7 @@
 - `SignInForm.tsx` no longer short-circuits in non-api mode; both modes call `signIn({ email, password })` and surface friendly errors.
 - `SignUpForm.tsx` validates password strength client-side (using `strongPasswordSchema.safeParse`) before submitting; renders a strength meter that ticks off "10+ characters" / "Letter" / "Number".
 - Sign-in error mapping renders "No account found" vs "Invalid password" vs "Please verify your email first (resend)".
-- New pages: `client/app/(marketing)/forgot-password/page.tsx`, `client/app/(marketing)/reset-password/[token]/page.tsx`, `client/app/(marketing)/verify-email/page.tsx`.
+- New pages: `client/app/(marketing)/forgot-password/page.tsx`, `client/app/(marketing)/reset-password/page.tsx`, `client/app/(marketing)/verify-email/page.tsx`.
 - New `client/lib/api.ts` helpers: `forgotPassword`, `resetPassword`, `verifyEmail`, `resendVerification`.
 - Sign-in surfaces a "Forgot password?" link.
 
@@ -344,13 +348,13 @@
 - Wire "Forgot password?" as a link under the password field in `SignInForm.tsx`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$e2e-review` (`/e2e-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$e2e-review` (`/e2e-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

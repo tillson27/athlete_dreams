@@ -12,31 +12,22 @@ import {
   signUp as apiSignUp,
 } from './api';
 
-/**
- * Session state for the sign-up → onboard → publish → dashboard loop.
- *
- * Two implementations behind one exported surface, selected by `DATA_SOURCE`:
- * - **mock** (default, GitHub Pages / static export): a frontend-only session in
- *   `arc-session` localStorage — no backend, no auth, no password storage. Profile
- *   *content* lives in the onboarding store (`arc-onboarding-profile`); this only
- *   tracks who is "signed in". Behaviour is unchanged from the prototype.
- * - **api**: real authentication against the Express API. `{ accessToken, user }`
- *   persist in `arc-auth`; the token is injected into authed `api.ts` helpers and
- *   validated on mount via `GET /v1/users/me` (stale/expired sessions self-clear).
- *
- * Public API contract: consumers only ever see `{ name, email, published }` and the
- * `signUp` / `signIn` / `signOut` / `markPublished` / `useSession` surface below —
- * both modes honour it identically.
- */
 export type Session = {
   name: string;
   email: string;
   published: boolean;
+  mustVerifyEmail: boolean;
 };
 
-// --- Mock mode (unchanged prototype behaviour) ---
+export type AuthResult = {
+  mustVerifyEmail: boolean;
+};
 
 const sessionStore = createBrowserStore<Session>('arc-session', 'arc-session-change');
+const mockAccountStore = createBrowserStore<{ name: string; email: string }>(
+  'arc-mock-account',
+  'arc-mock-account-change',
+);
 const onboardingNameStore = createBrowserStore<{ name?: string } & Record<string, unknown>>(
   'arc-onboarding-profile',
   'arc-onboarding-profile-change',
@@ -71,6 +62,7 @@ function authRecordToSession(record: AuthRecord | null): Session | null {
     name: record.user.displayName,
     email: record.user.email,
     published: record.published,
+    mustVerifyEmail: !record.user.emailVerifiedAt,
   };
 }
 
@@ -84,14 +76,16 @@ export async function signUp({
   name: string;
   email: string;
   password?: string;
-}): Promise<void> {
+}): Promise<AuthResult> {
   if (DATA_SOURCE === 'api') {
     const session = await apiSignUp({ email, password: password ?? '', displayName: name });
     authStore.write({ accessToken: session.accessToken, user: session.user, published: false });
-    return;
+    return { mustVerifyEmail: session.mustVerifyEmail };
   }
-  sessionStore.write({ name, email, published: false });
+  mockAccountStore.write({ name, email });
+  sessionStore.write({ name, email, published: false, mustVerifyEmail: false });
   seedOnboardingName(name);
+  return { mustVerifyEmail: false };
 }
 
 export async function signIn({
@@ -100,18 +94,23 @@ export async function signIn({
 }: {
   email: string;
   password?: string;
-}): Promise<void> {
+}): Promise<AuthResult> {
   if (DATA_SOURCE === 'api') {
     const session = await apiSignIn({ email, password: password ?? '' });
     authStore.write({ accessToken: session.accessToken, user: session.user, published: false });
-    return;
+    return { mustVerifyEmail: session.mustVerifyEmail };
   }
-  const existing = sessionStore.read();
+  const account = mockAccountStore.read();
+  if (!account || account.email.toLowerCase() !== email.toLowerCase()) {
+    throw new Error('No account found for this email.');
+  }
   sessionStore.write({
-    name: existing?.name ?? '',
-    email,
-    published: existing?.published ?? false,
+    name: account.name,
+    email: account.email,
+    published: false,
+    mustVerifyEmail: false,
   });
+  return { mustVerifyEmail: false };
 }
 
 export function signOut() {
@@ -136,6 +135,7 @@ export function markPublished() {
     name: existing?.name ?? '',
     email: existing?.email ?? '',
     published: true,
+    mustVerifyEmail: false,
   });
 }
 

@@ -8,7 +8,7 @@ import { ProfilePreview } from '../_components/ProfilePreview';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { slugifyName } from '@/lib/slugify';
 import { athleteManageHref, athleteProfileHref, profileUrl } from '@/lib/profileUrl';
-import { markPublished } from '@/lib/session';
+import { markPublished, useSession } from '@/lib/session';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 type Status = 'idle' | 'publishing' | 'published';
@@ -43,6 +43,7 @@ export function PublishPanel() {
     saving,
     draftSlug,
   } = useOnboarding();
+  const { session } = useSession();
   const [agreed, setAgreed] = useState(false);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState(false);
@@ -57,6 +58,7 @@ export function PublishPanel() {
   const profileRouteReady = mode === 'api' ? Boolean(draftSlug) : hasName;
   const manageHref = athleteManageHref(slug);
   const publicUrl = profileUrl(slug);
+  const mustVerifyEmail = mode === 'api' && Boolean(session?.mustVerifyEmail);
 
   const missing = [
     !profile.bio && 'your story',
@@ -87,6 +89,10 @@ export function PublishPanel() {
   );
 
   const publish = async () => {
+    if (mustVerifyEmail) {
+      setError(true);
+      return;
+    }
     if (!agreed || !hasName) {
       setError(true);
       return;
@@ -254,6 +260,18 @@ export function PublishPanel() {
           Still missing {missing.join(', ')} — you can add them after publishing.
         </p>
       ) : null}
+      {mustVerifyEmail ? (
+        <p
+          role="alert"
+          className="rounded-input bg-primary-container/20 px-4 py-3 text-sm font-semibold text-on-surface"
+        >
+          Verify your email before publishing.{' '}
+          <Link href="/verify-email" className="text-primary underline">
+            Resend verification
+          </Link>
+          .
+        </p>
+      ) : null}
       {mode === 'api' && publishChecklist.length > 0 ? (
         <div
           role="alert"
@@ -277,7 +295,7 @@ export function PublishPanel() {
       <button
         type="button"
         onClick={publish}
-        disabled={status === 'publishing' || saving || !hasName}
+        disabled={status === 'publishing' || saving || !hasName || mustVerifyEmail}
         className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
       >
         {status === 'publishing' ? (

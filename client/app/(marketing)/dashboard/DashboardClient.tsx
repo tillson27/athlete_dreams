@@ -118,6 +118,7 @@ function DashboardInner({ session }: { session: Session }) {
       profileHref={profileHref}
       manageHref={manageHref}
       publicUrl={publicUrl}
+      mustVerifyEmail={false}
       checklist={checklist}
       copied={copied}
       copyLink={copyLink}
@@ -179,6 +180,7 @@ function DashboardApi({ session }: { session: Session }) {
       profileHref={profileHref}
       manageHref={manageHref}
       publicUrl={publicUrl}
+      mustVerifyEmail={session.mustVerifyEmail}
       checklist={checklist}
       copied={copied}
       copyLink={copyLink}
@@ -292,6 +294,7 @@ function DashboardView({
   profileHref,
   manageHref,
   publicUrl,
+  mustVerifyEmail,
   checklist,
   copied,
   copyLink,
@@ -304,6 +307,7 @@ function DashboardView({
   profileHref: string;
   manageHref: string;
   publicUrl: string;
+  mustVerifyEmail: boolean;
   checklist: ChecklistItem[];
   copied: boolean;
   copyLink: () => void;
@@ -345,6 +349,20 @@ function DashboardView({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left column */}
         <div className="space-y-6 lg:col-span-8">
+          {mustVerifyEmail ? (
+            <div className="flex flex-col items-start gap-3 rounded-card border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-on-surface">
+                Verify your email before publishing your profile to the network.
+              </p>
+              <Link
+                href="/verify-email"
+                className="label-bold shrink-0 rounded-lg bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-primary-strong"
+              >
+                Resend verification
+              </Link>
+            </div>
+          ) : null}
+
           {/* Draft banner */}
           {!published ? (
             <div className="flex flex-col items-start gap-3 rounded-card border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">

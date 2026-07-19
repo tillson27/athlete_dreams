@@ -33,7 +33,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 6 | Backend contracts: Prisma migration + Zod schemas + env additions | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
 | 7 | Backend Resend integration: EmailService + branded HTML templates | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
 | 8 | Backend auth flow: verify, forgot-password, reset-password endpoints | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
-| 9 | Frontend auth cutover: API-mode default + password rules + verify/forgot/reset pages | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
+| 9 | Frontend auth cutover: API-mode default + password rules + verify/forgot/reset pages | Complete | codex | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
 | 10 | Manage editor UX: save + view-public + three-dot menu + drag reorder + confirm delete | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-6-10.md` |
 | 11 | Mobile audit: shrink cards & typography, verify all changes | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-11-13.md` |
 | 12 | Autosave parity in api-mode manage editor | Incomplete | claude | `.ai/tasks/2026-07-19/platform-polish-and-real-auth/platform-polish-and-real-auth-steps-11-13.md` |

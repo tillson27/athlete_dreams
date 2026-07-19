@@ -2,6 +2,7 @@ import {
   athleteCampaignsResponseSchema,
   athleteDirectoryResponseSchema,
   athleteProfileSchema,
+  authActionResponseSchema,
   authSessionSchema,
   communityFeedResponseSchema,
   errorResponseSchema,
@@ -12,13 +13,17 @@ import {
   type AthleteDirectoryQuery,
   type AthleteDirectoryResponse,
   type AthleteProfile,
+  type AuthActionResponse,
   type AuthSession,
   type CommunityFeedQuery,
   type CommunityFeedResponse,
   type CreateAthleteProfileRequest,
   type FollowListResponse,
+  type ForgotPasswordRequest,
   type PublishAthleteProfileResponse,
   type ReplacePersonalBestsRequest,
+  type ResendVerificationRequest,
+  type ResetPasswordRequest,
   type SetAthleteGalleryRequest,
   type SetAthleteHighlightsRequest,
   type SetAthleteRaceResultsRequest,
@@ -27,6 +32,7 @@ import {
   type SignUpRequest,
   type UpdateAthleteProfileRequest,
   type User,
+  type VerifyEmailRequest,
 } from 'fad-common';
 
 type SafeParseResult<T> = { success: true; data: T } | { success: false };
@@ -35,8 +41,7 @@ type Parser<T> = { safeParse: (data: unknown) => SafeParseResult<T> };
 // Typed fetch layer over the Express API (`NEXT_PUBLIC_API_BASE_URL`). Every
 // helper unwraps the `{ data }` / `{ error }` envelope and validates the payload
 // against its `fad-common` schema, so callers always receive a parsed, typed
-// response or a thrown `ApiError`. Used only when `NEXT_PUBLIC_DATA_SOURCE=api`
-// (see `client/lib/dataSource.ts`); mock mode never touches this module.
+// response or a thrown `ApiError`.
 
 // Public API contract: thrown by every helper on transport, envelope, or
 // schema-validation failure. `code` mirrors the API error envelope code when
@@ -81,7 +86,7 @@ export function setOnUnauthorized(listener: UnauthorizedListener | null): void {
 }
 
 function resolveBaseUrl(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000';
   if (!baseUrl) {
     throw new ApiError(
       'NEXT_PUBLIC_API_BASE_URL is not set; cannot reach the API.',
@@ -239,6 +244,36 @@ export function signUp(body: SignUpRequest): Promise<AuthSession> {
 
 export function signIn(body: SignInRequest): Promise<AuthSession> {
   return apiRequest('/v1/auth/sign-in', authSessionSchema, { method: 'POST', body });
+}
+
+export function forgotPassword(body: ForgotPasswordRequest): Promise<AuthActionResponse> {
+  return apiRequest('/v1/auth/forgot-password', authActionResponseSchema, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function resetPassword(body: ResetPasswordRequest): Promise<AuthActionResponse> {
+  return apiRequest('/v1/auth/reset-password', authActionResponseSchema, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function verifyEmail(body: VerifyEmailRequest): Promise<AuthActionResponse> {
+  return apiRequest('/v1/auth/verify-email', authActionResponseSchema, {
+    method: 'POST',
+    body,
+  });
+}
+
+export function resendVerification(
+  body: ResendVerificationRequest
+): Promise<AuthActionResponse> {
+  return apiRequest('/v1/auth/resend-verification', authActionResponseSchema, {
+    method: 'POST',
+    body,
+  });
 }
 
 export function fetchMe(): Promise<User> {

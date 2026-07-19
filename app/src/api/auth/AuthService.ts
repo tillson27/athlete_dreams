@@ -102,7 +102,7 @@ export class AuthService {
         this.emailService.sendPasswordReset({
           to: user.email,
           displayName: user.displayName,
-          resetUrl: `${appUrl()}/reset-password/${issuedToken.plaintextToken}`,
+          resetUrl: `${appUrl()}/reset-password?token=${encodeURIComponent(issuedToken.plaintextToken)}`,
           expiresInMinutes: passwordResetTtlMinutes(),
         }),
       { userId: user.id }

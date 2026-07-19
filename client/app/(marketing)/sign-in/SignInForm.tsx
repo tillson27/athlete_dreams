@@ -1,19 +1,24 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signIn } from '@/lib/session';
-import { DATA_SOURCE } from '@/lib/dataSource';
+import { resendVerification } from '@/lib/api';
 import { toAuthErrorView, type AuthErrorView } from '@/lib/authErrors';
 import { authInputClass } from '@/components/ui/formStyles';
+
+type ResendStatus = 'idle' | 'sending' | 'sent';
 
 export function SignInForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<AuthErrorView | null>(null);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
+  const [resendStatus, setResendStatus] = useState<ResendStatus>('idle');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -21,20 +26,35 @@ export function SignInForm() {
     const email = String(form.get('email') ?? '').trim();
     const password = String(form.get('password') ?? '');
     setError(null);
+    setVerificationEmail(null);
+    setResendStatus('idle');
     setSubmitting(true);
 
-    if (DATA_SOURCE !== 'api') {
-      signIn({ email });
-      setTimeout(() => router.push('/dashboard'), 600);
-      return;
-    }
-
     try {
-      await signIn({ email, password });
+      const result = await signIn({ email, password });
+      if (result.mustVerifyEmail) {
+        setVerificationEmail(email);
+        setSubmitting(false);
+        return;
+      }
       router.push('/dashboard');
     } catch (cause) {
       setError(toAuthErrorView('sign-in', cause));
       setSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!verificationEmail) {
+      return;
+    }
+    setResendStatus('sending');
+    try {
+      await resendVerification({ email: verificationEmail });
+      setResendStatus('sent');
+    } catch {
+      setResendStatus('idle');
+      setError({ message: 'Could not resend the verification email. Try again in a minute.' });
     }
   };
 
@@ -62,8 +82,12 @@ export function SignInForm() {
           </button>
         }
         placeholder="••••••••"
-        minLength={8}
       />
+      <div className="-mt-2 text-right">
+        <Link href="/forgot-password" className="text-sm font-semibold text-secondary hover:underline">
+          Forgot password?
+        </Link>
+      </div>
       <Button tone="primary" size="lg" className="w-full" type="submit" disabled={submitting}>
         {submitting ? (
           <span className="inline-flex items-center gap-2">
@@ -74,6 +98,38 @@ export function SignInForm() {
           'Sign in'
         )}
       </Button>
+      {verificationEmail ? (
+        <div
+          role="status"
+          className="space-y-3 rounded-input bg-primary-container/20 px-4 py-3 text-sm text-on-surface"
+        >
+          <p className="font-semibold">
+            Please verify your email first. You are signed in, but publishing stays locked until
+            verification is complete.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendStatus === 'sending'}
+              className="label-bold rounded-pill border border-primary px-4 py-2 text-primary transition-colors hover:bg-primary hover:text-on-primary disabled:opacity-60"
+            >
+              {resendStatus === 'sent'
+                ? 'Verification sent'
+                : resendStatus === 'sending'
+                  ? 'Sending…'
+                  : 'Resend verification'}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard')}
+              className="label-bold rounded-pill bg-primary px-4 py-2 text-on-primary transition-colors hover:bg-primary-strong"
+            >
+              Continue to dashboard
+            </button>
+          </div>
+        </div>
+      ) : null}
       {error ? (
         <p
           role="alert"

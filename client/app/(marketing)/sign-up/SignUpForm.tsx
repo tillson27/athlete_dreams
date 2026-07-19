@@ -6,14 +6,16 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signUp } from '@/lib/session';
-import { DATA_SOURCE } from '@/lib/dataSource';
 import { toAuthErrorView, type AuthErrorView } from '@/lib/authErrors';
 import { authInputClass } from '@/components/ui/formStyles';
+import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
+import { passwordIsStrong } from '@/lib/passwordStrength';
 
 export function SignUpForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<AuthErrorView | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -21,18 +23,17 @@ export function SignUpForm() {
     const form = new FormData(event.currentTarget);
     const name = String(form.get('displayName') ?? '').trim();
     const email = String(form.get('email') ?? '').trim();
-    const password = String(form.get('password') ?? '');
+    const submittedPassword = String(form.get('password') ?? '');
     setError(null);
-    setSubmitting(true);
 
-    if (DATA_SOURCE !== 'api') {
-      signUp({ name, email });
-      setTimeout(() => router.push('/register/personal-basics'), 600);
+    if (!passwordIsStrong(submittedPassword)) {
+      setError({ message: 'Use at least 10 characters with a letter and a number.' });
       return;
     }
 
+    setSubmitting(true);
     try {
-      await signUp({ name, email, password });
+      await signUp({ name, email, password: submittedPassword });
       router.push('/register/personal-basics');
     } catch (cause) {
       setError(toAuthErrorView('sign-up', cause));
@@ -64,9 +65,12 @@ export function SignUpForm() {
             {showPassword ? 'Hide' : 'Show'}
           </button>
         }
-        placeholder="At least 8 characters"
-        minLength={8}
+        placeholder="At least 10 characters"
+        minLength={10}
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
       />
+      <PasswordStrengthMeter password={password} />
       <Button tone="primary" size="lg" className="w-full" type="submit" disabled={submitting}>
         {submitting ? (
           <span className="inline-flex items-center gap-2">
@@ -106,6 +110,8 @@ function Field({
   autoComplete,
   minLength,
   trailing,
+  value,
+  onChange,
 }: {
   name: string;
   type: string;
@@ -114,6 +120,8 @@ function Field({
   autoComplete?: string;
   minLength?: number;
   trailing?: React.ReactNode;
+  value?: string;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
     <label className="block space-y-1.5">
@@ -128,6 +136,8 @@ function Field({
         required
         minLength={minLength}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         className={authInputClass}
       />
     </label>
