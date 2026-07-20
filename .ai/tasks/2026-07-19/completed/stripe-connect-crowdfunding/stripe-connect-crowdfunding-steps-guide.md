@@ -38,7 +38,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 6 | Stripe Connect webhook processor + raw-body mount | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
 | 7 | Client: API helpers + athlete "Connect Stripe / payout status" UI | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
 | 8 | Client: donor donation flow (widget + Checkout redirect + return pages) | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
-| 9 | Final validation & cleanup (required, always last) | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
+| 9 | Final validation & cleanup (required, always last) | Complete (live e2e deferred) | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
 
 ---
 

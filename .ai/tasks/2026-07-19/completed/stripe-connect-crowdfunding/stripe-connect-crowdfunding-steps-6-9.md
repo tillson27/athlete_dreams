@@ -192,11 +192,18 @@
 ## Step 9 - Final Validation & Cleanup
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete (live test-mode e2e deferred — no DB/Stripe keys in env)
 **Prereqs:** 1, 2, 3, 4, 5, 6, 7, 8
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- **Non-custodial invariant verified (audit):** `application_fee_amount` appears only in a StripeService comment (documenting omission) and in tests asserting its absence — never set; no `transfer_data`/`on_behalf_of`/destination-charge/`applicationFee` code anywhere; `stripeAccount` is used solely for the direct charge in `StripeService.createDonationCheckoutSession`.
+- **No outstanding TODOs** introduced (the only "todo" grep hits were the substring in `toDonationDto`).
+- **Idempotency exercised via unit tests:** duplicate event id → `DonationEvent.idempotencyKey` P2002 no-op (no double increment); transient error rethrows (→ non-2xx, `processedAt` left null for Stripe retry); payout `recordIfNew` P2002 → false. Live Stripe-CLI replay deferred (needs DB + Stripe test key).
+- **Legal disclosure** present at the point of donation (`DonateWidget.tsx`) — flagged for owner/lawyer review before live per `docs/business/incorporation-and-finances.md` §5.
+- **e2e review (scoped):** performed a manual correctness pass over the money loop (contracts → StripeService → repos → onboarding/donation APIs → webhook fold → client). Full multi-agent `$e2e-review` and the live test-mode e2e (Stripe CLI → `/v1/webhooks/stripe` → DB fold; `payout.paid` observability) are **deferred** to when a DB + Stripe test key are available (user decision 2026-07-20).
+- **CI (scoped):** `common` build ✓, app type-check ✓, client type-check ✓, full app test suite ✓ (**51 passed / 61 DB-gated skipped**, run with a placeholder `DATABASE_URL` so the `skipIf(RUN_DB_TESTS)` DB tests skip). Full `npm run ci` is blocked by **pre-existing** `cdk` type errors (missing `constructs` dep) + no DB — out of scope for this task (§10 defers CDK).
+- **Owner follow-ups before live:** (1) start Postgres + set `DATABASE_URL`, then `npm run migrate:create --prefix app -- --name add_stripe_connect_donations_and_payouts` and apply; (2) provide a Stripe **test** secret key + Connect webhook secret; (3) run the live test-mode e2e + idempotency/payout replay; (4) lawyer sign-off of the non-custodial flow.
 
 ### Context
 
@@ -208,14 +215,14 @@
 - **Payout observability confirmed:** trigger a test-mode `payout.paid` (Stripe CLI `stripe trigger payout.paid` against the connected account) and confirm a `PayoutEvent` is recorded and surfaces in `GET /v1/athletes/me/stripe/status → recentPayouts` and on the athlete connect card — with no donation/campaign projection change.
 
 ### Final Step Checklist
-* [ ] Confirm all prior steps are complete
-* [ ] Review and resolve any outstanding TODOs introduced during this task
-* [ ] Verify the non-custodial invariant (no `application_fee_amount`, no `transfer_data`/`on_behalf_of`/destination charges) across `StripeService` and callers
-* [ ] Exercise webhook idempotency: replay a delivered event and confirm no double increment; confirm an interrupted fold (`processedAt` null) re-applies on retry
-* [ ] Confirm legal disclosure copy is present at the point of donation (and flagged for owner/lawyer review before live)
-* [ ] Run the `$e2e-review` (`/e2e-review`) skill with all required context provided
-* [ ] Run the `$ci` (`/ci`) skill and confirm it passes
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-* [ ] Update task metadata in the steps docs and the steps guide index
-* [ ] Move `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/` to `.ai/tasks/2026-07-19/completed/stripe-connect-crowdfunding/`
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+* [x] Confirm all prior steps are complete (1–8 complete; Step 1 migration draft deferred per user)
+* [x] Review and resolve any outstanding TODOs introduced during this task (none)
+* [x] Verify the non-custodial invariant (no `application_fee_amount`, no `transfer_data`/`on_behalf_of`/destination charges) across `StripeService` and callers
+* [~] Exercise webhook idempotency: covered by unit tests (duplicate P2002 no-op; interrupted fold leaves `processedAt` null → retried). **Live replay deferred** (no DB/Stripe key).
+* [x] Confirm legal disclosure copy is present at the point of donation (and flagged for owner/lawyer review before live)
+* [~] Run the `$e2e-review` (`/e2e-review`) skill — performed a scoped manual e2e correctness pass; full multi-agent `$e2e-review` + live e2e **deferred** to infra availability
+* [x] Run the `$ci` (`/ci`) skill and confirm it passes — scoped (common build + app/client type-check + full non-DB test suite 51✓/61 skipped); full `npm run ci` blocked by pre-existing cdk errors + no DB
+- [x] Fix any issues caused by `$ci` (`/ci`)
+* [x] Update task metadata in the steps docs and the steps guide index
+* [x] Move `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/` to `.ai/tasks/2026-07-19/completed/stripe-connect-crowdfunding/`
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
