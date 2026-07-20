@@ -92,12 +92,16 @@
 ## Step 7 - Client: API helpers + athlete "Connect Stripe / payout status" UI
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 4
 **Size:** medium
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- `client/lib/api.ts`: added `startStripeOnboarding()` + `fetchStripeStatus()` (authed, validated against `athleteStripeOnboardingResponseSchema`/`athleteStripeStatusSchema`). Also added `createDonation()` here (consumed by Step 8) alongside the Stripe helpers.
+- New `client/app/(marketing)/athletes/[athleteSlug]/manage/ConnectStripeCard.tsx` ('use client'): fetches status on mount; states — not connected → "Connect Stripe"; connected-not-enabled → "Finish setup" (both call `startStripeOnboarding()` and `window.location.assign(onboardingUrl)`); charges-enabled → "Ready to receive donations" + read-only **recent payouts** (`formatCents(amountCents, 'CAD')`, status label, arrival date) with the "No payouts yet — Stripe pays out on your account's schedule." empty state.
+- Rendered via a new optional `topSlot` on the shared `EditorLayout`, passed only from `ApiEditorReady` — so the card shows in **api mode, owner-only**; the mock editor never renders it (the seam is `'mock' | 'api'`; no `'static'`).
+- Validation: client type-check ✓ (see checklist). Money always via `formatCents(_, 'CAD')` (no ad-hoc strings).
 
 ### Context
 
@@ -124,12 +128,12 @@
 - Connect card component with the three states + redirect + on-return refetch (read `?stripe_return=1` or refetch on mount).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run (self-review vs client/AGENTS.md: fad-common types imported, money via formatCents('CAD'), Server-Component-by-default respected — card is a scoped client island, api-mode-only)
+- [x] `$ci` (`/ci`) run — scoped: client type-check green
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

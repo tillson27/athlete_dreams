@@ -30,6 +30,7 @@ import {
   type EditRoadmapItem as RoadmapItem,
 } from '@/lib/athleteEdits';
 import { fetchMyProfile } from '@/lib/api';
+import { ConnectStripeCard } from './ConnectStripeCard';
 import { profileToEdits, saveEditsToApi, toManageSaveError } from '@/lib/manageApi';
 import {
   COVER_IMAGE_OPTIONS,
@@ -392,6 +393,7 @@ function ApiEditorReady({
         setCoverDirty(true);
         setCoverPhoto(url);
       }}
+      topSlot={<ConnectStripeCard />}
       headerActions={renderSaveButton()}
       footerActions={renderSaveButton()}
       footer={
@@ -435,6 +437,7 @@ function EditorLayout({
   setCoverPhoto,
   headerActions,
   footerActions,
+  topSlot,
   footer,
 }: {
   athleteName: string;
@@ -445,6 +448,7 @@ function EditorLayout({
   setCoverPhoto: (url: string) => void;
   headerActions: ReactNode;
   footerActions: ReactNode;
+  topSlot?: ReactNode;
   footer: ReactNode;
 }) {
   const { highlights, races, roadmap, gallery } = edits;
@@ -570,6 +574,8 @@ function EditorLayout({
           </a>
         </div>
       </div>
+
+      {topSlot ? <div className="mb-6">{topSlot}</div> : null}
 
       <div className="space-y-6">
         {/* Photos */}

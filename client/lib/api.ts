@@ -2,9 +2,12 @@ import {
   athleteCampaignsResponseSchema,
   athleteDirectoryResponseSchema,
   athleteProfileSchema,
+  athleteStripeOnboardingResponseSchema,
+  athleteStripeStatusSchema,
   authActionResponseSchema,
   authSessionSchema,
   communityFeedResponseSchema,
+  createDonationResponseSchema,
   errorResponseSchema,
   followListResponseSchema,
   publishAthleteProfileResponseSchema,
@@ -13,11 +16,15 @@ import {
   type AthleteDirectoryQuery,
   type AthleteDirectoryResponse,
   type AthleteProfile,
+  type AthleteStripeOnboardingResponse,
+  type AthleteStripeStatus,
   type AuthActionResponse,
   type AuthSession,
   type CommunityFeedQuery,
   type CommunityFeedResponse,
   type CreateAthleteProfileRequest,
+  type CreateDonationRequest,
+  type CreateDonationResponse,
   type FollowListResponse,
   type ForgotPasswordRequest,
   type PublishAthleteProfileResponse,
@@ -385,4 +392,31 @@ export function publishMyProfile(): Promise<PublishAthleteProfileResponse> {
 // unpublished drafts; 404 when the user has no profile yet.
 export function fetchMyProfile(): Promise<AthleteProfile> {
   return apiRequest('/v1/athletes/me', athleteProfileSchema, { authed: true });
+}
+
+// --- Stripe Connect (athlete onboarding + payout status; api mode only) ---
+
+// Creates/reuses the athlete's Standard connected account and returns a fresh,
+// single-use Stripe-hosted onboarding URL to redirect to.
+export function startStripeOnboarding(): Promise<AthleteStripeOnboardingResponse> {
+  return apiRequest('/v1/athletes/me/stripe/onboarding-link', athleteStripeOnboardingResponseSchema, {
+    method: 'POST',
+    authed: true,
+  });
+}
+
+export function fetchStripeStatus(): Promise<AthleteStripeStatus> {
+  return apiRequest('/v1/athletes/me/stripe/status', athleteStripeStatusSchema, { authed: true });
+}
+
+// --- Donations (guest or signed-in; returns a Stripe-hosted checkout URL) ---
+
+// authed: true so a signed-in supporter is attributed (supporterUserId); the
+// request only attaches the bearer if a token exists, so guests donate fine.
+export function createDonation(body: CreateDonationRequest): Promise<CreateDonationResponse> {
+  return apiRequest('/v1/donations', createDonationResponseSchema, {
+    method: 'POST',
+    body,
+    authed: true,
+  });
 }
