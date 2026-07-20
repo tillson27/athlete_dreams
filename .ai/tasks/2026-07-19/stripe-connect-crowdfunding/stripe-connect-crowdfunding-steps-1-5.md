@@ -303,12 +303,18 @@
 ## Step 4 - Athlete Stripe onboarding API (Account Links + status)
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 2, 3
 **Size:** medium
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- New focused slice `app/src/api/athleteStripe/{AthleteStripeService,AthleteStripeController,AthleteStripeRouterFactory}.ts` (kept separate from `AthleteService` for auditability, per context §10). Wired into `buildApp()` via `container.resolve(AthleteStripeRouterFactory)` (registered before `AthleteRouterFactory`).
+- `POST /v1/athletes/me/stripe/onboarding-link` (auth.required): resolves athlete from `authenticatedUserId`, creates a Standard account if none (persists `stripeAccountId`, logs `stripe.onboarding.link_created`), mints a fresh Account Link, returns `{ onboardingUrl }` (`athleteStripeOnboardingResponseSchema`).
+- `GET /v1/athletes/me/stripe/status` (auth.required): returns `{ stripeConnected, chargesEnabled, onboardingUrl?, recentPayouts }` (`athleteStripeStatusSchema`). `chargesEnabled` prefers the webhook-maintained `stripeChargesEnabledAt`; when not yet enabled it reconciles once via `retrieveAccount` (self-healing in test mode without a configured webhook) and mints a resume link. `recentPayouts` from `PayoutEventRepository.listRecentForAthlete` (limit 10), mapped to ISO transport.
+- Route mount verified non-conflicting (`/v1/athletes/:athleteSlug` matches a single segment; `/me/stripe/*` falls through).
+- Unit test `AthleteStripeService.test.ts` (repos/Stripe/logger mocked, no DB): create-vs-reuse onboarding, no-athlete guard, and status shapes (not-connected / stored-enabled / live-reconcile-enables / resume-link). 7/7 pass.
+- Validation: AthleteStripeService test ✓ (7/7); app type-check ✓ (see checklist).
 
 ### Context
 
@@ -339,12 +345,12 @@
 - Status derivation from `stripeChargesEnabledAt`; optionally reconcile via `retrieveAccount` when not yet enabled. Include `recentPayouts` via `PayoutEventRepository.listRecentForAthlete`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run (self-review vs app/AGENTS.md: thin controller, service logic, Prisma only via repos, fad-common types imported, no secret logging)
+- [x] `$ci` (`/ci`) run — scoped: app type-check + AthleteStripeService unit test green
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

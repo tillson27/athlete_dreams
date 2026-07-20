@@ -9,6 +9,7 @@ import { AuthRouterFactory } from './api/auth/AuthRouterFactory';
 import { UserRouterFactory } from './api/users/UserRouterFactory';
 import { TeamRouterFactory } from './api/teams/TeamRouterFactory';
 import { AthleteRouterFactory } from './api/athletes/AthleteRouterFactory';
+import { AthleteStripeRouterFactory } from './api/athleteStripe/AthleteStripeRouterFactory';
 import { CampaignRouterFactory } from './api/campaigns/CampaignRouterFactory';
 import { AthleteCampaignsRouterFactory } from './api/campaigns/AthleteCampaignsRouterFactory';
 import { AthleteFollowRouterFactory } from './api/follows/AthleteFollowRouterFactory';
@@ -41,6 +42,7 @@ export function buildApp(): express.Express {
     container.resolve(AuthRouterFactory),
     container.resolve(UserRouterFactory),
     container.resolve(TeamRouterFactory),
+    container.resolve(AthleteStripeRouterFactory),
     container.resolve(AthleteRouterFactory),
     container.resolve(AthleteCampaignsRouterFactory),
     container.resolve(AthleteFollowRouterFactory),
