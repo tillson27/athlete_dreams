@@ -14,8 +14,8 @@
 
 **Objective:** Land the Zod contracts, Prisma schema changes (drafted migration), and env vars that every later step consumes — the non-custodial donation data model and API shapes.
 **Done When:**
-- `common/src/types/enums.ts` exports `DonationEventType`; `common/src/zod/donation.ts` exports `createDonationResponseSchema` (`{ donation, checkoutUrl }`); `common/src/zod/athlete.ts` exports `athleteStripeStatusSchema` + `athleteStripeOnboardingResponseSchema`; `npm run build --prefix common` succeeds.
-- `app/prisma/schema.prisma` adds `AthleteProfile.stripeAccountId @unique` + `stripeChargesEnabledAt`, `Donation.stripePaymentIntentId String? @unique`, `DonationEvent`, `WebhookEvent`, enum `DonationEventType`; a migration is **drafted** via `npm run migrate:create --prefix app -- --name add_stripe_connect_donations` (not applied). **Why `stripePaymentIntentId`:** refund/dispute webhooks reference the PaymentIntent, not the Checkout Session — this column is how those events map back to a `Donation` (see context §9, §11).
+- `common/src/types/enums.ts` exports `DonationEventType` + `PayoutStatus`; `common/src/zod/donation.ts` exports `createDonationResponseSchema` (`{ donation, checkoutUrl }`); `common/src/zod/athlete.ts` exports `athletePayoutSchema`, `athleteStripeStatusSchema` (now incl. `recentPayouts`) + `athleteStripeOnboardingResponseSchema`; `npm run build --prefix common` succeeds.
+- `app/prisma/schema.prisma` adds `AthleteProfile.stripeAccountId @unique` + `stripeChargesEnabledAt`, `Donation.stripePaymentIntentId String? @unique`, `DonationEvent`, `PayoutEvent`, `WebhookEvent`, enums `DonationEventType` + `PayoutStatus`; a migration is **drafted** via `npm run migrate:create --prefix app -- --name add_stripe_connect_donations_and_payouts` (not applied). **Why `stripePaymentIntentId`:** refund/dispute webhooks reference the PaymentIntent, not the Checkout Session — this column is how those events map back to a `Donation` (see context §9, §11). **Why `PayoutEvent`:** passive observability of athlete bank payouts (`payout.*` events) without ARC controlling funds (context §2, §7).
 - `app/.env.example` documents all new Stripe/donation env vars.
 
 **References:**
@@ -34,10 +34,19 @@
       });
       export type CreateDonationResponse = z.infer<typeof createDonationResponseSchema>;
       // common/src/zod/athlete.ts
+      export const athletePayoutSchema = z.object({
+        stripePayoutId: z.string(),
+        payoutStatus: z.nativeEnum(PayoutStatus),
+        amountCents: moneyCentsSchema,
+        currency: z.string(),
+        arrivalDate: isoDateTimeSchema.nullable(),
+        occurredAt: isoDateTimeSchema,
+      });
       export const athleteStripeStatusSchema = z.object({
         stripeConnected: z.boolean(),
         chargesEnabled: z.boolean(),
         onboardingUrl: z.string().url().optional(),
+        recentPayouts: z.array(athletePayoutSchema),
       });
       export const athleteStripeOnboardingResponseSchema = z.object({
         onboardingUrl: z.string().url(),
@@ -54,6 +63,7 @@
       stripePaymentIntentId  String?   @unique
 
       enum DonationEventType { DONATION_SUCCEEDED DONATION_FAILED DONATION_REFUNDED DISPUTE_OPENED }
+      enum PayoutStatus { PENDING IN_TRANSIT PAID FAILED CANCELED }
 
       model DonationEvent {
         id                String           @id @default(uuid()) @db.Uuid
@@ -72,6 +82,24 @@
         @@index([campaignId])
         @@index([donationId])
         @@map("donation_events")
+      }
+
+      model PayoutEvent {
+        id              String       @id @default(uuid()) @db.Uuid
+        athleteId       String       @db.Uuid
+        stripeAccountId String
+        stripePayoutId  String
+        payoutStatus    PayoutStatus
+        amountCents     Int
+        currency        String
+        arrivalDate     DateTime?
+        idempotencyKey  String       @unique
+        occurredAt      DateTime
+        rawPayload      Json
+        createdAt       DateTime     @default(now())
+        @@index([athleteId])
+        @@index([stripePayoutId])
+        @@map("payout_events")
       }
 
       model WebhookEvent {
@@ -160,8 +188,11 @@
       ```ts
       createDonationCheckoutSession(input: {
         stripeAccountId: string; amountCents: number; currency: string;
-        productName: string; metadata: Record<string,string>; idempotencyKey: string;
+        productName: string; athleteSlug: string; metadata: Record<string,string>; idempotencyKey: string;
       }) {
+        // success_url carries session_id (fulfillment lookup) + athlete slug so the
+        // /donate/thanks page can name the athlete without an authed fetch (Step 8, #5).
+        const successUrl = `${process.env.STRIPE_CHECKOUT_SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}&athlete=${encodeURIComponent(input.athleteSlug)}`;
         return this.stripe.checkout.sessions.create({
           mode: 'payment',
           submit_type: 'donate',
@@ -172,7 +203,7 @@
               unit_amount: input.amountCents },
           }],
           metadata: input.metadata,
-          success_url: `${process.env.STRIPE_CHECKOUT_SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}`,
+          success_url: successUrl,
           cancel_url: process.env.STRIPE_CHECKOUT_CANCEL_URL!,
           // NO application_fee_amount => zero platform fee (non-custodial)
         }, { stripeAccount: input.stripeAccountId, idempotencyKey: input.idempotencyKey });
@@ -207,7 +238,8 @@
 **Objective:** Add repository-per-aggregate data access for the donation money loop and the atomic campaign-projection fold, following the existing repository pattern (only repos touch `PrismaService`).
 **Done When:**
 - `DonationRepository` (`createPending`, `findById`, `findByProviderRef`, `findByPaymentIntentId`, `setProviderRef`, `setPaymentIntentId`, `setStatus`, `listForCampaign`), `DonationEventRepository` (`append`, `existsByIdempotencyKey`), `WebhookEventRepository` (`upsertAudit(eventId, type, payload)` + `markProcessed(eventId)`) exist and are `@injectable()`. `findByPaymentIntentId` + `setPaymentIntentId` back the refund/dispute → donation mapping (context §11); `findById`/`setStatus`/`setPaymentIntentId` must accept an optional `tx` so they run inside the webhook fold. **Idempotency design (see Step 6):** `WebhookEvent` is an **audit row only** — `upsertAudit` records the delivery and `markProcessed` stamps `processedAt` after the fold commits (reprocess when `processedAt == null`). The real exactly-once guard is `DonationEvent.idempotencyKey @unique` (= event id) appended **inside** the fold transaction; a duplicate delivery raises Prisma `P2002` and is treated as already-applied. Do **not** gate money application on a pre-committed `WebhookEvent` row.
-- `AthleteRepository` gains `setStripeAccount`, `setChargesEnabled`, `findByStripeAccountId`; `CampaignRepository` gains `applyDonationEvent(...)` that atomically updates `raisedAmountCents`/`supporterCount` and flips `FUNDED` at target — accepting an existing Prisma `tx` — **and** a read method `findByIdWithAthlete(campaignId)` that returns the campaign joined with its athlete's `stripeAccountId`, `stripeChargesEnabledAt`, and `fullName` (consumed by Step 5's donation-create guards + Checkout product name).
+- `AthleteRepository` gains `setStripeAccount`, `setChargesEnabled`, `findByStripeAccountId`; `CampaignRepository` gains `applyDonationEvent(...)` that atomically updates `raisedAmountCents`/`supporterCount` and flips `FUNDED` at target — accepting an existing Prisma `tx` — **and** a read method `findByIdWithAthlete(campaignId)` that returns the campaign joined with its athlete's `stripeAccountId`, `stripeChargesEnabledAt`, `fullName`, and `athleteSlug` (consumed by Step 5's donation-create guards, Checkout product name, and the success-URL athlete slug for the #5 thanks page).
+- `PayoutEventRepository` (`recordIfNew(input): Promise<boolean>` — idempotent append keyed on `idempotencyKey` = Stripe event id via `P2002`; `listRecentForAthlete(athleteId, limit)` ordered by `occurredAt desc`) exists and is `@injectable()`. Payout events are a standalone audit stream — they never touch donation/campaign projections. `listRecentForAthlete` backs the `recentPayouts` field on the athlete Stripe status (Step 4).
 
 **References:**
 - Context §9, §12 (Failure modes and concurrency).
@@ -269,7 +301,7 @@
 **Objective:** Let an authenticated athlete connect (or create) their Standard Stripe account via Stripe-hosted onboarding and read their payout-readiness status. **Settled (context §10):** build this as a **focused `AthleteStripeRouterFactory` / `AthleteStripeController` / `AthleteStripeService` slice** — do **not** bolt these endpoints onto the existing `AthleteRouterFactory`/`AthleteController`/`AthleteService`. Keeping the Stripe/non-custodial surface isolated makes the "no fees/transfers" invariant easy for a reviewer to audit in one place.
 **Done When:**
 - `POST /v1/athletes/me/stripe/onboarding-link` (auth) creates a Standard account if none exists, persists `stripeAccountId`, mints a fresh Account Link, returns `{ onboardingUrl }` (`athleteStripeOnboardingResponseSchema`).
-- `GET /v1/athletes/me/stripe/status` (auth) returns `{ stripeConnected, chargesEnabled, onboardingUrl? }` (`athleteStripeStatusSchema`), deriving `chargesEnabled` from `stripeChargesEnabledAt` (kept fresh by the webhook in Step 6) and/or a live `retrieveAccount` check.
+- `GET /v1/athletes/me/stripe/status` (auth) returns `{ stripeConnected, chargesEnabled, onboardingUrl?, recentPayouts }` (`athleteStripeStatusSchema`), deriving `chargesEnabled` from `stripeChargesEnabledAt` (kept fresh by the webhook in Step 6) and/or a live `retrieveAccount` check, and `recentPayouts` from `PayoutEventRepository.listRecentForAthlete(athleteId, limit)` (empty array when none / not connected).
 - Both routes live in the new `AthleteStripeRouterFactory` (its own `container.resolve(...)` line in `buildApp()`), gated to the athlete owning the profile (via `req.authenticatedUserId`); tests cover create-vs-reuse and status shape.
 
 **References:**
@@ -290,7 +322,7 @@
       }
       ```
 - `AthleteStripeController` + `AthleteStripeRouterFactory` (auth.required), mounted via a new `container.resolve(AthleteStripeRouterFactory)` line in `buildApp()`.
-- Status derivation from `stripeChargesEnabledAt`; optionally reconcile via `retrieveAccount` when not yet enabled.
+- Status derivation from `stripeChargesEnabledAt`; optionally reconcile via `retrieveAccount` when not yet enabled. Include `recentPayouts` via `PayoutEventRepository.listRecentForAthlete`.
 
 ### Step checklist
 - [ ] Step-specific tasks complete
@@ -336,6 +368,7 @@
       const session = await this.stripe.createDonationCheckoutSession({
         stripeAccountId: campaign.athlete.stripeAccountId!, amountCents: body.donationAmountCents,
         currency: this.currency, productName: `Donation to ${campaign.athlete.fullName}`,
+        athleteSlug: campaign.athlete.athleteSlug,
         metadata: { donationId: donation.donationId, campaignId: campaign.id }, idempotencyKey: donation.donationId });
       await this.donations.setProviderRef(donation.donationId, session.id);
       return { donation, checkoutUrl: session.url! };

@@ -26,8 +26,8 @@ Status: Draft
 
 **Acceptance criteria (definition of done):**
 - `npm run ci` at repo root passes (type-check, lint, build, tests).
-- Backend unit/integration tests cover: onboarding link creation + status gating, donation creation guards (campaign `ACTIVE`, before `closesAt`, athlete charges-enabled, minimum amount), webhook idempotency (duplicate event id no-ops), ledger→projection fold (`SUCCEEDED` increments + `FUNDED` flip), overfunding accepted past target, raw-body mount ordering.
-- A new Prisma migration is **drafted** (not applied) via `npm run migrate:create --prefix app -- --name add_stripe_connect_donations` and includes `AthleteProfile.stripeAccountId`/`stripeChargesEnabledAt`, `Donation.stripePaymentIntentId`, `DonationEvent`, `WebhookEvent`, and enum `DonationEventType`.
+- Backend unit/integration tests cover: onboarding link creation + status gating, donation creation guards (campaign `ACTIVE`, before `closesAt`, athlete charges-enabled, minimum amount), webhook idempotency (duplicate event id no-ops), ledger→projection fold (`SUCCEEDED` increments + `FUNDED` flip), overfunding accepted past target, raw-body mount ordering, and payout-event recording (`payout.paid` → `PayoutEvent`, idempotent, no projection change).
+- A new Prisma migration is **drafted** (not applied) via `npm run migrate:create --prefix app -- --name add_stripe_connect_donations_and_payouts` and includes `AthleteProfile.stripeAccountId`/`stripeChargesEnabledAt`, `Donation.stripePaymentIntentId`, `DonationEvent`, `PayoutEvent`, `WebhookEvent`, and enums `DonationEventType` + `PayoutStatus`.
 - `app/.env.example` documents every new Stripe env var; no live secret is committed.
 - All new request/response shapes are defined in `common/src/zod/` and imported from `fad-common` — never redefined in `app/` or `client/`.
 
@@ -46,7 +46,7 @@ Status: Draft
 - All-or-nothing (Kickstarter) pledges / saved-card off-session capture / scheduled deadline resolver — explicitly deferred in `docs/backend-build-sheet.md` ("Deferred").
 - Any non-custodial → custodial variant (destination charges, separate transfers, platform-balance routing, application fees). These re-trigger MSB/money-transmitter analysis and are prohibited by `docs/business/incorporation-and-finances.md`.
 - Corporate sponsorships / ambassador pillars (Phase 5).
-- Athlete payout management UI (payouts are owned by the athlete inside their own Stripe Dashboard — that is the point of Standard).
+- Athlete payout *management/initiation* UI (payouts are owned and triggered by the athlete inside their own Stripe Dashboard — that is the point of Standard). **In scope, however: passive payout _observability_** — ARC records `payout.*` Connect webhook events so the athlete (and ARC) can *see* when funds were paid out to the athlete's bank, without ARC ever controlling or touching the payout. This does not change the non-custodial posture (ARC only reads events).
 - Refund/dispute *initiation* UI (refunds and disputes are handled by the athlete in their Stripe Dashboard; ARC only *records* the resulting webhook events).
 - CDK/infra wiring for the webhook route and secrets (tracked separately in the Infra track of `docs/backend-build-sheet.md`); this task keeps to app/common/client + `.env.example`.
 
@@ -142,8 +142,9 @@ Product rules preserved: transparency (cost lines already enforced Σ = target a
 - An athlete can read payout-readiness (`GET /v1/athletes/me/stripe/status`) → `{ stripeConnected, chargesEnabled, onboardingUrl? }` derived from the stored account + `account.updated` webhook.
 - A supporter can create a donation (`POST /v1/donations`, `auth.optional`): validates campaign is `ACTIVE`, now `< closesAt` (if set), the campaign's athlete has charges enabled, and `donationAmountCents ≥` the configured minimum; creates a `Donation(PENDING)`; creates a **Checkout Session on the connected account** (direct charge, `mode: 'payment'`, `submit_type: 'donate'`, **no** `application_fee_amount`); returns `{ donation, checkoutUrl }`.
 - The donor is redirected to `checkoutUrl` (Stripe-hosted), pays, and is returned to an ARC success or cancel page.
-- A signature-verified **Connect** webhook (`POST /v1/webhooks/stripe`) processes, idempotently (gated on Stripe event id via `WebhookEvent`): `checkout.session.completed` / `checkout.session.async_payment_succeeded` (only when `payment_status !== 'unpaid'`) → `DONATION_SUCCEEDED` (locate the donation via `session.metadata.donationId`, and persist `session.payment_intent` to `Donation.stripePaymentIntentId`); `checkout.session.async_payment_failed` / `payment_intent.payment_failed` → `DONATION_FAILED`; `charge.refunded` → `DONATION_REFUNDED`; `charge.dispute.created` → `DISPUTE_OPENED` (both located via the charge/dispute `payment_intent` → `Donation.stripePaymentIntentId`, since these events carry no session id or session metadata); `account.updated` → set/clear `stripeChargesEnabledAt`. Each money event appends a `DonationEvent` and, in one `prisma.$transaction`, folds the projection (`Donation.donationStatus`, `Campaign.raisedAmountCents`/`supporterCount`, `FUNDED` at target).
-- The donor picks an amount on the ARC profile (preset chips + custom field) plus optional message/anonymity, then pays on Stripe. *(Decision — see §8. The alternative "type the amount on Stripe's page" via `custom_unit_amount` is a one-line variant and is documented for flip.)*
+- A signature-verified **Connect** webhook (`POST /v1/webhooks/stripe`) processes, idempotently (gated on Stripe event id via `WebhookEvent`): `checkout.session.completed` / `checkout.session.async_payment_succeeded` (only when `payment_status !== 'unpaid'`) → `DONATION_SUCCEEDED` (locate the donation via `session.metadata.donationId`, and persist `session.payment_intent` to `Donation.stripePaymentIntentId`); `checkout.session.async_payment_failed` / `payment_intent.payment_failed` → `DONATION_FAILED`; `charge.refunded` → `DONATION_REFUNDED`; `charge.dispute.created` → `DISPUTE_OPENED` (both located via the charge/dispute `payment_intent` → `Donation.stripePaymentIntentId`, since these events carry no session id or session metadata); `account.updated` → set/clear `stripeChargesEnabledAt`; **`payout.paid` / `payout.failed` / `payout.updated` (and `payout.created`) → record a `PayoutEvent`** for the athlete (resolved via the top-level `event.account` → `AthleteProfile.stripeAccountId`), giving passive visibility into athlete bank payouts without ARC controlling them. Each money event appends a `DonationEvent` and, in one `prisma.$transaction`, folds the projection (`Donation.donationStatus`, `Campaign.raisedAmountCents`/`supporterCount`, `FUNDED` at target); payout events are recorded to `PayoutEvent` (idempotent per Stripe event id) and do **not** touch donation/campaign projections.
+- An athlete can see recent payouts (`GET /v1/athletes/me/stripe/status` returns `recentPayouts`) so they know when funds reached their bank; ARC never initiates or controls payouts.
+- The donor picks an amount on the ARC profile (preset chips + custom field) plus optional message/anonymity, then pays on Stripe. *(Decision — see §8. Donor-typed amounts on Stripe's page require a Price with `custom_unit_amount` — a documented flip, not the chosen path.)*
 
 **Non-functional requirements:**
 - **Idempotency:** webhook processing is exactly-once per Stripe event id; outbound Stripe calls that create resources pass an `Idempotency-Key`.
@@ -168,17 +169,19 @@ Product rules preserved: transparency (cost lines already enforced Σ = target a
 
 ## 9) Data model and contracts
 
-### Data model changes (`app/prisma/schema.prisma`, drafted migration `add_stripe_connect_donations`)
+### Data model changes (`app/prisma/schema.prisma`, drafted migration `add_stripe_connect_donations_and_payouts`)
 - `AthleteProfile` += `stripeAccountId String? @unique`, `stripeChargesEnabledAt DateTime?`.
 - New enum `DonationEventType { DONATION_SUCCEEDED DONATION_FAILED DONATION_REFUNDED DISPUTE_OPENED }`.
+- New enum `PayoutStatus { PENDING IN_TRANSIT PAID FAILED CANCELED }`.
 - New model `DonationEvent` (append-only): `id`, `donationId String? @db.Uuid`, `campaignId @db.Uuid`, `athleteId @db.Uuid`, `donationEventType DonationEventType`, `amountCents Int`, `currency String`, `stripeAccountId String`, `stripeObjectId String`, `idempotencyKey String @unique` (= Stripe event id), `occurredAt DateTime`, `rawPayload Json`, `createdAt DateTime @default(now())`. Indexed by `campaignId`, `donationId`.
+- New model `PayoutEvent` (append-only, athlete bank-payout observability): `id`, `athleteId String @db.Uuid`, `stripeAccountId String`, `stripePayoutId String`, `payoutStatus PayoutStatus`, `amountCents Int`, `currency String`, `arrivalDate DateTime?`, `idempotencyKey String @unique` (= Stripe event id), `occurredAt DateTime`, `rawPayload Json`, `createdAt DateTime @default(now())`. Indexed by `athleteId`, `stripePayoutId`. **Why:** payouts are athlete-owned in Standard; ARC only *records* `payout.*` events for visibility — never initiates them. `idempotencyKey` = Stripe event id keeps recording exactly-once.
 - New model `WebhookEvent`: `id`, `eventId String @unique`, `provider String`, `eventType String`, `payload Json`, `receivedAt DateTime @default(now())`, `processedAt DateTime?`.
 - `Donation` stays the per-contribution projection; `paymentProviderRef` already exists and is `@unique` — it stores the **Checkout Session id** (set at donation-create time). Add `Donation.stripePaymentIntentId String? @unique`, persisted during the `checkout.session.completed`/`async_payment_succeeded` fold from `session.payment_intent`. **Why:** refund/dispute webhooks (`charge.refunded`, `charge.dispute.created`) reference the **PaymentIntent/charge**, not the Checkout Session — without a stored PaymentIntent id there is no way to map a refund/dispute back to its `Donation`. The session id is not present on charge-level events.
 
 ### Contract changes (`common/src/zod/`, then `npm run build --prefix common`)
-- `types/enums.ts`: add `DonationEventType`.
+- `types/enums.ts`: add `DonationEventType` and `PayoutStatus`.
 - `donation.ts`: add `createDonationResponseSchema = { donation: donationSchema, checkoutUrl: z.string().url() }` → `CreateDonationResponse`.
-- `athlete.ts`: add `athleteStripeStatusSchema = { stripeConnected: boolean, chargesEnabled: boolean, onboardingUrl: z.string().url().optional() }` and `athleteStripeOnboardingResponseSchema = { onboardingUrl: z.string().url() }`.
+- `athlete.ts`: add `athletePayoutSchema = { stripePayoutId: string, payoutStatus: nativeEnum(PayoutStatus), amountCents: moneyCentsSchema, currency: string, arrivalDate: isoDateTimeSchema.nullable(), occurredAt: isoDateTimeSchema }`; `athleteStripeStatusSchema = { stripeConnected: boolean, chargesEnabled: boolean, onboardingUrl: z.string().url().optional(), recentPayouts: z.array(athletePayoutSchema) }` and `athleteStripeOnboardingResponseSchema = { onboardingUrl: z.string().url() }`.
 - Barrel `common/src/index.ts` already `export *`s these modules.
 
 ### Example shapes
@@ -210,21 +213,21 @@ Product rules preserved: transparency (cost lines already enforced Σ = target a
 ## 10) Package-level impact
 
 ### common/
-- `src/types/enums.ts` (+ `DonationEventType`), `src/zod/donation.ts` (+ response schema), `src/zod/athlete.ts` (+ Stripe status/onboarding schemas). Rebuild the package.
+- `src/types/enums.ts` (+ `DonationEventType`, `PayoutStatus`), `src/zod/donation.ts` (+ response schema), `src/zod/athlete.ts` (+ Stripe status/onboarding + `athletePayoutSchema` schemas). Rebuild the package.
 
 ### app/
 - New dep `stripe` in `app/package.json`.
-- New: `src/services/infrastructure/StripeService.ts`; `src/api/donations/{DonationRouterFactory,DonationController,DonationService}.ts`; `src/api/webhooks/{StripeWebhookRouterFactory,StripeWebhookController}.ts`; `src/repositories/{DonationRepository,DonationEventRepository,WebhookEventRepository}.ts`; athlete-Stripe onboarding endpoints via a focused `AthleteStripeRouterFactory`/`AthleteStripeController`/`AthleteStripeService` slice (settled — keep the Stripe/non-custodial surface isolated and easy to audit; do **not** bolt onto `AthleteRouterFactory`).
-- Extend `AthleteRepository` (`setStripeAccount`, `setChargesEnabled`, `findByStripeAccountId`) and `CampaignRepository` (`applyDonationEvent` — atomic projection + `FUNDED` flip).
+- New: `src/services/infrastructure/StripeService.ts`; `src/api/donations/{DonationRouterFactory,DonationController,DonationService}.ts`; `src/api/webhooks/{StripeWebhookRouterFactory,StripeWebhookController}.ts`; `src/repositories/{DonationRepository,DonationEventRepository,PayoutEventRepository,WebhookEventRepository}.ts`; athlete-Stripe onboarding endpoints via a focused `AthleteStripeRouterFactory`/`AthleteStripeController`/`AthleteStripeService` slice (settled — keep the Stripe/non-custodial surface isolated and easy to audit; do **not** bolt onto `AthleteRouterFactory`).
+- Extend `AthleteRepository` (`setStripeAccount`, `setChargesEnabled`, `findByStripeAccountId`) and `CampaignRepository` (`applyDonationEvent` — atomic projection + `FUNDED` flip, `findByIdWithAthlete`).
 - `src/app.ts`: raw-body webhook mount before `express.json`; resolve + mount the new RouterFactories.
 - `prisma/schema.prisma` + drafted migration.
 - `.env.example`: `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, `STRIPE_ACCOUNT_ONBOARDING_RETURN_URL`, `STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL`, `STRIPE_CHECKOUT_SUCCESS_URL`, `STRIPE_CHECKOUT_CANCEL_URL`, `DONATION_MINIMUM_CENTS` (default `500` = $5 CAD), `DEFAULT_CURRENCY` (default `cad`).
 
 ### client/
 - `lib/api.ts`: `startStripeOnboarding()`, `fetchStripeStatus()`, `createDonation(body)`.
-- Athlete "Connect Stripe / payout status" card in the dashboard/manage area (`app/(marketing)/athletes/[athleteSlug]/manage/` and/or `/dashboard`).
-- `app/(marketing)/athletes/[athleteSlug]/AthleteProfile.tsx`: replace the three `supportEnabled`-gated `/support` CTAs with a donation widget (presets + custom + message/anonymity + disclosure copy); gate on campaign `ACTIVE` + charges-enabled.
-- New return pages: `app/(marketing)/donate/thanks/page.tsx` (success) + cancel handling back to the profile.
+- Athlete "Connect Stripe / payout status" card in the dashboard/manage area (`app/(marketing)/athletes/[athleteSlug]/manage/` and/or `/dashboard`), including a read-only **recent payouts** list from `status.recentPayouts`.
+- `app/(marketing)/athletes/[athleteSlug]/AthleteProfile.tsx`: replace the three `supportEnabled`-gated `/support` CTAs with a donation widget (presets $25/$50/$100 + custom [$5 min, CAD] + message/anonymity + disclosure copy); gate on campaign `ACTIVE` + charges-enabled.
+- New return pages: `app/(marketing)/donate/thanks/page.tsx` (success — "Congratulations on being a part of {athleteName}'s journey", name resolved from the `athlete` slug in the success URL) + cancel handling back to the profile.
 - `lib/apiLoaders.ts` (`loadApiProfile`): call the existing-but-unused `fetchAthleteCampaigns(slug)` and pass campaigns into the adapter — today `loadApiProfile` fetches profile data only and `fetchAthleteCampaigns` has zero callers.
 - `lib/adapters.ts` (`profileToMockAthlete`): map the fetched campaigns into the API profile view model (replace hard-coded `campaigns: []`). Fixing the adapter without the loader change surfaces no campaigns.
 - `.env.example`: no new required var (redirect Checkout needs no publishable key); document that donations require `NEXT_PUBLIC_DATA_SOURCE=api`.
@@ -271,7 +274,7 @@ Product rules preserved: transparency (cost lines already enforced Σ = target a
 ## 13) Operational readiness
 
 **Observability:**
-- Structured logs (no secrets): `stripe.onboarding.link_created` (athleteId, accountId), `stripe.account.charges_enabled` (accountId), `donation.created` (donationId, campaignId, amountCents), `donation.succeeded`/`.failed`/`.refunded` (donationId), `webhook.received` (eventId, type), `webhook.duplicate` (eventId), `webhook.signature_invalid`.
+- Structured logs (no secrets): `stripe.onboarding.link_created` (athleteId, accountId), `stripe.account.charges_enabled` (accountId), `donation.created` (donationId, campaignId, amountCents), `donation.succeeded`/`.failed`/`.refunded` (donationId), `payout.recorded` (athleteId, stripePayoutId, payoutStatus, amountCents), `webhook.received` (eventId, type), `webhook.duplicate` (eventId), `webhook.signature_invalid`.
 - The pino logger already redacts `authorization`/`cookie`/`*.password*`; ensure Stripe keys and `Stripe-Signature` are never placed in log payloads.
 
 ---
