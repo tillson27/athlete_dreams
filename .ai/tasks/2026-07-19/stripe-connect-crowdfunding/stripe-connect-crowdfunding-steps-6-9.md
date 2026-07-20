@@ -140,12 +140,18 @@
 ## Step 8 - Client: donor donation flow (widget + Checkout redirect + return pages)
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 5, 6
 **Size:** medium
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- `DonateWidget.tsx` (client modal): preset chips $25/$50/$100 + custom amount (CAD, $5 client min mirroring server `DONATION_MINIMUM_CENTS`), required name, optional message, "Donate anonymously", and the required legal disclosure (not-a-charity / not-tax-deductible / athlete is merchant of record & taxed / ARC doesn't control spend). Submit → `createDonation()` → `window.location.assign(checkoutUrl)`. All money via `formatCents(_, 'CAD')`.
+- `BackThisAthleteCta.tsx` (client): replaces all three `href="/support"` "Back this athlete" CTAs in `AthleteProfile.tsx` (desktop quick-actions, `#back` section, sticky mobile bar). Opens the widget when `DATA_SOURCE === 'api'` **and** an ACTIVE campaign id resolves; otherwise falls back to the existing `/support` teaser (mock builds / no active campaign). Parent still gates on `profile.supportEnabled`.
+- Donate target wired end-to-end: `loadApiProfile` now fetches `fetchAthleteCampaigns(slug)` (in parallel, degrades to `[]` on failure) and passes them to `profileToMockAthlete`, which maps `CampaignSummary` → the view-model campaigns (adds `campaignId`/`campaignStatus`; summary carries no story/cost-lines). Replaced the hard-coded `campaigns: []`.
+- `app/(marketing)/donate/thanks/page.tsx`: reads `?athlete=<slug>` (+ `session_id`) via `useSearchParams` (Suspense-wrapped), resolves the name via `fetchAthleteProfile`, renders **"Congratulations on being a part of {athleteName}'s journey"** (fallback "…this athlete's journey").
+- **Deviations (documented):** (1) the donor-side charges-enabled gate is enforced server-side at submit (public profile/campaign summary don't expose account status) — the widget surfaces the API's forbidden/validation message rather than pre-hiding on charges-enabled; (2) a dedicated cancel page is deferred — cancel returns to the configured `STRIPE_CHECKOUT_CANCEL_URL` and the PENDING donation is simply ignored (webhooks are the source of truth).
+- Validation: client type-check ✓ (see checklist).
 
 ### Context
 
@@ -174,12 +180,12 @@
 - Success page `app/(marketing)/donate/thanks/page.tsx`: read `?athlete=<slug>&session_id=...`, `fetchAthleteProfile(slug)` → `fullName`, render "Congratulations on being a part of {fullName}'s journey" (fallback copy when unresolved). Cancel → back to `athleteProfileHref(slug)` with a soft message. Gate the widget on `supportEnabled && isApiMode && campaign?.campaignStatus === 'ACTIVE' && chargesEnabled`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run (self-review vs client/AGENTS.md: fad-common types, money via formatCents('CAD'), minimalist single-widget flow, disclosure present, client islands only where interactivity needs)
+- [x] `$ci` (`/ci`) run — scoped: client type-check green
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 

@@ -10,7 +10,12 @@ import {
   profileToMockAthlete,
   profileToRichProfile,
 } from './adapters';
-import { fetchAthleteDirectory, fetchAthleteProfile, fetchCommunityFeed } from './api';
+import {
+  fetchAthleteCampaigns,
+  fetchAthleteDirectory,
+  fetchAthleteProfile,
+  fetchCommunityFeed,
+} from './api';
 import type { ProfileView } from './dataSourceTypes';
 
 // Pure, framework-free loaders that compose the typed API helpers with the
@@ -88,9 +93,14 @@ export async function loadApiProfile(
   slug: string,
   heroMediaUrlFallback: string
 ): Promise<ProfileView> {
-  const profile = await fetchAthleteProfile(slug);
+  // Campaigns power the donate target; a campaigns failure must not break the
+  // profile render, so it degrades to no campaigns (donate widget stays hidden).
+  const [profile, campaigns] = await Promise.all([
+    fetchAthleteProfile(slug),
+    fetchAthleteCampaigns(slug).catch(() => []),
+  ]);
   return {
-    athlete: profileToMockAthlete(profile, heroMediaUrlFallback),
+    athlete: profileToMockAthlete(profile, heroMediaUrlFallback, campaigns),
     profile: profileToRichProfile(profile),
   };
 }

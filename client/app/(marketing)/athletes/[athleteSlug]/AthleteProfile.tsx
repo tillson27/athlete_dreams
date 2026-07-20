@@ -12,6 +12,7 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { unsplashPhoto } from '@/lib/unsplash';
 import { ProfileTabNav } from './ProfileTabNav';
 import { OwnerManageLink } from './OwnerManageLink';
+import { BackThisAthleteCta } from './BackThisAthleteCta';
 import {
   EditedHighlights,
   EditedRaces,
@@ -65,6 +66,11 @@ export function AthleteProfile({
   const peerNoun = isCyclist ? 'Riders' : 'Runners';
   const sportNoun = isCyclist ? 'cycling' : 'running';
   const supportersCount = profile.supporterCount ?? 0;
+  // Donate target: the first ACTIVE campaign carrying a real id (api mode only —
+  // mock campaigns have no id, so the CTAs fall back to the /support teaser).
+  const donateCampaignId = athlete.campaigns.find(
+    (campaign) => campaign.campaignStatus === 'ACTIVE' && campaign.campaignId
+  )?.campaignId;
   const editDefaults = deriveEdits(profile);
   const hasTrainingSnapshot = Boolean(
     profile.training.weeklyKm ||
@@ -164,12 +170,11 @@ export function AthleteProfile({
           <div className="card-lift flex flex-col items-center justify-center gap-4 rounded-card bg-surface-container-lowest p-6 md:flex-row md:justify-end md:p-8">
             <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row">
               {profile.supportEnabled ? (
-                <Link
-                  href="/support"
+                <BackThisAthleteCta
+                  athleteName={athlete.fullName}
+                  campaignId={donateCampaignId}
                   className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-                >
-                  Back this athlete
-                </Link>
+                />
               ) : (
                 <FollowButton slug={athlete.athleteSlug} variant="block" className="md:w-auto md:px-8" />
               )}
@@ -563,12 +568,11 @@ export function AthleteProfile({
                 Backing opens soon. Supporters will see the exact campaign costs, receipts, and
                 post-event updates before money changes hands.
               </p>
-              <Link
-                href="/support"
+              <BackThisAthleteCta
+                athleteName={athlete.fullName}
+                campaignId={donateCampaignId}
                 className="mt-6 inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-              >
-                Back this athlete
-              </Link>
+              />
             </div>
           </section>
         ) : null}
@@ -601,12 +605,11 @@ export function AthleteProfile({
       >
         <div className="mx-auto flex max-w-[var(--spacing-container-max)] items-center gap-3">
           {profile.supportEnabled ? (
-            <Link
-              href="/support"
+            <BackThisAthleteCta
+              athleteName={athlete.fullName}
+              campaignId={donateCampaignId}
               className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-            >
-              Back this athlete
-            </Link>
+            />
           ) : (
             <button
               type="button"

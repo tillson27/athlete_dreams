@@ -1,4 +1,9 @@
-import type { AthleteDirectoryItem, AthleteProfile, CommunityFeedItem } from 'fad-common';
+import type {
+  AthleteDirectoryItem,
+  AthleteProfile,
+  CampaignSummary,
+  CommunityFeedItem,
+} from 'fad-common';
 import type { MockAthlete } from './mockAthletes';
 import type {
   ArcChapter,
@@ -67,8 +72,10 @@ export function directoryItemToMockAthlete(item: AthleteDirectoryItem): MockAthl
 
 export function profileToMockAthlete(
   profile: AthleteProfile,
-  heroMediaUrlFallback: string
+  heroMediaUrlFallback: string,
+  campaigns: CampaignSummary[] = []
 ): MockAthlete {
+  const mappedCampaigns = campaigns.map(campaignSummaryToMockCampaign);
   return {
     athleteSlug: profile.athleteSlug,
     fullName: profile.fullName,
@@ -82,10 +89,28 @@ export function profileToMockAthlete(
       profile.heroMediaUrl ??
       (heroMediaUrlFallback || (profile.gallery?.[0] ? unsplashPhoto(profile.gallery[0], 1400) : '')),
     values: profile.values,
-    activeCampaignCount: 0,
-    totalRaisedCents: 0,
-    campaigns: [],
+    activeCampaignCount: campaigns.filter((campaign) => campaign.campaignStatus === 'ACTIVE').length,
+    totalRaisedCents: campaigns.reduce((sum, campaign) => sum + campaign.raisedAmountCents, 0),
+    campaigns: mappedCampaigns,
     accomplishments: [],
+  };
+}
+
+// The campaign summary carries no story/cost-lines (those live on the full
+// campaign detail); the donate flow only needs the id, status, and totals.
+function campaignSummaryToMockCampaign(campaign: CampaignSummary): MockAthlete['campaigns'][number] {
+  return {
+    campaignId: campaign.campaignId,
+    campaignStatus: campaign.campaignStatus,
+    campaignSlug: campaign.campaignSlug,
+    campaignTitle: campaign.campaignTitle,
+    campaignType: campaign.campaignType as MockAthlete['campaigns'][number]['campaignType'],
+    campaignStory: '',
+    targetAmountCents: campaign.targetAmountCents,
+    raisedAmountCents: campaign.raisedAmountCents,
+    supporterCount: campaign.supporterCount,
+    closesAt: campaign.closesAt,
+    costLines: [],
   };
 }
 

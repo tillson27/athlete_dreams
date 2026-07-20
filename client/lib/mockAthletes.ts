@@ -16,6 +16,11 @@ export type MockAthlete = {
   activeCampaignCount: number;
   totalRaisedCents: number;
   campaigns: {
+    // API-mode only: the UUID + status are needed to open the donation flow
+    // (createDonation targets campaignId; the widget gates on ACTIVE). Mock
+    // entries omit them — the donate widget is api-mode only.
+    campaignId?: string;
+    campaignStatus?: 'DRAFT' | 'ACTIVE' | 'FUNDED' | 'COMPLETED' | 'ARCHIVED';
     campaignSlug: string;
     campaignTitle: string;
     campaignType: 'EVENT' | 'GEAR' | 'TRAVEL' | 'TRAINING' | 'SEASON';
