@@ -357,12 +357,17 @@
 ## Step 5 - Donation creation API (Checkout Session, direct charge)
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 2, 3
 **Size:** medium
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- New slice `app/src/api/donations/{DonationService,DonationController,DonationRouterFactory}.ts`, wired into `buildApp()` at `/v1/donations`.
+- `POST /v1/donations` (auth.optional): guards campaign `ACTIVE` → not past `closesAt` → athlete `stripeChargesEnabledAt` + `stripeAccountId` present → `donationAmountCents ≥ DONATION_MINIMUM_CENTS` (env, default 500). Creates a `Donation(PENDING)` **before** the session (so the webhook always finds the row), then a direct-charge Checkout Session via `StripeService.createDonationCheckoutSession` (metadata `{ donationId, campaignId }`, `idempotencyKey = donation.id`, **no** `application_fee_amount`), stores `session.id` in `paymentProviderRef`, returns `{ donation, checkoutUrl }` (`createDonationResponseSchema`). Currency from `DEFAULT_CURRENCY` (default `cad`).
+- Guest vs signed-in: `supporterUserId` set from `req.authenticatedUserId` when present; guest identity via `supporterDisplayName`/`supporterEmail`.
+- Unit test `DonationService.test.ts` (repos/Stripe mocked, no DB): each guard (unknown/inactive/closed/not-charges-enabled/below-min) + happy path (asserts no `application_fee_amount`/`transfer_data`, correct metadata/idempotencyKey, provider ref stored) + signed-in attribution. 7/7 pass.
+- Validation: DonationService test ✓ (7/7); app type-check ✓ (see checklist).
 
 ### Context
 
@@ -396,9 +401,9 @@
 - Controller (`auth.optional`) + RouterFactory (`basePath '/v1/donations'`), mount in `buildApp()`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run (self-review vs app/AGENTS.md: thin controller, guards in service, Prisma only via repos, fad-common types, non-custodial invariant preserved)
+- [x] `$ci` (`/ci`) run — scoped: app type-check + DonationService unit test green
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

@@ -34,7 +34,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 2 | StripeService infrastructure (stripe-node, Connect + Checkout wrappers) | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
 | 3 | Repositories: donation, donation-event, webhook-event + athlete/campaign extensions | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
 | 4 | Athlete Stripe onboarding API (Account Links + status) | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
-| 5 | Donation creation API (Checkout Session, direct charge) | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
+| 5 | Donation creation API (Checkout Session, direct charge) | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
 | 6 | Stripe Connect webhook processor + raw-body mount | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
 | 7 | Client: API helpers + athlete "Connect Stripe / payout status" UI | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
 | 8 | Client: donor donation flow (widget + Checkout redirect + return pages) | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-6-9.md` |
