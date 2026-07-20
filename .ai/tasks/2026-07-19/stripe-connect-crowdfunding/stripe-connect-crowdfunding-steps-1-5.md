@@ -85,7 +85,7 @@
         @@map("webhook_events")
       }
       ```
-- Add env vars to `app/.env.example`: `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, `STRIPE_ACCOUNT_ONBOARDING_RETURN_URL`, `STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL`, `STRIPE_CHECKOUT_SUCCESS_URL`, `STRIPE_CHECKOUT_CANCEL_URL`, `DONATION_MINIMUM_CENTS`, `DEFAULT_CURRENCY=cad` (with comments; placeholders only, no real secrets).
+- Add env vars to `app/.env.example`: `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, `STRIPE_ACCOUNT_ONBOARDING_RETURN_URL`, `STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL`, `STRIPE_CHECKOUT_SUCCESS_URL`, `STRIPE_CHECKOUT_CANCEL_URL`, `DONATION_MINIMUM_CENTS=500` (settled: $5 CAD minimum), `DEFAULT_CURRENCY=cad` (with comments; placeholders only, no real secrets).
 
 ### Step checklist
 - [ ] Step-specific tasks complete
@@ -206,7 +206,7 @@
 
 **Objective:** Add repository-per-aggregate data access for the donation money loop and the atomic campaign-projection fold, following the existing repository pattern (only repos touch `PrismaService`).
 **Done When:**
-- `DonationRepository` (`createPending`, `findByProviderRef`, `findByPaymentIntentId`, `setProviderRef`, `setPaymentIntentId`, `setStatus`, `listForCampaign`), `DonationEventRepository` (`append`, `existsByIdempotencyKey`), `WebhookEventRepository` (`recordIfNew(eventId, type, payload): Promise<boolean>`) exist and are `@injectable()`. `findByPaymentIntentId` + `setPaymentIntentId` back the refund/dispute → donation mapping (context §11); `setStatus`/`setPaymentIntentId` must accept an optional `tx` so they run inside the webhook fold.
+- `DonationRepository` (`createPending`, `findById`, `findByProviderRef`, `findByPaymentIntentId`, `setProviderRef`, `setPaymentIntentId`, `setStatus`, `listForCampaign`), `DonationEventRepository` (`append`, `existsByIdempotencyKey`), `WebhookEventRepository` (`upsertAudit(eventId, type, payload)` + `markProcessed(eventId)`) exist and are `@injectable()`. `findByPaymentIntentId` + `setPaymentIntentId` back the refund/dispute → donation mapping (context §11); `findById`/`setStatus`/`setPaymentIntentId` must accept an optional `tx` so they run inside the webhook fold. **Idempotency design (see Step 6):** `WebhookEvent` is an **audit row only** — `upsertAudit` records the delivery and `markProcessed` stamps `processedAt` after the fold commits (reprocess when `processedAt == null`). The real exactly-once guard is `DonationEvent.idempotencyKey @unique` (= event id) appended **inside** the fold transaction; a duplicate delivery raises Prisma `P2002` and is treated as already-applied. Do **not** gate money application on a pre-committed `WebhookEvent` row.
 - `AthleteRepository` gains `setStripeAccount`, `setChargesEnabled`, `findByStripeAccountId`; `CampaignRepository` gains `applyDonationEvent(...)` that atomically updates `raisedAmountCents`/`supporterCount` and flips `FUNDED` at target — accepting an existing Prisma `tx` — **and** a read method `findByIdWithAthlete(campaignId)` that returns the campaign joined with its athlete's `stripeAccountId`, `stripeChargesEnabledAt`, and `fullName` (consumed by Step 5's donation-create guards + Checkout product name).
 
 **References:**
@@ -214,13 +214,20 @@
 - Pattern: `app/src/repositories/CampaignRepository.ts`, `AthleteRepository.ts`, `app/src/services/infrastructure/PrismaService.ts`, `app/src/shared/keysetCursor.ts`.
 
 ### Plan
-- Donation + ledger + webhook repos (constructor-inject `PrismaService`).
+- Donation + ledger + webhook repos (constructor-inject `PrismaService`). **Access note:** `PrismaService extends PrismaClient`, so models are reached directly (`this.prisma.webhookEvent.upsert(...)`, `this.prisma.donation.create(...)`) exactly like `CampaignRepository` does `this.prisma.campaign.findMany(...)` — there is **no** `this.prisma.client` accessor. **Helper note:** no unique-violation helper exists in `app/src/shared/` today; the exactly-once guard is the `DonationEvent.idempotencyKey @unique` append inside the fold — detect the duplicate by checking the Prisma error is a `PrismaClientKnownRequestError` with `code === 'P2002'` (inline, or add a small shared `isUniqueViolation` helper).
     - Snippet:
       ```ts
-      async recordIfNew(eventId: string, eventType: string, payload: Prisma.InputJsonValue) {
-        try { await this.prisma.client.webhookEvent.create({
-          data: { eventId, provider: 'stripe', eventType, payload } }); return true; }
-        catch (e) { if (isUniqueViolation(e, 'eventId')) return false; throw e; }
+      import { Prisma } from '@prisma/client';
+      // WebhookEvent = audit only; never the money-application gate (see Step 6).
+      upsertAudit(eventId: string, eventType: string, payload: Prisma.InputJsonValue) {
+        return this.prisma.webhookEvent.upsert({
+          where: { eventId },
+          create: { eventId, provider: 'stripe', eventType, payload },
+          update: {},
+        });
+      }
+      markProcessed(eventId: string) {
+        return this.prisma.webhookEvent.update({ where: { eventId }, data: { processedAt: new Date() } });
       }
       ```
 - Atomic projection fold (runs inside the webhook's `$transaction`).
@@ -259,15 +266,15 @@
 
 ### Context
 
-**Objective:** Let an authenticated athlete connect (or create) their Standard Stripe account via Stripe-hosted onboarding and read their payout-readiness status.
+**Objective:** Let an authenticated athlete connect (or create) their Standard Stripe account via Stripe-hosted onboarding and read their payout-readiness status. **Settled (context §10):** build this as a **focused `AthleteStripeRouterFactory` / `AthleteStripeController` / `AthleteStripeService` slice** — do **not** bolt these endpoints onto the existing `AthleteRouterFactory`/`AthleteController`/`AthleteService`. Keeping the Stripe/non-custodial surface isolated makes the "no fees/transfers" invariant easy for a reviewer to audit in one place.
 **Done When:**
 - `POST /v1/athletes/me/stripe/onboarding-link` (auth) creates a Standard account if none exists, persists `stripeAccountId`, mints a fresh Account Link, returns `{ onboardingUrl }` (`athleteStripeOnboardingResponseSchema`).
 - `GET /v1/athletes/me/stripe/status` (auth) returns `{ stripeConnected, chargesEnabled, onboardingUrl? }` (`athleteStripeStatusSchema`), deriving `chargesEnabled` from `stripeChargesEnabledAt` (kept fresh by the webhook in Step 6) and/or a live `retrieveAccount` check.
-- Endpoints are gated to the athlete owning the profile (via `req.authenticatedUserId`); tests cover create-vs-reuse and status shape.
+- Both routes live in the new `AthleteStripeRouterFactory` (its own `container.resolve(...)` line in `buildApp()`), gated to the athlete owning the profile (via `req.authenticatedUserId`); tests cover create-vs-reuse and status shape.
 
 **References:**
-- Context §7 (Functional requirements), §8.
-- Pattern: `app/src/api/athletes/{AthleteRouterFactory,AthleteController,AthleteService}.ts`, `app/src/middleware/AuthenticationMiddleware.ts`, `app/src/shared/{ResponseHandler,requestParsers,errors}.ts`, `BaseRouterFactory.ts`. Wire new routes in `app/src/app.ts`.
+- Context §7 (Functional requirements), §8, §10 (focused-slice decision).
+- Pattern to mirror (structure only — new files, not edits to these): `app/src/api/athletes/{AthleteRouterFactory,AthleteController,AthleteService}.ts`, `app/src/middleware/AuthenticationMiddleware.ts`, `app/src/shared/{ResponseHandler,requestParsers,errors}.ts`, `BaseRouterFactory.ts`. `AthleteRepository.findByUserId` already exists (resolves the athlete from `authenticatedUserId`). Wire the new `AthleteStripeRouterFactory` in `app/src/app.ts`.
 
 ### Plan
 - Service: resolve athlete by `authenticatedUserId`; create/reuse account; store id; return link.
@@ -282,7 +289,7 @@
         return { onboardingUrl: link.url };
       }
       ```
-- Controller + RouterFactory (auth.required), mount in `buildApp()`.
+- `AthleteStripeController` + `AthleteStripeRouterFactory` (auth.required), mounted via a new `container.resolve(AthleteStripeRouterFactory)` line in `buildApp()`.
 - Status derivation from `stripeChargesEnabledAt`; optionally reconcile via `retrieveAccount` when not yet enabled.
 
 ### Step checklist
