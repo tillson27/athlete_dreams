@@ -55,6 +55,25 @@ export const DonationStatus = {
 
 export type DonationStatus = (typeof DonationStatus)[keyof typeof DonationStatus];
 
+export const DonationEventType = {
+  DonationSucceeded: 'DONATION_SUCCEEDED',
+  DonationFailed: 'DONATION_FAILED',
+  DonationRefunded: 'DONATION_REFUNDED',
+  DisputeOpened: 'DISPUTE_OPENED',
+} as const;
+
+export type DonationEventType = (typeof DonationEventType)[keyof typeof DonationEventType];
+
+export const PayoutStatus = {
+  Pending: 'PENDING',
+  InTransit: 'IN_TRANSIT',
+  Paid: 'PAID',
+  Failed: 'FAILED',
+  Canceled: 'CANCELED',
+} as const;
+
+export type PayoutStatus = (typeof PayoutStatus)[keyof typeof PayoutStatus];
+
 export const InvitationStatus = {
   Pending: 'PENDING',
   Accepted: 'ACCEPTED',

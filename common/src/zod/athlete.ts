@@ -3,10 +3,11 @@ import {
   idSchema,
   isoDateTimeSchema,
   mediaRefSchema,
+  moneyCentsSchema,
   paginationResponseSchema,
   slugSchema,
 } from './shared';
-import { AthleteLevel, SportCategory } from '../types/enums';
+import { AthleteLevel, PayoutStatus, SportCategory } from '../types/enums';
 
 const sportSchema = z.nativeEnum(SportCategory);
 const athleteLevelSchema = z.nativeEnum(AthleteLevel);
@@ -261,6 +262,34 @@ export const setAthleteGalleryRequestSchema = z
   .strict();
 
 export type SetAthleteGalleryRequest = z.infer<typeof setAthleteGalleryRequestSchema>;
+
+export const athletePayoutSchema = z.object({
+  stripePayoutId: z.string(),
+  payoutStatus: z.nativeEnum(PayoutStatus),
+  amountCents: moneyCentsSchema,
+  currency: z.string(),
+  arrivalDate: isoDateTimeSchema.nullable(),
+  occurredAt: isoDateTimeSchema,
+});
+
+export type AthletePayout = z.infer<typeof athletePayoutSchema>;
+
+export const athleteStripeStatusSchema = z.object({
+  stripeConnected: z.boolean(),
+  chargesEnabled: z.boolean(),
+  onboardingUrl: z.string().url().optional(),
+  recentPayouts: z.array(athletePayoutSchema),
+});
+
+export type AthleteStripeStatus = z.infer<typeof athleteStripeStatusSchema>;
+
+export const athleteStripeOnboardingResponseSchema = z.object({
+  onboardingUrl: z.string().url(),
+});
+
+export type AthleteStripeOnboardingResponse = z.infer<
+  typeof athleteStripeOnboardingResponseSchema
+>;
 
 export const publishAthleteProfileResponseSchema = z.object({
   athleteId: idSchema,

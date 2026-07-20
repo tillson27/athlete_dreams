@@ -31,3 +31,10 @@ export const createDonationRequestSchema = z
   .strict();
 
 export type CreateDonationRequest = z.infer<typeof createDonationRequestSchema>;
+
+export const createDonationResponseSchema = z.object({
+  donation: donationSchema,
+  checkoutUrl: z.string().url(),
+});
+
+export type CreateDonationResponse = z.infer<typeof createDonationResponseSchema>;

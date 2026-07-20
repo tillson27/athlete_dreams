@@ -228,6 +228,8 @@ model AthleteProfile {
   socialTwitterHandle   String?
   socialStravaUrl       String?
   heroMediaUrl          String?
+  stripeAccountId        String?      @unique
+  stripeChargesEnabledAt DateTime?
   publishedAt           DateTime?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
@@ -455,6 +457,7 @@ model Donation {
   donationStatus        DonationStatus @default(PENDING)
   isAnonymous           Boolean        @default(false)
   paymentProviderRef    String?        @unique
+  stripePaymentIntentId String?        @unique
   createdAt             DateTime       @default(now())
 
   campaign      Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
@@ -463,6 +466,72 @@ model Donation {
   @@index([campaignId, donationStatus])
   @@index([supporterUserId])
   @@map("donations")
+}
+
+enum DonationEventType {
+  DONATION_SUCCEEDED
+  DONATION_FAILED
+  DONATION_REFUNDED
+  DISPUTE_OPENED
+}
+
+enum PayoutStatus {
+  PENDING
+  IN_TRANSIT
+  PAID
+  FAILED
+  CANCELED
+}
+
+model DonationEvent {
+  id                String            @id @default(uuid()) @db.Uuid
+  donationId        String?           @db.Uuid
+  campaignId        String            @db.Uuid
+  athleteId         String            @db.Uuid
+  donationEventType DonationEventType
+  amountCents       Int
+  currency          String
+  stripeAccountId   String
+  stripeObjectId    String
+  idempotencyKey    String            @unique
+  occurredAt        DateTime
+  rawPayload        Json
+  createdAt         DateTime          @default(now())
+
+  @@index([campaignId])
+  @@index([donationId])
+  @@map("donation_events")
+}
+
+model PayoutEvent {
+  id              String       @id @default(uuid()) @db.Uuid
+  athleteId       String       @db.Uuid
+  stripeAccountId String
+  stripePayoutId  String
+  payoutStatus    PayoutStatus
+  amountCents     Int
+  currency        String
+  arrivalDate     DateTime?
+  idempotencyKey  String       @unique
+  occurredAt      DateTime
+  rawPayload      Json
+  createdAt       DateTime     @default(now())
+
+  @@index([athleteId])
+  @@index([stripePayoutId])
+  @@map("payout_events")
+}
+
+model WebhookEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  eventId     String    @unique
+  provider    String
+  eventType   String
+  payload     Json
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  @@map("webhook_events")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
