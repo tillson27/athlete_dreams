@@ -31,7 +31,7 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | Step | Name | Status | Owner | Doc |
 | --- | --- | --- | --- | --- |
 | 1 | Contracts, schema, env & migration draft | Complete (migration deferred) | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
-| 2 | StripeService infrastructure (stripe-node, Connect + Checkout wrappers) | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
+| 2 | StripeService infrastructure (stripe-node, Connect + Checkout wrappers) | Complete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
 | 3 | Repositories: donation, donation-event, webhook-event + athlete/campaign extensions | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
 | 4 | Athlete Stripe onboarding API (Account Links + status) | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |
 | 5 | Donation creation API (Checkout Session, direct charge) | Incomplete | claude | `.ai/tasks/2026-07-19/stripe-connect-crowdfunding/stripe-connect-crowdfunding-steps-1-5.md` |

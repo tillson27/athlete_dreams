@@ -132,12 +132,16 @@
 ## Step 2 - StripeService infrastructure
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1
 **Size:** medium
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- Added `stripe@^22.3.2` (stripe-node v22; SDK-baked `ApiVersion` is exactly `2026-06-24.dahlia`, matching the pin) to `app/package.json`.
+- `app/src/services/infrastructure/StripeService.ts`: `@singleton()` with constructor env-guard (mirrors `JwtService`), pinned `apiVersion: '2026-06-24.dahlia'`, `maxNetworkRetries: 2`. Methods: `createConnectedAccount()` (Standard controller props), `createAccountLink(accountId)`, `retrieveAccount(accountId)`, `createDonationCheckoutSession(input)` (direct charge — passes `{ stripeAccount, idempotencyKey }`, omits `application_fee_amount`), `constructWebhookEvent(rawBody, signature)` (raw body + Connect secret).
+- Unit test `StripeService.test.ts` (stripe module mocked, no DB): asserts env guard, API-version pin, Standard account controller props, and the **non-custodial invariant** (no `application_fee_amount`/`transfer_data`/`on_behalf_of`; direct charge via `stripeAccount`) + raw-body/Connect-secret webhook verification. 5/5 pass.
+- Validation: app type-check ✓, app lint ✓, StripeService test ✓ (scoped; full `npm run ci` blocked by pre-existing cdk errors + no DB).
 
 ### Context
 
@@ -218,12 +222,12 @@
       ```
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run (self-review vs app/AGENTS.md: no fad-common type duplication, no direct Prisma import, no secret logging; env guard mirrors JwtService)
+- [x] `$ci` (`/ci`) run — scoped: app type-check + lint + StripeService unit test green
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
