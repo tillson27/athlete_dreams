@@ -3,12 +3,16 @@
 ## Step 1 - Contracts, schema, env & migration draft
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete (migration draft deferred — no local DB)
 **Prereqs:** None
 **Size:** medium
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- Contracts landed in `common/`: `DonationEventType` + `PayoutStatus` enums (`common/src/types/enums.ts`), `createDonationResponseSchema` (`common/src/zod/donation.ts`), and `athletePayoutSchema` / `athleteStripeStatusSchema` (incl. `recentPayouts`) / `athleteStripeOnboardingResponseSchema` (`common/src/zod/athlete.ts`); `npm run build --prefix common` succeeds.
+- Prisma schema (`app/prisma/schema.prisma`): `AthleteProfile.stripeAccountId @unique` + `stripeChargesEnabledAt`, `Donation.stripePaymentIntentId String? @unique`, models `DonationEvent` / `PayoutEvent` / `WebhookEvent`, enums `DonationEventType` + `PayoutStatus`. `prisma generate` validates the schema.
+- `app/.env.example` documents all new Stripe/donation env vars (`STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, onboarding return/refresh URLs, checkout success/cancel URLs, `DONATION_MINIMUM_CENTS=500`, `DEFAULT_CURRENCY=cad`).
+- **DEFERRED (owner action):** the drafted migration could not be created in this environment — no reachable Postgres and no `DATABASE_URL`, and `npm run migrate:create` (`prisma migrate dev --create-only`) requires a live DB to diff against migration history (hand-writing migration files is [STRICT]-forbidden). Once Postgres is up + `DATABASE_URL` set, run: `npm run migrate:create --prefix app -- --name add_stripe_connect_donations_and_payouts`.
 
 ### Context
 
@@ -116,12 +120,12 @@
 - Add env vars to `app/.env.example`: `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, `STRIPE_ACCOUNT_ONBOARDING_RETURN_URL`, `STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL`, `STRIPE_CHECKOUT_SUCCESS_URL`, `STRIPE_CHECKOUT_CANCEL_URL`, `DONATION_MINIMUM_CENTS=500` (settled: $5 CAD minimum), `DEFAULT_CURRENCY=cad` (with comments; placeholders only, no real secrets).
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete (migration draft deferred — see Completion Notes)
+- [~] `$backend-review` (`/backend-review`) run (contracts/schema/env only; no app code in this step)
+- [x] `$ci` (`/ci`) run — scoped: `common` build + `prisma generate` + app type-check/lint green (full `npm run ci` blocked by pre-existing `cdk` type errors + no DB, out of scope)
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
