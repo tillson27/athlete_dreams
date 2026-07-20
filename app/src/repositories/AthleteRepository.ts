@@ -1,5 +1,12 @@
 import { injectable } from 'tsyringe';
-import { type AthleteLevel, CampaignStatus, MediaKind, Prisma, SportCategory } from '@prisma/client';
+import {
+  type AthleteLevel,
+  type AthleteProfile,
+  CampaignStatus,
+  MediaKind,
+  Prisma,
+  SportCategory,
+} from '@prisma/client';
 import { PrismaService } from '../services/infrastructure/PrismaService';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../shared/keysetCursor';
 import { parseEventStartDate } from '../shared/displayDate';
@@ -429,5 +436,25 @@ export class AthleteRepository {
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       take: filters.limit,
     });
+  }
+
+  async setStripeAccount(athleteId: string, stripeAccountId: string): Promise<void> {
+    await this.prisma.athleteProfile.update({
+      where: { id: athleteId },
+      data: { stripeAccountId },
+    });
+  }
+
+  // `chargesEnabledAt` is the timestamp when Stripe first reported the account
+  // as charges-enabled; passing null clears it (account.updated toggled off).
+  async setChargesEnabled(athleteId: string, chargesEnabledAt: Date | null): Promise<void> {
+    await this.prisma.athleteProfile.update({
+      where: { id: athleteId },
+      data: { stripeChargesEnabledAt: chargesEnabledAt },
+    });
+  }
+
+  findByStripeAccountId(stripeAccountId: string): Promise<AthleteProfile | null> {
+    return this.prisma.athleteProfile.findUnique({ where: { stripeAccountId } });
   }
 }

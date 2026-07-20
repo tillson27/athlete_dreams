@@ -66,6 +66,45 @@ export class CampaignRepository {
     });
   }
 
+  // Read a campaign by id joined with its athlete (whose row now carries the
+  // Stripe fields). Consumed by the donation-create guards, the Checkout product
+  // name, and the success-URL athlete slug (Step 5). Not status-filtered — the
+  // service distinguishes "not found" from "not active".
+  findByIdWithAthlete(campaignId: string): Promise<CampaignWithAthlete | null> {
+    return this.prisma.campaign.findFirst({
+      where: { id: campaignId, deletedAt: null },
+      include: { costLines: true, athlete: true },
+    });
+  }
+
+  // Atomic projection fold, run INSIDE the webhook's `$transaction` (Step 6).
+  // Increments the campaign totals and flips FUNDED once the target is met.
+  // Overfunding past target is accepted (stays FUNDED, keeps accepting).
+  async applyDonationEvent(
+    tx: Prisma.TransactionClient,
+    campaignId: string,
+    deltaCents: number,
+    supporterDelta: number
+  ): Promise<void> {
+    const campaign = await tx.campaign.update({
+      where: { id: campaignId },
+      data: {
+        raisedAmountCents: { increment: deltaCents },
+        supporterCount: { increment: supporterDelta },
+      },
+      select: { raisedAmountCents: true, targetAmountCents: true, campaignStatus: true },
+    });
+    if (
+      campaign.campaignStatus === CampaignStatus.ACTIVE &&
+      campaign.raisedAmountCents >= campaign.targetAmountCents
+    ) {
+      await tx.campaign.update({
+        where: { id: campaignId },
+        data: { campaignStatus: CampaignStatus.FUNDED },
+      });
+    }
+  }
+
   create(input: {
     athleteId: string;
     campaignSlug: string;
