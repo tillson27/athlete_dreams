@@ -13,6 +13,7 @@ import { AthleteStripeRouterFactory } from './api/athleteStripe/AthleteStripeRou
 import { CampaignRouterFactory } from './api/campaigns/CampaignRouterFactory';
 import { AthleteCampaignsRouterFactory } from './api/campaigns/AthleteCampaignsRouterFactory';
 import { DonationRouterFactory } from './api/donations/DonationRouterFactory';
+import { StripeWebhookRouterFactory } from './api/webhooks/StripeWebhookRouterFactory';
 import { AthleteFollowRouterFactory } from './api/follows/AthleteFollowRouterFactory';
 import { MyFollowsRouterFactory } from './api/follows/MyFollowsRouterFactory';
 import { CommunityRouterFactory } from './api/community/CommunityRouterFactory';
@@ -35,6 +36,13 @@ export function buildApp(): express.Express {
       credentials: true,
     })
   );
+
+  // The Stripe Connect webhook must verify the signature against the RAW request
+  // body, so it is mounted (with its own express.raw parser) BEFORE the global
+  // JSON parser would consume the stream.
+  const stripeWebhookRouter = container.resolve(StripeWebhookRouterFactory);
+  app.use(stripeWebhookRouter.basePath, stripeWebhookRouter.build());
+
   app.use(express.json({ limit: '15mb' }));
   app.use(requestIdMiddleware);
 

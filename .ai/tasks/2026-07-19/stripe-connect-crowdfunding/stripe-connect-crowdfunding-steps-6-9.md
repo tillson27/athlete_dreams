@@ -3,12 +3,18 @@
 ## Step 6 - Stripe Connect webhook processor + raw-body mount
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 2, 3, 5
 **Size:** medium
 **Owner:** claude
-**Completed At:**
+**Completed At:** 2026-07-20
 **Completion Notes:**
+- New slice `app/src/api/webhooks/{StripeWebhookService,StripeWebhookController,StripeWebhookRouterFactory}.ts`. In `buildApp()` the webhook router is mounted (with route-scoped `express.raw({ type: 'application/json' })`) **before** `app.use(express.json(...))` so signature verification sees the raw bytes.
+- Controller: verifies `stripe-signature` via `StripeService.constructWebhookEvent` (Connect secret, raw body); missing/invalid signature → `BadRequestError` (400, secret never logged); success → `res.sendStatus(200)` only after `process()` completes.
+- Exactly-once: `WebhookEventRepository.upsertAudit` (audit) at start, `markProcessed` at end; the real guard is `DonationEvent.idempotencyKey @unique` appended **first inside the `$transaction`** — a duplicate delivery hits P2002 and rolls back the fold (caught → 2xx no-op). Transient errors rethrow → 500 → Stripe retries (processedAt stays null).
+- Handlers (read top-level `event.account`): `checkout.session.completed`/`async_payment_succeeded` (skip `payment_status === 'unpaid'`) → DONATION_SUCCEEDED fold (increments by the **stored** `donationAmountCents`, not nullable `amount_total`; persists `payment_intent`); `async_payment_failed`/`payment_intent.payment_failed` → DONATION_FAILED (no projection change); `charge.refunded`→REFUNDED / `charge.dispute.created`→DISPUTE_OPENED resolved by `payment_intent` → `findByPaymentIntentId`, **campaign not un-funded**; `account.updated` sets/clears `stripeChargesEnabledAt` (preserves first-enabled timestamp); `payout.*` → `PayoutEventRepository.recordIfNew` (athlete via `event.account`, Unix-seconds→Date, no projection change).
+- Tests `StripeWebhookService.test.ts` (mocked repos + `$transaction`, provider-shaped snake_case fixtures w/ top-level `account`) + `webhooks.rawMount.test.ts` (supertest: 400 on missing/invalid signature): success fold uses stored amount; unpaid not fulfilled; duplicate P2002 no-op; transient rethrow; unknown donation audit-only; refund/dispute by PI without un-funding; account.updated set/clear; payout recorded via event.account with no projection change + unknown-account skip. 13/13 pass.
+- Validation: webhook tests ✓ (13/13); app type-check ✓ (see checklist).
 
 ### Context
 
@@ -74,12 +80,12 @@
 - `account.updated` → `athletes.findByStripeAccountId(event.account)` then set/clear `stripeChargesEnabledAt`.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$backend-review` (`/backend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$backend-review` (`/backend-review`) run (self-review vs app/AGENTS.md: service owns the $transaction boundary and delegates model access to repos via tx; no secret logging; typed domain errors; raw-body mount isolated)
+- [x] `$ci` (`/ci`) run — scoped: app type-check + webhook unit + raw-mount integration tests green
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
 
 ---
 
