@@ -7,7 +7,7 @@ import type { Logger } from '../../services/infrastructure/Logger';
 
 const campaigns = { findByIdWithAthlete: vi.fn() };
 const donations = { createPending: vi.fn(), setProviderRef: vi.fn() };
-const stripe = { createDonationCheckoutSession: vi.fn() };
+const stripe = { createDonationCheckoutSession: vi.fn(), retrieveAccount: vi.fn() };
 const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
 
 function makeService(): DonationService {
@@ -61,6 +61,11 @@ function pendingDonation(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  stripe.retrieveAccount.mockResolvedValue({
+    charges_enabled: true,
+    payouts_enabled: true,
+    capabilities: { card_payments: 'active' },
+  });
   stripe.createDonationCheckoutSession.mockResolvedValue({
     id: 'cs_test_1',
     url: 'https://checkout.stripe.com/c/pay/cs_test_1',
@@ -102,6 +107,19 @@ describe('DonationService.createDonation guards', () => {
       })
     );
     await expect(makeService().createDonation(baseRequest)).rejects.toThrow('not accepting donations yet');
+    expect(stripe.retrieveAccount).not.toHaveBeenCalled();
+  });
+
+  it('forbids donating when live Stripe readiness is missing payouts', async () => {
+    campaigns.findByIdWithAthlete.mockResolvedValue(activeChargesEnabledCampaign());
+    stripe.retrieveAccount.mockResolvedValue({
+      charges_enabled: true,
+      payouts_enabled: false,
+      capabilities: { card_payments: 'active' },
+    });
+
+    await expect(makeService().createDonation(baseRequest)).rejects.toThrow('not accepting donations yet');
+    expect(stripe.createDonationCheckoutSession).not.toHaveBeenCalled();
   });
 
   it('rejects amounts below the minimum', async () => {
@@ -119,6 +137,8 @@ describe('DonationService.createDonation happy path', () => {
     donations.createPending.mockResolvedValue(pendingDonation());
 
     const result = await makeService().createDonation(baseRequest);
+
+    expect(stripe.retrieveAccount).toHaveBeenCalledWith('acct_athlete');
 
     expect(donations.createPending).toHaveBeenCalledWith({
       campaignId: 'c1',

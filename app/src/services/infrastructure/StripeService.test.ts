@@ -94,6 +94,9 @@ describe('StripeService', () => {
     expect(params).not.toHaveProperty('application_fee_amount');
     expect(params).not.toHaveProperty('transfer_data');
     expect(params).not.toHaveProperty('on_behalf_of');
+    expect(params.payment_intent_data).not.toHaveProperty('application_fee_amount');
+    expect(params.payment_intent_data).not.toHaveProperty('transfer_data');
+    expect(params.payment_intent_data).not.toHaveProperty('on_behalf_of');
     expect(options).toEqual({ stripeAccount: 'acct_athlete', idempotencyKey: 'd1' });
 
     expect(params.mode).toBe('payment');
@@ -104,6 +107,9 @@ describe('StripeService', () => {
       unit_amount: 5000,
     });
     expect(params.metadata).toEqual({ donationId: 'd1', campaignId: 'c1' });
+    expect(params.payment_intent_data).toEqual({
+      metadata: { donationId: 'd1', campaignId: 'c1' },
+    });
     expect(params.success_url).toBe(
       'http://localhost:3000/donate/thanks?session_id={CHECKOUT_SESSION_ID}&athlete=sam-runner'
     );

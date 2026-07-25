@@ -27,6 +27,7 @@ import {
 import { DatabaseInstance } from 'aws-cdk-lib/aws-rds';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ISecret, Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { EnvironmentConfig } from '../config/types';
 import { CONTAINER_PORT } from './network-stack';
@@ -57,6 +58,16 @@ const LOG_RETENTION_BY_DAYS: Record<number, RetentionDays> = {
 const DEFAULT_IMAGE_TAG = 'latest';
 const FARGATE_CAPACITY_PROVIDER = 'FARGATE';
 const FARGATE_SPOT_CAPACITY_PROVIDER = 'FARGATE_SPOT';
+const STRIPE_SECRET_KEY_SECRET_SUFFIX = 'secret-key';
+const STRIPE_CONNECT_WEBHOOK_SECRET_SUFFIX = 'connect-webhook-secret';
+const STRIPE_ACCOUNT_ONBOARDING_RETURN_URL_PARAMETER_SUFFIX =
+  'account-onboarding-return-url';
+const STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL_PARAMETER_SUFFIX =
+  'account-onboarding-refresh-url';
+const STRIPE_CHECKOUT_SUCCESS_URL_PARAMETER_SUFFIX = 'checkout-success-url';
+const STRIPE_CHECKOUT_CANCEL_URL_PARAMETER_SUFFIX = 'checkout-cancel-url';
+const DONATION_MINIMUM_CENTS_PARAMETER_SUFFIX = 'minimum-cents';
+const DEFAULT_CURRENCY_PARAMETER_SUFFIX = 'default-currency';
 
 /**
  * API compute: an ECR repo, a Graviton (arm64) Fargate service behind a public
@@ -105,6 +116,16 @@ export class ApiStack extends Stack {
         excludePunctuation: true,
       },
     });
+    const stripeSecretKey = Secret.fromSecretNameV2(
+      this,
+      'StripeSecretKey',
+      stripeSecretName(config, STRIPE_SECRET_KEY_SECRET_SUFFIX)
+    );
+    const stripeConnectWebhookSecret = Secret.fromSecretNameV2(
+      this,
+      'StripeConnectWebhookSecret',
+      stripeSecretName(config, STRIPE_CONNECT_WEBHOOK_SECRET_SUFFIX)
+    );
 
     const logGroup = new LogGroup(this, 'ApiLogGroup', {
       logGroupName: `/arc/${config.envName}/api`,
@@ -139,10 +160,42 @@ export class ApiStack extends Stack {
       CORS_ALLOWED_ORIGINS: buildCorsAllowedOrigins(config),
       SIGNUP_EMAIL_ALLOWLIST: (config.signupEmailAllowlist ?? []).join(','),
       JWT_ACCESS_TOKEN_TTL_SECONDS: String(config.jwtAccessTokenTtlSeconds),
+      STRIPE_ACCOUNT_ONBOARDING_RETURN_URL: stripeParameterValue(
+        this,
+        config,
+        STRIPE_ACCOUNT_ONBOARDING_RETURN_URL_PARAMETER_SUFFIX
+      ),
+      STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL: stripeParameterValue(
+        this,
+        config,
+        STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL_PARAMETER_SUFFIX
+      ),
+      STRIPE_CHECKOUT_SUCCESS_URL: stripeParameterValue(
+        this,
+        config,
+        STRIPE_CHECKOUT_SUCCESS_URL_PARAMETER_SUFFIX
+      ),
+      STRIPE_CHECKOUT_CANCEL_URL: stripeParameterValue(
+        this,
+        config,
+        STRIPE_CHECKOUT_CANCEL_URL_PARAMETER_SUFFIX
+      ),
+      DONATION_MINIMUM_CENTS: donationParameterValue(
+        this,
+        config,
+        DONATION_MINIMUM_CENTS_PARAMETER_SUFFIX
+      ),
+      DEFAULT_CURRENCY: donationParameterValue(
+        this,
+        config,
+        DEFAULT_CURRENCY_PARAMETER_SUFFIX
+      ),
     };
 
     const containerSecrets: Record<string, EcsSecret> = {
       JWT_SECRET: EcsSecret.fromSecretsManager(jwtSecret),
+      STRIPE_SECRET_KEY: EcsSecret.fromSecretsManager(stripeSecretKey),
+      STRIPE_CONNECT_WEBHOOK_SECRET: EcsSecret.fromSecretsManager(stripeConnectWebhookSecret),
       DATABASE_USER: EcsSecret.fromSecretsManager(dbSecret, 'username'),
       DATABASE_PASSWORD: EcsSecret.fromSecretsManager(dbSecret, 'password'),
       DATABASE_HOST: EcsSecret.fromSecretsManager(dbSecret, 'host'),
@@ -410,4 +463,30 @@ function buildCapacityProviderStrategies(
     { capacityProvider: FARGATE_CAPACITY_PROVIDER, weight: 1, base: 1 },
     { capacityProvider: FARGATE_SPOT_CAPACITY_PROVIDER, weight: 1 },
   ];
+}
+
+function stripeSecretName(config: EnvironmentConfig, suffix: string): string {
+  return `arc/${config.envName}/stripe/${suffix}`;
+}
+
+function stripeParameterValue(
+  scope: Construct,
+  config: EnvironmentConfig,
+  suffix: string
+): string {
+  return StringParameter.valueForStringParameter(
+    scope,
+    `/arc/${config.envName}/stripe/${suffix}`
+  );
+}
+
+function donationParameterValue(
+  scope: Construct,
+  config: EnvironmentConfig,
+  suffix: string
+): string {
+  return StringParameter.valueForStringParameter(
+    scope,
+    `/arc/${config.envName}/donations/${suffix}`
+  );
 }

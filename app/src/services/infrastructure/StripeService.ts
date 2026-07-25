@@ -88,6 +88,9 @@ export class StripeService {
           },
         ],
         metadata: input.metadata,
+        payment_intent_data: {
+          metadata: input.metadata,
+        },
         success_url: successUrl,
         cancel_url: requireEnv('STRIPE_CHECKOUT_CANCEL_URL'),
       },

@@ -106,6 +106,55 @@ silent refresh path. That is an accepted trade-off: the client stores the token
 in `localStorage` (XSS-exposed), and on expiry testers simply re-sign-in — `prod`
 keeps the short 3600 default until refresh-token rotation lands.
 
+### 1c. Stripe and donation runtime config
+
+Create these values before deploying or redeploying `Arc-<env>-Api`; CDK imports
+them by deterministic name and injects them into the ECS service, migration task,
+and seed task. Secrets are whole secret strings, not JSON.
+
+| Runtime env var | AWS source name |
+|---|---|
+| `STRIPE_SECRET_KEY` | Secrets Manager `arc/<env>/stripe/secret-key` |
+| `STRIPE_CONNECT_WEBHOOK_SECRET` | Secrets Manager `arc/<env>/stripe/connect-webhook-secret` |
+| `STRIPE_ACCOUNT_ONBOARDING_RETURN_URL` | SSM `/arc/<env>/stripe/account-onboarding-return-url` |
+| `STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL` | SSM `/arc/<env>/stripe/account-onboarding-refresh-url` |
+| `STRIPE_CHECKOUT_SUCCESS_URL` | SSM `/arc/<env>/stripe/checkout-success-url` |
+| `STRIPE_CHECKOUT_CANCEL_URL` | SSM `/arc/<env>/stripe/checkout-cancel-url` |
+| `DONATION_MINIMUM_CENTS` | SSM `/arc/<env>/donations/minimum-cents` |
+| `DEFAULT_CURRENCY` | SSM `/arc/<env>/donations/default-currency` |
+
+Use a Stripe test-mode key (`sk_test_...`) in the `test` environment and a
+live-mode key (`sk_live_...`) in `prod`. The webhook handler rejects events whose
+`livemode` does not match the configured key prefix.
+
+The Stripe Connect webhook endpoint is:
+
+```text
+<SiteUrl>/v1/webhooks/stripe
+```
+
+Subscribe the Connect endpoint to these events: `checkout.session.completed`,
+`checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`,
+`checkout.session.expired`, `payment_intent.payment_failed`, `charge.refunded`,
+`charge.dispute.created`, `account.updated`, `account.application.deauthorized`,
+`payout.created`, `payout.updated`, `payout.paid`, and `payout.failed`.
+
+For a deployed environment, set URL parameters from the same public site origin:
+
+| Parameter | Example value |
+|---|---|
+| `/arc/<env>/stripe/account-onboarding-return-url` | `<SiteUrl>/athletes/me/manage?stripe_return=1` |
+| `/arc/<env>/stripe/account-onboarding-refresh-url` | `<SiteUrl>/athletes/me/manage?stripe_refresh=1` |
+| `/arc/<env>/stripe/checkout-success-url` | `<SiteUrl>/donate/thanks` |
+| `/arc/<env>/stripe/checkout-cancel-url` | `<SiteUrl>` |
+| `/arc/<env>/donations/minimum-cents` | `500` |
+| `/arc/<env>/donations/default-currency` | `cad` |
+
+If an environment is still in temporary-URL mode and `SiteUrl` is not known yet,
+create valid placeholder URL parameters, deploy WebStack, update the SSM values
+from the `Arc-<env>-Web` `SiteUrl` output, then redeploy ApiStack before turning
+on Stripe onboarding or donations.
+
 ---
 
 ## 2. One-time bootstrap

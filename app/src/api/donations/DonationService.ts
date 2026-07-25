@@ -4,6 +4,7 @@ import type { CreateDonationRequest, CreateDonationResponse, Donation as Donatio
 import { CampaignRepository, type CampaignWithAthlete } from '../../repositories/CampaignRepository';
 import { DonationRepository } from '../../repositories/DonationRepository';
 import { StripeService } from '../../services/infrastructure/StripeService';
+import { getStripeAccountReadiness } from '../../services/infrastructure/stripeAccountReadiness';
 import { Logger } from '../../services/infrastructure/Logger';
 import {
   ForbiddenError,
@@ -33,7 +34,13 @@ export class DonationService {
 
     assertCampaignAcceptingDonations(campaign);
 
-    if (!campaign.athlete.stripeChargesEnabledAt || !campaign.athlete.stripeAccountId) {
+    const stripeAccountId = campaign.athlete.stripeAccountId;
+    if (!campaign.athlete.stripeChargesEnabledAt || !stripeAccountId) {
+      throw new ForbiddenError('This athlete is not accepting donations yet');
+    }
+
+    const stripeAccount = await this.stripe.retrieveAccount(stripeAccountId);
+    if (!getStripeAccountReadiness(stripeAccount).ready) {
       throw new ForbiddenError('This athlete is not accepting donations yet');
     }
 
@@ -59,7 +66,7 @@ export class DonationService {
     });
 
     const session = await this.stripe.createDonationCheckoutSession({
-      stripeAccountId: campaign.athlete.stripeAccountId,
+      stripeAccountId,
       amountCents: input.donationAmountCents,
       currency: this.defaultCurrency,
       productName: `Donation to ${campaign.athlete.fullName}`,

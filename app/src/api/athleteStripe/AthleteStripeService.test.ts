@@ -68,15 +68,25 @@ describe('AthleteStripeService.getStatus', () => {
 
     const status = await makeService().getStatus('u1');
 
-    expect(status).toEqual({ stripeConnected: false, chargesEnabled: false, recentPayouts: [] });
+    expect(status).toEqual({
+      stripeConnected: false,
+      chargesEnabled: false,
+      payoutsEnabled: false,
+      recentPayouts: [],
+    });
     expect(stripe.retrieveAccount).not.toHaveBeenCalled();
   });
 
-  it('reports enabled from the stored timestamp without hitting Stripe, mapping payouts', async () => {
+  it('reports fully ready from the live account, mapping payouts', async () => {
     athletes.findByUserId.mockResolvedValue({
       id: 'a1',
       stripeAccountId: 'acct_1',
       stripeChargesEnabledAt: new Date('2026-07-01T00:00:00.000Z'),
+    });
+    stripe.retrieveAccount.mockResolvedValue({
+      charges_enabled: true,
+      payouts_enabled: true,
+      capabilities: { card_payments: 'active' },
     });
     payoutEvents.listRecentForAthlete.mockResolvedValue([
       {
@@ -91,9 +101,10 @@ describe('AthleteStripeService.getStatus', () => {
 
     const status = await makeService().getStatus('u1');
 
-    expect(stripe.retrieveAccount).not.toHaveBeenCalled();
+    expect(stripe.retrieveAccount).toHaveBeenCalledWith('acct_1');
     expect(status.stripeConnected).toBe(true);
     expect(status.chargesEnabled).toBe(true);
+    expect(status.payoutsEnabled).toBe(true);
     expect(status.onboardingUrl).toBeUndefined();
     expect(status.recentPayouts).toEqual([
       {
@@ -115,6 +126,7 @@ describe('AthleteStripeService.getStatus', () => {
     });
     stripe.retrieveAccount.mockResolvedValue({
       charges_enabled: true,
+      payouts_enabled: true,
       capabilities: { card_payments: 'active' },
     });
 
@@ -122,7 +134,28 @@ describe('AthleteStripeService.getStatus', () => {
 
     expect(athletes.setChargesEnabled).toHaveBeenCalledWith('a1', expect.any(Date));
     expect(status.chargesEnabled).toBe(true);
+    expect(status.payoutsEnabled).toBe(true);
     expect(status.onboardingUrl).toBeUndefined();
+  });
+
+  it('keeps payments enabled but clears readiness when payouts are disabled', async () => {
+    athletes.findByUserId.mockResolvedValue({
+      id: 'a1',
+      stripeAccountId: 'acct_1',
+      stripeChargesEnabledAt: new Date('2026-07-01T00:00:00.000Z'),
+    });
+    stripe.retrieveAccount.mockResolvedValue({
+      charges_enabled: true,
+      payouts_enabled: false,
+      capabilities: { card_payments: 'active' },
+    });
+
+    const status = await makeService().getStatus('u1');
+
+    expect(status.chargesEnabled).toBe(true);
+    expect(status.payoutsEnabled).toBe(false);
+    expect(status.onboardingUrl).toBe('https://connect.stripe.com/setup/x');
+    expect(athletes.setChargesEnabled).toHaveBeenCalledWith('a1', null);
   });
 
   it('offers a resume link when the account is connected but not yet charges-enabled', async () => {
@@ -133,12 +166,14 @@ describe('AthleteStripeService.getStatus', () => {
     });
     stripe.retrieveAccount.mockResolvedValue({
       charges_enabled: false,
+      payouts_enabled: false,
       capabilities: { card_payments: 'pending' },
     });
 
     const status = await makeService().getStatus('u1');
 
     expect(status.chargesEnabled).toBe(false);
+    expect(status.payoutsEnabled).toBe(false);
     expect(status.onboardingUrl).toBe('https://connect.stripe.com/setup/x');
     expect(athletes.setChargesEnabled).not.toHaveBeenCalled();
   });

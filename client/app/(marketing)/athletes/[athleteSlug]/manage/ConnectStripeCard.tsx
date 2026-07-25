@@ -64,8 +64,9 @@ export function ConnectStripeCard() {
   }
 
   const { status } = state;
+  const setupState = getStripeSetupState(status);
 
-  if (status.chargesEnabled) {
+  if (setupState === 'ready') {
     return (
       <CardShell
         icon="check"
@@ -78,17 +79,13 @@ export function ConnectStripeCard() {
     );
   }
 
-  const connected = status.stripeConnected;
+  const copy = SETUP_STATE_COPY[setupState];
   return (
     <CardShell
       icon="info"
       tone="attention"
-      title={connected ? 'Finish setting up payouts' : 'Connect Stripe to receive donations'}
-      body={
-        connected
-          ? 'Your Stripe account needs a few more details before you can accept donations.'
-          : 'Set up a Stripe account so supporters can back you. Funds go directly to you — ARC takes no fee.'
-      }
+      title={copy.title}
+      body={copy.body}
     >
       <button
         type="button"
@@ -97,7 +94,7 @@ export function ConnectStripeCard() {
         className="label-bold inline-flex items-center gap-2 rounded-pill bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-primary-strong disabled:opacity-60"
       >
         <Icon name={redirecting ? 'history' : 'external'} className="h-4 w-4" />
-        {redirecting ? 'Redirecting…' : connected ? 'Finish setup' : 'Connect Stripe'}
+        {redirecting ? 'Redirecting…' : copy.actionLabel}
       </button>
       {actionError ? <p className="mt-3 text-sm text-error">{actionError}</p> : null}
     </CardShell>
@@ -146,6 +143,40 @@ const PAYOUT_STATUS_LABEL: Record<string, string> = {
   FAILED: 'Failed',
   CANCELED: 'Canceled',
 };
+
+type StripeSetupState =
+  | 'not_connected'
+  | 'onboarding_incomplete'
+  | 'payouts_pending'
+  | 'ready';
+
+const SETUP_STATE_COPY: Record<
+  Exclude<StripeSetupState, 'ready'>,
+  { title: string; body: string; actionLabel: string }
+> = {
+  not_connected: {
+    title: 'Connect Stripe to receive donations',
+    body: 'Set up a Stripe account so supporters can back you. Funds go directly to you — ARC takes no fee.',
+    actionLabel: 'Connect Stripe',
+  },
+  onboarding_incomplete: {
+    title: 'Finish setting up payments',
+    body: 'Your Stripe account needs a few more details before supporters can donate.',
+    actionLabel: 'Finish setup',
+  },
+  payouts_pending: {
+    title: 'Finish setting up payouts',
+    body: 'Your account can accept card payments, but Stripe still needs payout details before donations go live.',
+    actionLabel: 'Finish payouts',
+  },
+};
+
+function getStripeSetupState(status: AthleteStripeStatus): StripeSetupState {
+  if (!status.stripeConnected) return 'not_connected';
+  if (!status.chargesEnabled) return 'onboarding_incomplete';
+  if (!status.payoutsEnabled) return 'payouts_pending';
+  return 'ready';
+}
 
 function CardShell({
   icon,

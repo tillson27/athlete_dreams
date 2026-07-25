@@ -48,7 +48,7 @@ const PRICE_CLASS_BY_NAME: Record<PriceClass, CloudFrontPriceClass> = {
 };
 
 const API_PATH_PATTERN = '/v1/*';
-const STRIPE_WEBHOOK_PATH_PATTERN = '/webhooks/stripe';
+const STRIPE_WEBHOOK_PATH_PATTERN = '/v1/webhooks/stripe';
 const NOT_FOUND_PAGE = '/404.html';
 const STATIC_ROUTE_REWRITE_CODE = `
 function handler(event) {

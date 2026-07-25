@@ -118,24 +118,24 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 
 **Business alignment:** `docs/business/incorporation-and-finances.md` (from `nate`) independently locks the same model — non-custodial (backer → Stripe → athlete), zero platform fee, no MSB/FINTRAC exposure, KYC and chargebacks on Stripe + athlete. Default currency **CAD** (AthleteArc Inc., Canada-first). It adds one compliance follow-up: confirm CRA **digital-platform reporting** (OECD rules) with an accountant — the `DonationEvent` ledger already retains the data such reporting would need.
 
-**Deps:** `stripe`. **Env (`app/.env.example`):** `STRIPE_SECRET_KEY`, `STRIPE_CLIENT_ID` (OAuth), `STRIPE_OAUTH_REDIRECT_URL`, `STRIPE_CONNECT_WEBHOOK_SECRET`. *(No `PLATFORM_FEE_BPS` — the platform takes nothing.)*
+**Deps:** `stripe`. **Local env (`app/.env.example`):** `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, Stripe onboarding/Checkout URL values, `DONATION_MINIMUM_CENTS`, `DEFAULT_CURRENCY`. **Deployed env:** see `cdk/README.md` → §1c for the canonical Secrets Manager/SSM names. *(No `PLATFORM_FEE_BPS` — the platform takes nothing.)*
 
 **Δschema** (migrations — I draft, you apply)
 - `AthleteProfile`: `stripeAccountId String? @unique`, `stripeChargesEnabledAt DateTime?`.
-- `Donation` stays a per-contribution **projection**; `paymentProviderRef` (PaymentIntent id) already exists — no card data is stored, so PCI stays out of our system.
+- `Donation` stays a per-contribution **projection**; `paymentProviderRef` stores the Checkout Session id and `stripePaymentIntentId` stores the PaymentIntent after success — no card data is stored, so PCI stays out of our system.
 - `DonationEvent` (new, **append-only source of truth**): `id`, `donationId?`, `campaignId`, `athleteId`, `donationEventType`, `amountCents`, `currency`, `stripeAccountId`, `stripeObjectId`, `idempotencyKey @unique` (= Stripe event id), `occurredAt`, `rawPayload Json`.
 - enum `DonationEventType { DONATION_SUCCEEDED DONATION_FAILED DONATION_REFUNDED DISPUTE_OPENED }`.
 - `WebhookEvent` (new): `eventId @unique`, `provider`, `eventType`, `payload Json`, `processedAt` — idempotency/audit.
 
 **Δcontract** (`common/`)
 - `types/enums.ts`: add `DonationEventType`.
-- `donation.ts`: `createDonationResponseSchema = { donation, paymentClientSecret }` (the current `donationSchema` can't carry a client secret).
-- `athlete.ts`: `athleteStripeStatusSchema = { stripeConnected, chargesEnabled, onboardingUrl? }`.
+- `donation.ts`: `createDonationResponseSchema = { donation, checkoutUrl }`.
+- `athlete.ts`: `athleteStripeStatusSchema = { stripeConnected, chargesEnabled, payoutsEnabled, onboardingUrl? }`.
 
 **Infra service** — `app/src/services/infrastructure/StripeService.ts` (new, `@singleton`)
-- OAuth (connect existing **or** create new): `buildConnectUrl(state)`, `exchangeOAuthCode(code): { stripeAccountId }`, `retrieveAccount(id)`.
-- Charge: `createDirectPaymentIntent({ amountCents, stripeAccountId, metadata })` — auto-capture, `Stripe-Account` header, **no** `application_fee_amount`.
-- `constructConnectWebhookEvent(rawBody, signature)` — Connect signing secret.
+- Onboarding: `createConnectedAccount()`, `createAccountLink(accountId)`, `retrieveAccount(id)`.
+- Charge: `createDonationCheckoutSession({ amountCents, stripeAccountId, metadata })` — hosted Checkout direct charge through the `Stripe-Account` header, **no** `application_fee_amount`, `transfer_data`, or `on_behalf_of`.
+- `constructWebhookEvent(rawBody, signature)` — Connect signing secret.
 
 **Repositories**
 - `DonationEventRepository` (new): `append(event)`, `existsByIdempotencyKey(key)`.
@@ -145,17 +145,18 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 - `CampaignRepository`: `applyDonationEvent(campaignId, event, tx)` — **atomically** updates the projection (`raisedAmountCents` / `supporterCount`) and flips `FUNDED` when `raised >= target`.
 
 **API**
-- Onboarding (Standard OAuth): `GET /v1/athletes/me/stripe/connect` → `{ onboardingUrl }`; `GET /v1/stripe/oauth/callback` → store `stripeAccountId`; `GET /v1/athletes/me/stripe/status`.
-- Donate: `POST /v1/donations` (`auth.optional` — **anyone can donate**): `createDirectPaymentIntent`; `Donation(PENDING)`; return `{ donation, paymentClientSecret }`. Guards: campaign `ACTIVE`, not past `closesAt`, athlete `chargesEnabled`, min amount.
+- Onboarding: `POST /v1/athletes/me/stripe/onboarding` → `{ onboardingUrl }`; `GET /v1/athletes/me/stripe/status`.
+- Donate: `POST /v1/donations` (`auth.optional` — **anyone can donate**): `createDonationCheckoutSession`; `Donation(PENDING)`; return `{ donation, checkoutUrl }`. Guards: campaign `ACTIVE`, not past `closesAt`, athlete Stripe ready (`charges_enabled`, `payouts_enabled`, active card payments), min amount.
 - Webhook: `api/webhooks/` (new) — `POST /v1/webhooks/stripe` (Connect events, raw body).
   - **CRITICAL:** mount with `express.raw({ type: 'application/json' })` **before** the global `express.json` in `buildApp`.
   - Every handler: idempotency-gate on `WebhookEvent`, append to `DonationEvent`, then project in one `prisma.$transaction`:
-    - `payment_intent.succeeded` / `checkout.session.completed` → `DONATION_SUCCEEDED` (+ flip `FUNDED` at target).
-    - `payment_intent.payment_failed` → `DONATION_FAILED`.
-    - `charge.refunded` → `DONATION_REFUNDED`; `charge.dispute.created` → `DISPUTE_OPENED`.
-    - `account.updated` → set `stripeChargesEnabledAt`.
+    - `checkout.session.completed` / `checkout.session.async_payment_succeeded` → `DONATION_SUCCEEDED` (+ flip `FUNDED` at target).
+    - `checkout.session.async_payment_failed`, `checkout.session.expired`, `payment_intent.payment_failed` → `DONATION_FAILED`.
+    - `charge.refunded` → `DONATION_REFUNDED` (partial refunds do not set `DonationStatus.REFUNDED`); `charge.dispute.created` → `DISPUTE_OPENED`.
+    - `account.updated` → set `stripeChargesEnabledAt` only when `charges_enabled`, `payouts_enabled`, and `capabilities.card_payments='active'`.
+    - `account.application.deauthorized` → clear Stripe readiness.
 
-**Tests:** OAuth connect + charges-enabled gating; capture + live projection + `FUNDED` flip; overfunding accepted; webhook idempotency (duplicate event id); raw-body mount ordering; ledger→projection fold correctness.
+**Tests:** hosted onboarding + readiness gating; Checkout success + live projection + `FUNDED` flip; overfunding accepted; webhook idempotency (duplicate event id); raw-body mount ordering; ledger→projection fold correctness; expired sessions, partial refunds, live/test webhook mode mismatches, and deauthorization.
 
 ---
 
@@ -209,7 +210,7 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 - `cdk/lib/network-stack.ts` — VPC (2 AZ), public/private subnets, `natStrategy: 'gateway'|'instance'`, security groups, free S3 gateway endpoint.
 - `cdk/lib/data-stack.ts` — RDS PostgreSQL (`instanceSize`, `multiAz` params), gp3, automated backups + PITR, Secrets Manager master creds, private subnets.
 - `cdk/lib/api-stack.ts` — ECR repo, `ApplicationLoadBalancedFargateService` (Graviton/arm64, `desiredCount`, `useSpot`, CPU-target autoscale), ACM cert, secrets → task env, SG → RDS, CloudWatch log group + retention. Target health check `/v1/health/ready`.
-- `cdk/lib/web-stack.ts` — S3 (private + OAC) + CloudFront (`priceClass` param) + ACM (us-east-1) + Route 53 aliases. Behaviors `/v1/*` and `/webhooks/stripe` → ALB origin (one domain, no CORS, Stripe raw body preserved).
+- `cdk/lib/web-stack.ts` — S3 (private + OAC) + CloudFront (`priceClass` param) + ACM (us-east-1) + Route 53 aliases. Behaviors `/v1/*` and `/v1/webhooks/stripe` → ALB origin (one domain, no CORS, Stripe raw body preserved).
 - `cdk/lib/migration-task.ts` — ECS task definition running `prisma migrate deploy` (invoked as a discrete `RunTask` **before** new tasks take traffic — never on container boot; avoids multi-task races).
 - `cdk/config/{prod,staging}.ts` — the cost/HA parameters (see `docs/infrastructure-and-scaling.md`).
 - `cdk/README.md` — deploy runbook (all commands run by **you**).

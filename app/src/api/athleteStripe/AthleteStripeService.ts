@@ -8,14 +8,12 @@ import type {
 import { AthleteRepository } from '../../repositories/AthleteRepository';
 import { PayoutEventRepository } from '../../repositories/PayoutEventRepository';
 import { StripeService } from '../../services/infrastructure/StripeService';
+import { getStripeAccountReadiness } from '../../services/infrastructure/stripeAccountReadiness';
 import { Logger } from '../../services/infrastructure/Logger';
 import { ForbiddenError } from '../../shared/errors';
 
 const RECENT_PAYOUTS_LIMIT = 10;
 
-// Focused, auditable slice for the athlete's Stripe/non-custodial surface —
-// kept separate from AthleteService so the "no fees/transfers" invariant is easy
-// to review in one place (context §10).
 @injectable()
 export class AthleteStripeService {
   constructor(
@@ -49,31 +47,25 @@ export class AthleteStripeService {
     if (!athlete) throw new ForbiddenError('Must have an athlete profile to view Stripe status');
 
     if (!athlete.stripeAccountId) {
-      return { stripeConnected: false, chargesEnabled: false, recentPayouts: [] };
+      return {
+        stripeConnected: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        recentPayouts: [],
+      };
     }
 
-    // Prefer the webhook-maintained timestamp; if not yet enabled, reconcile once
-    // against the live account so status is self-healing even before/without a
-    // configured webhook (Stripe test mode).
-    let chargesEnabledAt = athlete.stripeChargesEnabledAt;
-    if (!chargesEnabledAt) {
-      const account = await this.stripe.retrieveAccount(athlete.stripeAccountId);
-      if (account.charges_enabled && account.capabilities?.card_payments === 'active') {
-        chargesEnabledAt = new Date();
-        await this.athletes.setChargesEnabled(athlete.id, chargesEnabledAt);
-        this.logger.info(
-          { accountId: athlete.stripeAccountId },
-          'stripe.account.charges_enabled'
-        );
-      }
-    }
+    const account = await this.stripe.retrieveAccount(athlete.stripeAccountId);
+    const readiness = getStripeAccountReadiness(account);
+    await this.reconcileStoredReadiness(
+      athlete.id,
+      athlete.stripeChargesEnabledAt,
+      readiness.ready,
+      athlete.stripeAccountId
+    );
 
-    const chargesEnabled = chargesEnabledAt !== null;
-
-    // Not-yet-enabled accounts get a fresh single-use link so the card can offer
-    // "finish setup". Enabled accounts need no link.
     let onboardingUrl: string | undefined;
-    if (!chargesEnabled) {
+    if (!readiness.ready) {
       const link = await this.stripe.createAccountLink(athlete.stripeAccountId);
       onboardingUrl = link.url;
     }
@@ -82,10 +74,28 @@ export class AthleteStripeService {
 
     return {
       stripeConnected: true,
-      chargesEnabled,
+      chargesEnabled: readiness.chargesEnabled,
+      payoutsEnabled: readiness.payoutsEnabled,
       onboardingUrl,
       recentPayouts: payouts.map(toAthletePayout),
     };
+  }
+
+  private async reconcileStoredReadiness(
+    athleteId: string,
+    storedReadyAt: Date | null,
+    stripeReady: boolean,
+    stripeAccountId: string
+  ): Promise<void> {
+    if (stripeReady && storedReadyAt === null) {
+      await this.athletes.setChargesEnabled(athleteId, new Date());
+      this.logger.info({ accountId: stripeAccountId }, 'stripe.account.ready');
+      return;
+    }
+    if (!stripeReady && storedReadyAt !== null) {
+      await this.athletes.setChargesEnabled(athleteId, null);
+      this.logger.info({ accountId: stripeAccountId }, 'stripe.account.not_ready');
+    }
   }
 }
 

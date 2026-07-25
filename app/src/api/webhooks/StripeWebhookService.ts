@@ -1,6 +1,12 @@
 import { injectable } from 'tsyringe';
 import type Stripe from 'stripe';
-import { DonationEventType, DonationStatus, PayoutStatus, Prisma } from '@prisma/client';
+import {
+  type Donation,
+  DonationEventType,
+  DonationStatus,
+  PayoutStatus,
+  Prisma,
+} from '@prisma/client';
 import { PrismaService } from '../../services/infrastructure/PrismaService';
 import { AthleteRepository } from '../../repositories/AthleteRepository';
 import { CampaignRepository } from '../../repositories/CampaignRepository';
@@ -9,6 +15,8 @@ import { DonationEventRepository } from '../../repositories/DonationEventReposit
 import { PayoutEventRepository } from '../../repositories/PayoutEventRepository';
 import { WebhookEventRepository } from '../../repositories/WebhookEventRepository';
 import { Logger } from '../../services/infrastructure/Logger';
+import { getStripeAccountReadiness } from '../../services/infrastructure/stripeAccountReadiness';
+import { BadRequestError } from '../../shared/errors';
 
 const DEFAULT_CURRENCY = process.env.DEFAULT_CURRENCY ?? 'cad';
 
@@ -31,6 +39,8 @@ export class StripeWebhookService {
   ) {}
 
   async process(event: Stripe.Event): Promise<void> {
+    this.assertLivemodeMatchesRuntime(event);
+
     await this.webhooks.upsertAudit(
       event.id,
       event.type,
@@ -46,6 +56,9 @@ export class StripeWebhookService {
       case 'checkout.session.async_payment_failed':
         await this.handleSessionFailed(event);
         break;
+      case 'checkout.session.expired':
+        await this.handleSessionExpired(event);
+        break;
       case 'payment_intent.payment_failed':
         await this.handlePaymentIntentFailed(event);
         break;
@@ -57,6 +70,9 @@ export class StripeWebhookService {
         break;
       case 'account.updated':
         await this.handleAccountUpdated(event);
+        break;
+      case 'account.application.deauthorized':
+        await this.handleAccountApplicationDeauthorized(event);
         break;
       case 'payout.paid':
       case 'payout.failed':
@@ -70,6 +86,17 @@ export class StripeWebhookService {
     }
 
     await this.webhooks.markProcessed(event.id);
+  }
+
+  private assertLivemodeMatchesRuntime(event: Stripe.Event): void {
+    const expectedLivemode = getExpectedStripeLivemode();
+    if (expectedLivemode === null || event.livemode === expectedLivemode) return;
+
+    this.logger.warn(
+      { eventId: event.id, eventLivemode: event.livemode, expectedLivemode },
+      'webhook.livemode_mismatch'
+    );
+    throw new BadRequestError('Stripe webhook mode does not match the configured Stripe key');
   }
 
   private async handleCheckoutSucceeded(event: Stripe.Event): Promise<void> {
@@ -137,25 +164,46 @@ export class StripeWebhookService {
 
   private async handleSessionFailed(event: Stripe.Event): Promise<void> {
     const session = event.data.object as Stripe.Checkout.Session;
+    await this.recordSessionFailure(event, session);
+  }
+
+  private async handleSessionExpired(event: Stripe.Event): Promise<void> {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await this.recordSessionFailure(event, session);
+  }
+
+  private async recordSessionFailure(
+    event: Stripe.Event,
+    session: Stripe.Checkout.Session
+  ): Promise<void> {
     const donationId = session.metadata?.donationId;
-    if (!donationId) {
+    if (donationId) {
+      await this.recordDonationFailure(event, donationId, session.id, session.currency);
+      return;
+    }
+
+    const donation = await this.donations.findByProviderRef(session.id);
+    if (!donation) {
       this.logger.warn({ eventId: event.id }, 'webhook.missing_donation_metadata');
       return;
     }
-    await this.recordDonationFailure(event, donationId, session.id, session.currency);
+    await this.recordDonationFailure(event, donation.id, session.id, session.currency);
   }
 
   private async handlePaymentIntentFailed(event: Stripe.Event): Promise<void> {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
-    // Pending donations have no stored PaymentIntent id (set only on success),
-    // so this is best-effort — most Checkout failures arrive as
-    // async_payment_failed with session metadata instead.
     const donation = await this.donations.findByPaymentIntentId(paymentIntent.id);
-    if (!donation) {
+    if (donation) {
+      await this.recordDonationFailure(event, donation.id, paymentIntent.id, paymentIntent.currency);
+      return;
+    }
+
+    const donationId = getMetadataDonationId(paymentIntent);
+    if (!donationId) {
       this.logger.warn({ eventId: event.id, paymentIntentId: paymentIntent.id }, 'webhook.unknown_donation');
       return;
     }
-    await this.recordDonationFailure(event, donation.id, paymentIntent.id, paymentIntent.currency);
+    await this.recordDonationFailure(event, donationId, paymentIntent.id, paymentIntent.currency);
   }
 
   private async recordDonationFailure(
@@ -167,6 +215,13 @@ export class StripeWebhookService {
     const donation = await this.donations.findById(donationId);
     if (!donation) {
       this.logger.warn({ eventId: event.id, donationId }, 'webhook.unknown_donation');
+      return;
+    }
+    if (donation.donationStatus !== DonationStatus.PENDING) {
+      this.logger.warn(
+        { eventId: event.id, donationId, donationStatus: donation.donationStatus },
+        'webhook.donation_failure_non_pending'
+      );
       return;
     }
     const campaign = await this.campaigns.findByIdWithAthlete(donation.campaignId);
@@ -199,45 +254,59 @@ export class StripeWebhookService {
 
   private async handleChargeRefunded(event: Stripe.Event): Promise<void> {
     const charge = event.data.object as Stripe.Charge;
+    const fullyRefunded =
+      charge.refunded === true ||
+      (typeof charge.amount === 'number' &&
+        typeof charge.amount_refunded === 'number' &&
+        charge.amount_refunded >= charge.amount);
     await this.recordChargeLevelEvent(
       event,
-      extractId(charge.payment_intent),
-      charge.id,
-      DonationEventType.DONATION_REFUNDED,
-      DonationStatus.REFUNDED
+      {
+        paymentIntentId: extractId(charge.payment_intent),
+        donationId: getMetadataDonationId(charge),
+        stripeObjectId: charge.id,
+        donationEventType: DonationEventType.DONATION_REFUNDED,
+        amountCents: normalizeStripeAmount(charge.amount_refunded),
+        currency: charge.currency,
+        newStatus: fullyRefunded ? DonationStatus.REFUNDED : null,
+      }
     );
   }
 
   private async handleDisputeOpened(event: Stripe.Event): Promise<void> {
     const dispute = event.data.object as Stripe.Dispute;
-    // A dispute is not a refund — record the ledger event but leave the donation
-    // status unchanged (there is no DISPUTED donation status).
     await this.recordChargeLevelEvent(
       event,
-      extractId(dispute.payment_intent),
-      dispute.id,
-      DonationEventType.DISPUTE_OPENED,
-      null
+      {
+        paymentIntentId: extractId(dispute.payment_intent),
+        donationId: getMetadataDonationId(dispute),
+        stripeObjectId: dispute.id,
+        donationEventType: DonationEventType.DISPUTE_OPENED,
+        amountCents: null,
+        currency: dispute.currency,
+        newStatus: null,
+      }
     );
   }
 
-  // Refund/dispute events carry no session id/metadata — resolve the donation by
-  // PaymentIntent (persisted during the success fold). Campaign projections are
-  // NOT decremented: a refund/dispute does not un-fund a met goal (context §11).
   private async recordChargeLevelEvent(
     event: Stripe.Event,
-    paymentIntentId: string | null,
-    stripeObjectId: string,
-    donationEventType: DonationEventType,
-    newStatus: DonationStatus | null
-  ): Promise<void> {
-    if (!paymentIntentId) {
-      this.logger.warn({ eventId: event.id }, 'webhook.missing_payment_intent');
-      return;
+    input: {
+      paymentIntentId: string | null;
+      donationId: string | undefined;
+      stripeObjectId: string;
+      donationEventType: DonationEventType;
+      amountCents: number | null;
+      currency: string | null;
+      newStatus: DonationStatus | null;
     }
-    const donation = await this.donations.findByPaymentIntentId(paymentIntentId);
+  ): Promise<void> {
+    const donation = await this.findDonationForProviderObject(
+      event,
+      input.paymentIntentId,
+      input.donationId
+    );
     if (!donation) {
-      this.logger.warn({ eventId: event.id, paymentIntentId }, 'webhook.unknown_donation');
       return;
     }
     const campaign = await this.campaigns.findByIdWithAthlete(donation.campaignId);
@@ -248,17 +317,17 @@ export class StripeWebhookService {
           donationId: donation.id,
           campaignId: donation.campaignId,
           athleteId: campaign?.athlete.id ?? donation.campaignId,
-          donationEventType,
-          amountCents: donation.donationAmountCents,
-          currency: DEFAULT_CURRENCY,
+          donationEventType: input.donationEventType,
+          amountCents: input.amountCents ?? donation.donationAmountCents,
+          currency: input.currency ?? DEFAULT_CURRENCY,
           stripeAccountId,
-          stripeObjectId,
+          stripeObjectId: input.stripeObjectId,
           idempotencyKey: event.id,
           occurredAt: new Date(event.created * 1000),
           rawPayload: event.data.object as unknown as Prisma.InputJsonValue,
         });
-        if (newStatus) {
-          await this.donations.setStatus(donation.id, newStatus, tx);
+        if (input.newStatus) {
+          await this.donations.setStatus(donation.id, input.newStatus, tx);
         }
       });
     } catch (error) {
@@ -274,14 +343,49 @@ export class StripeWebhookService {
       this.logger.warn({ eventId: event.id, accountId: account.id }, 'webhook.unknown_account');
       return;
     }
-    const enabled =
-      account.charges_enabled === true && account.capabilities?.card_payments === 'active';
-    if (enabled && athlete.stripeChargesEnabledAt === null) {
+    const readiness = getStripeAccountReadiness(account);
+    if (readiness.ready && athlete.stripeChargesEnabledAt === null) {
       await this.athletes.setChargesEnabled(athlete.id, new Date());
-      this.logger.info({ accountId: account.id }, 'stripe.account.charges_enabled');
-    } else if (!enabled && athlete.stripeChargesEnabledAt !== null) {
+      this.logger.info({ accountId: account.id }, 'stripe.account.ready');
+    } else if (!readiness.ready && athlete.stripeChargesEnabledAt !== null) {
       await this.athletes.setChargesEnabled(athlete.id, null);
     }
+  }
+
+  private async handleAccountApplicationDeauthorized(event: Stripe.Event): Promise<void> {
+    const accountId = event.account;
+    if (!accountId) {
+      this.logger.warn({ eventId: event.id }, 'webhook.deauthorized_missing_account');
+      return;
+    }
+
+    const athlete = await this.athletes.findByStripeAccountId(accountId);
+    if (!athlete) {
+      this.logger.warn({ eventId: event.id, accountId }, 'webhook.unknown_account');
+      return;
+    }
+
+    await this.athletes.setChargesEnabled(athlete.id, null);
+    this.logger.info({ accountId }, 'stripe.account.deauthorized');
+  }
+
+  private async findDonationForProviderObject(
+    event: Stripe.Event,
+    paymentIntentId: string | null,
+    donationId: string | undefined
+  ): Promise<Donation | null> {
+    if (paymentIntentId) {
+      const donation = await this.donations.findByPaymentIntentId(paymentIntentId);
+      if (donation) return donation;
+    }
+
+    if (donationId) {
+      const donation = await this.donations.findById(donationId);
+      if (donation) return donation;
+    }
+
+    this.logger.warn({ eventId: event.id, paymentIntentId, donationId }, 'webhook.unknown_donation');
+    return null;
   }
 
   private async handlePayout(event: Stripe.Event): Promise<void> {
@@ -321,10 +425,26 @@ export class StripeWebhookService {
   }
 }
 
-// Stripe expandable fields are `string | { id } | null`.
 function extractId(value: string | { id: string } | null | undefined): string | null {
   if (!value) return null;
   return typeof value === 'string' ? value : value.id;
+}
+
+function getExpectedStripeLivemode(): boolean | null {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) return null;
+  if (secretKey.startsWith('sk_live_') || secretKey.startsWith('rk_live_')) return true;
+  if (secretKey.startsWith('sk_test_') || secretKey.startsWith('rk_test_')) return false;
+  return null;
+}
+
+function getMetadataDonationId(value: { metadata?: Stripe.Metadata | null }): string | undefined {
+  const donationId = value.metadata?.donationId;
+  return donationId && donationId.length > 0 ? donationId : undefined;
+}
+
+function normalizeStripeAmount(amount: number | null | undefined): number | null {
+  return typeof amount === 'number' && amount > 0 ? amount : null;
 }
 
 function mapPayoutStatus(status: string): PayoutStatus {

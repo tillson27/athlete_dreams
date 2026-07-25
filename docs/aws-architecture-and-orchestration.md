@@ -33,7 +33,7 @@ Sizing for each lives in `docs/infrastructure-and-scaling.md` → *Target archit
 - **Alternatives / later:** **Amplify Hosting** or **OpenNext** for Next SSR/ISR — deferred until athlete-profile **SEO** justifies it (a clean swap; the client stays behind the same CloudFront domain).
 
 ### Front door / TLS — **CloudFront + ACM + Route 53 (single custom domain)**
-- **Why:** one domain fronts everything — default → S3 (client), `/v1/*` and `/webhooks/stripe` → ALB. Kills CORS, gives Stripe a **stable webhook host**, enables edge caching of public GETs later, and ACM certs are free. CloudFront's ACM cert must be in **`us-east-1`** — which is our region anyway.
+- **Why:** one domain fronts everything — default → S3 (client), `/v1/*` and `/v1/webhooks/stripe` → ALB. Kills CORS, gives Stripe a **stable webhook host**, enables edge caching of public GETs later, and ACM certs are free. CloudFront's ACM cert must be in **`us-east-1`** — which is our region anyway.
 - **Alternative:** a separate `api.` subdomain straight to the ALB (simpler CloudFront, but reintroduces CORS and a second cert). Single-domain path-routing is cleaner.
 
 ### Secrets / config — **Secrets Manager + SSM Parameter Store**
@@ -57,7 +57,7 @@ Sizing for each lives in `docs/infrastructure-and-scaling.md` → *Target archit
                               │
                     CloudFront (ACM us-east-1, PriceClass_100)
                      ┌────────┴─────────────────────────┐
-        default behavior                        /v1/*  ·  /webhooks/stripe
+        default behavior                        /v1/*  ·  /v1/webhooks/stripe
              │                                          │
        S3 (private, OAC)                          ALB (public subnets, 2 AZ)
        [static client]                                 │
@@ -73,7 +73,7 @@ Sizing for each lives in `docs/infrastructure-and-scaling.md` → *Target archit
 
 ### Request flows
 - **Public reads** (directory/profile/feed): static assets served from CloudFront edge; API calls → CloudFront `/v1/*` → ALB → Fargate → RDS. (Edge-cacheable at Stage 2.)
-- **Donation** *(Phase 2, once Stripe access lands)*: browser → `/v1/donations` → Fargate creates a direct PaymentIntent on the athlete's connected account (egress via NAT to Stripe) → returns client secret. Stripe → `/webhooks/stripe` (CloudFront → ALB → Fargate, **raw body**) → idempotent write to the `DonationEvent` ledger in RDS.
+- **Donation** *(Phase 2, once Stripe access lands)*: browser → `/v1/donations` → Fargate creates a direct Checkout Session on the athlete's connected account (egress via NAT to Stripe) → returns the hosted Checkout URL. Stripe → `/v1/webhooks/stripe` (CloudFront → ALB → Fargate, **raw body**) → idempotent write to the `DonationEvent` ledger in RDS.
 - **Health:** ALB → `/v1/health/ready` → Fargate → `SELECT 1` on RDS.
 
 ---
@@ -86,7 +86,7 @@ Stacks are deployed in dependency order; later stacks consume earlier outputs (V
 NetworkStack   VPC · subnets · SGs · NAT · S3 gateway endpoint
      └─► DataStack    RDS (Multi-AZ toggle) · Secrets Manager master creds
             └─► ApiStack   ECR · Fargate+ALB · secrets→env · SG→RDS · MigrationTask · logs
-                   └─► WebStack   S3(OAC) · CloudFront · ACM · Route 53 · /v1/*,/webhooks/stripe → ALB
+                   └─► WebStack   S3(OAC) · CloudFront · ACM · Route 53 · /v1/*,/v1/webhooks/stripe → ALB
      (SchedulerStack — deferred with all-or-nothing pledges)
 ```
 

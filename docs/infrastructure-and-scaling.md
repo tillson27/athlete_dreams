@@ -11,7 +11,7 @@ AWS hosting design for the FAD/ARC API + client, the cost/reliability tradeoffs 
 | API compute | **ECS Fargate + ALB** | 2 tasks × 0.25 vCPU / 0.5 GB, Graviton (arm64), CPU-target autoscale, 2 AZs |
 | Database | **RDS for PostgreSQL** | `db.t4g.small` (Graviton), gp3, private subnets, automated backups + PITR |
 | Client | **S3 + CloudFront (OAC)** | static export today; SSR/ISR later (Amplify or OpenNext) |
-| Front door / TLS | **CloudFront + ACM + Route 53** | one domain; `/v1/*` + `/webhooks/stripe` → ALB origin |
+| Front door / TLS | **CloudFront + ACM + Route 53** | one domain; `/v1/*` + `/v1/webhooks/stripe` → ALB origin |
 | Secrets / config | **Secrets Manager** (DB, Stripe, JWT) + **SSM Parameter Store** (non-secret) | injected into task def by CDK |
 | Email | **Resend now; SES optional later** | verification and password reset now; team invites/receipts later |
 | Registry / logs | **ECR + CloudWatch** | arm64 image; pino → CloudWatch, capped retention |
@@ -23,7 +23,7 @@ Why containers over Lambda: the API uses the **argon2** native binary and must r
 Provisioning is **your** step: per the repo's STRICT rules I author all IaC and pipelines but never run `cdk bootstrap`, `cdk deploy`, or migration applies. None of the app code (Phases 0–4) or CDK authoring needs AWS access — it's a gate only at deploy time.
 
 - **Region:** `us-east-1` (also required for the CloudFront ACM certificate).
-- **Custom domain (optional per environment):** **`athletearc.ca`** (hardcoded across the client — sitemap, metadata, profile links) is the target domain, but DNS currently lives at GoDaddy with no AWS configuration, so the **test environment defaults to temporary-URL mode** — the CloudFront default domain (`https://<id>.cloudfront.net`), no Route 53 zone or ACM cert needed, single-origin `/v1/*` routing intact. Enabling the custom domain later (Route 53 zone + NS delegation from GoDaddy, then restore the `domain` block in `cdk/config/`) is documented in `cdk/README.md` → §1a. When enabled: one domain fronts everything — apex/`www` → CloudFront (client); `/v1/*` and `/webhooks/stripe` → ALB; test on `test.athletearc.ca`; **ACM certs in `us-east-1`**. The stable host also benefits auth cookies and the (later) Stripe webhook.
+- **Custom domain (optional per environment):** **`athletearc.ca`** (hardcoded across the client — sitemap, metadata, profile links) is the target domain, but DNS currently lives at GoDaddy with no AWS configuration, so the **test environment defaults to temporary-URL mode** — the CloudFront default domain (`https://<id>.cloudfront.net`), no Route 53 zone or ACM cert needed, single-origin `/v1/*` routing intact. Enabling the custom domain later (Route 53 zone + NS delegation from GoDaddy, then restore the `domain` block in `cdk/config/`) is documented in `cdk/README.md` → §1a. When enabled: one domain fronts everything — apex/`www` → CloudFront (client); `/v1/*` and `/v1/webhooks/stripe` → ALB; test on `test.athletearc.ca`; **ACM certs in `us-east-1`**. The stable host also benefits auth cookies and the (later) Stripe webhook.
 
 **AWS access needed at deploy time**
 
@@ -39,7 +39,7 @@ Provisioning is **your** step: per the repo's STRICT rules I author all IaC and 
 
 | Item | Gates | Note |
 |---|---|---|
-| **Stripe access** — platform account, Connect `client_id`, secret key, Connect webhook secret | Phase 2 direct-donation money loop **going live** | Build and test against Stripe **test mode** / mocks now; real credentials + Connect app registration are later work. Phases 0, 1, 3 and all infra are unaffected. |
+| **Stripe access** — platform account, secret key, Connect webhook secret, SSM URL/config parameters | Phase 2 direct-donation money loop **going live** | Runtime AWS names and the `/v1/webhooks/stripe` endpoint are in `cdk/README.md` → §1c. Build and test against Stripe **test mode** / mocks now; real credentials + Connect app registration are later work. Phases 0, 1, 3 and all infra are unaffected. |
 | **Production sender/domain** — verify the live sender in Resend (or migrate to SES later) | Real athlete email delivery | Local/API implementation works with env-provided Resend credentials; production sender verification remains an operational gate. |
 
 **Not blocked now:** authoring and local dev of Phases 0–4 and the `cdk/` app need zero AWS or Stripe access (a local Postgres covers the DB). AWS access gates only `bootstrap → deploy → migrate deploy`; Stripe and transactional-email sender verification gate only their own phases going live.

@@ -277,6 +277,7 @@ export type AthletePayout = z.infer<typeof athletePayoutSchema>;
 export const athleteStripeStatusSchema = z.object({
   stripeConnected: z.boolean(),
   chargesEnabled: z.boolean(),
+  payoutsEnabled: z.boolean(),
   onboardingUrl: z.string().url().optional(),
   recentPayouts: z.array(athletePayoutSchema),
 });
