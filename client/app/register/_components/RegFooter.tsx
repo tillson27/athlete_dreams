@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LogoLockup } from '@/components/site/Logo';
 
 const links = [
   { label: 'Support', href: '/support' },
@@ -11,7 +12,7 @@ export function RegFooter() {
     <footer className="mt-auto border-t border-outline-variant bg-surface-container-low">
       <div className="mx-auto flex w-full max-w-[var(--spacing-container-max)] flex-col items-center justify-between gap-6 px-5 py-8 md:flex-row md:px-16">
         <div className="flex flex-col gap-1">
-          <span className="font-display text-2xl font-bold text-on-surface">Arc</span>
+          <LogoLockup size="sm" variant="full" />
           <p className="text-xs text-on-surface-variant">
             © {new Date().getFullYear()} ARC. A home for your athletic story.
           </p>

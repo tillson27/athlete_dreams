@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Icon } from '@/components/ui/Icon';
+import { LogoLockup } from '@/components/site/Logo';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 const REG_STEPS = [
@@ -42,9 +43,7 @@ export function RegHeader({
               <Icon name="arrow-back" className="h-6 w-6" />
             </Link>
           ) : null}
-          <span className="font-display text-2xl font-extrabold tracking-tight text-primary">
-            Arc
-          </span>
+          <LogoLockup size="sm" variant="full" />
         </div>
 
         {showHelp ? (

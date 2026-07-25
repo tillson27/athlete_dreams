@@ -1,38 +1,66 @@
 import Link from 'next/link';
+import {
+  BRAND_ARC_COLOR,
+  BRAND_INK_COLOR,
+  BRAND_MARK_ARC_PATH,
+  BRAND_MARK_LETTER_PATH,
+  BRAND_MARK_VIEW_BOX,
+  BRAND_PAPER_COLOR,
+} from '@/lib/brand';
 
-function ArcMark({ className, tone }: { className?: string; tone: 'dark' | 'light' }) {
-  const shellFill = tone === 'dark' ? 'var(--color-inverse-surface)' : 'rgba(255, 255, 255, 0.96)';
-  const strideFill = tone === 'dark' ? 'var(--color-surface-bright)' : 'var(--color-inverse-surface)';
+type LogoSize = 'sm' | 'md' | 'lg';
+type LogoVariant = 'short' | 'full';
+type LogoTone = 'dark' | 'light';
 
+const markSizeClassName: Record<LogoSize, string> = {
+  sm: 'h-6 w-auto',
+  md: 'h-8 w-auto',
+  lg: 'h-10 w-auto',
+};
+
+const wordmarkSizeClassName: Record<LogoSize, string> = {
+  sm: 'text-lg',
+  md: 'text-xl',
+  lg: 'text-2xl',
+};
+
+function ArcMark({ className, tone }: { className?: string; tone: LogoTone }) {
   return (
-    <svg viewBox="0 0 40 40" aria-hidden="true" className={className}>
-      <rect x="2" y="2" width="36" height="36" rx="8" fill={shellFill} />
+    <svg viewBox={BRAND_MARK_VIEW_BOX} aria-hidden="true" className={className}>
       <path
-        d="M7 25.5C10.5 14.4 20.2 7.8 33.5 7.5"
-        fill="none"
-        stroke="var(--color-primary-container)"
-        strokeLinecap="round"
-        strokeWidth="4.2"
+        d={BRAND_MARK_LETTER_PATH}
+        fill={tone === 'dark' ? BRAND_INK_COLOR : BRAND_PAPER_COLOR}
       />
-      <path
-        d="M11.5 30.5 18.9 14.2c.5-1.2 2.1-1.2 2.7 0l7.2 16.3h-5.1l-3.5-8.2-3.6 8.2h-5.1Z"
-        fill={strideFill}
-      />
-      <path
-        d="M16.4 24.4c3.9-1.5 7.6-1.2 11 .8"
-        fill="none"
-        stroke="var(--color-primary)"
-        strokeLinecap="round"
-        strokeWidth="2.5"
-      />
-      <path
-        d="M26.6 13.5 32 18"
-        fill="none"
-        stroke="var(--color-primary-container)"
-        strokeLinecap="round"
-        strokeWidth="3"
-      />
+      <path d={BRAND_MARK_ARC_PATH} fill={BRAND_ARC_COLOR} />
     </svg>
+  );
+}
+
+/**
+ * Mark plus wordmark with no link wrapper. Use inside transactional flows
+ * (registration) where navigating away mid-task is not wanted.
+ */
+export function LogoLockup({
+  size = 'md',
+  variant = 'short',
+  tone = 'dark',
+}: {
+  size?: LogoSize;
+  variant?: LogoVariant;
+  tone?: LogoTone;
+}) {
+  return (
+    <span className="flex items-center gap-2.5 select-none">
+      <ArcMark tone={tone} className={`${markSizeClassName[size]} shrink-0`} />
+      <span
+        className={`whitespace-nowrap font-display font-extrabold leading-none tracking-[0.01em] ${wordmarkSizeClassName[size]} ${
+          tone === 'dark' ? 'text-on-surface' : 'text-white'
+        }`}
+      >
+        {variant === 'full' ? <span className="hidden sm:inline">ATHLETE </span> : null}
+        ARC
+      </span>
+    </span>
   );
 }
 
@@ -41,27 +69,13 @@ export function Logo({
   variant = 'short',
   tone = 'dark',
 }: {
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'short' | 'full';
-  tone?: 'dark' | 'light';
+  size?: LogoSize;
+  variant?: LogoVariant;
+  tone?: LogoTone;
 }) {
-  const markSize: Record<string, string> = { sm: 'h-7 w-7', md: 'h-8 w-8', lg: 'h-10 w-10' };
-  const textSize: Record<string, string> = { sm: 'text-lg', md: 'text-xl', lg: 'text-2xl' };
-  const textTone = tone === 'dark' ? 'text-on-surface' : 'text-white';
-
   return (
-    <Link
-      href="/"
-      aria-label="ARC home"
-      className="flex min-h-11 items-center gap-2.5 select-none"
-    >
-      <ArcMark tone={tone} className={`${markSize[size]} shrink-0`} />
-      <span
-        className={`whitespace-nowrap font-display font-extrabold leading-none ${textSize[size]} ${textTone}`}
-      >
-        ARC
-        {variant === 'full' ? <span className="hidden sm:inline"> Network</span> : null}
-      </span>
+    <Link href="/" aria-label="Athlete Arc home" className="flex min-h-11 items-center">
+      <LogoLockup size={size} variant={variant} tone={tone} />
     </Link>
   );
 }
