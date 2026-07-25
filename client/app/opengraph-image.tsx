@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import {
   BRAND_ARC_COLOR,
@@ -17,6 +19,13 @@ export const contentType = 'image/png';
 
 const markHeight = 79;
 
+// Satori cannot read the woff2 files `next/font` produces, so the display and body
+// faces are loaded here as TrueType. Weights must match those used below — Satori
+// only has the weights it is handed.
+function loadBrandFont(fileName: string) {
+  return readFile(join(process.cwd(), 'assets/fonts', fileName));
+}
+
 function OgArcMark() {
   return (
     <svg
@@ -30,8 +39,13 @@ function OgArcMark() {
   );
 }
 
-// Brand-colored share card generated at build time — no binary asset to maintain.
-export default function OpenGraphImage() {
+// Brand-colored share card generated at build time.
+export default async function OpenGraphImage() {
+  const [montserratExtraBold, interRegular] = await Promise.all([
+    loadBrandFont('Montserrat-ExtraBold.ttf'),
+    loadBrandFont('Inter-Regular.ttf'),
+  ]);
+
   return new ImageResponse(
     (
       <div
@@ -44,7 +58,7 @@ export default function OpenGraphImage() {
           padding: 72,
           backgroundColor: '#181c1e',
           color: '#ffffff',
-          fontFamily: 'sans-serif',
+          fontFamily: 'Inter',
         }}
       >
         <div
@@ -55,20 +69,38 @@ export default function OpenGraphImage() {
           }}
         >
           <OgArcMark />
-          <div style={{ fontSize: 54, fontWeight: 800, letterSpacing: 0 }}>ATHLETE ARC</div>
+          <div
+            style={{
+              fontFamily: 'Montserrat',
+              fontWeight: 800,
+              fontSize: 54,
+              letterSpacing: 0.5,
+            }}
+          >
+            ATHLETE ARC
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: 0 }}>
+          <div
+            style={{
+              fontFamily: 'Montserrat',
+              fontSize: 72,
+              fontWeight: 800,
+              lineHeight: 1.05,
+              letterSpacing: -0.8,
+            }}
+          >
             Your athletic journey.
           </div>
           <div
             style={{
               display: 'flex',
-              fontSize: 76,
+              fontFamily: 'Montserrat',
+              fontSize: 72,
               fontWeight: 800,
               lineHeight: 1.05,
-              letterSpacing: 0,
+              letterSpacing: -0.8,
             }}
           >
             <span style={{ color: '#ff5f1f' }}>Your Arc.</span>
@@ -81,6 +113,12 @@ export default function OpenGraphImage() {
         </div>
       </div>
     ),
-    size,
+    {
+      ...size,
+      fonts: [
+        { name: 'Montserrat', data: montserratExtraBold, weight: 800, style: 'normal' },
+        { name: 'Inter', data: interRegular, weight: 400, style: 'normal' },
+      ],
+    },
   );
 }
