@@ -12,22 +12,41 @@ import {
 import { AuthService } from './AuthService';
 import { ResponseHandler } from '../../shared/ResponseHandler';
 import { parseRequestBody } from '../../shared/requestParsers';
+import { PostHogService } from '../../services/infrastructure/PostHogService';
 
 const AUTH_ACTION_RESPONSE = { ok: true } satisfies AuthActionResponse;
 
 @injectable()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly posthog: PostHogService
+  ) {}
 
   signUp = async (req: Request, res: Response): Promise<void> => {
     const body = parseRequestBody(signUpRequestSchema, req);
     const session = await this.authService.signUp(body);
+    this.posthog.identify({
+      distinctId: session.user.userId,
+      properties: {
+        $set: { display_name: session.user.displayName, email: session.user.email },
+        $set_once: { created_at: session.user.createdAt },
+      },
+    });
+    this.posthog.capture({ distinctId: session.user.userId, event: 'user_signed_up' });
     ResponseHandler.success(res, 201, session);
   };
 
   signIn = async (req: Request, res: Response): Promise<void> => {
     const body = parseRequestBody(signInRequestSchema, req);
     const session = await this.authService.signIn(body);
+    this.posthog.identify({
+      distinctId: session.user.userId,
+      properties: {
+        $set: { display_name: session.user.displayName, email: session.user.email },
+      },
+    });
+    this.posthog.capture({ distinctId: session.user.userId, event: 'user_signed_in' });
     ResponseHandler.success(res, 200, session);
   };
 

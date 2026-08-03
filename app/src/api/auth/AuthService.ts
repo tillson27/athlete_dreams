@@ -20,6 +20,7 @@ import { SignupAllowlistService } from '../../services/infrastructure/SignupAllo
 import { TokenHasher } from '../../services/infrastructure/TokenHasher';
 import { EmailService } from '../../services/infrastructure/EmailService';
 import { Logger } from '../../services/infrastructure/Logger';
+import { PostHogService } from '../../services/infrastructure/PostHogService';
 import { BadRequestError, ConflictError, ForbiddenError, UnauthorizedError } from '../../shared/errors';
 import type { User } from '@prisma/client';
 
@@ -40,7 +41,8 @@ export class AuthService {
     private readonly signupAllowlistService: SignupAllowlistService,
     private readonly tokenHasher: TokenHasher,
     private readonly emailService: EmailService,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly posthog: PostHogService
   ) {}
 
   async signUp(input: SignUpRequest): Promise<AuthSession> {
@@ -133,6 +135,7 @@ export class AuthService {
       { userId: passwordResetToken.userId, tokenId: passwordResetToken.id },
       'auth.password_reset.completed'
     );
+    this.posthog.capture({ distinctId: passwordResetToken.userId, event: 'password_reset_completed' });
   }
 
   async verifyEmail(input: VerifyEmailRequest): Promise<void> {
@@ -156,6 +159,7 @@ export class AuthService {
       { userId: emailVerificationToken.userId, tokenId: emailVerificationToken.id },
       'auth.verification.completed'
     );
+    this.posthog.capture({ distinctId: emailVerificationToken.userId, event: 'email_verified' });
   }
 
   async resendVerification(input: ResendVerificationRequest): Promise<void> {

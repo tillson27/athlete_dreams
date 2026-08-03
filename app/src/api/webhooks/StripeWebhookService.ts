@@ -15,6 +15,7 @@ import { DonationEventRepository } from '../../repositories/DonationEventReposit
 import { PayoutEventRepository } from '../../repositories/PayoutEventRepository';
 import { WebhookEventRepository } from '../../repositories/WebhookEventRepository';
 import { Logger } from '../../services/infrastructure/Logger';
+import { PostHogService } from '../../services/infrastructure/PostHogService';
 import { getStripeAccountReadiness } from '../../services/infrastructure/stripeAccountReadiness';
 import { BadRequestError } from '../../shared/errors';
 
@@ -35,7 +36,8 @@ export class StripeWebhookService {
     private readonly ledger: DonationEventRepository,
     private readonly payoutEvents: PayoutEventRepository,
     private readonly webhooks: WebhookEventRepository,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly posthog: PostHogService
   ) {}
 
   async process(event: Stripe.Event): Promise<void> {
@@ -160,6 +162,16 @@ export class StripeWebhookService {
     }
 
     this.logger.info({ donationId: donation.id }, 'donation.succeeded');
+    this.posthog.capture({
+      distinctId: `donation:${donation.id}`,
+      event: 'donation_succeeded',
+      properties: {
+        donation_id: donation.id,
+        campaign_id: donation.campaignId,
+        amount_cents: donation.donationAmountCents,
+        stripe_event_id: event.id,
+      },
+    });
   }
 
   private async handleSessionFailed(event: Stripe.Event): Promise<void> {
@@ -250,6 +262,17 @@ export class StripeWebhookService {
       throw error;
     }
     this.logger.info({ donationId: donation.id }, 'donation.failed');
+    this.posthog.capture({
+      distinctId: `donation:${donation.id}`,
+      event: 'donation_failed',
+      properties: {
+        donation_id: donation.id,
+        campaign_id: donation.campaignId,
+        amount_cents: donation.donationAmountCents,
+        stripe_event_id: event.id,
+        stripe_event_type: event.type,
+      },
+    });
   }
 
   private async handleChargeRefunded(event: Stripe.Event): Promise<void> {
@@ -333,6 +356,27 @@ export class StripeWebhookService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return;
       throw error;
+    }
+
+    // Capture a PostHog event for charge-level outcomes (refunds and disputes).
+    const posthogEvent =
+      input.donationEventType === DonationEventType.DONATION_REFUNDED
+        ? 'donation_refunded'
+        : input.donationEventType === DonationEventType.DISPUTE_OPENED
+          ? 'dispute_opened'
+          : null;
+    if (posthogEvent) {
+      this.posthog.capture({
+        distinctId: `donation:${donation.id}`,
+        event: posthogEvent,
+        properties: {
+          donation_id: donation.id,
+          campaign_id: donation.campaignId,
+          amount_cents: input.amountCents ?? donation.donationAmountCents,
+          stripe_event_id: event.id,
+          stripe_event_type: event.type,
+        },
+      });
     }
   }
 

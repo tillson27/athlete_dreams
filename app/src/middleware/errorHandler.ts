@@ -1,6 +1,7 @@
 import type { ErrorRequestHandler } from 'express';
 import { DomainError } from '../shared/errors';
 import { Logger } from '../services/infrastructure/Logger';
+import { PostHogService } from '../services/infrastructure/PostHogService';
 import { container } from 'tsyringe';
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
@@ -21,6 +22,8 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     return;
   }
 
+  const posthog = container.resolve(PostHogService);
+  posthog.captureException(err, req.authenticatedUserId);
   logger.error({ err, path: req.path, method: req.method }, 'Unhandled error');
   res.status(500).json({
     error: {

@@ -5,12 +5,14 @@ import { container } from 'tsyringe';
 import { buildApp } from './app';
 import { Logger } from './services/infrastructure/Logger';
 import { PrismaService } from './services/infrastructure/PrismaService';
+import { PostHogService } from './services/infrastructure/PostHogService';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function start(): Promise<void> {
   const logger = container.resolve(Logger);
   const prismaService = container.resolve(PrismaService);
+  const posthogService = container.resolve(PostHogService);
   const port = Number(process.env.PORT ?? 4000);
 
   await prismaService.$connect();
@@ -20,10 +22,15 @@ async function start(): Promise<void> {
     logger.info({ port }, 'FAD API listening');
   });
 
-  registerShutdownHandlers(server, prismaService, logger);
+  registerShutdownHandlers(server, prismaService, posthogService, logger);
 }
 
-function registerShutdownHandlers(server: Server, prismaService: PrismaService, logger: Logger): void {
+function registerShutdownHandlers(
+  server: Server,
+  prismaService: PrismaService,
+  posthogService: PostHogService,
+  logger: Logger
+): void {
   let shuttingDown = false;
 
   const shutdown = (signal: NodeJS.Signals): void => {
@@ -41,6 +48,11 @@ function registerShutdownHandlers(server: Server, prismaService: PrismaService, 
 
     server.close((closeError) => {
       void (async () => {
+        try {
+          await posthogService.shutdown();
+        } catch (phError) {
+          logger.error({ err: phError }, 'Error shutting down PostHog during shutdown');
+        }
         try {
           await prismaService.$disconnect();
         } catch (disconnectError) {

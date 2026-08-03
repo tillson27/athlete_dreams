@@ -35,7 +35,8 @@ function makeService(): StripeWebhookService {
     ledger as unknown as DonationEventRepository,
     payoutEvents as unknown as PayoutEventRepository,
     webhooks as unknown as WebhookEventRepository,
-    logger as unknown as Logger
+    logger as unknown as Logger,
+    { capture: vi.fn(), identify: vi.fn(), captureException: vi.fn(), flush: vi.fn(), shutdown: vi.fn() } as unknown as import('../../services/infrastructure/PostHogService').PostHogService
   );
 }
 

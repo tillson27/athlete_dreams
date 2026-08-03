@@ -20,12 +20,16 @@ import {
   parseRequestQuery,
 } from '../../shared/requestParsers';
 import { UnauthorizedError } from '../../shared/errors';
+import { PostHogService } from '../../services/infrastructure/PostHogService';
 
 const athleteSlugParamSchema = z.object({ athleteSlug: slugSchema });
 
 @injectable()
 export class AthleteController {
-  constructor(private readonly athleteService: AthleteService) {}
+  constructor(
+    private readonly athleteService: AthleteService,
+    private readonly posthog: PostHogService
+  ) {}
 
   listDirectory = async (req: Request, res: Response): Promise<void> => {
     const query = parseRequestQuery(athleteDirectoryQuerySchema, req);
@@ -52,6 +56,14 @@ export class AthleteController {
     if (!req.authenticatedUserId) throw new UnauthorizedError();
     const body = parseRequestBody(createAthleteProfileRequestSchema, req);
     const profile = await this.athleteService.createProfileForUser(req.authenticatedUserId, body);
+    this.posthog.capture({
+      distinctId: req.authenticatedUserId,
+      event: 'athlete_profile_created',
+      properties: {
+        athlete_slug: profile.athleteSlug,
+        primary_sport: profile.primarySport,
+      },
+    });
     ResponseHandler.success(res, 201, profile);
   };
 
@@ -65,6 +77,10 @@ export class AthleteController {
   publishMyProfile = async (req: Request, res: Response): Promise<void> => {
     if (!req.authenticatedUserId) throw new UnauthorizedError();
     const result = await this.athleteService.publishMyProfile(req.authenticatedUserId);
+    this.posthog.capture({
+      distinctId: req.authenticatedUserId,
+      event: 'athlete_profile_published',
+    });
     ResponseHandler.success(res, 200, result);
   };
 

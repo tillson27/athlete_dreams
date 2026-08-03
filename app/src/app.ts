@@ -17,6 +17,7 @@ import { StripeWebhookRouterFactory } from './api/webhooks/StripeWebhookRouterFa
 import { AthleteFollowRouterFactory } from './api/follows/AthleteFollowRouterFactory';
 import { MyFollowsRouterFactory } from './api/follows/MyFollowsRouterFactory';
 import { CommunityRouterFactory } from './api/community/CommunityRouterFactory';
+import { PostHogService } from './services/infrastructure/PostHogService';
 
 function parseAllowedOrigins(): string[] {
   const raw = process.env.CORS_ALLOWED_ORIGINS ?? '';
@@ -42,6 +43,11 @@ export function buildApp(): express.Express {
   // JSON parser would consume the stream.
   const stripeWebhookRouter = container.resolve(StripeWebhookRouterFactory);
   app.use(stripeWebhookRouter.basePath, stripeWebhookRouter.build());
+
+  // Register PostHog request-context middleware so server events inherit
+  // the client's distinct ID and session ID from X-POSTHOG-* headers.
+  const posthog = container.resolve(PostHogService);
+  posthog.setupExpressContext(app);
 
   app.use(express.json({ limit: '15mb' }));
   app.use(requestIdMiddleware);

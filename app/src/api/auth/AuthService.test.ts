@@ -225,7 +225,8 @@ function makeService(seedUsers: User[] = []): {
       signupAllowlistService as unknown as SignupAllowlistService,
       tokenHasher as unknown as TokenHasher,
       emailService as unknown as EmailService,
-      logger as unknown as Logger
+      logger as unknown as Logger,
+      { capture: vi.fn(), identify: vi.fn(), captureException: vi.fn(), flush: vi.fn(), shutdown: vi.fn() } as unknown as import('../../services/infrastructure/PostHogService').PostHogService
     ),
     users,
     emailVerificationTokens,

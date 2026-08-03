@@ -6,13 +6,17 @@ import { CampaignService } from './CampaignService';
 import { ResponseHandler } from '../../shared/ResponseHandler';
 import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/requestParsers';
 import { UnauthorizedError } from '../../shared/errors';
+import { PostHogService } from '../../services/infrastructure/PostHogService';
 
 const campaignSlugParamSchema = z.object({ campaignSlug: slugSchema });
 const athleteSlugParamSchema = z.object({ athleteSlug: slugSchema });
 
 @injectable()
 export class CampaignController {
-  constructor(private readonly campaignService: CampaignService) {}
+  constructor(
+    private readonly campaignService: CampaignService,
+    private readonly posthog: PostHogService
+  ) {}
 
   listActiveFeed = async (req: Request, res: Response): Promise<void> => {
     const query = parseRequestQuery(activeCampaignFeedQuerySchema, req);
@@ -36,6 +40,16 @@ export class CampaignController {
     if (!req.authenticatedUserId) throw new UnauthorizedError();
     const body = parseRequestBody(createCampaignRequestSchema, req);
     const campaign = await this.campaignService.createForAthlete(req.authenticatedUserId, body);
+    this.posthog.capture({
+      distinctId: req.authenticatedUserId,
+      event: 'campaign_created',
+      properties: {
+        campaign_id: campaign.campaignId,
+        campaign_slug: campaign.campaignSlug,
+        campaign_type: campaign.campaignType,
+        target_amount_cents: campaign.targetAmountCents,
+      },
+    });
     ResponseHandler.success(res, 201, campaign);
   };
 }
