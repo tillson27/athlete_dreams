@@ -83,6 +83,26 @@ export interface EnvironmentConfig {
    * domains (`@b.c`), case-insensitive. Empty/omitted = open (no gate).
    */
   readonly signupEmailAllowlist?: readonly string[];
+
+  /**
+   * CONTRACT: when set, ApiStack imports this existing ECR repository by ARN
+   * instead of creating a new one. Use after a first-deploy where the ECR
+   * resource was created but the stack failed (e.g. no image for service
+   * stabilization) and the repo was retained via `RemovalPolicy.RETAIN`.
+   * Format: `arn:aws:ecr:<region>:<account>:repository/<name>`
+   */
+  readonly existingEcrRepositoryArn?: string;
+
+  /**
+   * CONTRACT: full ARNs (including the Secrets Manager 6-char suffix) for the
+   * Stripe secrets created outside CDK. When set, ApiStack imports via
+   * `fromSecretCompleteArn` so IAM policy uses the exact ARN — avoiding the
+   * `??????` wildcard pattern emitted by `fromSecretNameV2` which can fail IAM
+   * evaluation during ECS task startup. Omit for test or first-bring-up where
+   * the secrets will be created by CDK.
+   */
+  readonly stripeSecretKeyArn?: string;
+  readonly stripeConnectWebhookSecretArn?: string;
 }
 
 export const DATABASE_NAME = 'arc';

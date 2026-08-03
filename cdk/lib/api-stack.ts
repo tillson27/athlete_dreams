@@ -1,6 +1,6 @@
 import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
 import { ISecurityGroup, IVpc, SubnetType } from 'aws-cdk-lib/aws-ec2';
-import { Repository, TagStatus } from 'aws-cdk-lib/aws-ecr';
+import { IRepository, Repository, TagStatus } from 'aws-cdk-lib/aws-ecr';
 import {
   Alarm,
   ComparisonOperator,
@@ -87,7 +87,7 @@ const EMAIL_FROM_ADDRESS_PARAMETER_SUFFIX = 'from-address';
  * 15/16 (`docs/aws-architecture-and-orchestration.md`).
  */
 export class ApiStack extends Stack {
-  public readonly repository: Repository;
+  public readonly repository: IRepository;
   public readonly service: ApplicationLoadBalancedFargateService;
 
   constructor(scope: Construct, id: string, props: ApiStackProps) {
@@ -97,18 +97,20 @@ export class ApiStack extends Stack {
       props;
     const imageTag = props.imageTag ?? DEFAULT_IMAGE_TAG;
 
-    this.repository = new Repository(this, 'ApiRepository', {
-      repositoryName: `arc-${config.envName}-api`,
-      imageScanOnPush: true,
-      removalPolicy: RemovalPolicy.RETAIN,
-      lifecycleRules: [
-        {
-          description: 'Expire untagged images to cap registry storage.',
-          tagStatus: TagStatus.UNTAGGED,
-          maxImageAge: Duration.days(14),
-        },
-      ],
-    });
+    this.repository = config.existingEcrRepositoryArn
+      ? Repository.fromRepositoryArn(this, 'ApiRepository', config.existingEcrRepositoryArn)
+      : new Repository(this, 'ApiRepository', {
+          repositoryName: `arc-${config.envName}-api`,
+          imageScanOnPush: true,
+          removalPolicy: RemovalPolicy.RETAIN,
+          lifecycleRules: [
+            {
+              description: 'Expire untagged images to cap registry storage.',
+              tagStatus: TagStatus.UNTAGGED,
+              maxImageAge: Duration.days(14),
+            },
+          ],
+        });
 
     const jwtSecret = new Secret(this, 'JwtSecret', {
       secretName: `arc/${config.envName}/api/jwt`,
@@ -118,16 +120,16 @@ export class ApiStack extends Stack {
         excludePunctuation: true,
       },
     });
-    const stripeSecretKey = Secret.fromSecretNameV2(
-      this,
-      'StripeSecretKey',
-      stripeSecretName(config, STRIPE_SECRET_KEY_SECRET_SUFFIX)
-    );
-    const stripeConnectWebhookSecret = Secret.fromSecretNameV2(
-      this,
-      'StripeConnectWebhookSecret',
-      stripeSecretName(config, STRIPE_CONNECT_WEBHOOK_SECRET_SUFFIX)
-    );
+    // Use fromSecretCompleteArn when the full ARN (including suffix) is known —
+    // this emits an exact IAM policy resource rather than the `??????` wildcard
+    // pattern from fromSecretNameV2, which can fail IAM evaluation at ECS task
+    // startup. Fall back to fromSecretNameV2 for test/first-bring-up.
+    const stripeSecretKey = config.stripeSecretKeyArn
+      ? Secret.fromSecretCompleteArn(this, 'StripeSecretKey', config.stripeSecretKeyArn)
+      : Secret.fromSecretNameV2(this, 'StripeSecretKey', stripeSecretName(config, STRIPE_SECRET_KEY_SECRET_SUFFIX));
+    const stripeConnectWebhookSecret = config.stripeConnectWebhookSecretArn
+      ? Secret.fromSecretCompleteArn(this, 'StripeConnectWebhookSecret', config.stripeConnectWebhookSecretArn)
+      : Secret.fromSecretNameV2(this, 'StripeConnectWebhookSecret', stripeSecretName(config, STRIPE_CONNECT_WEBHOOK_SECRET_SUFFIX));
     const emailApiKey = Secret.fromSecretNameV2(
       this,
       'EmailApiKey',
@@ -140,10 +142,15 @@ export class ApiStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
+    // Only enable Fargate capacity providers (FARGATE + FARGATE_SPOT) when the
+    // config calls for Spot. When useSpot is false, we omit capacity provider
+    // strategies entirely (the service defaults to FARGATE launch type), which
+    // avoids the ECS ResourceInUseException thrown when CloudFormation tries to
+    // remove FARGATE_SPOT from the cluster during rollback or stack deletion.
     const cluster = new Cluster(this, 'Cluster', {
       vpc,
       containerInsightsV2: ContainerInsights.ENABLED,
-      enableFargateCapacityProviders: true,
+      enableFargateCapacityProviders: config.useSpot,
     });
 
     // Build the ALB with the NetworkStack ALB security group (which already
@@ -473,9 +480,11 @@ function buildCorsAllowedOrigins(config: EnvironmentConfig): string {
 
 function buildCapacityProviderStrategies(
   config: EnvironmentConfig
-): CapacityProviderStrategy[] {
+): CapacityProviderStrategy[] | undefined {
   if (!config.useSpot) {
-    return [{ capacityProvider: FARGATE_CAPACITY_PROVIDER, weight: 1 }];
+    // Returning undefined lets the service use the default FARGATE launch type,
+    // avoiding the need to associate any capacity provider with the cluster.
+    return undefined;
   }
 
   return [

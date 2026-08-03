@@ -4,15 +4,15 @@ export const prodConfig: EnvironmentConfig = {
   envName: 'prod',
   region: AWS_REGION,
 
-  multiAz: true,
-  instanceSize: 't4g.medium',
+  multiAz: false,
+  instanceSize: 't4g.small',
   natStrategy: 'gateway',
-  natGatewayCount: 2,
+  natGatewayCount: 1,
   desiredCount: 2,
   useSpot: false,
   priceClass: 'PriceClass_100',
 
-  rdsAllocatedStorageGib: 50,
+  rdsAllocatedStorageGib: 20,
   rdsBackupRetentionDays: 14,
   rdsRemovalPolicy: 'snapshot',
 
@@ -32,11 +32,21 @@ export const prodConfig: EnvironmentConfig = {
     clientDomain: 'athletearc.ca',
     clientAlternateDomain: 'www.athletearc.ca',
     apiDomain: 'api.athletearc.ca',
-    // PLACEHOLDER — replace with the real athletearc.ca hosted-zone id before deploying WebStack.
-    hostedZoneId: 'Z0PLACEHOLDER000000',
+    hostedZoneId: 'Z09125813QDW7R0WM4HV',
     zoneName: 'athletearc.ca',
   },
 
   // Open until the M7 go-live decision on invite gating.
   signupEmailAllowlist: [],
+
+  // ECR repo was created during the first Arc-prod-Api deploy attempt (before
+  // the ECS service failed to stabilize — no image). Import it on redeploy
+  // so CloudFormation does not conflict with the retained repository.
+  existingEcrRepositoryArn: 'arn:aws:ecr:us-east-1:154932391130:repository/arc-prod-api',
+
+  // Full Stripe secret ARNs (including Secrets Manager suffix). Using
+  // fromSecretCompleteArn avoids the `??????` wildcard pattern from
+  // fromSecretNameV2 which fails IAM evaluation during ECS task startup.
+  stripeSecretKeyArn: 'arn:aws:secretsmanager:us-east-1:154932391130:secret:arc/prod/stripe/secret-key-UYSD5s',
+  stripeConnectWebhookSecretArn: 'arn:aws:secretsmanager:us-east-1:154932391130:secret:arc/prod/stripe/connect-webhook-secret-Xx0DZH',
 };

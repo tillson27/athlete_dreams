@@ -1,8 +1,8 @@
 import { CfnOutput, Stack, StackProps, Tags } from 'aws-cdk-lib';
 import {
   Effect,
-  OidcProviderNative,
   OpenIdConnectPrincipal,
+  OpenIdConnectProvider,
   PolicyStatement,
   Role,
 } from 'aws-cdk-lib/aws-iam';
@@ -13,14 +13,7 @@ export interface CicdStackProps extends StackProps {
   readonly config: EnvironmentConfig;
 }
 
-const GITHUB_OIDC_URL = 'https://token.actions.githubusercontent.com';
 const GITHUB_OIDC_AUDIENCE = 'sts.amazonaws.com';
-
-// STS validates GitHub's OIDC endpoint via its trusted-root-CA library, so this
-// thumbprint is not actually used for verification. It is pinned explicitly (the
-// native provider would otherwise ask IAM to fetch the CA thumbprint at create
-// time) to keep provisioning deterministic. (GitHub's long-published value.)
-const GITHUB_OIDC_ROOT_CA_THUMBPRINT = '6938fd4d98bab03faadb97b34396831e3780aea1';
 
 // GitHub repository whose Actions workflows may assume the deploy role. The
 // trust is further narrowed to these two integration/release branches only —
@@ -53,13 +46,13 @@ export class CicdStack extends Stack {
 
     const { config } = props;
 
-    // Native AWS::IAM::OIDCProvider (no Lambda-backed custom resource — the
-    // recommended construct over the legacy OpenIdConnectProvider).
-    const provider = new OidcProviderNative(this, 'GithubActionsOidcProvider', {
-      url: GITHUB_OIDC_URL,
-      clientIds: [GITHUB_OIDC_AUDIENCE],
-      thumbprints: [GITHUB_OIDC_ROOT_CA_THUMBPRINT],
-    });
+    // Import the existing GitHub OIDC provider (only one per URL per account is
+    // allowed; the provider already exists from an earlier deploy or test stack).
+    const provider = OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+      this,
+      'GithubActionsOidcProvider',
+      `arn:aws:iam::${this.account}:oidc-provider/token.actions.githubusercontent.com`
+    );
 
     // Trust condition: the token's audience must equal sts.amazonaws.com AND its
     // subject must be one of this repo's allowed branches. Both keys are required
