@@ -173,17 +173,25 @@ export class WebStack extends Stack {
         [API_PATH_PATTERN]: apiBehavior,
         [STRIPE_WEBHOOK_PATH_PATTERN]: apiBehavior,
       },
-      // The static export ships 404.html; map S3's private-object 403/404 to it
-      // so client-side routes and unknown paths render the app's not-found page.
+      // The static export ships 404.html; map S3's private-object miss to it so
+      // unknown paths render the app's not-found page.
+      //
+      // Only 403 is mapped. CloudFront error responses are DISTRIBUTION-wide —
+      // there is no per-behavior scoping — so every entry here also rewrites API
+      // responses of that status coming back through the `/v1/*` behaviors. The
+      // bucket blocks public access and the OAC grant is `s3:GetObject` only, so
+      // a missing key returns 403 AccessDenied and never 404; mapping 404 bought
+      // the static site nothing and silently replaced genuine API 404 bodies
+      // (e.g. `GET /v1/athletes/me` for an athlete with no draft yet) with this
+      // HTML page, leaving clients to fail JSON parsing.
+      //
+      // Residual limitation: API 403s (e.g. the publish email-verification guard)
+      // are still rewritten to this page and surface as 404. Fixing that requires
+      // moving the API off the static site's distribution onto its own origin —
+      // `DomainConfig.apiDomain` already reserves `api.<root>` for exactly that.
       errorResponses: [
         {
           httpStatus: 403,
-          responseHttpStatus: 404,
-          responsePagePath: NOT_FOUND_PAGE,
-          ttl: Duration.minutes(5),
-        },
-        {
-          httpStatus: 404,
           responseHttpStatus: 404,
           responsePagePath: NOT_FOUND_PAGE,
           ttl: Duration.minutes(5),

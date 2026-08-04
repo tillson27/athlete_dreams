@@ -55,7 +55,9 @@ jobs:
         env:
           STATIC_EXPORT: "true"
           # Data-source flags come from GitHub environment variables so the
-          # pipeline preserves the environment's mode (unset -> mock default).
+          # pipeline preserves the environment's mode. `client/lib/dataSource.ts`
+          # treats only the literal `mock` as mock, so an unset variable deploys
+          # in `api` mode against NEXT_PUBLIC_API_BASE_URL.
           NEXT_PUBLIC_DATA_SOURCE: ${{ vars.NEXT_PUBLIC_DATA_SOURCE }}
           NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
 

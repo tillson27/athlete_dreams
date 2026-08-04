@@ -122,6 +122,18 @@ and seed task. Secrets are whole secret strings, not JSON.
 | `STRIPE_CHECKOUT_CANCEL_URL` | SSM `/arc/<env>/stripe/checkout-cancel-url` |
 | `DONATION_MINIMUM_CENTS` | SSM `/arc/<env>/donations/minimum-cents` |
 | `DEFAULT_CURRENCY` | SSM `/arc/<env>/donations/default-currency` |
+| `RESEND_API_KEY` | Secrets Manager `arc/<env>/email/api-key` |
+| `RESEND_FROM_EMAIL` | SSM `/arc/<env>/email/from-address` |
+
+**Account email is required, not optional.** Without `RESEND_API_KEY` the API still
+accepts sign-ups, but `EmailService` throws before any network call and
+`AuthService` only logs the failure — so no verification email is ever sent,
+`emailVerifiedAt` stays null, and every athlete is permanently blocked at
+`POST /v1/athletes/me/publish` by the email-verification guard. Set the from-address
+to a sender on a domain verified in Resend. `APP_URL` is derived from
+`domain.clientDomain` in `config/` and needs no parameter; in temporary-URL mode
+(no custom domain) it is omitted and account-email links fall back to localhost,
+so verify a domain before inviting testers.
 
 Use a Stripe test-mode key (`sk_test_...`) in the `test` environment and a
 live-mode key (`sk_live_...`) in `prod`. The webhook handler rejects events whose

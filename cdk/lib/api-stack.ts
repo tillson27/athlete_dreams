@@ -68,6 +68,8 @@ const STRIPE_CHECKOUT_SUCCESS_URL_PARAMETER_SUFFIX = 'checkout-success-url';
 const STRIPE_CHECKOUT_CANCEL_URL_PARAMETER_SUFFIX = 'checkout-cancel-url';
 const DONATION_MINIMUM_CENTS_PARAMETER_SUFFIX = 'minimum-cents';
 const DEFAULT_CURRENCY_PARAMETER_SUFFIX = 'default-currency';
+const EMAIL_API_KEY_SECRET_SUFFIX = 'api-key';
+const EMAIL_FROM_ADDRESS_PARAMETER_SUFFIX = 'from-address';
 
 /**
  * API compute: an ECR repo, a Graviton (arm64) Fargate service behind a public
@@ -126,6 +128,11 @@ export class ApiStack extends Stack {
       'StripeConnectWebhookSecret',
       stripeSecretName(config, STRIPE_CONNECT_WEBHOOK_SECRET_SUFFIX)
     );
+    const emailApiKey = Secret.fromSecretNameV2(
+      this,
+      'EmailApiKey',
+      emailSecretName(config, EMAIL_API_KEY_SECRET_SUFFIX)
+    );
 
     const logGroup = new LogGroup(this, 'ApiLogGroup', {
       logGroupName: `/arc/${config.envName}/api`,
@@ -153,6 +160,7 @@ export class ApiStack extends Stack {
 
     const image = ContainerImage.fromEcrRepository(this.repository, imageTag);
 
+    const appUrl = buildAppUrl(config);
     const containerEnvironment: Record<string, string> = {
       NODE_ENV: config.nodeEnv,
       LOG_LEVEL: config.logLevel,
@@ -190,12 +198,23 @@ export class ApiStack extends Stack {
         config,
         DEFAULT_CURRENCY_PARAMETER_SUFFIX
       ),
+      RESEND_FROM_EMAIL: emailParameterValue(
+        this,
+        config,
+        EMAIL_FROM_ADDRESS_PARAMETER_SUFFIX
+      ),
+      // Absent in temporary-URL mode: the site origin is a WebStack output and
+      // WebStack already depends on this stack, so it cannot be read back here.
+      // The app then falls back to its localhost default, which only ever ships
+      // a wrong verification link in a domain-less environment.
+      ...(appUrl ? { APP_URL: appUrl } : {}),
     };
 
     const containerSecrets: Record<string, EcsSecret> = {
       JWT_SECRET: EcsSecret.fromSecretsManager(jwtSecret),
       STRIPE_SECRET_KEY: EcsSecret.fromSecretsManager(stripeSecretKey),
       STRIPE_CONNECT_WEBHOOK_SECRET: EcsSecret.fromSecretsManager(stripeConnectWebhookSecret),
+      RESEND_API_KEY: EcsSecret.fromSecretsManager(emailApiKey),
       DATABASE_USER: EcsSecret.fromSecretsManager(dbSecret, 'username'),
       DATABASE_PASSWORD: EcsSecret.fromSecretsManager(dbSecret, 'password'),
       DATABASE_HOST: EcsSecret.fromSecretsManager(dbSecret, 'host'),
@@ -465,8 +484,32 @@ function buildCapacityProviderStrategies(
   ];
 }
 
+/**
+ * Origin the API builds account-email links against (`APP_URL`) — verification
+ * and password-reset links must land on the public site, not the API host.
+ * Empty in temporary-URL mode, where no custom domain exists yet.
+ */
+function buildAppUrl(config: EnvironmentConfig): string {
+  return config.domain ? `https://${config.domain.clientDomain}` : '';
+}
+
 function stripeSecretName(config: EnvironmentConfig, suffix: string): string {
   return `arc/${config.envName}/stripe/${suffix}`;
+}
+
+function emailSecretName(config: EnvironmentConfig, suffix: string): string {
+  return `arc/${config.envName}/email/${suffix}`;
+}
+
+function emailParameterValue(
+  scope: Construct,
+  config: EnvironmentConfig,
+  suffix: string
+): string {
+  return StringParameter.valueForStringParameter(
+    scope,
+    `/arc/${config.envName}/email/${suffix}`
+  );
 }
 
 function stripeParameterValue(

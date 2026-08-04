@@ -60,6 +60,11 @@ export function PublishPanel() {
   const publicUrl = profileUrl(slug);
   const publishBlockedByAccount =
     mode === 'api' && (!sessionReady || !session || session.mustVerifyEmail);
+  // Split so the button only renders as unavailable when something the athlete
+  // must act on blocks it; an in-flight publish keeps the primary treatment and
+  // shows the spinner instead.
+  const blocked = !hasName || publishBlockedByAccount;
+  const inFlight = status === 'publishing' || saving;
 
   const missing = [
     !profile.bio && 'your story',
@@ -309,8 +314,12 @@ export function PublishPanel() {
       <button
         type="button"
         onClick={publish}
-        disabled={status === 'publishing' || saving || !hasName || publishBlockedByAccount}
-        className="flex w-full items-center justify-center gap-3 rounded-lg bg-primary py-4 font-display text-2xl font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95 disabled:opacity-80"
+        disabled={inFlight || blocked}
+        className={`flex w-full items-center justify-center gap-3 rounded-lg py-4 font-display text-2xl font-bold transition-all ${
+          blocked
+            ? 'cursor-not-allowed bg-surface-container-high text-on-surface-variant'
+            : 'bg-primary text-on-primary hover:bg-primary-strong active:scale-95 disabled:opacity-80'
+        }`}
       >
         {status === 'publishing' ? (
           <>
