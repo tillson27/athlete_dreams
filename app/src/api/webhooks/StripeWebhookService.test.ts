@@ -11,7 +11,14 @@ import type { PayoutEventRepository } from '../../repositories/PayoutEventReposi
 import type { WebhookEventRepository } from '../../repositories/WebhookEventRepository';
 import type { Logger } from '../../services/infrastructure/Logger';
 
-const prisma = { $transaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb('TX')) };
+const transactionClient = {
+  donationEvent: {
+    aggregate: vi.fn(async () => ({ _sum: { amountCents: 0 } })),
+  },
+};
+const prisma = {
+  $transaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb(transactionClient)),
+};
 const athletes = { findByStripeAccountId: vi.fn(), setChargesEnabled: vi.fn() };
 const campaigns = { findByIdWithAthlete: vi.fn(), applyDonationEvent: vi.fn() };
 const donations = {
@@ -63,13 +70,17 @@ function checkoutEvent(objectOverrides: Record<string, unknown> = {}, type = 'ch
 }
 
 const donationRow = { id: 'd1', campaignId: 'c1', donationAmountCents: 5000, donationStatus: 'PENDING' };
+const succeededDonationRow = { ...donationRow, donationStatus: 'SUCCEEDED' };
 const campaignWithAthlete = { id: 'c1', athlete: { id: 'ath1', stripeAccountId: 'acct_athlete' } };
 const originalStripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.STRIPE_SECRET_KEY = 'sk_test_unit';
-  prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => Promise<unknown>) => cb('TX'));
+  transactionClient.donationEvent.aggregate.mockResolvedValue({ _sum: { amountCents: 0 } });
+  prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => Promise<unknown>) =>
+    cb(transactionClient)
+  );
   donations.findById.mockResolvedValue(donationRow);
   donations.findByProviderRef.mockResolvedValue(null);
   donations.findByPaymentIntentId.mockResolvedValue(null);
@@ -99,7 +110,7 @@ describe('StripeWebhookService — checkout success fold', () => {
     expect(webhooks.upsertAudit).toHaveBeenCalledWith('evt_success_1', 'checkout.session.completed', expect.anything());
     expect(ledger.append).toHaveBeenCalledTimes(1);
     const [tx, ledgerInput] = ledger.append.mock.calls[0];
-    expect(tx).toBe('TX');
+    expect(tx).toBe(transactionClient);
     expect(ledgerInput).toMatchObject({
       donationId: 'd1',
       campaignId: 'c1',
@@ -109,9 +120,9 @@ describe('StripeWebhookService — checkout success fold', () => {
       idempotencyKey: 'evt_success_1',
       stripeObjectId: 'cs_test_1',
     });
-    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'SUCCEEDED', 'TX');
-    expect(donations.setPaymentIntentId).toHaveBeenCalledWith('d1', 'pi_1', 'TX');
-    expect(campaigns.applyDonationEvent).toHaveBeenCalledWith('TX', 'c1', 5000, 1);
+    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'SUCCEEDED', transactionClient);
+    expect(donations.setPaymentIntentId).toHaveBeenCalledWith('d1', 'pi_1', transactionClient);
+    expect(campaigns.applyDonationEvent).toHaveBeenCalledWith(transactionClient, 'c1', 5000, 1);
     expect(webhooks.markProcessed).toHaveBeenCalledWith('evt_success_1');
   });
 
@@ -153,7 +164,7 @@ describe('StripeWebhookService — checkout success fold', () => {
       amountCents: 5000,
       stripeObjectId: 'cs_test_1',
     });
-    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'FAILED', 'TX');
+    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'FAILED', transactionClient);
   });
 
   it('reconciles an early PaymentIntent failure from PaymentIntent metadata', async () => {
@@ -180,13 +191,13 @@ describe('StripeWebhookService — checkout success fold', () => {
       donationEventType: 'DONATION_FAILED',
       stripeObjectId: 'pi_early',
     });
-    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'FAILED', 'TX');
+    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'FAILED', transactionClient);
   });
 });
 
 describe('StripeWebhookService — refund/dispute by PaymentIntent', () => {
-  it('records a full DONATION_REFUNDED event, marks REFUNDED, and does not un-fund the campaign', async () => {
-    donations.findByPaymentIntentId.mockResolvedValue(donationRow);
+  it('records a full DONATION_REFUNDED delta, marks REFUNDED, and reduces the campaign projection', async () => {
+    donations.findByPaymentIntentId.mockResolvedValue(succeededDonationRow);
     const event = {
       id: 'evt_refund_1',
       type: 'charge.refunded',
@@ -214,12 +225,12 @@ describe('StripeWebhookService — refund/dispute by PaymentIntent', () => {
       amountCents: 5000,
       currency: 'cad',
     });
-    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'REFUNDED', 'TX');
-    expect(campaigns.applyDonationEvent).not.toHaveBeenCalled();
+    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'REFUNDED', transactionClient);
+    expect(campaigns.applyDonationEvent).toHaveBeenCalledWith(transactionClient, 'c1', -5000, -1);
   });
 
   it('records a partial refund amount without marking the whole donation REFUNDED', async () => {
-    donations.findByPaymentIntentId.mockResolvedValue(donationRow);
+    donations.findByPaymentIntentId.mockResolvedValue(succeededDonationRow);
     const event = {
       id: 'evt_refund_partial_1',
       type: 'charge.refunded',
@@ -247,23 +258,59 @@ describe('StripeWebhookService — refund/dispute by PaymentIntent', () => {
       currency: 'cad',
     });
     expect(donations.setStatus).not.toHaveBeenCalled();
+    expect(campaigns.applyDonationEvent).toHaveBeenCalledWith(transactionClient, 'c1', -1200, 0);
   });
 
-  it('records DISPUTE_OPENED without changing donation status', async () => {
-    donations.findByPaymentIntentId.mockResolvedValue(donationRow);
+  it('applies only the new cumulative refund delta for a later partial refund', async () => {
+    donations.findByPaymentIntentId.mockResolvedValue(succeededDonationRow);
+    transactionClient.donationEvent.aggregate.mockResolvedValueOnce({ _sum: { amountCents: 1200 } });
+    const event = {
+      id: 'evt_refund_partial_2',
+      type: 'charge.refunded',
+      account: 'acct_athlete',
+      livemode: false,
+      created: 1_784_000_175,
+      data: {
+        object: {
+          id: 'ch_1',
+          payment_intent: 'pi_1',
+          amount: 5000,
+          amount_refunded: 3000,
+          refunded: false,
+          currency: 'cad',
+          metadata: { donationId: 'd1' },
+        },
+      },
+    } as unknown as Stripe.Event;
+
+    await makeService().process(event);
+
+    expect(ledger.append.mock.calls[0][1]).toMatchObject({
+      donationEventType: 'DONATION_REFUNDED',
+      amountCents: 1800,
+    });
+    expect(campaigns.applyDonationEvent).toHaveBeenCalledWith(transactionClient, 'c1', -1800, 0);
+  });
+
+  it('records DISPUTE_OPENED, marks the donation failed, and reduces the campaign projection', async () => {
+    donations.findByPaymentIntentId.mockResolvedValue(succeededDonationRow);
     const event = {
       id: 'evt_dispute_1',
       type: 'charge.dispute.created',
       account: 'acct_athlete',
       livemode: false,
       created: 1_784_000_200,
-      data: { object: { id: 'dp_1', payment_intent: 'pi_1', currency: 'cad' } },
+      data: { object: { id: 'dp_1', payment_intent: 'pi_1', amount: 5000, currency: 'cad' } },
     } as unknown as Stripe.Event;
 
     await makeService().process(event);
 
-    expect(ledger.append.mock.calls[0][1]).toMatchObject({ donationEventType: 'DISPUTE_OPENED' });
-    expect(donations.setStatus).not.toHaveBeenCalled();
+    expect(ledger.append.mock.calls[0][1]).toMatchObject({
+      donationEventType: 'DISPUTE_OPENED',
+      amountCents: 5000,
+    });
+    expect(donations.setStatus).toHaveBeenCalledWith('d1', 'FAILED', transactionClient);
+    expect(campaigns.applyDonationEvent).toHaveBeenCalledWith(transactionClient, 'c1', -5000, -1);
   });
 });
 

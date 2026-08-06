@@ -21,7 +21,8 @@ export function StepAdvance({
   className: string;
   children: React.ReactNode;
 }) {
-  const { mode, saving, saveError, saveAndAdvance, clearSaveError } = useOnboarding();
+  const { mode, hydrating, canEdit, saving, saveError, saveAndAdvance, clearSaveError } =
+    useOnboarding();
   const router = useRouter();
 
   if (mode === 'mock') {
@@ -42,7 +43,7 @@ export function StepAdvance({
       <button
         type="button"
         onClick={advance}
-        disabled={saving}
+        disabled={saving || hydrating || !canEdit}
         className={`${className} disabled:cursor-not-allowed disabled:opacity-80`}
       >
         {saving ? 'Saving…' : children}

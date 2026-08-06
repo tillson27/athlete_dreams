@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { RegHeader } from './_components/RegHeader';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { authHref } from '@/lib/authRedirect';
 
 export const metadata: Metadata = {
   title: 'How to Build Your Epic',
@@ -135,7 +136,7 @@ export default function OnboardingGuidePage() {
         {/* CTA */}
         <section className="mt-16 text-center">
           <Link
-            href="/register/personal-basics"
+            href={authHref('/sign-up', '/register/personal-basics')}
             className="inline-flex items-center justify-center rounded-xl bg-primary-container px-12 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-colors hover:bg-primary active:scale-95"
           >
             Get Started

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Reveal } from '@/components/site/Reveal';
 import { Icon } from '@/components/ui/Icon';
+import { authHref } from '@/lib/authRedirect';
 import { arcSteps } from '@/lib/homeContent';
 
 export function TellYourArcSection() {
@@ -49,7 +50,7 @@ export function TellYourArcSection() {
 
         <div className="flex justify-center">
           <Link
-            href="/register"
+            href={authHref('/sign-up', '/register/personal-basics')}
             className="inline-flex items-center justify-center rounded-card bg-primary-container px-12 py-5 text-lg font-bold tracking-[0.05em] text-on-primary shadow-xl transition-all hover:-translate-y-1 hover:shadow-primary/25 active:scale-95"
           >
             Start your journey

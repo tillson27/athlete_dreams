@@ -277,11 +277,6 @@ export class StripeWebhookService {
 
   private async handleChargeRefunded(event: Stripe.Event): Promise<void> {
     const charge = event.data.object as Stripe.Charge;
-    const fullyRefunded =
-      charge.refunded === true ||
-      (typeof charge.amount === 'number' &&
-        typeof charge.amount_refunded === 'number' &&
-        charge.amount_refunded >= charge.amount);
     await this.recordChargeLevelEvent(
       event,
       {
@@ -291,7 +286,7 @@ export class StripeWebhookService {
         donationEventType: DonationEventType.DONATION_REFUNDED,
         amountCents: normalizeStripeAmount(charge.amount_refunded),
         currency: charge.currency,
-        newStatus: fullyRefunded ? DonationStatus.REFUNDED : null,
+        newStatus: null,
       }
     );
   }
@@ -305,9 +300,9 @@ export class StripeWebhookService {
         donationId: getMetadataDonationId(dispute),
         stripeObjectId: dispute.id,
         donationEventType: DonationEventType.DISPUTE_OPENED,
-        amountCents: null,
+        amountCents: normalizeStripeAmount(dispute.amount),
         currency: dispute.currency,
-        newStatus: null,
+        newStatus: DonationStatus.FAILED,
       }
     );
   }
@@ -336,12 +331,13 @@ export class StripeWebhookService {
     const stripeAccountId = event.account ?? campaign?.athlete.stripeAccountId ?? '';
     try {
       await this.prisma.$transaction(async (tx) => {
+        const projection = await this.buildChargeProjectionDelta(tx, donation, input);
         await this.ledger.append(tx, {
           donationId: donation.id,
           campaignId: donation.campaignId,
           athleteId: campaign?.athlete.id ?? donation.campaignId,
           donationEventType: input.donationEventType,
-          amountCents: input.amountCents ?? donation.donationAmountCents,
+          amountCents: projection.ledgerAmountCents,
           currency: input.currency ?? DEFAULT_CURRENCY,
           stripeAccountId,
           stripeObjectId: input.stripeObjectId,
@@ -351,6 +347,16 @@ export class StripeWebhookService {
         });
         if (input.newStatus) {
           await this.donations.setStatus(donation.id, input.newStatus, tx);
+        } else if (projection.newStatus) {
+          await this.donations.setStatus(donation.id, projection.newStatus, tx);
+        }
+        if (projection.campaignDeltaCents !== 0 || projection.supporterDelta !== 0) {
+          await this.campaigns.applyDonationEvent(
+            tx,
+            donation.campaignId,
+            projection.campaignDeltaCents,
+            projection.supporterDelta
+          );
         }
       });
     } catch (error) {
@@ -378,6 +384,70 @@ export class StripeWebhookService {
         },
       });
     }
+  }
+
+  private async buildChargeProjectionDelta(
+    tx: Prisma.TransactionClient,
+    donation: Donation,
+    input: {
+      donationEventType: DonationEventType;
+      amountCents: number | null;
+      newStatus: DonationStatus | null;
+    }
+  ): Promise<{
+    ledgerAmountCents: number;
+    campaignDeltaCents: number;
+    supporterDelta: number;
+    newStatus: DonationStatus | null;
+  }> {
+    if (input.donationEventType === DonationEventType.DONATION_REFUNDED) {
+      const cumulativeRefundedCents = Math.min(
+        input.amountCents ?? donation.donationAmountCents,
+        donation.donationAmountCents
+      );
+      const priorRefunded = await tx.donationEvent.aggregate({
+        where: {
+          donationId: donation.id,
+          donationEventType: DonationEventType.DONATION_REFUNDED,
+        },
+        _sum: { amountCents: true },
+      });
+      const priorRefundedCents = Math.min(
+        priorRefunded._sum.amountCents ?? 0,
+        donation.donationAmountCents
+      );
+      const deltaCents = Math.max(0, cumulativeRefundedCents - priorRefundedCents);
+      const fullyRefunded =
+        cumulativeRefundedCents >= donation.donationAmountCents &&
+        donation.donationStatus === DonationStatus.SUCCEEDED;
+      return {
+        ledgerAmountCents: deltaCents,
+        campaignDeltaCents: -deltaCents,
+        supporterDelta: fullyRefunded ? -1 : 0,
+        newStatus: fullyRefunded ? DonationStatus.REFUNDED : null,
+      };
+    }
+
+    if (input.donationEventType === DonationEventType.DISPUTE_OPENED) {
+      const disputedCents = Math.min(
+        input.amountCents ?? donation.donationAmountCents,
+        donation.donationAmountCents
+      );
+      const supporterDelta = donation.donationStatus === DonationStatus.SUCCEEDED ? -1 : 0;
+      return {
+        ledgerAmountCents: disputedCents,
+        campaignDeltaCents: -disputedCents,
+        supporterDelta,
+        newStatus: null,
+      };
+    }
+
+    return {
+      ledgerAmountCents: input.amountCents ?? donation.donationAmountCents,
+      campaignDeltaCents: 0,
+      supporterDelta: 0,
+      newStatus: null,
+    };
   }
 
   private async handleAccountUpdated(event: Stripe.Event): Promise<void> {

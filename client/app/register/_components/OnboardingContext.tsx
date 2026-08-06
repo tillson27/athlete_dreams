@@ -44,6 +44,8 @@ type OnboardingContextValue = {
   mode: 'mock' | 'api';
   hydrating: boolean;
   signedOut: boolean;
+  canEdit: boolean;
+  hasDraft: boolean;
   saving: boolean;
   saveError: string | null;
   clearSaveError: () => void;
@@ -99,6 +101,8 @@ function MockOnboardingProvider({ children }: { children: ReactNode }) {
         mode: 'mock',
         hydrating: false,
         signedOut: false,
+        canEdit: true,
+        hasDraft: true,
         saving: false,
         saveError: null,
         clearSaveError: noop,
@@ -127,6 +131,7 @@ function ApiOnboardingProvider({ children }: { children: ReactNode }) {
   // The server-side draft (null until created); tracked so step 1 knows whether
   // to create vs patch and a resumed session keeps the reserved slug.
   const draftRef = useRef<AthleteProfile | null>(null);
+  const dirtyRef = useRef(false);
 
   const rememberDraft = (draft: AthleteProfile) => {
     draftRef.current = draft;
@@ -147,7 +152,9 @@ function ApiOnboardingProvider({ children }: { children: ReactNode }) {
       .then((draft) => {
         if (!active || !draft) return;
         rememberDraft(draft);
-        setProfile(profileToOnboarding(draft));
+        if (!dirtyRef.current) {
+          setProfile(profileToOnboarding(draft));
+        }
       })
       .catch(() => {
         // A read failure (network/expired) leaves the wizard fresh; the session
@@ -163,20 +170,30 @@ function ApiOnboardingProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, signedIn]);
 
-  const update = makeUpdate(setProfile);
+  const update = (patch: OnboardingPatch) => {
+    dirtyRef.current = true;
+    makeUpdate(setProfile)(patch);
+  };
   const reset = () => setProfile(emptyOnboardingProfile);
   const clearSaveError = () => setSaveError(null);
 
   const saveAndAdvance = async (step: OnboardingSaveStep): Promise<boolean> => {
+    if (!ready || !signedIn || hydrating) {
+      setSaveError('Sign in to save your progress.');
+      return false;
+    }
     setSaving(true);
     setSaveError(null);
     try {
       if (step === 1) {
         rememberDraft(await saveStep1(profile, draftRef.current));
+        dirtyRef.current = false;
       } else if (step === 2) {
         rememberDraft(await saveStep2(profile));
+        dirtyRef.current = false;
       } else {
         rememberDraft(await saveStep3(profile));
+        dirtyRef.current = false;
       }
       return true;
     } catch (error) {
@@ -188,6 +205,10 @@ function ApiOnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   const publish = async (): Promise<boolean> => {
+    if (!ready || !signedIn || hydrating) {
+      setSaveError('Sign in to publish your profile.');
+      return false;
+    }
     setSaving(true);
     setSaveError(null);
     setPublishChecklist(EMPTY_CHECKLIST);
@@ -216,6 +237,8 @@ function ApiOnboardingProvider({ children }: { children: ReactNode }) {
         mode: 'api',
         hydrating: !ready || hydrating,
         signedOut: ready && !signedIn,
+        canEdit: ready && signedIn && !hydrating,
+        hasDraft: Boolean(draftSlug),
         saving,
         saveError,
         clearSaveError,

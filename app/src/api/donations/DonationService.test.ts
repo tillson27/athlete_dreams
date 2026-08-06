@@ -6,7 +6,7 @@ import type { StripeService } from '../../services/infrastructure/StripeService'
 import type { Logger } from '../../services/infrastructure/Logger';
 
 const campaigns = { findByIdWithAthlete: vi.fn() };
-const donations = { createPending: vi.fn(), setProviderRef: vi.fn() };
+const donations = { createPending: vi.fn(), setProviderRef: vi.fn(), markFailedIfPending: vi.fn() };
 const stripe = { createDonationCheckoutSession: vi.fn(), retrieveAccount: vi.fn() };
 const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
 
@@ -71,6 +71,7 @@ beforeEach(() => {
     url: 'https://checkout.stripe.com/c/pay/cs_test_1',
   });
   donations.setProviderRef.mockResolvedValue({});
+  donations.markFailedIfPending.mockResolvedValue({ count: 1 });
 });
 
 describe('DonationService.createDonation guards', () => {
@@ -177,5 +178,18 @@ describe('DonationService.createDonation happy path', () => {
     expect(donations.createPending).toHaveBeenCalledWith(
       expect.objectContaining({ supporterUserId: 'user_9' })
     );
+  });
+
+  it('marks the pending donation failed when Stripe Checkout creation fails', async () => {
+    campaigns.findByIdWithAthlete.mockResolvedValue(activeChargesEnabledCampaign());
+    donations.createPending.mockResolvedValue(pendingDonation());
+    stripe.createDonationCheckoutSession.mockRejectedValue(new Error('stripe unavailable'));
+
+    await expect(makeService().createDonation(baseRequest)).rejects.toThrow(
+      'Could not create a checkout session'
+    );
+
+    expect(donations.markFailedIfPending).toHaveBeenCalledWith('d1');
+    expect(donations.setProviderRef).not.toHaveBeenCalled();
   });
 });

@@ -54,17 +54,18 @@ export function AthleteProfileHydrator({
   }, [safeSlug, athlete, profile]);
   const view =
     mockDraftView ??
-    (mockCoverPhoto && DATA_SOURCE === 'mock'
+    (mockCoverPhoto && DATA_SOURCE === 'mock' && data
       ? { ...data, athlete: { ...data.athlete, heroMediaUrl: mockCoverPhoto } }
       : data);
 
   if (!slug) return <ProfileUnavailable />;
-  if (DATA_SOURCE === 'api' && loading && !athlete) {
+  if (DATA_SOURCE === 'api' && loading) {
     return <ProfileLoading athleteName={initial.athlete.fullName} />;
   }
-  if (DATA_SOURCE === 'api' && error && !athlete) {
+  if (DATA_SOURCE === 'api' && error) {
     return <ProfileUnavailable />;
   }
+  if (!view) return <ProfileLoading athleteName={initial.athlete.fullName} />;
 
   return <AthleteProfile athlete={view.athlete} profile={view.profile} />;
 }

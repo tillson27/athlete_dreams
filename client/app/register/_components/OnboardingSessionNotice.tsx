@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
+import { authHref } from '@/lib/authRedirect';
 import { useOnboarding } from './OnboardingContext';
 
 // Api-mode-only: when the session expires mid-wizard (a 401 clears it via the
@@ -11,6 +13,7 @@ import { useOnboarding } from './OnboardingContext';
 // nothing in mock mode or while signed in, so the wizard DOM is unchanged.
 export function OnboardingSessionNotice() {
   const { mode, signedOut } = useOnboarding();
+  const pathname = usePathname();
   if (mode !== 'api' || !signedOut) return null;
 
   return (
@@ -21,7 +24,7 @@ export function OnboardingSessionNotice() {
           You&rsquo;ve been signed out — sign in again to keep building. Your answers are still here.
         </p>
         <Link
-          href="/sign-in"
+          href={authHref('/sign-in', pathname)}
           className="label-bold shrink-0 rounded-lg bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-primary-strong active:scale-95"
         >
           Sign in

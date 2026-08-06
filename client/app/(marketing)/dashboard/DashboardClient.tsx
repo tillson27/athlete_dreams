@@ -581,7 +581,7 @@ function NoProfileGate({ firstName }: { firstName: string }) {
         </p>
         <div className="mt-6 flex flex-col gap-3">
           <Link
-            href="/register"
+            href="/register/personal-basics"
             className="label-bold rounded-lg bg-primary px-6 py-3 text-on-primary transition-all hover:bg-primary-strong"
           >
             Start your story

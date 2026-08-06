@@ -4,8 +4,8 @@ import { BRAND_CONTACT_EMAIL } from './brand';
 // Maps a thrown auth error to one plain, user-facing sentence (never a raw
 // payload or code — Context §11, client/AGENTS.md minimalism). Mapping is keyed
 // on the auth kind because the same HTTP status carries different meaning per
-// endpoint: a sign-up 409 means "account exists", while a sign-in 403 and a
-// sign-up 403 both mean the deployment is invite-gated.
+// endpoint: a sign-up 409 means "account exists", while a 403 means the
+// deployment is invite-gated.
 export type AuthKind = 'sign-up' | 'sign-in';
 
 // Public API contract: `linkToSignIn` is set only when the message invites the
@@ -31,10 +31,7 @@ export function toAuthErrorView(kind: AuthKind, error: unknown): AuthErrorView {
       };
     }
     if (kind === 'sign-in' && error.status === 401) {
-      if (error.message === 'No account found for this email') {
-        return { message: 'No account found for this email.' };
-      }
-      return { message: 'Invalid password.' };
+      return { message: 'Invalid email or password.' };
     }
   }
   if (kind === 'sign-in' && error instanceof Error && error.message) {

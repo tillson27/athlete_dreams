@@ -65,17 +65,25 @@ export class DonationService {
       isAnonymous: input.isAnonymous ?? false,
     });
 
-    const session = await this.stripe.createDonationCheckoutSession({
-      stripeAccountId,
-      amountCents: input.donationAmountCents,
-      currency: this.defaultCurrency,
-      productName: `Donation to ${campaign.athlete.fullName}`,
-      athleteSlug: campaign.athlete.athleteSlug,
-      metadata: { donationId: donation.id, campaignId: campaign.id },
-      idempotencyKey: donation.id,
-    });
+    let session: Awaited<ReturnType<StripeService['createDonationCheckoutSession']>>;
+    try {
+      session = await this.stripe.createDonationCheckoutSession({
+        stripeAccountId,
+        amountCents: input.donationAmountCents,
+        currency: this.defaultCurrency,
+        productName: `Donation to ${campaign.athlete.fullName}`,
+        athleteSlug: campaign.athlete.athleteSlug,
+        metadata: { donationId: donation.id, campaignId: campaign.id },
+        idempotencyKey: donation.id,
+      });
+    } catch (error) {
+      await this.donations.markFailedIfPending(donation.id);
+      this.logger.warn({ donationId: donation.id, err: error }, 'donation.checkout_create_failed');
+      throw new ServiceUnavailableError('Could not create a checkout session');
+    }
 
     if (!session.url) {
+      await this.donations.markFailedIfPending(donation.id);
       throw new ServiceUnavailableError('Could not create a checkout session');
     }
 

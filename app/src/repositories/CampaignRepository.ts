@@ -27,6 +27,7 @@ export class CampaignRepository {
     const where: Prisma.CampaignWhereInput = {
       campaignStatus: CampaignStatus.ACTIVE,
       deletedAt: null,
+      AND: [openCampaignWhere()],
       ...(params.cursor
         ? {
             OR: [
@@ -50,7 +51,7 @@ export class CampaignRepository {
 
   listActiveForAthlete(athleteId: string, limit: number): Promise<CampaignWithAthlete[]> {
     return this.prisma.campaign.findMany({
-      where: { athleteId, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE },
+      where: { athleteId, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE, ...openCampaignWhere() },
       include: { costLines: true, athlete: true },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit,
@@ -61,7 +62,7 @@ export class CampaignRepository {
     campaignSlug: string
   ): Promise<(Campaign & { costLines: CampaignCostLine[] }) | null> {
     return this.prisma.campaign.findFirst({
-      where: { campaignSlug, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE },
+      where: { campaignSlug, deletedAt: null, campaignStatus: CampaignStatus.ACTIVE, ...openCampaignWhere() },
       include: { costLines: true },
     });
   }
@@ -78,8 +79,8 @@ export class CampaignRepository {
   }
 
   // Atomic projection fold, run INSIDE the webhook's `$transaction` (Step 6).
-  // Increments the campaign totals and flips FUNDED once the target is met.
-  // Overfunding past target is accepted (stays FUNDED, keeps accepting).
+  // Positive deltas add successful funding; negative deltas reverse refunds or
+  // disputes so public totals never overstate money actually available.
   async applyDonationEvent(
     tx: Prisma.TransactionClient,
     campaignId: string,
@@ -101,6 +102,16 @@ export class CampaignRepository {
       await tx.campaign.update({
         where: { id: campaignId },
         data: { campaignStatus: CampaignStatus.FUNDED },
+      });
+      return;
+    }
+    if (
+      campaign.campaignStatus === CampaignStatus.FUNDED &&
+      campaign.raisedAmountCents < campaign.targetAmountCents
+    ) {
+      await tx.campaign.update({
+        where: { id: campaignId },
+        data: { campaignStatus: CampaignStatus.ACTIVE },
       });
     }
   }
@@ -139,4 +150,10 @@ export class CampaignRepository {
       include: { costLines: true },
     });
   }
+}
+
+function openCampaignWhere(): Prisma.CampaignWhereInput {
+  return {
+    OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
+  };
 }

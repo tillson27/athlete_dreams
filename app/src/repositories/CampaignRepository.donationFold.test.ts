@@ -57,4 +57,63 @@ describe('CampaignRepository.applyDonationEvent', () => {
     await repo.applyDonationEvent(tx, 'c1', 5000, 1);
     expect(update).toHaveBeenCalledTimes(1);
   });
+
+  it('reopens a FUNDED campaign when a refund drops it below target', async () => {
+    const { tx, update } = makeTx({
+      raisedAmountCents: 9000,
+      targetAmountCents: 10000,
+      campaignStatus: 'FUNDED',
+    });
+    await repo.applyDonationEvent(tx, 'c1', -1000, -1);
+    expect(update).toHaveBeenCalledTimes(2);
+    expect(update.mock.calls[0][0]).toMatchObject({
+      data: { raisedAmountCents: { increment: -1000 }, supporterCount: { increment: -1 } },
+    });
+    expect(update.mock.calls[1][0]).toEqual({
+      where: { id: 'c1' },
+      data: { campaignStatus: 'ACTIVE' },
+    });
+  });
+});
+
+describe('CampaignRepository public active campaign filters', () => {
+  it('applies the open ACTIVE predicate to the public feed', async () => {
+    const findMany = vi.fn(async (_args: unknown) => []);
+    const repoWithPrisma = new CampaignRepository({
+      campaign: { findMany },
+    } as unknown as PrismaService);
+
+    await repoWithPrisma.listActiveFeed({ limit: 10 });
+
+    const feedArgs = findMany.mock.calls[0]?.[0] as { where: unknown };
+    expect(feedArgs.where).toMatchObject({
+      campaignStatus: 'ACTIVE',
+      deletedAt: null,
+      AND: [{ OR: [{ closesAt: null }, { closesAt: { gt: expect.any(Date) } }] }],
+    });
+  });
+
+  it('applies the open ACTIVE predicate to athlete lists and slug reads', async () => {
+    const findMany = vi.fn(async (_args: unknown) => []);
+    const findFirst = vi.fn(async (_args: unknown) => null);
+    const repoWithPrisma = new CampaignRepository({
+      campaign: { findMany, findFirst },
+    } as unknown as PrismaService);
+
+    await repoWithPrisma.listActiveForAthlete('athlete-1', 10);
+    await repoWithPrisma.findActiveBySlug('race-fund');
+
+    const athleteListArgs = findMany.mock.calls[0]?.[0] as { where: unknown };
+    const slugArgs = findFirst.mock.calls[0]?.[0] as { where: unknown };
+    expect(athleteListArgs.where).toMatchObject({
+      athleteId: 'athlete-1',
+      campaignStatus: 'ACTIVE',
+      OR: [{ closesAt: null }, { closesAt: { gt: expect.any(Date) } }],
+    });
+    expect(slugArgs.where).toMatchObject({
+      campaignSlug: 'race-fund',
+      campaignStatus: 'ACTIVE',
+      OR: [{ closesAt: null }, { closesAt: { gt: expect.any(Date) } }],
+    });
+  });
 });

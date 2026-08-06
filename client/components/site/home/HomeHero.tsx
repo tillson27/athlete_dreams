@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { authHref } from '@/lib/authRedirect';
 import { unsplashPhoto } from '@/lib/unsplash';
 
 export function HomeHero() {
@@ -40,7 +41,7 @@ export function HomeHero() {
           </p>
           <div className="flex flex-col gap-4 sm:flex-row">
             <Link
-              href="/register"
+              href={authHref('/sign-up', '/register/personal-basics')}
               className="inline-flex items-center justify-center rounded-button bg-primary-container px-8 py-4 text-lg font-bold text-on-primary shadow-lg shadow-primary-container/25 transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
             >
               Build your story

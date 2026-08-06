@@ -5,6 +5,7 @@ import { Reveal } from '@/components/site/Reveal';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { unsplashPhoto as img } from '@/lib/unsplash';
 import { profileUrl } from '@/lib/profileUrl';
+import { authHref } from '@/lib/authRedirect';
 
 export const metadata: Metadata = {
   title: 'For Athletes — Your professional running home',
@@ -111,7 +112,7 @@ export default function ForAthletesPage() {
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <Link
-                href="/register"
+                href={authHref('/sign-up', '/register/personal-basics')}
                 className="inline-flex items-center justify-center gap-2 rounded-button bg-primary-container px-8 py-4 text-base font-bold tracking-[0.05em] text-on-primary shadow-lg shadow-primary-container/25 transition-all hover:-translate-y-0.5 hover:bg-primary active:scale-95"
               >
                 Build your profile
@@ -348,7 +349,7 @@ export default function ForAthletesPage() {
           </div>
           <div className="mt-12 flex justify-center">
             <Link
-              href="/register"
+              href={authHref('/sign-up', '/register/personal-basics')}
               className="inline-flex items-center justify-center gap-2 rounded-button bg-primary-container px-10 py-4 text-base font-bold tracking-[0.05em] text-on-primary shadow-xl transition-all hover:-translate-y-1 hover:bg-primary active:scale-95"
             >
               Start your profile
@@ -406,7 +407,7 @@ export default function ForAthletesPage() {
             </p>
             <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
               <Link
-                href="/register"
+                href={authHref('/sign-up', '/register/personal-basics')}
                 className="inline-flex items-center justify-center gap-2 rounded-button bg-primary-container px-10 py-4 text-base font-bold tracking-[0.05em] text-on-primary transition-all hover:bg-primary active:scale-95"
               >
                 Build your profile

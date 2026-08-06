@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signUp } from '@/lib/session';
@@ -10,9 +10,12 @@ import { toAuthErrorView, type AuthErrorView } from '@/lib/authErrors';
 import { authInputClass } from '@/components/ui/formStyles';
 import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
 import { passwordIsStrong } from '@/lib/passwordStrength';
+import { safeAuthDestination } from '@/lib/authRedirect';
 
 export function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const authDestination = safeAuthDestination(searchParams.get('next'), '/register/personal-basics');
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
@@ -34,7 +37,7 @@ export function SignUpForm() {
     setSubmitting(true);
     try {
       await signUp({ name, email, password: submittedPassword });
-      router.push('/register/personal-basics');
+      router.push(authDestination);
     } catch (cause) {
       setError(toAuthErrorView('sign-up', cause));
       setSubmitting(false);
@@ -90,7 +93,10 @@ export function SignUpForm() {
           {error.linkToSignIn ? (
             <>
               {' '}
-              <Link href="/sign-in" className="inline-flex min-h-11 items-center underline">
+              <Link
+                href={`/sign-in?next=${encodeURIComponent(authDestination)}`}
+                className="inline-flex min-h-11 items-center underline"
+              >
                 sign in instead
               </Link>
               .

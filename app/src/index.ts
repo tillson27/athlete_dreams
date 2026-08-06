@@ -6,10 +6,12 @@ import { buildApp } from './app';
 import { Logger } from './services/infrastructure/Logger';
 import { PrismaService } from './services/infrastructure/PrismaService';
 import { PostHogService } from './services/infrastructure/PostHogService';
+import { validateProductionConfig } from './config/productionConfig';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function start(): Promise<void> {
+  validateProductionConfig();
   const logger = container.resolve(Logger);
   const prismaService = container.resolve(PrismaService);
   const posthogService = container.resolve(PostHogService);

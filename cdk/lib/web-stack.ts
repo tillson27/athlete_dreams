@@ -1,4 +1,4 @@
-import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
+import { CfnOutput, RemovalPolicy, Stack, StackProps, Tags } from 'aws-cdk-lib';
 import { Certificate, CertificateValidation, type ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
 import {
   AllowedMethods,
@@ -55,7 +55,16 @@ function handler(event) {
   var request = event.request;
   var uri = request.uri;
 
-  if (uri === '/' || uri === '/opengraph-image') {
+  if (uri === '/') {
+    return request;
+  }
+
+  if (uri === '/favicon.ico') {
+    request.uri = '/icon';
+    return request;
+  }
+
+  if (uri === '/icon' || uri === '/apple-icon' || uri === '/opengraph-image') {
     return request;
   }
 
@@ -72,7 +81,34 @@ function handler(event) {
     uri = uri.slice(0, -1);
   }
 
-  request.uri = uri + '.html';
+  var staticRoutes = {
+    '/about': true,
+    '/ambassadors': true,
+    '/athletes': true,
+    '/brands': true,
+    '/community': true,
+    '/dashboard': true,
+    '/donate/thanks': true,
+    '/for-athletes': true,
+    '/forgot-password': true,
+    '/how-it-works': true,
+    '/mission': true,
+    '/presentation': true,
+    '/privacy': true,
+    '/register': true,
+    '/register/athletics': true,
+    '/register/personal-basics': true,
+    '/register/review': true,
+    '/register/values-social': true,
+    '/reset-password': true,
+    '/sign-in': true,
+    '/sign-up': true,
+    '/support': true,
+    '/terms': true,
+    '/verify-email': true
+  };
+
+  request.uri = staticRoutes[uri] ? uri + '.html' : '${NOT_FOUND_PAGE}';
   return request;
 }
 `;
@@ -173,30 +209,6 @@ export class WebStack extends Stack {
         [API_PATH_PATTERN]: apiBehavior,
         [STRIPE_WEBHOOK_PATH_PATTERN]: apiBehavior,
       },
-      // The static export ships 404.html; map S3's private-object miss to it so
-      // unknown paths render the app's not-found page.
-      //
-      // Only 403 is mapped. CloudFront error responses are DISTRIBUTION-wide —
-      // there is no per-behavior scoping — so every entry here also rewrites API
-      // responses of that status coming back through the `/v1/*` behaviors. The
-      // bucket blocks public access and the OAC grant is `s3:GetObject` only, so
-      // a missing key returns 403 AccessDenied and never 404; mapping 404 bought
-      // the static site nothing and silently replaced genuine API 404 bodies
-      // (e.g. `GET /v1/athletes/me` for an athlete with no draft yet) with this
-      // HTML page, leaving clients to fail JSON parsing.
-      //
-      // Residual limitation: API 403s (e.g. the publish email-verification guard)
-      // are still rewritten to this page and surface as 404. Fixing that requires
-      // moving the API off the static site's distribution onto its own origin —
-      // `DomainConfig.apiDomain` already reserves `api.<root>` for exactly that.
-      errorResponses: [
-        {
-          httpStatus: 403,
-          responseHttpStatus: 404,
-          responsePagePath: NOT_FOUND_PAGE,
-          ttl: Duration.minutes(5),
-        },
-      ],
     });
 
     if (domain && hostedZone) {

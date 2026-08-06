@@ -42,7 +42,7 @@ const FEED_TYPES: Array<{ key: FeedCategory | 'ALL'; label: string; icon: 'hub' 
 ];
 
 export function CommunityClient() {
-  const { feed, racingSoon } = useCommunityData();
+  const { feed, racingSoon, loading, error } = useCommunityData();
   const { follows, ready } = useFollows();
   const { session } = useSession();
 
@@ -67,6 +67,19 @@ export function CommunityClient() {
       cheersStore.write(next);
       return next;
     });
+
+  if (loading) {
+    return <CommunityState title="Loading community" body="Fetching the latest athlete updates." />;
+  }
+
+  if (error) {
+    return (
+      <CommunityState
+        title="Community unavailable"
+        body="We could not load the live community feed. Refresh to try again."
+      />
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-10 md:px-16 md:py-12">
@@ -224,5 +237,16 @@ export function CommunityClient() {
         </aside>
       </div>
     </div>
+  );
+}
+
+function CommunityState({ title, body }: { title: string; body: string }) {
+  return (
+    <main className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
+      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+        <h1 className="font-display text-2xl font-extrabold text-on-surface">{title}</h1>
+        <p className="mt-3 text-on-surface-variant">{body}</p>
+      </div>
+    </main>
   );
 }

@@ -33,7 +33,7 @@ const ATHLETE_PAGE_SIZE = 12;
 const FALLBACK_COVER = unsplashPhoto('1594882645126-14020914d58d', 1400);
 
 export function AthleteDirectory() {
-  const { athletes } = useDirectoryAthletes();
+  const { athletes, loading, error } = useDirectoryAthletes();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [page, setPage] = useState(1);
   const [hasReadUrl, setHasReadUrl] = useState(false);
@@ -121,6 +121,19 @@ export function AthleteDirectory() {
         athleteSlug={runtimeRoute.athleteSlug}
         athlete={athlete}
         profile={profile}
+      />
+    );
+  }
+
+  if (loading) {
+    return <DirectoryState title="Loading runners" body="Fetching the latest athlete directory." />;
+  }
+
+  if (error) {
+    return (
+      <DirectoryState
+        title="Directory unavailable"
+        body="We could not load the live athlete directory. Refresh to try again."
       />
     );
   }
@@ -254,6 +267,17 @@ export function AthleteDirectory() {
         )}
       </main>
     </div>
+  );
+}
+
+function DirectoryState({ title, body }: { title: string; body: string }) {
+  return (
+    <main className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
+      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+        <h1 className="font-display text-2xl font-extrabold text-on-surface">{title}</h1>
+        <p className="mt-3 text-on-surface-variant">{body}</p>
+      </div>
+    </main>
   );
 }
 

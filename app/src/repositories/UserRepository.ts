@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import type { User } from '@prisma/client';
+import { TeamRole, type User } from '@prisma/client';
 import { PrismaService } from '../services/infrastructure/PrismaService';
 
 @injectable()
@@ -20,6 +20,36 @@ export class UserRepository {
     displayName: string;
   }): Promise<User> {
     return this.prisma.user.create({ data: input });
+  }
+
+  createWithPersonalTeam(input: {
+    email: string;
+    passwordHash: string;
+    displayName: string;
+    teamName: string;
+  }): Promise<User> {
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: input.email,
+          passwordHash: input.passwordHash,
+          displayName: input.displayName,
+        },
+      });
+      await tx.team.create({
+        data: {
+          name: input.teamName,
+          isPersonal: true,
+          memberships: {
+            create: {
+              userId: user.id,
+              teamRole: TeamRole.OWNER,
+            },
+          },
+        },
+      });
+      return user;
+    });
   }
 
   update(userId: string, input: { displayName?: string; avatarUrl?: string | null }): Promise<User> {

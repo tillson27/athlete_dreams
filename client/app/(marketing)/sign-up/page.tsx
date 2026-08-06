@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { SignUpForm } from './SignUpForm';
 
@@ -17,7 +18,9 @@ export default function SignUpPage() {
           Build your athlete profile in about 15 minutes — your story, your results, and the
           values you run by. Bring people along for the journey.
         </p>
-        <SignUpForm />
+        <Suspense>
+          <SignUpForm />
+        </Suspense>
         <p className="mt-6 flex flex-wrap items-center justify-center gap-x-1 text-center text-sm text-on-surface-variant">
           <span>Already have an account?</span>
           <Link

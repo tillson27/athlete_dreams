@@ -56,6 +56,13 @@ export class DonationRepository {
     });
   }
 
+  markFailedIfPending(donationId: string): Promise<{ count: number }> {
+    return this.prisma.donation.updateMany({
+      where: { id: donationId, donationStatus: DonationStatus.PENDING },
+      data: { donationStatus: DonationStatus.FAILED },
+    });
+  }
+
   setPaymentIntentId(
     donationId: string,
     stripePaymentIntentId: string,

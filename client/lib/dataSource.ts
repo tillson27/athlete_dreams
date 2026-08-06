@@ -23,14 +23,14 @@ export type DataSource = 'mock' | 'api';
 export const DATA_SOURCE: DataSource =
   process.env.NEXT_PUBLIC_DATA_SOURCE === 'mock' ? 'mock' : 'api';
 
-type AsyncState<T> = { data: T; loading: boolean; error: string | null };
+type AsyncState<T> = { data: T | null; loading: boolean; error: string | null };
 
 function useApiResource<T>(
   enabled: boolean,
   loader: () => Promise<T>,
-  fallback: T
+  fallback: T | null
 ): AsyncState<T> {
-  const [data, setData] = useState<T>(fallback);
+  const [data, setData] = useState<T | null>(fallback);
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +66,7 @@ export function useDirectoryAthletes(): {
   const { data, loading, error } = useApiResource<MockAthlete[]>(
     DATA_SOURCE === 'api',
     loadApiDirectory,
-    runnerAthletes
+    DATA_SOURCE === 'mock' ? runnerAthletes : null
   );
   const [localAthlete, setLocalAthlete] = useState<MockAthlete | null>(null);
 
@@ -93,7 +93,7 @@ export function useDirectoryAthletes(): {
   }, []);
 
   return {
-    athletes: localAthlete ? prependUniqueAthlete(data, localAthlete) : data,
+    athletes: localAthlete ? prependUniqueAthlete(data ?? [], localAthlete) : data ?? [],
     loading,
     error,
   };
@@ -113,10 +113,10 @@ export function useCommunityData(): {
   error: string | null;
 } {
   const { data, loading, error } = useApiResource(DATA_SOURCE === 'api', loadApiCommunity, {
-    feed: buildFeed(),
-    racingSoon: buildRacingSoon(),
+    feed: DATA_SOURCE === 'mock' ? buildFeed() : [],
+    racingSoon: DATA_SOURCE === 'mock' ? buildRacingSoon() : [],
   });
-  return { feed: data.feed, racingSoon: data.racingSoon, loading, error };
+  return { feed: data?.feed ?? [], racingSoon: data?.racingSoon ?? [], loading, error };
 }
 
 // The profile page server-renders mock data (static params); this hook swaps in
@@ -129,7 +129,7 @@ export function useAthleteProfileData(
   const result = useApiResource<ProfileView>(
     DATA_SOURCE === 'api' && slug.length > 0,
     () => loadApiProfile(slug, initial.athlete.heroMediaUrl),
-    initial
+    DATA_SOURCE === 'mock' ? initial : null
   );
   return result;
 }

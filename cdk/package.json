@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",
     "type-check": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx test/web-stack.test.ts",
     "synth": "cdk synth",
     "synth:test": "cdk synth -c env=test",
     "synth:prod": "cdk synth -c env=prod"

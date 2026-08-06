@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Reveal } from '@/components/site/Reveal';
+import { authHref } from '@/lib/authRedirect';
 
 export function HomeCtaSection() {
   return (
@@ -26,7 +27,7 @@ export function HomeCtaSection() {
                 Discover runners
               </Link>
               <Link
-                href="/register"
+                href={authHref('/sign-up', '/register/personal-basics')}
                 className="inline-flex items-center justify-center rounded-button bg-primary-container px-10 py-4 text-sm font-bold text-on-primary transition-all hover:bg-primary active:scale-95"
               >
                 Start your story

@@ -20,7 +20,7 @@
     "test": "npm run test --prefix app",
     "lint": "npm run lint --prefix app && npm run lint --prefix client",
     "lint:fix": "npm run lint:fix --prefix app && npm run lint:fix --prefix client",
-    "ci": "npm run build --prefix common && npm run type-check && npm run lint:fix && npm run build && npm run test && npm run synth:test --prefix cdk",
+    "ci": "npm run build --prefix common && npm run type-check && npm run lint:fix && npm run build && npm run test && npm run test --prefix cdk && npm run synth:test --prefix cdk",
 
     "===": "==========================<WORKSPACE INSTALL>===========================",
     "postinstall": "echo '\\nInstalling common...' && npm --prefix common install && echo '\\nInstalling app...' && npm --prefix app install && echo '\\nInstalling client...' && npm --prefix client install && echo '\\nInstalling cdk...' && npm --prefix cdk install",

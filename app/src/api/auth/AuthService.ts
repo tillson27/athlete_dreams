@@ -11,7 +11,6 @@ import type {
   VerifyEmailRequest,
 } from 'fad-common';
 import { UserRepository } from '../../repositories/UserRepository';
-import { TeamRepository } from '../../repositories/TeamRepository';
 import { EmailVerificationTokenRepository } from '../../repositories/EmailVerificationTokenRepository';
 import { PasswordResetTokenRepository } from '../../repositories/PasswordResetTokenRepository';
 import { PasswordHashService } from '../../services/infrastructure/PasswordHashService';
@@ -25,6 +24,7 @@ import { BadRequestError, ConflictError, ForbiddenError, UnauthorizedError } fro
 import type { User } from '@prisma/client';
 
 const INVITE_ONLY_MESSAGE = 'Access is currently invite-only';
+const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password';
 const DEFAULT_APP_URL = 'http://localhost:3000';
 const DEFAULT_PASSWORD_RESET_TOKEN_TTL_MINUTES = 60;
 const DEFAULT_EMAIL_VERIFICATION_TOKEN_TTL_HOURS = 48;
@@ -33,7 +33,6 @@ const DEFAULT_EMAIL_VERIFICATION_TOKEN_TTL_HOURS = 48;
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly teamRepository: TeamRepository,
     private readonly emailVerificationTokenRepository: EmailVerificationTokenRepository,
     private readonly passwordResetTokenRepository: PasswordResetTokenRepository,
     private readonly passwordHashService: PasswordHashService,
@@ -55,16 +54,11 @@ export class AuthService {
     }
 
     const passwordHash = await this.passwordHashService.hash(input.password);
-    const user = await this.userRepository.create({
+    const user = await this.userRepository.createWithPersonalTeam({
       email: input.email,
       passwordHash,
       displayName: input.displayName,
-    });
-
-    await this.teamRepository.createWithOwner({
       teamName: `${input.displayName}'s Team`,
-      isPersonal: true,
-      ownerUserId: user.id,
     });
 
     await this.sendSignupEmails(user);
@@ -76,9 +70,9 @@ export class AuthService {
       throw new ForbiddenError(INVITE_ONLY_MESSAGE);
     }
     const user = await this.userRepository.findByEmail(input.email);
-    if (!user) throw new UnauthorizedError('No account found for this email');
+    if (!user) throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE);
     const passwordMatches = await this.passwordHashService.verify(user.passwordHash, input.password);
-    if (!passwordMatches) throw new UnauthorizedError('Invalid email or password');
+    if (!passwordMatches) throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE);
     return this.issueSession(user);
   }
 

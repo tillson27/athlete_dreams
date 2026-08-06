@@ -6,7 +6,6 @@ import type {
 } from '@prisma/client';
 import { AuthService } from './AuthService';
 import { UserRepository } from '../../repositories/UserRepository';
-import { TeamRepository } from '../../repositories/TeamRepository';
 import { EmailVerificationTokenRepository } from '../../repositories/EmailVerificationTokenRepository';
 import { PasswordResetTokenRepository } from '../../repositories/PasswordResetTokenRepository';
 import { PasswordHashService } from '../../services/infrastructure/PasswordHashService';
@@ -60,6 +59,18 @@ function makeService(seedUsers: User[] = []): {
       users.set(user.id, user);
       return user;
     }),
+    createWithPersonalTeam: vi.fn(
+      async (input: { email: string; passwordHash: string; displayName: string; teamName: string }) => {
+        const user = userFixture({
+          id: `user-${users.size + 1}`,
+          email: input.email,
+          passwordHash: input.passwordHash,
+          displayName: input.displayName,
+        });
+        users.set(user.id, user);
+        return user;
+      }
+    ),
     updatePasswordHash: vi.fn(async (userId: string, passwordHash: string) => {
       const user = users.get(userId);
       if (!user) {
@@ -217,7 +228,6 @@ function makeService(seedUsers: User[] = []): {
   return {
     service: new AuthService(
       userRepository as unknown as UserRepository,
-      { createWithOwner: vi.fn(async () => ({ memberships: [] })) } as unknown as TeamRepository,
       emailVerificationTokenRepository as unknown as EmailVerificationTokenRepository,
       passwordResetTokenRepository as unknown as PasswordResetTokenRepository,
       passwordHashService as unknown as PasswordHashService,
@@ -252,12 +262,12 @@ describe('AuthService', () => {
     expect(emailService.sendWelcome).toHaveBeenCalledTimes(1);
   });
 
-  it('returns distinct sign-in errors for unknown email and bad password', async () => {
+  it('returns the same sign-in error for unknown email and bad password', async () => {
     const { service } = makeService([userFixture()]);
 
     await expect(
       service.signIn({ email: 'missing@example.test', password: 'Correcthorse1' })
-    ).rejects.toThrow(new UnauthorizedError('No account found for this email'));
+    ).rejects.toThrow(new UnauthorizedError('Invalid email or password'));
     await expect(
       service.signIn({ email: 'athlete@example.test', password: 'Wronghorse1' })
     ).rejects.toThrow(new UnauthorizedError('Invalid email or password'));

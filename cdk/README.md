@@ -332,8 +332,9 @@ the client default, but `NEXT_PUBLIC_API_BASE_URL` should still be set on the
 `test` environment (section 5) so static exports call the intended deployed API
 instead of the local fallback.
 
-Invalidations take ~30–60s to propagate; the `/v1/*` behaviors are uncached and
-unaffected.
+Invalidations take ~30–60s to propagate; the `/v1/*` behaviors are uncached,
+unrewritten API-origin responses. Static browser-route 404s are handled by the
+CloudFront viewer-request rewrite, not distribution-level custom errors.
 
 ---
 

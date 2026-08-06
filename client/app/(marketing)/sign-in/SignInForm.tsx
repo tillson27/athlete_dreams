@@ -2,18 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { signIn } from '@/lib/session';
 import { resendVerification } from '@/lib/api';
 import { toAuthErrorView, type AuthErrorView } from '@/lib/authErrors';
 import { authInputClass } from '@/components/ui/formStyles';
+import { safeAuthDestination } from '@/lib/authRedirect';
 
 type ResendStatus = 'idle' | 'sending' | 'sent';
 
 export function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const authDestination = safeAuthDestination(searchParams.get('next'));
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<AuthErrorView | null>(null);
@@ -37,7 +40,7 @@ export function SignInForm() {
         setSubmitting(false);
         return;
       }
-      router.push('/dashboard');
+      router.push(authDestination);
     } catch (cause) {
       setError(toAuthErrorView('sign-in', cause));
       setSubmitting(false);
@@ -125,7 +128,7 @@ export function SignInForm() {
             </button>
             <button
               type="button"
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push(authDestination)}
               className="label-bold min-h-11 rounded-pill bg-primary px-4 py-2 text-on-primary transition-colors hover:bg-primary-strong"
             >
               Continue to dashboard

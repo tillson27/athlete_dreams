@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { SignInForm } from './SignInForm';
 
@@ -16,7 +17,9 @@ export default function SignInPage() {
         <p className="mt-2 text-sm text-on-surface-variant">
           Sign in to manage your profile, share your story, and keep your journey up to date.
         </p>
-        <SignInForm />
+        <Suspense>
+          <SignInForm />
+        </Suspense>
         <p className="mt-6 flex flex-wrap items-center justify-center gap-x-1 text-center text-sm text-on-surface-variant">
           <span>New here?</span>
           <Link
