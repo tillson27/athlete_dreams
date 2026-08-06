@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-06T00:00:00.000Z",
+  "title": "Design System: Athlete Arc",
+  "extensions": {
+    "colorMeta": {
+      "champion-orange": {
+        "role": "primary",
+        "displayName": "Champion Orange Dark",
+        "canonical": "#ab3600",
+        "tonalRamp": ["#1f0700", "#4a0e00", "#832700", "#ab3600", "#d44800", "#ff5f1f", "#ffaa80", "#ffdbcf"]
+      },
+      "champion-orange-vivid": {
+        "role": "primary",
+        "displayName": "Champion Orange Vivid",
+        "canonical": "#ff5f1f",
+        "tonalRamp": ["#1f0700", "#4a0e00", "#832700", "#ab3600", "#d44800", "#ff5f1f", "#ffaa80", "#ffdbcf"]
+      },
+      "champion-orange-strong": {
+        "role": "primary",
+        "displayName": "Champion Orange Strong",
+        "canonical": "#832700",
+        "tonalRamp": ["#1f0700", "#4a0e00", "#832700", "#ab3600", "#d44800", "#ff5f1f", "#ffaa80", "#ffdbcf"]
+      },
+      "champion-orange-soft": {
+        "role": "primary",
+        "displayName": "Champion Orange Soft",
+        "canonical": "#ffdbcf",
+        "tonalRamp": ["#1f0700", "#4a0e00", "#832700", "#ab3600", "#d44800", "#ff5f1f", "#ffaa80", "#ffdbcf"]
+      },
+      "podium-blue": {
+        "role": "secondary",
+        "displayName": "Podium Blue",
+        "canonical": "#0453cd",
+        "tonalRamp": ["#010f30", "#022263", "#0d3399", "#0453cd", "#1e6de5", "#4a91f5", "#91beff", "#dae2ff"]
+      },
+      "podium-blue-container": {
+        "role": "secondary",
+        "displayName": "Podium Blue Container",
+        "canonical": "#356ee7",
+        "tonalRamp": ["#010f30", "#022263", "#0d3399", "#0453cd", "#1e6de5", "#356ee7", "#91beff", "#dae2ff"]
+      },
+      "podium-blue-soft": {
+        "role": "secondary",
+        "displayName": "Podium Blue Soft",
+        "canonical": "#dae2ff",
+        "tonalRamp": ["#010f30", "#022263", "#0d3399", "#0453cd", "#1e6de5", "#4a91f5", "#91beff", "#dae2ff"]
+      },
+      "stadium-charcoal": {
+        "role": "neutral",
+        "displayName": "Stadium Charcoal",
+        "canonical": "#181c1e",
+        "tonalRamp": ["#060809", "#0d1013", "#181c1e", "#252a2c", "#353b3d", "#505557", "#9da2a4", "#eef1f3"]
+      },
+      "on-surface-variant": {
+        "role": "neutral",
+        "displayName": "Warm Gray Brown",
+        "canonical": "#5b4138",
+        "tonalRamp": ["#180a06", "#2e150d", "#5b4138", "#7a5a50", "#9e7f74", "#c4a79f", "#e5d3ce", "#faf4f2"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "#f7fafc",
+        "tonalRamp": ["#2d3133", "#404648", "#5b6163", "#8c9295", "#c5c9cb", "#e0e3e5", "#f1f4f6", "#f7fafc"]
+      },
+      "surface-container": {
+        "role": "neutral",
+        "displayName": "Surface Container",
+        "canonical": "#ebeef0",
+        "tonalRamp": ["#2d3133", "#404648", "#5b6163", "#8c9295", "#c5c9cb", "#e0e3e5", "#ebeef0", "#f7fafc"]
+      },
+      "surface-container-low": {
+        "role": "neutral",
+        "displayName": "Surface Container Low",
+        "canonical": "#f1f4f6",
+        "tonalRamp": ["#2d3133", "#404648", "#5b6163", "#8c9295", "#c5c9cb", "#e0e3e5", "#f1f4f6", "#f7fafc"]
+      },
+      "surface-bright": {
+        "role": "neutral",
+        "displayName": "Surface Bright",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#2d3133", "#404648", "#5b6163", "#8c9295", "#c5c9cb", "#e0e3e5", "#f1f4f6", "#ffffff"]
+      },
+      "inverse-surface": {
+        "role": "neutral",
+        "displayName": "Inverse Surface",
+        "canonical": "#2d3133",
+        "tonalRamp": ["#060809", "#0d1013", "#181c1e", "#2d3133", "#404648", "#5b6163", "#8c9295", "#eef1f3"]
+      },
+      "outline": {
+        "role": "neutral",
+        "displayName": "Outline",
+        "canonical": "#8f7066",
+        "tonalRamp": ["#2b1209", "#4a211a", "#6e362c", "#8f7066", "#b09088", "#cdb5af", "#e5d5d1", "#faf4f2"]
+      },
+      "outline-variant": {
+        "role": "neutral",
+        "displayName": "Outline Variant",
+        "canonical": "#e3bfb3",
+        "tonalRamp": ["#2b1209", "#4a211a", "#6e362c", "#8f7066", "#b09088", "#cdb5af", "#e3bfb3", "#faf4f2"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headlines over full-bleed photography only. Never in body copy or cards."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section-level h2 headings on light and dark section backgrounds."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, athlete names, modal headings (h3/h4)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Athlete bios, campaign descriptions, editorial content. Aim 65–75ch on full-width blocks."
+      },
+      "label": {
+        "displayName": "Label / Eyebrow",
+        "purpose": "Section eyebrows (uppercase, 0.08em tracking) and bold micro-labels (sentence case, 0.01em tracking)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-ambient",
+        "value": "0 4px 20px rgba(0,0,0,0.04)",
+        "purpose": "Card rest state (.card-lift). A whisper — separates card from page without announcing itself."
+      },
+      {
+        "name": "card-hover",
+        "value": "0 10px 28px rgba(0,0,0,0.08)",
+        "purpose": "Card hover state (.card-lift-hover), paired with translateY(-2px) at 280ms ease."
+      },
+      {
+        "name": "btn-primary-glow",
+        "value": "0 1px 0 rgba(255,255,255,0.08) inset, 0 8px 24px -12px rgba(171,54,0,0.45)",
+        "purpose": "Primary button warm underlay glow. Structural, not atmospheric."
+      },
+      {
+        "name": "icon-badge",
+        "value": "0 4px 8px rgba(0,0,0,0.12)",
+        "purpose": "Icon medallion boxes that sit proud of the card surface."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ken-burns",
+        "value": "ken-burns 20s ease-out both",
+        "purpose": "Slow cinematic drift on hero background photography. scale(1.04)→scale(1.12). Disabled on prefers-reduced-motion."
+      },
+      {
+        "name": "reveal",
+        "value": "opacity 0.7s ease-out, transform 0.7s cubic-bezier(0.22, 0.68, 0.16, 1)",
+        "purpose": "Scroll reveal for sections: fade from opacity:0 + translateY(28px) to visible. Disabled on prefers-reduced-motion."
+      },
+      {
+        "name": "card-hover-lift",
+        "value": "all 280ms ease",
+        "purpose": "Card hover transition: shadow deepens + translateY(-2px)."
+      },
+      {
+        "name": "btn-transition",
+        "value": "all 200ms ease",
+        "purpose": "All button state transitions (color, shadow, scale)."
+      },
+      {
+        "name": "pulse-live",
+        "value": "pulse-live 1.6s ease-in-out infinite",
+        "purpose": "Live-funding status dot: pulses between opacity:1/scale:1 and opacity:0.55/scale:0.85."
+      },
+      {
+        "name": "scroll-cue",
+        "value": "scroll-bob 1.9s ease-in-out infinite",
+        "purpose": "Bobbing chevron at hero bottom: translateY 0→6px, opacity 0.85→0.4."
+      },
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.22, 0.68, 0.16, 1)",
+        "purpose": "Slightly springy exit easing for reveal transitions."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The system's workhorse CTA. Champion Orange Vivid fill, pill shape, presses back on :active.",
+      "html": "<button class=\"ds-btn-primary\">Build your story \u2192</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 9999px; background-color: var(--color-primary-container, #ff5f1f); color: #ffffff; font-family: var(--font-display, 'Montserrat', ui-sans-serif, sans-serif); font-size: 0.875rem; font-weight: 600; letter-spacing: -0.01em; min-height: 44px; padding: 10px 20px; border: none; cursor: pointer; white-space: nowrap; user-select: none; box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 8px 24px -12px rgba(171,54,0,0.45); transition: background-color 200ms ease, transform 200ms ease; } .ds-btn-primary:hover { background-color: var(--color-primary, #ab3600); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-secondary, #0453cd); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Podium Blue 2px outline ring on transparent fill. Floods blue on hover. Secondary paths and trust signals.",
+      "html": "<button class=\"ds-btn-secondary\">Explore athletes</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 9999px; background-color: transparent; color: var(--color-secondary, #0453cd); font-family: var(--font-display, 'Montserrat', ui-sans-serif, sans-serif); font-size: 0.875rem; font-weight: 600; letter-spacing: -0.01em; min-height: 44px; padding: 10px 20px; border: none; cursor: pointer; white-space: nowrap; box-shadow: 0 0 0 2px var(--color-secondary, #0453cd) inset; transition: background-color 200ms ease, color 200ms ease, transform 200ms ease; } .ds-btn-secondary:hover { background-color: var(--color-secondary, #0453cd); color: #ffffff; } .ds-btn-secondary:active { transform: scale(0.97); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-secondary, #0453cd); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Invisible at rest. Surface Container hover tint. Tertiary navigation and low-priority actions.",
+      "html": "<button class=\"ds-btn-ghost\">Learn more</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 9999px; background-color: transparent; color: var(--color-on-surface, #181c1e); font-family: var(--font-display, 'Montserrat', ui-sans-serif, sans-serif); font-size: 0.875rem; font-weight: 600; letter-spacing: -0.01em; min-height: 44px; padding: 10px 20px; border: none; cursor: pointer; white-space: nowrap; transition: background-color 200ms ease, transform 200ms ease; } .ds-btn-ghost:hover { background-color: var(--color-surface-container, #ebeef0); } .ds-btn-ghost:active { transform: scale(0.97); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--color-secondary, #0453cd); outline-offset: 2px; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "button-primary",
+      "description": "Pill chip with tone variants. Uppercase by default at 0.05em tracking.",
+      "html": "<div style=\"display:flex;gap:8px;flex-wrap:wrap;\"><span class=\"ds-badge ds-badge-primary-soft\">Trail Running</span><span class=\"ds-badge ds-badge-secondary-soft\">Vancouver</span><span class=\"ds-badge ds-badge-inverse\">Elite</span><span class=\"ds-badge ds-badge-soft\">Canada</span></div>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; } .ds-badge-primary-soft { background-color: var(--color-primary-soft, #ffdbcf); color: var(--color-on-primary-container, #561700); } .ds-badge-secondary-soft { background-color: var(--color-secondary-soft, #dae2ff); color: var(--color-secondary, #0453cd); } .ds-badge-inverse { background-color: var(--color-inverse-surface, #2d3133); color: var(--color-inverse-on-surface, #eef1f3); } .ds-badge-soft { background-color: var(--color-surface-container, #ebeef0); color: var(--color-on-surface, #181c1e); }"
+    },
+    {
+      "name": "Verified Chip (Glass)",
+      "kind": "chip",
+      "refersTo": "button-primary",
+      "description": "Glass chip for verified state over photography. Backdrop-blur + translucent white fill.",
+      "html": "<div style=\"background:#888;padding:20px;border-radius:8px;\"><span class=\"ds-chip-verified\"><svg viewBox=\"0 0 20 20\" width=\"16\" height=\"16\" style=\"color:#1b8e2d;flex-shrink:0;\" aria-hidden=\"true\"><path d=\"M10 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm3.86 6.39-4.6 4.6-2.13-2.12a.9.9 0 1 0-1.27 1.27l2.77 2.77a.9.9 0 0 0 1.27 0l5.23-5.23a.9.9 0 1 0-1.27-1.27Z\" fill=\"currentColor\"/></svg>Verified</span></div>",
+      "css": ".ds-chip-verified { display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-on-surface, #181c1e); background: rgba(255,255,255,0.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); }"
+    },
+    {
+      "name": "Athlete Card",
+      "kind": "card",
+      "refersTo": "button-primary",
+      "description": "Story-first directory row. Photo left, story right. Name and sport before any metric. Lifts on hover.",
+      "html": "<a href=\"#\" class=\"ds-athlete-card\"><div class=\"ds-athlete-photo\"><span class=\"ds-athlete-level-badge\">Competitive</span></div><div class=\"ds-athlete-content\"><div class=\"ds-athlete-header\"><h3 class=\"ds-athlete-name\">Sarah Chen</h3><span class=\"ds-athlete-verified\"><svg viewBox=\"0 0 20 20\" width=\"14\" height=\"14\" style=\"color:#1b8e2d\" aria-hidden=\"true\"><path d=\"M10 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm3.86 6.39-4.6 4.6-2.13-2.12a.9.9 0 1 0-1.27 1.27l2.77 2.77a.9.9 0 0 0 1.27 0l5.23-5.23a.9.9 0 1 0-1.27-1.27Z\" fill=\"currentColor\"/></svg> Verified</span></div><p class=\"ds-athlete-sport\">Trail Running \u00b7 Vancouver, BC</p><p class=\"ds-athlete-bio\">Ultra-endurance athlete chasing her first 100-miler at Western States. Fuelled by mountain coffee and stubborn optimism.</p><div class=\"ds-athlete-footer\"><span class=\"ds-athlete-highlight\">\ud83e\udd47 2024 UTMF Top-10</span><span class=\"ds-athlete-cta\">View profile \u2192</span></div></div></a>",
+      "css": ".ds-athlete-card { display: flex; flex-direction: column; border-radius: 1rem; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(227,191,179,0.6); text-decoration: none; color: inherit; overflow: hidden; transition: box-shadow 280ms ease, transform 280ms ease; cursor: pointer; } .ds-athlete-card:hover { box-shadow: 0 10px 28px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(227,191,179,0.6); transform: translateY(-2px); } .ds-athlete-photo { position: relative; height: 180px; background: linear-gradient(135deg, var(--color-surface-container-high, #e5e9eb) 0%, var(--color-surface-dim, #d7dadc) 100%); overflow: hidden; } .ds-athlete-level-badge { position: absolute; top: 12px; left: 12px; display: inline-flex; align-items: center; border-radius: 9999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(45,49,51,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #ffffff; } .ds-athlete-content { display: flex; flex-direction: column; gap: 12px; padding: 20px 24px; flex: 1; } .ds-athlete-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; } .ds-athlete-name { font-family: var(--font-display, 'Montserrat', ui-sans-serif, sans-serif); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; color: var(--color-on-surface, #181c1e); margin: 0; line-height: 1.2; } .ds-athlete-verified { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-success, #1b8e2d); white-space: nowrap; flex-shrink: 0; } .ds-athlete-sport { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.01em; color: var(--color-secondary, #0453cd); margin: 0; } .ds-athlete-bio { font-size: 0.875rem; line-height: 1.5; color: var(--color-on-surface-variant, #5b4138); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } .ds-athlete-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; } .ds-athlete-highlight { display: inline-flex; align-items: center; border-radius: 9999px; padding: 5px 12px; background: var(--color-surface-container-low, #f1f4f6); font-size: 0.75rem; font-weight: 700; color: var(--color-on-surface, #181c1e); } .ds-athlete-cta { font-size: 0.75rem; font-weight: 700; color: var(--color-primary, #ab3600); letter-spacing: 0.01em; transition: transform 200ms ease; } .ds-athlete-card:hover .ds-athlete-cta { transform: translateX(2px); }"
+    },
+    {
+      "name": "Progress Bar",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "Warm orange gradient reads as momentum. Pill track and fill. Standard height 10px.",
+      "html": "<div style=\"width:280px;font-family:var(--font-sans,'Inter',ui-sans-serif,sans-serif);\"><div style=\"display:flex;justify-content:space-between;margin-bottom:8px;\"><span style=\"font-size:0.75rem;font-weight:700;color:#181c1e;\">Campaign goal</span><span style=\"font-size:0.75rem;font-weight:700;color:#ab3600;\">68%</span></div><div class=\"ds-progress-track\" role=\"progressbar\" aria-valuenow=\"68\" aria-valuemin=\"0\" aria-valuemax=\"100\"><div class=\"ds-progress-fill\" style=\"width:68%\"></div></div><div style=\"display:flex;justify-content:space-between;margin-top:6px;\"><span style=\"font-size:0.75rem;color:#5b4138;\">$6,800 raised</span><span style=\"font-size:0.75rem;color:#5b4138;\">Goal: $10,000</span></div></div>",
+      "css": ".ds-progress-track { width: 100%; height: 10px; border-radius: 9999px; background-color: var(--color-surface-container, #ebeef0); overflow: hidden; } .ds-progress-fill { height: 100%; border-radius: 9999px; background: linear-gradient(90deg, var(--color-primary, #ab3600) 0%, var(--color-primary-container, #ff5f1f) 100%); transition: width 300ms ease; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "button-primary",
+      "description": "12px radius (input token). Outline Variant border at rest; Podium Blue focus ring with soft glow.",
+      "html": "<div class=\"ds-input-wrap\"><label class=\"ds-input-label\" for=\"ds-input-demo\">Email address</label><input class=\"ds-input\" id=\"ds-input-demo\" type=\"email\" placeholder=\"you@example.com\" /></div>",
+      "css": ".ds-input-wrap { display: flex; flex-direction: column; gap: 6px; width: 280px; } .ds-input-label { font-size: 0.875rem; font-weight: 600; color: var(--color-on-surface, #181c1e); font-family: var(--font-sans, 'Inter', ui-sans-serif, sans-serif); } .ds-input { padding: 12px 16px; border-radius: 0.75rem; border: 1px solid var(--color-outline-variant, #e3bfb3); background-color: #ffffff; color: var(--color-on-surface, #181c1e); font-size: 0.875rem; font-family: var(--font-sans, 'Inter', ui-sans-serif, sans-serif); transition: border-color 150ms ease, box-shadow 150ms ease; outline: none; } .ds-input:hover { border-color: var(--color-outline, #8f7066); } .ds-input:focus { border-color: var(--color-secondary, #0453cd); box-shadow: 0 0 0 2px rgba(4,83,205,0.2); } .ds-input::placeholder { color: var(--color-outline, #8f7066); }"
+    },
+    {
+      "name": "Navigation Header",
+      "kind": "nav",
+      "refersTo": "button-primary",
+      "description": "Sticky. 64px height. backdrop-blur over cool-paper/90. Hairline border-b only — no shadow.",
+      "html": "<header class=\"ds-header\"><div class=\"ds-header-inner\"><div class=\"ds-header-logo\">ARC</div><nav class=\"ds-header-nav\"><a class=\"ds-header-link\" href=\"#\">Discover</a><a class=\"ds-header-link\" href=\"#\">For Athletes</a><a class=\"ds-header-link\" href=\"#\">Mission</a></nav><div class=\"ds-header-actions\"><button class=\"ds-header-btn\">Join ARC</button></div></div></header>",
+      "css": ".ds-header { width: 100%; border-bottom: 1px solid rgba(227,191,179,0.6); background-color: rgba(247,250,252,0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); } .ds-header-inner { margin: 0 auto; display: flex; height: 64px; width: 100%; max-width: 1280px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 20px; } .ds-header-logo { font-family: var(--font-display, 'Montserrat', ui-sans-serif, sans-serif); font-weight: 800; font-size: 1.125rem; letter-spacing: -0.01em; color: var(--color-on-surface, #181c1e); } .ds-header-nav { display: flex; align-items: center; gap: 32px; } .ds-header-link { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.01em; color: var(--color-on-surface, #181c1e); text-decoration: none; transition: color 150ms ease; } .ds-header-link:hover { color: var(--color-primary-container, #ff5f1f); } .ds-header-actions { display: flex; align-items: center; gap: 8px; } .ds-header-btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; background-color: var(--color-primary-container, #ff5f1f); color: #ffffff; font-family: var(--font-display, 'Montserrat', ui-sans-serif, sans-serif); font-size: 0.75rem; font-weight: 600; letter-spacing: -0.01em; height: 36px; padding: 0 16px; border: none; cursor: pointer; box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 8px 24px -12px rgba(171,54,0,0.45); transition: background-color 200ms ease; } .ds-header-btn:hover { background-color: var(--color-primary, #ab3600); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Champion's Arc",
+    "overview": "Athlete Arc is bold and honest by design. It does not soften — it declares. Every surface is built around the athlete's face and story first, with funding mechanics subordinated to the narrative. The typography is heavy-set Montserrat at near-display weight for headlines, pairing an urgent, athletic voice with the calm precision of Inter for body text. Generous whitespace keeps the visual hierarchy uncluttered even when content is dense.\n\nChampion Orange is the system's single spark — a vivid, high-chroma signal (#ff5f1f) reserved for the moments that demand action: primary CTAs, funding progress, highlighted achievements. Podium Blue provides trustworthy counterweight, carrying secondary actions and verified information. Stadium Charcoal grounds everything in legible authority. Photography is always the first visual layer; color and type build on top of it, never in competition.\n\nThe system is deeply photographic and dark-section–friendly. Hero areas use full-bleed imagery with dark gradient overlays, film grain texture, and a slow Ken Burns drift — a cinematic frame for athletic pursuit. Scroll-triggered reveals (fade + rise) and purposeful hover states (lift + translate) give the interface tactile confidence without crossing into showmanship.",
+    "keyCharacteristics": [
+      "Story-first at every level: athlete name, sport, and photo before any funding metric",
+      "Two-tone authority: Champion Orange ignites; Podium Blue anchors; Stadium Charcoal grounds",
+      "Pill-shaped interaction language — buttons, badges, and progress bars share the same curved form",
+      "Flat surfaces with earned elevation: only hover and state produce depth",
+      "Photography-backed dark sections for hero moments; cool-paper light sections for content"
+    ],
+    "rules": [
+      {
+        "name": "The Orange Reserve Rule",
+        "body": "Champion Orange Vivid (#ff5f1f) appears on ≤10% of any given screen's surface area. Its scarcity is the point — the eye lands on it immediately and knows it is actionable.",
+        "section": "colors"
+      },
+      {
+        "name": "The Story-First Rule",
+        "body": "Athlete name, sport, and photograph appear before any funding metric or supporter count on every athlete-facing surface.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Italic Rule",
+        "body": "Italic type is absent from this system. Emphasis is achieved through weight contrast (700 vs. 400) and color, never slant.",
+        "section": "typography"
+      },
+      {
+        "name": "The Eyebrow Ceiling",
+        "body": "Uppercase-tracked eyebrows are reserved for section kickers only. Never apply the eyebrow style to interactive elements or paragraph text.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-Default Rule",
+        "body": "A surface at rest has no shadow. Elevation is a verb, not a property.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Pill Covenant",
+        "body": "All interactive primitives — buttons, badges, progress bars, chips — use border-radius: 9999px. Square and angular corners are absent from the interactive layer.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do lead with the athlete's name, sport, and photograph before any funding metric or follower count on every athlete-facing surface.",
+      "Do use Champion Orange Vivid (#ff5f1f) only for primary CTAs, progress fills, and funding-moment accents — scarcity is its power.",
+      "Do apply rounded-pill (9999px) to all interactive primitives: buttons, badges, chips, and progress bars.",
+      "Do show cost line items whenever a campaign is presented — transparency is the product, not a feature.",
+      "Do honor prefers-reduced-motion — disable Ken Burns, scroll-cue, reveal, and card-lift-hover transitions.",
+      "Do use Podium Blue (#0453cd) for all focus rings — consistent, accessible, and visually distinct from orange."
+    ],
+    "donts": [
+      "Don't use Champion Orange Vivid for decorative purposes — every orange moment must signal action or a funding milestone.",
+      "Don't use italic type — emphasis is weight (700 vs 400) and color, never slant.",
+      "Don't place funding metrics, supporter counts, or raised amounts before the athlete's story on any primary surface.",
+      "Don't add fields, steps, or configuration options to onboarding and campaign flows without explicit justification — minimalism is a constraint, not a preference.",
+      "Don't apply shadows to surfaces at rest — elevation is a response to state, not a standing property.",
+      "Don't use the uppercase eyebrow style on interactive elements or inline in paragraph copy."
+    ]
+  }
+}
