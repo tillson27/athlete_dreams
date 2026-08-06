@@ -280,16 +280,23 @@ export function PublishPanel() {
           Sign in before publishing your profile.
         </p>
       ) : mode === 'api' && session?.mustVerifyEmail ? (
-        <p
+        <div
           role="alert"
-          className="rounded-input bg-primary-container/20 px-4 py-3 text-sm font-semibold text-on-surface"
+          className="rounded-input border border-secondary/30 bg-secondary-soft/40 px-4 py-4 text-sm"
         >
-          Verify your email before publishing.{' '}
-          <Link href="/verify-email" className="text-primary underline">
-            Resend verification
+          <p className="font-bold text-on-surface">Email verification required</p>
+          <p className="mt-1 text-on-surface-variant">
+            Check your inbox and click the link we sent you. Once verified, come back here to
+            publish.
+          </p>
+          <Link
+            href="/verify-email"
+            className="mt-3 inline-flex items-center gap-2 rounded-button bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95"
+          >
+            Resend verification email
+            <Icon name="arrow-forward" className="h-4 w-4" />
           </Link>
-          .
-        </p>
+        </div>
       ) : null}
       {mode === 'api' && publishChecklist.length > 0 ? (
         <div
@@ -325,6 +332,11 @@ export function PublishPanel() {
           <>
             <Icon name="sync" className="h-6 w-6 animate-spin" />
             Publishing...
+          </>
+        ) : publishBlockedByAccount ? (
+          <>
+            <Icon name="lock" className="h-6 w-6" />
+            Verify email to publish
           </>
         ) : (
           <>

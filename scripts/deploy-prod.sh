@@ -100,10 +100,10 @@ if [[ "${WEB_ONLY}" != "true" ]]; then
 
   log "Deploying ${API_STACK} (pinned to ${SHA:0:12})…"
   npm --prefix "${CDK_DIR}" install --silent
-  npx --prefix "${CDK_DIR}" cdk deploy "${API_STACK}" \
+  (cd "${CDK_DIR}" && npx cdk deploy "${API_STACK}" \
     -c env="${ENV}" \
     -c "imageTag=${SHA}" \
-    --require-approval never
+    --require-approval never)
   ok "${API_STACK} deployed."
 
   # ── Read stack outputs ───────────────────────────────────────────────────────
