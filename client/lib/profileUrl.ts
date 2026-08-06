@@ -7,7 +7,11 @@ type SearchParamsReader = Pick<URLSearchParams, 'get'>;
 export type AthleteRoute = { kind: 'profile' | 'manage'; athleteSlug: string };
 
 function shouldUseRuntimeAthleteRoute(routePreference: AthleteRoutePreference): boolean {
-  return routePreference === 'runtime';
+  if (routePreference === 'runtime') return true;
+  if (routePreference === 'static') return false;
+  // 'auto': the static export only pre-renders mock athlete pages; real athlete
+  // slugs must go through query-param routing on the /athletes page.
+  return process.env.NEXT_PUBLIC_DATA_SOURCE !== 'mock';
 }
 
 export function staticAthleteProfileHref(athleteSlug: string): string {

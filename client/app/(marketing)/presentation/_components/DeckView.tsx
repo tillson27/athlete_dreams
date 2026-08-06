@@ -152,8 +152,8 @@ function PasswordGate({ onAuthenticated }: { onAuthenticated: () => void }) {
 
         <p className="mt-6 text-xs text-white/55">
           Need access? Email{' '}
-          <a href="mailto:hello@arc.network" className="font-semibold text-primary-container hover:underline">
-            hello@arc.network
+          <a href="mailto:info@athletearc.ca" className="font-semibold text-primary-container hover:underline">
+            info@athletearc.ca
           </a>
           .
         </p>

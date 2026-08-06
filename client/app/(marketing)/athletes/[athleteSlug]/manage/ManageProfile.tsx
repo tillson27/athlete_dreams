@@ -432,7 +432,7 @@ function ApiEditorReady({
     : null;
 
   const renderSaveButton = () => (
-    <SaveButton onClick={save} saving={saving} />
+    <SaveButton onClick={save} saving={saving} saved={recentlySaved} />
   );
 
   // Any edit invalidates the "Saved" acknowledgement so it never lingers stale.
@@ -1634,16 +1634,20 @@ function ResetButton({ onClick, label }: { onClick: () => void; label: string })
   );
 }
 
-function SaveButton({ onClick, saving }: { onClick: () => void; saving: boolean }) {
+function SaveButton({ onClick, saving, saved }: { onClick: () => void; saving: boolean; saved: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={saving}
-      className="label-bold inline-flex min-h-11 items-center justify-center gap-2 rounded-pill bg-primary px-5 py-2.5 text-on-primary transition-all hover:bg-primary-strong disabled:opacity-60"
+      className={`label-bold inline-flex min-h-11 items-center justify-center gap-2 rounded-pill px-5 py-2.5 transition-all disabled:opacity-60 ${
+        saved
+          ? 'bg-success text-on-primary'
+          : 'bg-primary text-on-primary hover:bg-primary-strong'
+      }`}
     >
       <Icon name={saving ? 'history' : 'check'} className="h-4 w-4" />
-      {saving ? 'Saving...' : 'Save changes'}
+      {saving ? 'Saving...' : saved ? 'Saved!' : 'Save changes'}
     </button>
   );
 }
