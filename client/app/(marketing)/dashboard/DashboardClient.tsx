@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import type { AthleteProfile } from 'fad-common';
-import { useSession, signOut, type Session } from '@/lib/session';
+import { useSession, type Session } from '@/lib/session';
 import { DATA_SOURCE } from '@/lib/dataSource';
 import { findMockAthlete } from '@/lib/mockAthletes';
 import { slugifyName } from '@/lib/slugify';
@@ -337,13 +337,6 @@ function DashboardView({
             Your home base — manage your story, share it, and keep it growing.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={signOut}
-          className="label-bold min-h-11 self-start rounded-lg border border-outline-variant px-4 py-2.5 text-on-surface-variant transition-colors hover:border-error hover:text-error sm:self-auto"
-        >
-          Sign out
-        </button>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

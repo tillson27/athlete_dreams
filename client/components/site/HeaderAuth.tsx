@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { LinkButton } from '../ui/Button';
-import { useSession } from '@/lib/session';
+import { signOut, useSession } from '@/lib/session';
 
 const mobileItemClass =
   'block px-5 py-3 text-base font-semibold text-on-surface hover:bg-surface-container';
@@ -14,11 +14,22 @@ export function HeaderAuth({ variant = 'desktop' }: { variant?: 'desktop' | 'mob
   if (variant === 'mobile') {
     if (authed) {
       return (
-        <li>
-          <Link href="/dashboard" className={mobileItemClass}>
-            Dashboard
-          </Link>
-        </li>
+        <>
+          <li>
+            <Link href="/dashboard" className={mobileItemClass}>
+              Dashboard
+            </Link>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={signOut}
+              className={`${mobileItemClass} w-full text-left text-error`}
+            >
+              Sign out
+            </button>
+          </li>
+        </>
       );
     }
     return (
@@ -39,9 +50,18 @@ export function HeaderAuth({ variant = 'desktop' }: { variant?: 'desktop' | 'mob
 
   if (authed) {
     return (
-      <LinkButton href="/dashboard" tone="primary" size="sm">
-        Dashboard
-      </LinkButton>
+      <>
+        <LinkButton href="/dashboard" tone="primary" size="sm">
+          Dashboard
+        </LinkButton>
+        <button
+          type="button"
+          onClick={signOut}
+          className="label-bold rounded-pill px-3 py-2 text-on-surface-variant transition-colors hover:text-error"
+        >
+          Sign out
+        </button>
+      </>
     );
   }
 

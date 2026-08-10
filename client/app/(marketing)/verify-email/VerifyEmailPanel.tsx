@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { authInputClass } from '@/components/ui/formStyles';
 import { resendVerification, verifyEmail } from '@/lib/api';
+import { useSession } from '@/lib/session';
 
 type VerificationState = 'checking' | 'verified' | 'failed' | 'missing';
 type ResendState = 'idle' | 'sending' | 'sent';
@@ -14,29 +15,30 @@ type ResendState = 'idle' | 'sending' | 'sent';
 export function VerifyEmailPanel() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const { session } = useSession();
   const [verificationState, setVerificationState] = useState<VerificationState>(
     token ? 'checking' : 'missing'
   );
   const [resendState, setResendState] = useState<ResendState>('idle');
   const [resendError, setResendError] = useState<string | null>(null);
+  // Guard against double-invocation (React Strict Mode mounts effects twice in dev;
+  // a second call would find the token already consumed and show a false "expired" error).
+  const verifyCalledRef = useRef(false);
 
   useEffect(() => {
     if (!token) {
       setVerificationState('missing');
       return;
     }
-    let active = true;
+    if (verifyCalledRef.current) return;
+    verifyCalledRef.current = true;
+
     setVerificationState('checking');
+    let cancelled = false;
     verifyEmail({ token })
-      .then(() => {
-        if (active) setVerificationState('verified');
-      })
-      .catch(() => {
-        if (active) setVerificationState('failed');
-      });
-    return () => {
-      active = false;
-    };
+      .then(() => { if (!cancelled) setVerificationState('verified'); })
+      .catch(() => { if (!cancelled) setVerificationState('failed'); });
+    return () => { cancelled = true; };
   }, [token]);
 
   const handleResend = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -101,6 +103,7 @@ export function VerifyEmailPanel() {
               autoComplete="email"
               required
               placeholder="you@runmail.com"
+              defaultValue={session?.email ?? ''}
               className={authInputClass}
             />
           </label>
