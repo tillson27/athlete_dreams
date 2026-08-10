@@ -247,6 +247,106 @@ describe.skipIf(!shouldRunDatabaseTests)('POST /v1/campaigns (transparency rule)
   });
 });
 
+describe.skipIf(!shouldRunDatabaseTests)('PATCH /v1/campaigns/:campaignSlug/status', () => {
+  it('activates an owned draft campaign when the profile and Stripe account are donation-ready', async () => {
+    const app = buildTestApp();
+
+    const email = `${RUN_ID}-activator@fixture.athletearc.ca`;
+    const signUp = await request(app)
+      .post('/v1/auth/sign-up')
+      .send({ email, password: 'Passw0rd!123', displayName: 'Campaign Activator' });
+    expect(signUp.status).toBe(201);
+    FIXTURE_USER_EMAILS.push(email);
+    const accessToken: string = signUp.body.data.accessToken;
+    const userId: string = signUp.body.data.user.userId;
+    const personalTeam = await prisma.teamMembership.findFirst({
+      where: { userId, team: { isPersonal: true } },
+      select: { teamId: true },
+    });
+    if (personalTeam) FIXTURE_TEAM_IDS.push(personalTeam.teamId);
+
+    const athlete = await prisma.athleteProfile.create({
+      data: {
+        userId,
+        athleteSlug: `${RUN_ID}-activator`,
+        fullName: 'Campaign Activator',
+        primarySport: SportCategory.RUNNING,
+        publishedAt: new Date(),
+        stripeAccountId: `acct_${RUN_ID.replace(/[^a-zA-Z0-9]/g, '_')}_ready`,
+        stripeChargesEnabledAt: new Date(),
+      },
+    });
+    const campaign = await prisma.campaign.create({
+      data: {
+        athleteId: athlete.id,
+        campaignSlug: `${RUN_ID}-activate`,
+        campaignTitle: 'Ready campaign',
+        campaignType: CampaignType.EVENT,
+        campaignStory: 'Ready for donations.',
+        targetAmountCents: 50_000,
+        costLines: { create: [{ label: 'Entry', amountCents: 50_000 }] },
+      },
+    });
+
+    const response = await request(app)
+      .patch(`/v1/campaigns/${campaign.campaignSlug}/status`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .send({ campaignStatus: CampaignStatus.ACTIVE });
+    expect(response.status).toBe(200);
+    expect(response.body.data.campaignStatus).toBe(CampaignStatus.ACTIVE);
+
+    const persisted = await prisma.campaign.findUniqueOrThrow({ where: { id: campaign.id } });
+    expect(persisted.campaignStatus).toBe(CampaignStatus.ACTIVE);
+  });
+
+  it('rejects activation when the owned campaign is missing Stripe readiness', async () => {
+    const app = buildTestApp();
+
+    const email = `${RUN_ID}-stripe-missing@fixture.athletearc.ca`;
+    const signUp = await request(app)
+      .post('/v1/auth/sign-up')
+      .send({ email, password: 'Passw0rd!123', displayName: 'Stripe Missing' });
+    expect(signUp.status).toBe(201);
+    FIXTURE_USER_EMAILS.push(email);
+    const accessToken: string = signUp.body.data.accessToken;
+    const userId: string = signUp.body.data.user.userId;
+    const personalTeam = await prisma.teamMembership.findFirst({
+      where: { userId, team: { isPersonal: true } },
+      select: { teamId: true },
+    });
+    if (personalTeam) FIXTURE_TEAM_IDS.push(personalTeam.teamId);
+
+    const athlete = await prisma.athleteProfile.create({
+      data: {
+        userId,
+        athleteSlug: `${RUN_ID}-stripe-missing`,
+        fullName: 'Stripe Missing',
+        primarySport: SportCategory.RUNNING,
+        publishedAt: new Date(),
+      },
+    });
+    const campaign = await prisma.campaign.create({
+      data: {
+        athleteId: athlete.id,
+        campaignSlug: `${RUN_ID}-stripe-blocked`,
+        campaignTitle: 'Blocked campaign',
+        campaignType: CampaignType.EVENT,
+        campaignStory: 'Not ready for donations.',
+        targetAmountCents: 50_000,
+        costLines: { create: [{ label: 'Entry', amountCents: 50_000 }] },
+      },
+    });
+
+    const response = await request(app)
+      .patch(`/v1/campaigns/${campaign.campaignSlug}/status`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .send({ campaignStatus: CampaignStatus.ACTIVE });
+    expect(response.status).toBe(422);
+    expect(response.body.error.code).toBe('validation_error');
+    expect(response.body.error.details.missing).toContain('stripeAccount');
+  });
+});
+
 function z_arrayParse(data: unknown): ReturnType<typeof campaignSummarySchema.parse>[] {
   if (!Array.isArray(data)) throw new Error('Expected an array response');
   return data.map((item) => campaignSummarySchema.parse(item));

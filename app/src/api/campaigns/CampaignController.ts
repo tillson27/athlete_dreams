@@ -1,7 +1,12 @@
 import { injectable } from 'tsyringe';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { activeCampaignFeedQuerySchema, createCampaignRequestSchema, slugSchema } from 'fad-common';
+import {
+  activeCampaignFeedQuerySchema,
+  createCampaignRequestSchema,
+  slugSchema,
+  updateCampaignStatusRequestSchema,
+} from 'fad-common';
 import { CampaignService } from './CampaignService';
 import { ResponseHandler } from '../../shared/ResponseHandler';
 import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/requestParsers';
@@ -51,5 +56,26 @@ export class CampaignController {
       },
     });
     ResponseHandler.success(res, 201, campaign);
+  };
+
+  changeStatus = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authenticatedUserId) throw new UnauthorizedError();
+    const params = parseRequestParams(campaignSlugParamSchema, req);
+    const body = parseRequestBody(updateCampaignStatusRequestSchema, req);
+    const campaign = await this.campaignService.changeStatusForAthlete(
+      req.authenticatedUserId,
+      params.campaignSlug,
+      body
+    );
+    this.posthog.capture({
+      distinctId: req.authenticatedUserId,
+      event: 'campaign_status_changed',
+      properties: {
+        campaign_id: campaign.campaignId,
+        campaign_slug: campaign.campaignSlug,
+        campaign_status: campaign.campaignStatus,
+      },
+    });
+    ResponseHandler.success(res, 200, campaign);
   };
 }

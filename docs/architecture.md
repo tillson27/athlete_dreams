@@ -49,20 +49,20 @@ HTTP → Express Router → <Feature>RouterFactory
 - Controllers parse `req.body` / `req.query` / `req.params` through `parseRequestBody` etc.
 - The global `errorHandler` middleware translates `DomainError` subclasses into HTTP responses.
 - Health is split into `GET /v1/health/live` (process) and `GET /v1/health/ready` (DB `SELECT 1`, 503 when unreachable); the ALB targets `ready`.
-- Directory and feed reads use opaque keyset pagination (`(createdAt desc, id desc)`, no OFFSET); directory and feed return **published athletes only**.
+- Directory reads use opaque keyset pagination (`(createdAt desc, id desc)`, no OFFSET). Community feed reads use an opaque offset cursor over a deterministic derived feed. Both return **published athletes only**.
 
 ## Site Layout (Frontend — `nate`)
 
-Runner-first launch surface on `athletearc.ca` (the `/brands`, `/ambassadors`, `/presentation` corporate routes were removed):
+Runner-first launch surface on `athletearc.ca`:
 
 - **Marketing:** `/` (story-led home), `/for-athletes` (recruiting), `/mission`, `/about`, `/how-it-works` (runners + followers personas), `/support` (backing preview — itemized cost lines, "coming soon"), `/terms`, `/privacy`.
 - **Discovery:** `/athletes` (directory: search + region filters with pagination), `/athletes/[athleteSlug]` (rich profile: Arc chapters, verified results, highlights, roadmap), `/community` (feed: races / training / milestones, follows, cheers).
 - **Athlete loop:** `/sign-up`, `/sign-in`, `/forgot-password`, `/reset-password?token=...`, `/verify-email`, `/register` + 4-step `/register/{personal-basics,athletics,values-social,review}` onboarding, `/dashboard`, `/athletes/[athleteSlug]/manage` (editor).
-- **SEO:** `sitemap.ts`, `robots.ts` (private routes disallowed), dynamic OG images, `metadataBase = https://athletearc.ca`.
+- **SEO:** `sitemap.ts`, `robots.ts` (private routes disallowed), static site-wide OG image, `metadataBase = https://athletearc.ca`.
 
 Data source is flag-driven via `NEXT_PUBLIC_DATA_SOURCE` (`api` default, explicit `mock` for static previews). In `mock` mode all data is mock/localStorage: roster + rich profiles from `client/lib/{mockAthletes,athleteProfiles}.ts`; session, follows, cheers, onboarding drafts, and manage-editor edits in localStorage stores that each name their backend replacement. In `api` mode the read surfaces (directory, profile, community) **and the authenticated write surfaces** are real against `GET/POST/PATCH/PUT /v1/…` via `client/lib/api.ts`; API loading and failures render loading/error/empty states instead of substituting fixtures. Sessions (`lib/session.ts`) are access-token-only, token + user in `arc-auth` localStorage, validated on mount via `GET /v1/users/me`. Email verification and password reset are Resend-backed, follows are server-persisted, anonymous onboarding is gated through auth with a return destination, and the 4-step onboarding wizard persists server-side. Static exports that cannot depend on the API set mock explicitly. The seam-by-seam mapping to API phases lives in `docs/backend-build-sheet.md` → *Frontend contract alignment*.
 
-**Known static-export boundary (api mode):** the client still ships as a static export, so `/athletes/[athleteSlug]` pages are pre-rendered from the mock roster via `generateStaticParams`. A newly-created api-mode athlete's *dedicated profile page* therefore 404s in the static export (its slug wasn't in the build-time roster); the directory (`/athletes`), the dashboard, and the profile **API** (`GET /v1/athletes/{slug}`) are unaffected and reflect the new athlete immediately. This resolves when the client moves to SSR/ISR — see `docs/infrastructure-and-scaling.md` → *Stage 2 — Growth* (SSR/ISR for athlete-profile SEO).
+**Known static-export boundary (api mode):** the client still ships as a static export. CloudFront rewrites `/athletes/<slug>` and `/athletes/<slug>/manage` to `/athletes.html`, where the client resolves real API slugs at runtime. Newly created API athletes are reachable by direct URL after hydration, but they are not included in build-time static params, sitemap entries, or per-athlete metadata/OG output until the client moves to SSR/ISR — see `docs/infrastructure-and-scaling.md` → *Stage 2 — Growth* (SSR/ISR for athlete-profile SEO).
 
 ## AI Toolkit
 

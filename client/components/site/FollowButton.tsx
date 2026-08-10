@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useFollows } from '@/lib/follows';
+import { authHref } from '@/lib/authRedirect';
 import { Icon } from '@/components/ui/Icon';
 
 type Variant = 'hero' | 'block' | 'chip';
@@ -35,6 +37,7 @@ export function FollowButton({
   className?: string;
 }) {
   const { ready, isFollowing, toggle, requiresSignIn, error } = useFollows();
+  const returnDestination = useCurrentReturnDestination('/athletes');
   const following = ready && isFollowing(slug);
   const label = following ? 'Following' : 'Follow';
 
@@ -43,7 +46,7 @@ export function FollowButton({
   if (requiresSignIn) {
     return (
       <Link
-        href="/sign-in"
+        href={authHref('/sign-in', returnDestination)}
         title="Sign in to follow"
         aria-label="Sign in to follow"
         className={`${base[variant]} ${notFollowed[variant]} ${className ?? ''}`}
@@ -79,4 +82,12 @@ export function FollowButton({
       </span>
     </span>
   );
+}
+
+function useCurrentReturnDestination(fallback: string): string {
+  const [destination, setDestination] = useState(fallback);
+  useEffect(() => {
+    setDestination(`${window.location.pathname}${window.location.search}`);
+  }, []);
+  return destination;
 }

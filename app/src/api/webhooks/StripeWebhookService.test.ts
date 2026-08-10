@@ -126,6 +126,38 @@ describe('StripeWebhookService — checkout success fold', () => {
     expect(webhooks.markProcessed).toHaveBeenCalledWith('evt_success_1');
   });
 
+  it('does not fulfill when the event connected account does not match the campaign athlete', async () => {
+    await makeService().process({ ...checkoutEvent(), account: 'acct_other' });
+
+    expect(ledger.append).not.toHaveBeenCalled();
+    expect(donations.setStatus).not.toHaveBeenCalled();
+    expect(campaigns.applyDonationEvent).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventStripeAccountId: 'acct_other',
+        expectedStripeAccountId: 'acct_athlete',
+      }),
+      'webhook.connected_account_mismatch'
+    );
+    expect(webhooks.markProcessed).toHaveBeenCalledWith('evt_success_1');
+  });
+
+  it('does not fulfill when a Connect money event is missing the connected account', async () => {
+    const event = checkoutEvent() as Stripe.Event & { account?: string };
+    delete event.account;
+
+    await makeService().process(event);
+
+    expect(ledger.append).not.toHaveBeenCalled();
+    expect(donations.setStatus).not.toHaveBeenCalled();
+    expect(campaigns.applyDonationEvent).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedStripeAccountId: 'acct_athlete' }),
+      'webhook.missing_connected_account'
+    );
+    expect(webhooks.markProcessed).toHaveBeenCalledWith('evt_success_1');
+  });
+
   it('does not fulfill an unpaid (async-pending) session', async () => {
     await makeService().process(checkoutEvent({ payment_status: 'unpaid' }));
     expect(ledger.append).not.toHaveBeenCalled();
@@ -227,6 +259,40 @@ describe('StripeWebhookService — refund/dispute by PaymentIntent', () => {
     });
     expect(donations.setStatus).toHaveBeenCalledWith('d1', 'REFUNDED', transactionClient);
     expect(campaigns.applyDonationEvent).toHaveBeenCalledWith(transactionClient, 'c1', -5000, -1);
+  });
+
+  it('does not record a refund when the event connected account mismatches the campaign athlete', async () => {
+    donations.findByPaymentIntentId.mockResolvedValue(succeededDonationRow);
+    const event = {
+      id: 'evt_refund_wrong_account',
+      type: 'charge.refunded',
+      account: 'acct_other',
+      livemode: false,
+      created: 1_784_000_100,
+      data: {
+        object: {
+          id: 'ch_1',
+          payment_intent: 'pi_1',
+          amount_refunded: 5000,
+          currency: 'cad',
+          metadata: { donationId: 'd1' },
+        },
+      },
+    } as unknown as Stripe.Event;
+
+    await makeService().process(event);
+
+    expect(ledger.append).not.toHaveBeenCalled();
+    expect(donations.setStatus).not.toHaveBeenCalled();
+    expect(campaigns.applyDonationEvent).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventStripeAccountId: 'acct_other',
+        expectedStripeAccountId: 'acct_athlete',
+      }),
+      'webhook.connected_account_mismatch'
+    );
+    expect(webhooks.markProcessed).toHaveBeenCalledWith('evt_refund_wrong_account');
   });
 
   it('records a partial refund amount without marking the whole donation REFUNDED', async () => {

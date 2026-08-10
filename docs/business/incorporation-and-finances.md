@@ -99,6 +99,8 @@ ARC never holds or controls the funds.
   athletes spend funds, (b) reserve the right to remove bad actors, (c) define
   refund/dispute stance (likely: disputes go through Stripe chargeback between backer and
   athlete). The **receipts feature is the key legal protection** — keep it.
+  > **Implementation note:** Receipt-backed reconciliation and campaign updates are not shipped
+  self-serve workflows yet; see `docs/backend-build-sheet.md` → Phase 3.
 - **Processor rulebook.** Stripe Connect platform agreement + prohibited-business rules —
   ARC must monitor athletes for fraud/prohibited activity or Stripe can terminate the
   whole platform. A *monitoring* duty even without holding funds.

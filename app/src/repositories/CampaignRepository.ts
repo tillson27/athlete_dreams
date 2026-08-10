@@ -78,6 +78,24 @@ export class CampaignRepository {
     });
   }
 
+  findBySlugForOwner(campaignSlug: string, userId: string): Promise<CampaignWithAthlete | null> {
+    return this.prisma.campaign.findFirst({
+      where: { campaignSlug, deletedAt: null, athlete: { userId } },
+      include: { costLines: true, athlete: true },
+    });
+  }
+
+  updateStatus(
+    campaignId: string,
+    campaignStatus: CampaignStatus
+  ): Promise<CampaignWithAthlete> {
+    return this.prisma.campaign.update({
+      where: { id: campaignId },
+      data: { campaignStatus },
+      include: { costLines: true, athlete: true },
+    });
+  }
+
   // Atomic projection fold, run INSIDE the webhook's `$transaction` (Step 6).
   // Positive deltas add successful funding; negative deltas reverse refunds or
   // disputes so public totals never overstate money actually available.

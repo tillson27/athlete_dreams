@@ -45,7 +45,10 @@ export class FollowRepository {
 
   listForUser(followerUserId: string, limit: number): Promise<FollowWithAthlete[]> {
     return this.prisma.follow.findMany({
-      where: { followerUserId },
+      where: {
+        followerUserId,
+        athlete: { deletedAt: null, publishedAt: { not: null } },
+      },
       include: { athlete: { select: followAthleteColumns } },
       orderBy: { createdAt: 'desc' },
       take: limit,

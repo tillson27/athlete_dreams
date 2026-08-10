@@ -25,6 +25,8 @@ export function validateProductionConfig(env: NodeJS.ProcessEnv = process.env): 
 
   requireStripeSecret(env.STRIPE_SECRET_KEY, errors);
   requireSecret(env.STRIPE_CONNECT_WEBHOOK_SECRET, 'STRIPE_CONNECT_WEBHOOK_SECRET', errors);
+  requireSecret(env.RESEND_API_KEY, 'RESEND_API_KEY', errors);
+  requireEmailSender(env.RESEND_FROM_EMAIL, errors);
   parseHttpsUrl(env.STRIPE_ACCOUNT_ONBOARDING_RETURN_URL, 'STRIPE_ACCOUNT_ONBOARDING_RETURN_URL', errors);
   parseHttpsUrl(env.STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL, 'STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL', errors);
   parseHttpsUrl(env.STRIPE_CHECKOUT_SUCCESS_URL, 'STRIPE_CHECKOUT_SUCCESS_URL', errors);
@@ -73,5 +75,15 @@ function requireSecret(rawValue: string | undefined, name: string, errors: strin
   }
   if (rawValue.includes('replace') || rawValue.includes('placeholder')) {
     errors.push(`${name} must not be a placeholder in production.`);
+  }
+}
+
+function requireEmailSender(rawValue: string | undefined, errors: string[]): void {
+  if (!rawValue) {
+    errors.push('RESEND_FROM_EMAIL is required in production.');
+    return;
+  }
+  if (rawValue.includes('resend.dev') || rawValue.includes('placeholder')) {
+    errors.push('RESEND_FROM_EMAIL must be a verified production sender.');
   }
 }

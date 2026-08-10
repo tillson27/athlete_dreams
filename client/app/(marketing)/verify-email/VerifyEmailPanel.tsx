@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { authInputClass } from '@/components/ui/formStyles';
 import { resendVerification, verifyEmail } from '@/lib/api';
-import { useSession } from '@/lib/session';
+import { refreshSessionUser, useSession } from '@/lib/session';
 
 type VerificationState = 'checking' | 'verified' | 'failed' | 'missing';
 type ResendState = 'idle' | 'sending' | 'sent';
@@ -36,7 +36,10 @@ export function VerifyEmailPanel() {
     setVerificationState('checking');
     let cancelled = false;
     verifyEmail({ token })
-      .then(() => { if (!cancelled) setVerificationState('verified'); })
+      .then(async () => {
+        await refreshSessionUser();
+        if (!cancelled) setVerificationState('verified');
+      })
       .catch(() => { if (!cancelled) setVerificationState('failed'); });
     return () => { cancelled = true; };
   }, [token]);

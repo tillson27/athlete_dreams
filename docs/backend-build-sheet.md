@@ -110,42 +110,42 @@ Contract reconciliations: the client narrows sports to `RUNNING | TRACK_AND_FIEL
 
 ---
 
-## Phase 2 — The money loop: direct donations (core missing logic)
+## Phase 2 — The money loop: direct donations (implemented; hosted verification pending)
 
 We are **not** the merchant of record. Athletes hold **Standard** Connect accounts (they own funds, fees, refunds, disputes, payouts); we orchestrate **direct charges** with `application_fee = 0` and record everything to an **append-only event ledger**. Scope now is **immediate donations only** — funds are captured at donation time. All-or-nothing (Kickstarter) pledging is documented as a future add (see "Deferred" below); the event-ledger design keeps it additive.
 
-**Access:** live Stripe credentials (Connect app + keys) are **deferred** — build and test against Stripe **test mode** / mocks until then. See `docs/infrastructure-and-scaling.md` → *Prerequisites & access*.
+**Access:** live Stripe credentials (Connect app + keys) are **deferred**. The direct-donation code path is implemented; the remaining gate is hosted Stripe **test mode** verification with real Connect webhook delivery. See `docs/infrastructure-and-scaling.md` → *Prerequisites & access*.
 
 **Business alignment:** `docs/business/incorporation-and-finances.md` (from `nate`) independently locks the same model — non-custodial (backer → Stripe → athlete), zero platform fee, no MSB/FINTRAC exposure, KYC and chargebacks on Stripe + athlete. Default currency **CAD** (AthleteArc Inc., Canada-first). It adds one compliance follow-up: confirm CRA **digital-platform reporting** (OECD rules) with an accountant — the `DonationEvent` ledger already retains the data such reporting would need.
 
 **Deps:** `stripe`. **Local env (`app/.env.example`):** `STRIPE_SECRET_KEY`, `STRIPE_CONNECT_WEBHOOK_SECRET`, Stripe onboarding/Checkout URL values, `DONATION_MINIMUM_CENTS`, `DEFAULT_CURRENCY`. **Deployed env:** see `cdk/README.md` → §1c for the canonical Secrets Manager/SSM names. *(No `PLATFORM_FEE_BPS` — the platform takes nothing.)*
 
-**Δschema** (migrations — I draft, you apply)
+**Schema**
 - `AthleteProfile`: `stripeAccountId String? @unique`, `stripeChargesEnabledAt DateTime?`.
 - `Donation` stays a per-contribution **projection**; `paymentProviderRef` stores the Checkout Session id and `stripePaymentIntentId` stores the PaymentIntent after success — no card data is stored, so PCI stays out of our system.
 - `DonationEvent` (new, **append-only source of truth**): `id`, `donationId?`, `campaignId`, `athleteId`, `donationEventType`, `amountCents`, `currency`, `stripeAccountId`, `stripeObjectId`, `idempotencyKey @unique` (= Stripe event id), `occurredAt`, `rawPayload Json`.
 - enum `DonationEventType { DONATION_SUCCEEDED DONATION_FAILED DONATION_REFUNDED DISPUTE_OPENED }`.
 - `WebhookEvent` (new): `eventId @unique`, `provider`, `eventType`, `payload Json`, `processedAt` — idempotency/audit.
 
-**Δcontract** (`common/`)
+**Contract** (`common/`)
 - `types/enums.ts`: add `DonationEventType`.
 - `donation.ts`: `createDonationResponseSchema = { donation, checkoutUrl }`.
 - `athlete.ts`: `athleteStripeStatusSchema = { stripeConnected, chargesEnabled, payoutsEnabled, onboardingUrl? }`.
 
-**Infra service** — `app/src/services/infrastructure/StripeService.ts` (new, `@singleton`)
+**Infra service** — `app/src/services/infrastructure/StripeService.ts`
 - Onboarding: `createConnectedAccount()`, `createAccountLink(accountId)`, `retrieveAccount(id)`.
 - Charge: `createDonationCheckoutSession({ amountCents, stripeAccountId, metadata })` — hosted Checkout direct charge through the `Stripe-Account` header, **no** `application_fee_amount`, `transfer_data`, or `on_behalf_of`.
 - `constructWebhookEvent(rawBody, signature)` — Connect signing secret.
 
 **Repositories**
-- `DonationEventRepository` (new): `append(event)`, `existsByIdempotencyKey(key)`.
-- `DonationRepository` (new): `createPending`, `findByProviderRef`, `setStatus(id, status)`, `listForCampaign(campaignId, {limit, cursor})`.
-- `WebhookEventRepository` (new): `recordIfNew(eventId, type, payload): Promise<boolean>`.
+- `DonationEventRepository`: append ledger events with event-id idempotency.
+- `DonationRepository`: create pending donations, map provider refs/payment intents, and update statuses.
+- `WebhookEventRepository`: audit Stripe webhook receipt and processing.
 - `AthleteRepository`: `setStripeAccount(athleteId, accountId)`, `setChargesEnabled(athleteId, at)`.
 - `CampaignRepository`: `applyDonationEvent(campaignId, event, tx)` — **atomically** updates the projection (`raisedAmountCents` / `supporterCount`) and flips `FUNDED` when `raised >= target`.
 
 **API**
-- Onboarding: `POST /v1/athletes/me/stripe/onboarding` → `{ onboardingUrl }`; `GET /v1/athletes/me/stripe/status`.
+- Onboarding: `POST /v1/athletes/me/stripe/onboarding-link` → `{ onboardingUrl }`; `GET /v1/athletes/me/stripe/status`.
 - Donate: `POST /v1/donations` (`auth.optional` — **anyone can donate**): `createDonationCheckoutSession`; `Donation(PENDING)`; return `{ donation, checkoutUrl }`. Guards: campaign `ACTIVE`, not past `closesAt`, athlete Stripe ready (`charges_enabled`, `payouts_enabled`, active card payments), min amount.
 - Webhook: `api/webhooks/` (new) — `POST /v1/webhooks/stripe` (Connect events, raw body).
   - **CRITICAL:** mount with `express.raw({ type: 'application/json' })` **before** the global `express.json` in `buildApp`.
@@ -162,13 +162,15 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 
 ## Phase 3 — Campaign lifecycle & transparency updates
 
+> **Note:** Partially implemented. Current campaign creation persists transparent cost lines, owner-facing `PATCH /v1/campaigns/:campaignSlug/status` is mounted for guarded activation/completion/archival, and the Phase 2 money loop can flip `ACTIVE` campaigns to `FUNDED`. Campaign update posting/listing and receipt-backed reconciliation are still planned behavior.
+
 **Δcontract** (`common/src/zod/campaign.ts`)
 - `updateCampaignStatusRequestSchema` (`campaignStatus`, constrained), `campaignUpdateSchema`, `createCampaignUpdateRequestSchema` (`updateTitle`, `updateBody`).
 
 **Repositories / services**
-- `CampaignRepository`: `updateStatus`, `addUpdate`, `listUpdates`.
-- `CampaignService`: `changeStatus(userId, slug, status)` with a **transition guard** — `DRAFT→ACTIVE` requires transparency valid + athlete `stripeChargesEnabledAt` set; `ACTIVE→COMPLETED|ARCHIVED` is manual. `FUNDED` is set automatically by the Phase 2 money loop at target; terminal states are final. `postUpdate` (owner-only), `listUpdates`.
-- Endpoints: `PATCH /v1/campaigns/:slug/status`, `POST /v1/campaigns/:slug/updates`, `GET /v1/campaigns/:slug/updates`.
+- `CampaignRepository`: `updateStatus` implemented; `addUpdate`, `listUpdates` planned.
+- `CampaignService`: `changeStatus(userId, slug, status)` implemented with a **transition guard** — `DRAFT→ACTIVE` requires transparency valid + published athlete Stripe readiness; `ACTIVE|FUNDED→COMPLETED|ARCHIVED` is manual. `FUNDED` is set automatically by the Phase 2 money loop at target; terminal states are final. `postUpdate` (owner-only), `listUpdates` planned.
+- Endpoints: `PATCH /v1/campaigns/:campaignSlug/status` implemented; `POST /v1/campaigns/:campaignSlug/updates`, `GET /v1/campaigns/:campaignSlug/updates` planned.
 
 **Tests:** full transition matrix, publish-blocked-without-charges-enabled, owner-only update gate.
 
@@ -183,13 +185,13 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 - `JwtService`/new `RefreshTokenService`: opaque random token (`crypto.randomBytes`), store **hash** in `AuthSession.refreshTokenHash`.
 - `AuthService`: `signUp`/`signIn` also issue a refresh token → **httpOnly secure cookie** (`SameSite=Lax`, path `/v1/auth`). Add `refresh(token)` (**rotation + reuse detection**: unknown-but-user-has-newer → `revokeAllForUser`), `signOut(token)`.
 - `AuthRouterFactory`: `POST /v1/auth/refresh`, `POST /v1/auth/sign-out`. `buildApp`: `cookieParser()`.
-- Rate limiting: `app/src/middleware/rateLimit.ts` on `/v1/auth/*` (+ light global).
+- Distributed rate limiting: replace the current in-process `/v1/auth/*` limiter with a shared store and add light global limits.
 
 **Email verification & password reset** — implemented with Resend (2026-07-19)
 - `EmailVerificationToken` and `PasswordResetToken` store SHA-256 token hashes, expiry, and single-use consumption state.
 - `EmailService` sends verification, welcome, and password-reset emails through Resend using env-configured sender settings.
 - `AuthService` sends verification on sign-up, supports forgot/reset/resend/verify flows, and exposes verification state in the auth session contract.
-- Remaining account-hardening work: refresh-token rotation, auth rate limiting, cloud sender/domain operations, and team invites.
+- Remaining account-hardening work: refresh-token rotation, distributed rate limiting, cloud sender/domain operations, and team invites.
 
 **Teams (contracts already exist: `createTeamRequestSchema`, `inviteTeamMemberRequestSchema`, `teamInvitationSchema`, `teamMembershipSchema`)**
 - `TeamRepository`: `createTeam({name, ownerUserId})` (non-personal), `addMembership`, `updateRole`, `removeMembership` (soft: `leftAt`), `listMembers`.

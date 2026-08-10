@@ -19,6 +19,7 @@ import { findAthleteProfile } from '@/lib/athleteProfiles';
 import { DATA_SOURCE } from '@/lib/dataSource';
 import { useSession } from '@/lib/session';
 import { athleteProfileHref } from '@/lib/profileUrl';
+import { authHref } from '@/lib/authRedirect';
 import {
   deriveEdits,
   loadEdits,
@@ -1772,6 +1773,7 @@ function EditorGate({
   athleteSlug: string;
   ownerSlug?: string | null;
 }) {
+  const returnDestination = useCurrentReturnDestination(athleteProfileHref(athleteSlug));
   const copy = {
     'signed-out': {
       icon: 'lock' as IconName,
@@ -1801,7 +1803,7 @@ function EditorGate({
         <div className="mt-6 flex flex-col gap-3">
           {variant === 'signed-out' ? (
             <Link
-              href="/sign-in"
+              href={authHref('/sign-in', returnDestination)}
               className="label-bold rounded-lg bg-primary px-6 py-3 text-on-primary transition-all hover:bg-primary-strong"
             >
               Sign in
@@ -1817,4 +1819,12 @@ function EditorGate({
       </div>
     </div>
   );
+}
+
+function useCurrentReturnDestination(fallback: string): string {
+  const [destination, setDestination] = useState(fallback);
+  useEffect(() => {
+    setDestination(`${window.location.pathname}${window.location.search}`);
+  }, []);
+  return destination;
 }

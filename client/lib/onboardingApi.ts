@@ -277,6 +277,7 @@ export async function publishDraft(): Promise<void> {
 const PUBLISH_MISSING_SENTENCES: Record<string, string> = {
   storyIntro: 'Add your tagline in Step 3',
   personalBests: 'Add at least one personal best in Step 2',
+  disciplineLabel: 'Add your discipline in Step 1',
 };
 
 export function toPublishChecklist(details: unknown): string[] {

@@ -7,6 +7,8 @@ const validProductionEnv = {
   CORS_ALLOWED_ORIGINS: 'https://athletearc.ca,https://www.athletearc.ca',
   STRIPE_SECRET_KEY: 'sk_test_unit',
   STRIPE_CONNECT_WEBHOOK_SECRET: 'whsec_unit',
+  RESEND_API_KEY: 're_unit',
+  RESEND_FROM_EMAIL: 'ARC <info@athletearc.ca>',
   STRIPE_ACCOUNT_ONBOARDING_RETURN_URL: 'https://athletearc.ca/dashboard',
   STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL: 'https://athletearc.ca/dashboard',
   STRIPE_CHECKOUT_SUCCESS_URL: 'https://athletearc.ca/donate/thanks',
@@ -25,6 +27,7 @@ describe('validateProductionConfig', () => {
         APP_URL: 'http://localhost:3000',
         CORS_ALLOWED_ORIGINS: 'http://localhost:3000',
         STRIPE_CONNECT_WEBHOOK_SECRET: 'whsec_placeholder',
+        RESEND_FROM_EMAIL: 'onboarding@resend.dev',
       })
     ).toThrow(/Invalid production configuration/);
   });

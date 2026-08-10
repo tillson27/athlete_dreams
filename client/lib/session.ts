@@ -139,6 +139,15 @@ export function markPublished() {
   });
 }
 
+export async function refreshSessionUser(): Promise<void> {
+  if (DATA_SOURCE !== 'api') return;
+  const record = authStore.read();
+  if (!record) return;
+  const user = await fetchMe();
+  const current = authStore.read();
+  if (current) authStore.write({ ...current, user });
+}
+
 /** SSR-safe: returns { session: null, ready: false } until mounted on the client. */
 export function useSession(): { session: Session | null; ready: boolean } {
   const [session, setSession] = useState<Session | null>(null);
@@ -155,11 +164,7 @@ export function useSession(): { session: Session | null; ready: boolean } {
       // failure (revoked/expired) clears the stale record too.
       const record = authStore.read();
       if (record) {
-        fetchMe()
-          .then((user) => {
-            const current = authStore.read();
-            if (current) authStore.write({ ...current, user });
-          })
+        refreshSessionUser()
           .catch(() => {
             authStore.write(null);
           });

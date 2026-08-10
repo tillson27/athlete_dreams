@@ -126,7 +126,8 @@ export class StripeWebhookService {
     }
 
     const paymentIntentId = extractId(session.payment_intent);
-    const stripeAccountId = event.account ?? campaign.athlete.stripeAccountId ?? '';
+    const stripeAccountId = this.resolveEventStripeAccountId(event, campaign);
+    if (!stripeAccountId) return;
 
     try {
       await this.prisma.$transaction(async (tx) => {
@@ -237,13 +238,18 @@ export class StripeWebhookService {
       return;
     }
     const campaign = await this.campaigns.findByIdWithAthlete(donation.campaignId);
-    const stripeAccountId = event.account ?? campaign?.athlete.stripeAccountId ?? '';
+    if (!campaign) {
+      this.logger.warn({ eventId: event.id, campaignId: donation.campaignId }, 'webhook.unknown_campaign');
+      return;
+    }
+    const stripeAccountId = this.resolveEventStripeAccountId(event, campaign);
+    if (!stripeAccountId) return;
     try {
       await this.prisma.$transaction(async (tx) => {
         await this.ledger.append(tx, {
           donationId: donation.id,
           campaignId: donation.campaignId,
-          athleteId: campaign?.athlete.id ?? donation.campaignId,
+          athleteId: campaign.athlete.id,
           donationEventType: DonationEventType.DONATION_FAILED,
           amountCents: donation.donationAmountCents,
           currency: currency ?? DEFAULT_CURRENCY,
@@ -328,14 +334,19 @@ export class StripeWebhookService {
       return;
     }
     const campaign = await this.campaigns.findByIdWithAthlete(donation.campaignId);
-    const stripeAccountId = event.account ?? campaign?.athlete.stripeAccountId ?? '';
+    if (!campaign) {
+      this.logger.warn({ eventId: event.id, campaignId: donation.campaignId }, 'webhook.unknown_campaign');
+      return;
+    }
+    const stripeAccountId = this.resolveEventStripeAccountId(event, campaign);
+    if (!stripeAccountId) return;
     try {
       await this.prisma.$transaction(async (tx) => {
         const projection = await this.buildChargeProjectionDelta(tx, donation, input);
         await this.ledger.append(tx, {
           donationId: donation.id,
           campaignId: donation.campaignId,
-          athleteId: campaign?.athlete.id ?? donation.campaignId,
+          athleteId: campaign.athlete.id,
           donationEventType: input.donationEventType,
           amountCents: projection.ledgerAmountCents,
           currency: input.currency ?? DEFAULT_CURRENCY,
@@ -500,6 +511,33 @@ export class StripeWebhookService {
 
     this.logger.warn({ eventId: event.id, paymentIntentId, donationId }, 'webhook.unknown_donation');
     return null;
+  }
+
+  private resolveEventStripeAccountId(
+    event: Stripe.Event,
+    campaign: { athlete: { stripeAccountId: string | null } }
+  ): string | null {
+    const expectedStripeAccountId = campaign.athlete.stripeAccountId;
+    const eventStripeAccountId = event.account;
+    if (!expectedStripeAccountId) {
+      this.logger.warn({ eventId: event.id }, 'webhook.campaign_missing_stripe_account');
+      return null;
+    }
+    if (!eventStripeAccountId) {
+      this.logger.warn(
+        { eventId: event.id, expectedStripeAccountId },
+        'webhook.missing_connected_account'
+      );
+      return null;
+    }
+    if (eventStripeAccountId !== expectedStripeAccountId) {
+      this.logger.warn(
+        { eventId: event.id, eventStripeAccountId, expectedStripeAccountId },
+        'webhook.connected_account_mismatch'
+      );
+      return null;
+    }
+    return eventStripeAccountId;
   }
 
   private async handlePayout(event: Stripe.Event): Promise<void> {

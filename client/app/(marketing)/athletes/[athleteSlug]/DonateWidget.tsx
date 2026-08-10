@@ -44,10 +44,10 @@ export function DonateWidget({
         donationAmountCents: amountCents,
         donationMessage: message.trim() || undefined,
         isAnonymous,
-      });
+    });
       window.location.assign(checkoutUrl);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not start checkout. Please try again.');
+      setError(toDonationError(cause));
       setSubmitting(false);
     }
   };
@@ -174,4 +174,14 @@ export function DonateWidget({
       </div>
     </div>
   );
+}
+
+function toDonationError(cause: unknown): string {
+  if (cause instanceof Error && cause.message.includes('not accepting donations')) {
+    return 'This athlete is not accepting donations yet.';
+  }
+  if (cause instanceof Error && cause.message.includes('minimum')) {
+    return 'Choose a donation amount above the minimum.';
+  }
+  return 'Could not start checkout. Please try again.';
 }

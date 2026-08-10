@@ -250,6 +250,9 @@ function assertPublishable(athlete: AthleteProfileWithRelations): void {
   if (athlete.personalBests.length === 0) {
     missing.push('personalBests');
   }
+  if (!athlete.disciplineLabel || athlete.disciplineLabel.trim().length === 0) {
+    missing.push('disciplineLabel');
+  }
   if (missing.length > 0) {
     throw new ValidationError('Profile is missing required content to publish', { missing });
   }

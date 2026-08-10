@@ -4,6 +4,7 @@ import type {
   Campaign as CampaignDto,
   CampaignSummary,
   CreateCampaignRequest,
+  UpdateCampaignStatusRequest,
 } from 'fad-common';
 import {
   CampaignRepository,
@@ -12,7 +13,7 @@ import {
 import { AthleteRepository } from '../../repositories/AthleteRepository';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors';
 import { decodeKeysetCursor, encodeKeysetCursor } from '../../shared/keysetCursor';
-import { Prisma, type Campaign, type CampaignCostLine } from '@prisma/client';
+import { CampaignStatus, Prisma, type Campaign, type CampaignCostLine } from '@prisma/client';
 
 const ACTIVE_CAMPAIGNS_PER_ATHLETE_LIMIT = 50;
 
@@ -92,6 +93,22 @@ export class CampaignService {
       throw error;
     }
   }
+
+  async changeStatusForAthlete(
+    userId: string,
+    campaignSlug: string,
+    input: UpdateCampaignStatusRequest
+  ): Promise<CampaignDto> {
+    const campaign = await this.campaignRepository.findBySlugForOwner(campaignSlug, userId);
+    if (!campaign) throw new NotFoundError('Campaign');
+    if (campaign.campaignStatus === input.campaignStatus) {
+      return toCampaignDto(campaign, campaign.costLines);
+    }
+
+    assertAllowedStatusTransition(campaign, input.campaignStatus);
+    const updated = await this.campaignRepository.updateStatus(campaign.id, input.campaignStatus);
+    return toCampaignDto(updated, updated.costLines);
+  }
 }
 
 // Transparency ([STRICT] product differentiator): supporters must see exactly what
@@ -104,6 +121,55 @@ function assertCostLinesMatchTarget(input: CreateCampaignRequest): void {
     targetAmountCents: input.targetAmountCents,
     costLinesTotalCents,
     costLines: costLines.map((line) => ({ label: line.label, amountCents: line.amountCents })),
+  });
+}
+
+function assertAllowedStatusTransition(
+  campaign: CampaignWithAthlete,
+  requestedStatus: CampaignStatus
+): void {
+  if (campaign.campaignStatus === CampaignStatus.DRAFT) {
+    if (requestedStatus === CampaignStatus.ACTIVE) {
+      assertCampaignCanActivate(campaign);
+      return;
+    }
+    if (requestedStatus === CampaignStatus.ARCHIVED) return;
+  }
+
+  if (
+    (campaign.campaignStatus === CampaignStatus.ACTIVE ||
+      campaign.campaignStatus === CampaignStatus.FUNDED) &&
+    (requestedStatus === CampaignStatus.COMPLETED || requestedStatus === CampaignStatus.ARCHIVED)
+  ) {
+    return;
+  }
+
+  throw new ValidationError('Campaign status transition is not allowed', {
+    currentStatus: campaign.campaignStatus,
+    requestedStatus,
+  });
+}
+
+function assertCampaignCanActivate(campaign: CampaignWithAthlete): void {
+  const missing: string[] = [];
+  if (!campaign.athlete.publishedAt) missing.push('publishedProfile');
+  if (!campaign.athlete.stripeChargesEnabledAt || !campaign.athlete.stripeAccountId) {
+    missing.push('stripeAccount');
+  }
+
+  const costLinesTotalCents = campaign.costLines.reduce(
+    (sum, line) => sum + line.amountCents,
+    0
+  );
+  if (campaign.targetAmountCents <= 0 || costLinesTotalCents !== campaign.targetAmountCents) {
+    missing.push('costLines');
+  }
+
+  if (missing.length === 0) return;
+  throw new ValidationError('Campaign is missing required content to activate', {
+    missing,
+    targetAmountCents: campaign.targetAmountCents,
+    costLinesTotalCents,
   });
 }
 

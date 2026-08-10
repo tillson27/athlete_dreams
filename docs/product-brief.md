@@ -25,6 +25,8 @@ The world's most transparent athlete funding network. A directory-style platform
 - **Post-event updates** — the loop closes with a photo, a result, and a thank-you.
 - **Minimalist UX** — athletes and brand marketers are not technical. The platform must read in under 10 seconds.
 
+> **Note:** Post-event campaign updates and receipt reconciliation are product requirements, not shipped self-serve workflows yet. Current implementation supports itemized campaigns, guarded owner-facing campaign status transitions, Stripe Connect donations, and donation ledger/projection handling; campaign update endpoints remain planned in `docs/backend-build-sheet.md` → Phase 3.
+
 ## Competitive landscape
 
 - **Makeachamp** — money gets held back; athletes complain about cash flow.

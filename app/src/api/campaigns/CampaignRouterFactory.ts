@@ -20,6 +20,11 @@ export class CampaignRouterFactory extends BaseRouterFactory {
     router.get('/', this.wrap(this.campaignController.listActiveFeed));
     router.get('/:campaignSlug', this.wrap(this.campaignController.getBySlug));
     router.post('/', this.auth.required, this.wrap(this.campaignController.create));
+    router.patch(
+      '/:campaignSlug/status',
+      this.auth.required,
+      this.wrap(this.campaignController.changeStatus)
+    );
     return router;
   }
 }

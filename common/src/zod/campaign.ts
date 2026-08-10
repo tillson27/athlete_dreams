@@ -67,6 +67,14 @@ export const createCampaignRequestSchema = z
 
 export type CreateCampaignRequest = z.infer<typeof createCampaignRequestSchema>;
 
+export const updateCampaignStatusRequestSchema = z
+  .object({
+    campaignStatus: campaignStatusSchema,
+  })
+  .strict();
+
+export type UpdateCampaignStatusRequest = z.infer<typeof updateCampaignStatusRequestSchema>;
+
 export const campaignSummarySchema = z.object({
   campaignId: idSchema,
   campaignSlug: slugSchema,
