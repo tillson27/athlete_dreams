@@ -163,7 +163,10 @@ export function AthleteProfile({
           </div>
         </section>
 
-        {/* THE ARC — collapsible narrative timeline */}
+        {/* THE ARC — collapsible narrative timeline. Hidden entirely until the
+            athlete has written a chapter, so a new profile never shows a
+            heading over an empty timeline. */}
+        {profile.arcChapters.length > 0 ? (
         <details id="arc" open className="group mt-8 scroll-mt-32 md:mt-16">
           <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
             <div className="max-w-3xl">
@@ -229,6 +232,7 @@ export function AthleteProfile({
             ))}
           </ol>
         </details>
+        ) : null}
 
         {/* MAIN GRID — flat/interleaved on mobile (via order), two columns on desktop */}
         <div className="mt-8 flex flex-col gap-6 md:mt-16 md:grid md:grid-cols-12">

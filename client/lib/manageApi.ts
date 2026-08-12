@@ -20,12 +20,16 @@ import { unsplashPhoto } from './unsplash';
 import { uid } from './uid';
 import type {
   AthleteEdits,
+  EditArcChapter,
   EditCoreValue,
   EditHighlight,
   EditPersonalBest,
   EditRace,
   EditRoadmapItem,
+  EditTraining,
 } from './athleteEdits';
+import { EMPTY_TRAINING, toEditArcChapter } from './athleteEdits';
+import { profileToRichProfile } from './adapters';
 
 // Pure, framework-free persistence for the /manage editor in `api` mode. The
 // editor consumes these to load the owner's four editable sets from
@@ -47,6 +51,14 @@ import type {
 //   storyBody:  one textarea <-> storyBody (blank-line-separated paragraphs).
 //   bests:      label <-> label; value <-> value; resultsUrl <-> resultUrl.
 //   coreValues: title <-> title; body <-> body.
+//   arcSubtitle/arcChapters/training <-> the same keys inside `presentation`.
+//
+// [STRICT] `presentation` is a whole-blob replace server-side, and it also
+// carries keys this editor never shows (`highlightTones` / `raceTones`, which
+// decide which highlights and races are featured, plus followers/support flags).
+// Every save therefore merges the edited keys onto the profile's current blob —
+// sending a bare `{ training, arcChapters }` would silently reshuffle the
+// athlete's featured results.
 //
 // Photos/gallery come back as bare media refs or absolute URLs; the editor
 // renders them with next/image, so a display URL is composed on load and the
@@ -110,12 +122,32 @@ function toEditCoreValues(profile: AthleteProfile): EditCoreValue[] {
   }));
 }
 
+// Public API contract: the profile's current `presentation` blob, or an empty
+// record when it has none. The editor holds this so saves can merge rather than
+// clobber the keys it does not surface.
+export function profileToPresentation(profile: AthleteProfile): Record<string, unknown> {
+  const presentation = profile.presentation;
+  return presentation !== null && typeof presentation === 'object' && !Array.isArray(presentation)
+    ? (presentation as Record<string, unknown>)
+    : {};
+}
+
 // Public API contract: derive the editor's `AthleteEdits` snapshot from the
 // owner's rich profile DTO (mirrors `deriveEdits` for the mock/static source).
 export function profileToEdits(profile: AthleteProfile): AthleteEdits {
+  // The presentation blob is untyped, so reuse the profile adapter's defensive
+  // readers rather than re-deriving arc/training parsing here.
+  const rich = profileToRichProfile(profile);
   return {
     storyIntro: profile.storyIntro ?? '',
     storyBody: (profile.storyBody ?? []).join('\n\n'),
+    arcSubtitle: rich.arcSubtitle,
+    arcChapters: rich.arcChapters.map(toEditArcChapter),
+    training: {
+      ...EMPTY_TRAINING,
+      ...rich.training,
+      weeklyLoad: rich.training.weeklyLoad ?? '',
+    },
     personalBests: toEditPersonalBests(profile),
     coreValues: toEditCoreValues(profile),
     highlights: toEditHighlights(profile),
@@ -192,6 +224,46 @@ function toPersonalBests(bests: EditPersonalBest[]): ReplacePersonalBestsRequest
     });
 }
 
+function toPresentationArcChapters(chapters: EditArcChapter[]): Record<string, unknown>[] {
+  return chapters
+    .filter((chapter) => chapter.title.trim())
+    .map((chapter) => ({
+      era: chapter.era.trim(),
+      title: chapter.title.trim(),
+      body: chapter.body.trim(),
+      icon: chapter.icon,
+      tone: chapter.tone,
+      ...(chapter.current ? { current: true } : {}),
+      ...(chapter.photo ? { image: chapter.photo } : {}),
+    }));
+}
+
+// The profile card treats an all-blank snapshot as "coming soon", so trimmed
+// empties round-trip as empty strings rather than being dropped.
+function toPresentationTraining(training: EditTraining): Record<string, unknown> {
+  const weeklyLoad = training.weeklyLoad.trim();
+  return {
+    weeklyKm: training.weeklyKm.trim(),
+    weeklyTime: training.weeklyTime.trim(),
+    weeklyGain: training.weeklyGain.trim(),
+    latestTitle: training.latestTitle.trim(),
+    latestMeta: training.latestMeta.trim(),
+    ...(weeklyLoad ? { weeklyLoad } : {}),
+  };
+}
+
+function toMergedPresentation(
+  edits: AthleteEdits,
+  basePresentation: Record<string, unknown>
+): Record<string, unknown> {
+  return {
+    ...basePresentation,
+    arcSubtitle: edits.arcSubtitle.trim(),
+    arcChapters: toPresentationArcChapters(edits.arcChapters),
+    training: toPresentationTraining(edits.training),
+  };
+}
+
 // Story and core values ride the same PATCH. `storyIntro` is only sent when the
 // athlete typed one, because the publish guard treats an empty tagline as
 // "unpublishable" and a blank PATCH would silently un-publish a live profile.
@@ -217,10 +289,12 @@ function toStoryAndValuesPatch(edits: AthleteEdits): UpdateAthleteProfileRequest
 // write is last-write-wins server-side for the single owner.
 export async function saveEditsToApi(
   edits: AthleteEdits,
+  basePresentation: Record<string, unknown>,
   coverPhoto?: string
 ): Promise<void> {
   await patchMyProfile({
     ...toStoryAndValuesPatch(edits),
+    presentation: toMergedPresentation(edits, basePresentation),
     ...(coverPhoto ? { heroMediaUrl: coverPhoto } : {}),
   });
   await replaceMyPersonalBests(toPersonalBests(edits.personalBests));

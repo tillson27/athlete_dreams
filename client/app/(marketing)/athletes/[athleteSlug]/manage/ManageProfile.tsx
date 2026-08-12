@@ -24,16 +24,26 @@ import {
   loadEdits,
   saveEdits,
   clearEdits,
+  CHAPTER_ICONS,
+  CHAPTER_TONES,
+  EMPTY_TRAINING,
   type AthleteEdits,
+  type EditArcChapter as ArcChapter,
   type EditCoreValue as CoreValue,
   type EditHighlight as Highlight,
   type EditPersonalBest as PersonalBest,
   type EditRace as Race,
   type EditRoadmapItem as RoadmapItem,
+  type EditTraining as Training,
 } from '@/lib/athleteEdits';
 import { fetchMyProfile } from '@/lib/api';
 import { ConnectStripeCard } from './ConnectStripeCard';
-import { profileToEdits, saveEditsToApi, toManageSaveError } from '@/lib/manageApi';
+import {
+  profileToEdits,
+  profileToPresentation,
+  saveEditsToApi,
+  toManageSaveError,
+} from '@/lib/manageApi';
 import {
   COVER_IMAGE_OPTIONS,
   IMAGE_UPLOAD_ACCEPT,
@@ -49,6 +59,9 @@ const inputClass =
 const EMPTY_EDITS: AthleteEdits = {
   storyIntro: '',
   storyBody: '',
+  arcSubtitle: '',
+  arcChapters: [],
+  training: EMPTY_TRAINING,
   personalBests: [],
   coreValues: [],
   highlights: [],
@@ -66,6 +79,20 @@ type ConfirmRequest = {
 
 function toSaveSnapshot(edits: AthleteEdits, coverPhoto: string): string {
   return JSON.stringify({ edits, coverPhoto });
+}
+
+function patchChapter(
+  setArcChapters: (updater: (prev: ArcChapter[]) => ArcChapter[]) => void,
+  chapterId: string,
+  patch: Partial<ArcChapter>
+): void {
+  setArcChapters((prev) =>
+    prev.map((entry) => (entry.id === chapterId ? { ...entry, ...patch } : entry))
+  );
+}
+
+function hasTrainingContent(training: Training): boolean {
+  return Object.values(training).some((field) => field.trim().length > 0);
 }
 
 // Swap an item with its neighbour to move it up (-1) or down (+1) the list.
@@ -177,6 +204,7 @@ type ApiEditorState =
       athleteName: string;
       edits: AthleteEdits;
       coverPhoto: string;
+      basePresentation: Record<string, unknown>;
     };
 
 // `/athletes/me/manage` is the slug-free alias for "my own page". Stripe's
@@ -220,6 +248,7 @@ function ManageProfileApi({
           athleteSlug: profile.athleteSlug,
           athleteName: profile.fullName,
           edits: profileToEdits(profile),
+          basePresentation: profileToPresentation(profile),
           coverPhoto: profile.heroMediaUrl ?? initialCoverPhoto,
         });
       })
@@ -248,6 +277,7 @@ function ManageProfileApi({
       athleteName={state.athleteName}
       initialCoverPhoto={state.coverPhoto}
       initialEdits={state.edits}
+      basePresentation={state.basePresentation}
     />
   );
 }
@@ -257,11 +287,13 @@ function ApiEditorReady({
   athleteName,
   initialCoverPhoto,
   initialEdits,
+  basePresentation,
 }: {
   athleteSlug: string;
   athleteName: string;
   initialCoverPhoto: string;
   initialEdits: AthleteEdits;
+  basePresentation: Record<string, unknown>;
 }) {
   const [edits, setEdits] = useState<AthleteEdits>(initialEdits);
   const [coverPhoto, setCoverPhoto] = useState<string>(initialCoverPhoto);
@@ -332,7 +364,11 @@ function ApiEditorReady({
     setRecentlySaved(false);
     clearSavedConfirmationTimer();
     try {
-      await saveEditsToApi(currentEdits, coverDirtyRef.current ? currentCoverPhoto : undefined);
+      await saveEditsToApi(
+        currentEdits,
+        basePresentation,
+        coverDirtyRef.current ? currentCoverPhoto : undefined
+      );
       if (saveRequestId !== saveRequestIdRef.current) return;
       savedSnapshotRef.current = attemptedSnapshot;
       if (toSaveSnapshot(editsRef.current, coverPhotoRef.current) === attemptedSnapshot) {
@@ -360,7 +396,9 @@ function ApiEditorReady({
         }
       }
     }
-  }, [acknowledgeSaved, clearAutosaveTimer, clearSavedConfirmationTimer]);
+    // `basePresentation` is captured once when the profile loads and never
+    // reassigned, so including it does not churn the autosave effect below.
+  }, [acknowledgeSaved, basePresentation, clearAutosaveTimer, clearSavedConfirmationTimer]);
 
   useEffect(() => {
     saveRef.current = save;
@@ -477,11 +515,28 @@ function EditorLayout({
   topSlot?: ReactNode;
   footer: ReactNode;
 }) {
-  const { storyIntro, storyBody, personalBests, coreValues, highlights, races, roadmap, gallery } =
-    edits;
+  const {
+    storyIntro,
+    storyBody,
+    arcSubtitle,
+    arcChapters,
+    training,
+    personalBests,
+    coreValues,
+    highlights,
+    races,
+    roadmap,
+    gallery,
+  } = edits;
   const setStoryIntro = (value: string) =>
     setEdits((current) => ({ ...current, storyIntro: value }));
   const setStoryBody = (value: string) => setEdits((current) => ({ ...current, storyBody: value }));
+  const setArcSubtitle = (value: string) =>
+    setEdits((current) => ({ ...current, arcSubtitle: value }));
+  const setArcChapters = (updater: (prev: ArcChapter[]) => ArcChapter[]) =>
+    setEdits((current) => ({ ...current, arcChapters: updater(current.arcChapters) }));
+  const patchTraining = (patch: Partial<Training>) =>
+    setEdits((current) => ({ ...current, training: { ...current.training, ...patch } }));
   const setPersonalBests = (updater: (prev: PersonalBest[]) => PersonalBest[]) =>
     setEdits((current) => ({ ...current, personalBests: updater(current.personalBests) }));
   const setCoreValues = (updater: (prev: CoreValue[]) => CoreValue[]) =>
@@ -641,6 +696,245 @@ function EditorLayout({
               />
               <Recommendation text="Leave a blank line between paragraphs — each block becomes its own paragraph in the My Story section on your public profile." />
             </div>
+          </div>
+        </SectionCard>
+
+        {/* The Arc — the journey timeline */}
+        <SectionCard icon="history" title="The Arc" count={arcChapters.length}>
+          <p className="mb-5 text-sm text-on-surface-variant">
+            The chapters of your journey, oldest first. They appear on your profile under
+            &ldquo;{athleteName.split(' ')[0]}&rsquo;s journey&rdquo;. Drag to reorder.
+          </p>
+          <div className="mb-5">
+            <label className="label-bold mb-2 block text-on-surface" htmlFor="arc-subtitle">
+              Intro line
+            </label>
+            <input
+              id="arc-subtitle"
+              value={arcSubtitle}
+              onChange={(event) => setArcSubtitle(event.target.value)}
+              placeholder="One line under the heading — e.g. From med-school stress runs to the Boston pro corral."
+              className={inputClass}
+            />
+          </div>
+
+          {arcChapters.length > 0 ? (
+            <SortableList
+              items={arcChapters}
+              getId={(item) => item.id}
+              onReorder={(next) => setArcChapters(() => next)}
+            >
+              {(item, index, sortable) => (
+                <div
+                  className={`space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4 ${
+                    sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <DragHandle
+                      label={`Drag ${item.title || 'chapter'}`}
+                      dragHandleProps={sortable.dragHandleProps}
+                    />
+                    <div className="grid flex-1 gap-3 md:grid-cols-[1fr_1.6fr]">
+                      <input
+                        aria-label="When"
+                        value={item.era}
+                        onChange={(event) =>
+                          patchChapter(setArcChapters, item.id, { era: event.target.value })
+                        }
+                        placeholder="When (e.g. 2019 — 2021)"
+                        className={inputClass}
+                      />
+                      <input
+                        aria-label="Chapter title"
+                        value={item.title}
+                        onChange={(event) =>
+                          patchChapter(setArcChapters, item.id, { title: event.target.value })
+                        }
+                        placeholder="Chapter title (e.g. The comeback)"
+                        className={inputClass}
+                      />
+                    </div>
+                    <ItemMenu
+                      label={`Actions for ${item.title || 'chapter'}`}
+                      onMoveUp={
+                        index > 0
+                          ? () => setArcChapters((prev) => moveItem(prev, index, -1))
+                          : undefined
+                      }
+                      onMoveDown={
+                        index < arcChapters.length - 1
+                          ? () => setArcChapters((prev) => moveItem(prev, index, 1))
+                          : undefined
+                      }
+                      onDelete={() =>
+                        setConfirmRequest({
+                          title: 'Delete this chapter?',
+                          body: (
+                            <p>
+                              <strong>{item.title || 'This chapter'}</strong> will be removed from
+                              your journey.
+                            </p>
+                          ),
+                          confirmLabel: 'Delete',
+                          onConfirm: () =>
+                            setArcChapters((prev) => prev.filter((entry) => entry.id !== item.id)),
+                        })
+                      }
+                    />
+                  </div>
+                  <textarea
+                    aria-label="What happened"
+                    rows={3}
+                    value={item.body}
+                    onChange={(event) =>
+                      patchChapter(setArcChapters, item.id, { body: event.target.value })
+                    }
+                    placeholder="What happened in this chapter, in your own voice."
+                    className={inputClass}
+                  />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 text-sm text-on-surface-variant">
+                      Icon
+                      <select
+                        value={item.icon}
+                        onChange={(event) =>
+                          patchChapter(setArcChapters, item.id, {
+                            icon: event.target.value as ArcChapter['icon'],
+                          })
+                        }
+                        className={`${inputClass} w-auto`}
+                      >
+                        {CHAPTER_ICONS.map((icon) => (
+                          <option key={icon} value={icon}>
+                            {icon}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-on-surface-variant">
+                      Colour
+                      <select
+                        value={item.tone}
+                        onChange={(event) =>
+                          patchChapter(setArcChapters, item.id, {
+                            tone: event.target.value as ArcChapter['tone'],
+                          })
+                        }
+                        className={`${inputClass} w-auto`}
+                      >
+                        {CHAPTER_TONES.map((tone) => (
+                          <option key={tone} value={tone}>
+                            {tone}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-semibold text-on-surface">
+                      <input
+                        type="checkbox"
+                        checked={item.current}
+                        onChange={(event) =>
+                          setArcChapters((prev) =>
+                            prev.map((entry) => ({
+                              ...entry,
+                              // Only one chapter can be "in progress" at a time.
+                              current: entry.id === item.id ? event.target.checked : false,
+                            }))
+                          )
+                        }
+                        className="h-4 w-4 rounded border-outline-variant"
+                      />
+                      Happening now
+                    </label>
+                  </div>
+                  <PhotoUploader
+                    photos={item.photo ? [item.photo] : []}
+                    onPick={(files) =>
+                      prepareImages(files, PROFILE_IMAGE_OPTIONS, ([photo]) => {
+                        if (photo) patchChapter(setArcChapters, item.id, { photo });
+                      })
+                    }
+                    onRemove={() => patchChapter(setArcChapters, item.id, { photo: undefined })}
+                  />
+                </div>
+              )}
+            </SortableList>
+          ) : (
+            <ul className="space-y-3">
+              <EmptyState label="No chapters yet — add the first one to start your journey." />
+            </ul>
+          )}
+          <div className="mt-5 flex justify-end">
+            <AddRowButton
+              label="Add a chapter"
+              onClick={() =>
+                setArcChapters((prev) => [
+                  ...prev,
+                  {
+                    id: uid(),
+                    era: '',
+                    title: '',
+                    body: '',
+                    icon: 'medal',
+                    tone: 'primary',
+                    current: false,
+                  },
+                ])
+              }
+            />
+          </div>
+        </SectionCard>
+
+        {/* Training Snapshot */}
+        <SectionCard
+          icon="insights"
+          title="Training Snapshot"
+          count={hasTrainingContent(training) ? 1 : 0}
+        >
+          <p className="mb-5 text-sm text-on-surface-variant">
+            A quick read on your current week, shown in the sidebar of your profile. Leave it all
+            blank and the card reads &ldquo;coming soon&rdquo; instead.
+          </p>
+          <div className="grid gap-3 md:grid-cols-3">
+            <TrainingField
+              label="Weekly distance"
+              value={training.weeklyKm}
+              placeholder="e.g. 82.5"
+              onChange={(weeklyKm) => patchTraining({ weeklyKm })}
+            />
+            <TrainingField
+              label="Weekly time"
+              value={training.weeklyTime}
+              placeholder="e.g. 6h 40m"
+              onChange={(weeklyTime) => patchTraining({ weeklyTime })}
+            />
+            <TrainingField
+              label="Weekly elevation"
+              value={training.weeklyGain}
+              placeholder="e.g. 640m"
+              onChange={(weeklyGain) => patchTraining({ weeklyGain })}
+            />
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <TrainingField
+              label="Training load (optional)"
+              value={training.weeklyLoad}
+              placeholder="e.g. 720 TSS"
+              onChange={(weeklyLoad) => patchTraining({ weeklyLoad })}
+            />
+            <TrainingField
+              label="Latest session"
+              value={training.latestTitle}
+              placeholder="e.g. Long Run: 36 km progression"
+              onChange={(latestTitle) => patchTraining({ latestTitle })}
+            />
+            <TrainingField
+              label="Session detail"
+              value={training.latestMeta}
+              placeholder="e.g. Sunday • 36.0 km • 2:24:10"
+              onChange={(latestMeta) => patchTraining({ latestMeta })}
+            />
           </div>
         </SectionCard>
 
@@ -1273,6 +1567,30 @@ function AddButton() {
       <Icon name="plus" className="h-4 w-4" />
       Add
     </button>
+  );
+}
+
+function TrainingField({
+  label,
+  value,
+  placeholder,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="label-bold text-on-surface">{label}</span>
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className={inputClass}
+      />
+    </label>
   );
 }
 

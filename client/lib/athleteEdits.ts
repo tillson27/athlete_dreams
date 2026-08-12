@@ -1,4 +1,4 @@
-import type { RichAthleteProfile } from './athleteProfiles';
+import type { ArcChapter, ChapterIcon, ChapterTone, RichAthleteProfile } from './athleteProfiles';
 import { unsplashPhoto } from './unsplash';
 import { createBrowserStore } from './browserStore';
 import { uid } from './uid';
@@ -28,10 +28,58 @@ export type EditRoadmapItem = { id: string; name: string; date: string };
 export type EditPersonalBest = { id: string; label: string; value: string; resultsUrl?: string };
 export type EditCoreValue = { id: string; title: string; body: string };
 
+/** One chapter of the profile's "<Name>'s journey" timeline. */
+export type EditArcChapter = {
+  id: string;
+  era: string;
+  title: string;
+  body: string;
+  icon: ChapterIcon;
+  tone: ChapterTone;
+  current: boolean;
+  photo?: string;
+};
+
+/** The profile's Training Snapshot card. Every field is free text — the card
+ *  renders labels ("Weekly KM", "Time", "Gain") and stays hidden while empty. */
+export type EditTraining = {
+  weeklyKm: string;
+  weeklyTime: string;
+  weeklyGain: string;
+  weeklyLoad: string;
+  latestTitle: string;
+  latestMeta: string;
+};
+
+export const EMPTY_TRAINING: EditTraining = {
+  weeklyKm: '',
+  weeklyTime: '',
+  weeklyGain: '',
+  weeklyLoad: '',
+  latestTitle: '',
+  latestMeta: '',
+};
+
+export const CHAPTER_ICONS: ChapterIcon[] = [
+  'medal',
+  'heart',
+  'history',
+  'trophy',
+  'flag',
+  'timer',
+  'book',
+  'groups',
+];
+
+export const CHAPTER_TONES: ChapterTone[] = ['primary', 'secondary', 'tertiary'];
+
 export type AthleteEdits = {
   coverPhoto?: string;
   storyIntro: string;
   storyBody: string;
+  arcSubtitle: string;
+  arcChapters: EditArcChapter[];
+  training: EditTraining;
   personalBests: EditPersonalBest[];
   coreValues: EditCoreValue[];
   highlights: EditHighlight[];
@@ -43,11 +91,34 @@ export type AthleteEdits = {
 export const EDITS_EVENT = 'arc-athlete-edits-change';
 const storeFor = (slug: string) => createBrowserStore<AthleteEdits>(`arc-manage-${slug}`, EDITS_EVENT);
 
+export function toEditArcChapter(chapter: ArcChapter): EditArcChapter {
+  return {
+    id: uid(),
+    era: chapter.era,
+    title: chapter.title,
+    body: chapter.body,
+    icon: chapter.icon,
+    tone: chapter.tone,
+    current: chapter.current === true,
+    ...(chapter.image ? { photo: unsplashPhoto(chapter.image) } : {}),
+  };
+}
+
 // Public API contract: derive an editable snapshot from published profile data.
 export function deriveEdits(profile: RichAthleteProfile): AthleteEdits {
   return {
     storyIntro: profile.storyIntro,
     storyBody: profile.storyBody.join('\n\n'),
+    arcSubtitle: profile.arcSubtitle,
+    arcChapters: profile.arcChapters.map(toEditArcChapter),
+    training: {
+      weeklyKm: profile.training.weeklyKm,
+      weeklyTime: profile.training.weeklyTime,
+      weeklyGain: profile.training.weeklyGain,
+      weeklyLoad: profile.training.weeklyLoad ?? '',
+      latestTitle: profile.training.latestTitle,
+      latestMeta: profile.training.latestMeta,
+    },
     personalBests: profile.personalBests.map((best) => ({
       id: uid(),
       label: best.label,
@@ -95,6 +166,9 @@ export function loadEdits(slug: string): AthleteEdits | null {
     ...saved,
     storyIntro: saved.storyIntro ?? '',
     storyBody: saved.storyBody ?? '',
+    arcSubtitle: saved.arcSubtitle ?? '',
+    arcChapters: saved.arcChapters ?? [],
+    training: saved.training ?? EMPTY_TRAINING,
     personalBests: saved.personalBests ?? [],
     coreValues: saved.coreValues ?? [],
   };
