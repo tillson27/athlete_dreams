@@ -44,15 +44,9 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
       </div>
       <div className="flex flex-1 flex-col justify-between gap-5 p-6 md:p-7">
         <div className="space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="font-display text-2xl font-bold leading-tight text-on-surface md:text-[26px]">
-              {athlete.fullName}
-            </h3>
-            <span className="flex shrink-0 items-center gap-1 text-xs font-bold uppercase tracking-wider text-success">
-              <Icon name="check-badge" className="h-4 w-4" />
-              Verified
-            </span>
-          </div>
+          <h3 className="font-display text-2xl font-bold leading-tight text-on-surface md:text-[26px]">
+            {athlete.fullName}
+          </h3>
           <p className="label-bold text-secondary">
             {disciplineLabel} • {athlete.hometown}
           </p>

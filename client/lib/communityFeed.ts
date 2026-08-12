@@ -22,6 +22,8 @@ export type FeedItem = {
   detail: string;
   photo?: string;
   when: string;
+  /** ISO source date for the card's date stamp; null when the source has none. */
+  occurredAt: string | null;
   cheers: number;
   verified: boolean;
 };
@@ -65,6 +67,7 @@ export function buildFeed(): FeedItem[] {
         detail: highlight.detail,
         photo: highlight.images[0] ? unsplashPhoto(highlight.images[0], 640) : undefined,
         when: RESULT_WHENS[index % RESULT_WHENS.length],
+        occurredAt: null,
         cheers: Math.max(9, 84 - index * 9),
         verified: true,
       });
@@ -82,6 +85,7 @@ export function buildFeed(): FeedItem[] {
         detail: lastRace.result,
         photo: lastRace.images[0] ? unsplashPhoto(lastRace.images[0], 640) : undefined,
         when: RESULT_WHENS[(index + 2) % RESULT_WHENS.length],
+        occurredAt: null,
         cheers: Math.max(7, 72 - index * 7),
         verified: true,
       });
@@ -98,6 +102,7 @@ export function buildFeed(): FeedItem[] {
         headline: `Is racing ${nextRace.name}`,
         detail: `Up next · ${nextRace.date}`,
         when: ROADMAP_WHENS[index % ROADMAP_WHENS.length],
+        occurredAt: null,
         cheers: Math.max(4, 41 - index * 4),
         verified: false,
       });
@@ -114,6 +119,7 @@ export function buildFeed(): FeedItem[] {
         headline: `Logged a training run — ${latestSession.latestTitle}`,
         detail: latestSession.latestMeta,
         when: ROADMAP_WHENS[(index + 1) % ROADMAP_WHENS.length],
+        occurredAt: null,
         cheers: Math.max(3, 33 - index * 3),
         verified: false,
       });

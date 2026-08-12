@@ -11,7 +11,6 @@ import { encodeKeysetCursor } from '../../shared/keysetCursor';
 const shouldRunDatabaseTests = process.env.RUN_DB_TESTS === '1';
 
 const SEEDED_SLUGS = [
-  'cassandra-de-winter',
   'emma-chen',
   'felix-tremblay',
   'jordan-blackhorse',

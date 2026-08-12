@@ -144,8 +144,9 @@ export function AthleticsForm() {
                         className={inputClass}
                       />
                       <p className="flex items-center gap-1.5 text-xs text-tertiary">
-                        <Icon name="shield-check" className="h-4 w-4 shrink-0 text-success" />
-                        Add a link to the official race results and this result earns a verified badge.
+                        <Icon name="link" className="h-4 w-4 shrink-0 text-secondary" />
+                        Add a link to the official race results and your profile links straight to
+                        them.
                       </p>
                     </div>
                   </div>
@@ -298,8 +299,8 @@ export function AthleticsForm() {
                         className={inputClass}
                       />
                       <p className="flex items-center gap-1.5 text-xs text-tertiary">
-                        <Icon name="shield-check" className="h-4 w-4 shrink-0 text-success" />
-                        Link the official results and this race earns a verified badge.
+                        <Icon name="link" className="h-4 w-4 shrink-0 text-secondary" />
+                        Link the official results and your profile links straight to them.
                       </p>
                     </div>
                   </div>

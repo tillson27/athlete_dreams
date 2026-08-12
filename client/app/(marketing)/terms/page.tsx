@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { BRAND_CONTACT_EMAIL } from '@/lib/brand';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -27,7 +28,7 @@ const sections: { id?: string; title: string; paragraphs: string[]; bullets?: st
       'Trust is the entire point of ARC. Every athlete on the platform commits to these guidelines:',
     ],
     bullets: [
-      'Results you post must be real and yours. Results earn a verified badge only when linked to an official, public results page.',
+      'Results you post must be real and yours. Where an official, public results page exists, link it so anyone can check.',
       'Your story must be your own — no impersonation, no fabricated accomplishments.',
       'When crowdfunding opens: every campaign must itemize what the money is for, funded expenses must be backed by receipts, and supporters receive post-event updates showing the outcome.',
       'Breaking these guidelines can lead to content removal or account termination.',
@@ -105,8 +106,11 @@ export default function TermsPage() {
           <h2 className="font-display text-2xl font-bold text-on-surface">Questions</h2>
           <p className="mt-3 leading-relaxed text-on-surface-variant">
             Email us at{' '}
-            <a className="font-semibold text-primary underline" href="mailto:hello@athletearc.ca">
-              hello@athletearc.ca
+            <a
+              className="font-semibold text-primary underline"
+              href={`mailto:${BRAND_CONTACT_EMAIL}`}
+            >
+              {BRAND_CONTACT_EMAIL}
             </a>{' '}
             — we answer every email. Our privacy practices live in the{' '}
             <Link href="/privacy" className="font-semibold text-primary underline">

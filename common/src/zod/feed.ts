@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mediaRefSchema, paginationResponseSchema, slugSchema } from './shared';
+import { isoDateTimeSchema, mediaRefSchema, paginationResponseSchema, slugSchema } from './shared';
 import { SportCategory } from '../types/enums';
 
 const sportSchema = z.nativeEnum(SportCategory);
@@ -26,6 +26,9 @@ export const communityFeedItemSchema = z.object({
   detail: z.string(),
   photoUrl: mediaRefSchema.nullable(),
   occurredAtLabel: z.string(),
+  // The source date this item is ordered by, for clients that render a real
+  // date stamp. Null when the source carries no date (e.g. training snapshots).
+  occurredAt: isoDateTimeSchema.nullable(),
   isVerified: z.boolean(),
 });
 

@@ -35,7 +35,7 @@ export function SiteFooter() {
         <div className="space-y-4">
           <Logo size="lg" variant="full" />
           <p className="max-w-md text-sm leading-relaxed text-on-surface-variant">
-            A verified home for a runner&rsquo;s whole story — the results, the journey behind them,
+            A lasting home for a runner&rsquo;s whole story — the results, the journey behind them,
             and the community that carries you forward.
           </p>
         </div>

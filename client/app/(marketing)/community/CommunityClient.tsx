@@ -80,7 +80,7 @@ export function CommunityClient() {
           Community
         </h1>
         <p className="mt-2 max-w-2xl text-lg text-on-surface-variant">
-          Here&rsquo;s a preview of what&rsquo;s coming. Soon this will be a live feed of verified
+          Here&rsquo;s a preview of what&rsquo;s coming. Soon this will be a live feed of
           results and the road ahead, from the runners you follow — cheer them on and never miss a
           start line. The journey is better with people in it.
         </p>
@@ -211,7 +211,7 @@ export function CommunityClient() {
             <div className="relative">
               <h3 className="font-display text-xl font-bold">Your run, your story.</h3>
               <p className="mt-2 text-sm text-white/75">
-                Build a verified profile and let people follow your whole journey.
+                Build your profile and let people follow your whole journey.
               </p>
               <Link
                 href="/sign-up"

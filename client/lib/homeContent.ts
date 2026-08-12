@@ -37,12 +37,12 @@ export const arcSteps: ArcStep[] = [
 
 export const trendingAthletes: TrendingAthlete[] = [
   {
-    name: 'Cassandra de Winter',
-    sport: 'Elite Endurance & Trail • Lethbridge, CAN',
-    image: unsplashPhoto('1502904550040-7534597429ae', 760),
-    highlight: '2:34:43 Marathon PB',
-    followers: '12.4k',
-    href: '/athletes/cassandra-de-winter',
+    name: 'Priya Shah',
+    sport: 'Track — Middle Distance • Calgary, CAN',
+    image: unsplashPhoto('1461896836934-ffe607ba8211', 760),
+    highlight: '4:11.38 1500m PB',
+    followers: '4.7k',
+    href: '/athletes/priya-shah',
   },
   {
     name: 'Jordan Blackhorse',
@@ -103,13 +103,13 @@ export const successStories: SuccessStory[] = [
     href: '/athletes/felix-tremblay',
   },
   {
-    name: 'Cassandra de Winter',
-    sport: 'Ultramarathon • Canada',
-    highlight: 'Course record, Lost Soul Ultra 100km',
-    followers: '12.4k',
+    name: 'Priya Shah',
+    sport: 'Track — Middle Distance • Canada',
+    highlight: 'Gold, U Sports 1500m',
+    followers: '4.7k',
     quote:
-      'I’m running the 100-miler to show my kids what chasing something wholeheartedly looks like.',
-    image: unsplashPhoto('1502904550040-7534597429ae', 900),
-    href: '/athletes/cassandra-de-winter',
+      'I didn’t see South Asian women on start lines growing up. I’m running so the next kid does.',
+    image: unsplashPhoto('1461896836934-ffe607ba8211', 900),
+    href: '/athletes/priya-shah',
   },
 ];

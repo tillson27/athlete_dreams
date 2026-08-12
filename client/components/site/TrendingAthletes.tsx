@@ -3,7 +3,6 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { VerifiedChip } from '@/components/ui/Badge';
 import { Icon } from '@/components/ui/Icon';
 
 export type TrendingAthlete = {
@@ -71,9 +70,6 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
                 sizes="380px"
                 className="object-cover"
               />
-              <div className="absolute right-4 top-4">
-                <VerifiedChip />
-              </div>
             </div>
             <div className="p-8">
               <div className="mb-4">

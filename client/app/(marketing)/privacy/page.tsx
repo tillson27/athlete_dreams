@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { BRAND_CONTACT_EMAIL } from '@/lib/brand';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -102,8 +103,11 @@ export default function PrivacyPage() {
           <h2 className="font-display text-2xl font-bold text-on-surface">Contact us</h2>
           <p className="mt-3 leading-relaxed text-on-surface-variant">
             Questions or requests about your data? Email{' '}
-            <a className="font-semibold text-primary underline" href="mailto:hello@athletearc.ca">
-              hello@athletearc.ca
+            <a
+              className="font-semibold text-primary underline"
+              href={`mailto:${BRAND_CONTACT_EMAIL}`}
+            >
+              {BRAND_CONTACT_EMAIL}
             </a>{' '}
             — we answer every email. Our platform rules live in the{' '}
             <Link href="/terms" className="font-semibold text-primary underline">

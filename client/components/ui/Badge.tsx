@@ -45,18 +45,3 @@ export function Badge({
     </span>
   );
 }
-
-// Green check verified pill that sits over hero photography.
-export function VerifiedChip({ label = 'Verified' }: { label?: string }) {
-  return (
-    <span className="glass-effect inline-flex items-center gap-1 rounded-pill px-3 py-1 text-xs font-bold tracking-[0.05em] text-on-surface">
-      <svg viewBox="0 0 20 20" className="h-4 w-4 text-success" aria-hidden="true">
-        <path
-          d="M10 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm3.86 6.39-4.6 4.6-2.13-2.12a.9.9 0 1 0-1.27 1.27l2.77 2.77a.9.9 0 0 0 1.27 0l5.23-5.23a.9.9 0 1 0-1.27-1.27Z"
-          fill="currentColor"
-        />
-      </svg>
-      <span>{label}</span>
-    </span>
-  );
-}

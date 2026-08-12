@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import type { FeedItem } from '@/lib/communityFeed';
+import { formatFeedDate } from '@/lib/format';
 import { athleteProfileHref } from '@/lib/profileUrl';
 import { Icon } from '@/components/ui/Icon';
 import { FollowButton } from '@/components/site/FollowButton';
@@ -16,6 +17,7 @@ export function FeedCard({
   onCheer: () => void;
 }) {
   const cheerCount = item.cheers + (cheered ? 1 : 0);
+  const dateStamp = formatFeedDate(item.occurredAt) ?? item.when;
   return (
     <article className="card-lift overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest">
       <div className="flex items-start gap-3 p-5">
@@ -33,15 +35,14 @@ export function FeedCard({
             >
               {item.athleteName}
             </a>
-            {item.verified ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-success">
-                <Icon name="check-badge" className="h-3.5 w-3.5" />
-                Verified
-              </span>
-            ) : null}
-            <span className="text-xs text-on-surface-variant">· {item.when}</span>
           </div>
-          <p className="text-xs text-on-surface-variant">{item.discipline}</p>
+          <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-on-surface-variant">
+            <span>{item.discipline}</span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={item.occurredAt ?? undefined} className="font-semibold">
+              {dateStamp}
+            </time>
+          </p>
         </div>
         <FollowButton slug={item.athleteSlug} variant="chip" />
       </div>

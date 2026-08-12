@@ -167,7 +167,7 @@ export function AthleteDirectory() {
             Discover runners
           </h1>
           <p className="mt-3 max-w-2xl text-lg text-on-surface-variant">
-            Verified runners telling the whole story — from first finish lines to podiums. Follow the
+            Runners telling the whole story — from first finish lines to podiums. Follow the
             ones whose journey you want to be part of.
           </p>
         </header>

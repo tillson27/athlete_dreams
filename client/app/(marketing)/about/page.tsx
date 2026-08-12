@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import { Section, SectionHeading } from '@/components/site/Section';
 import { Badge } from '@/components/ui/Badge';
 import { LinkButton } from '@/components/ui/Button';
+import { BRAND_CONTACT_EMAIL } from '@/lib/brand';
 
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Why we built ARC — a verified home for a runner’s whole story, where existing tools fall short, and how to get in touch.',
+    'Why we built ARC — a lasting home for a runner’s whole story, where existing tools fall short, and how to get in touch.',
 };
 
 const principles = [
@@ -15,8 +16,8 @@ const principles = [
     body: 'You write the profile. You choose the photos. You decide what to share. Our job is to host the page and make it look the part.',
   },
   {
-    title: 'Verification is the product.',
-    body: 'Results checked against official databases, training synced from Strava, identity confirmed. A verified badge that actually means something.',
+    title: 'Receipts are the product.',
+    body: 'Every result links back to the official page it came from. No badge to trust — just the source, one click away.',
   },
   {
     title: 'Story before numbers.',
@@ -31,7 +32,7 @@ const principles = [
 const alternatives = [
   {
     name: 'Instagram',
-    delta: 'A highlight reel with no context. A race photo gets 200 likes and disappears. ARC keeps the whole arc in one place — verified and lasting.',
+    delta: 'A highlight reel with no context. A race photo gets 200 likes and disappears. ARC keeps the whole arc in one place — sourced and lasting.',
   },
   {
     name: 'Strava',
@@ -49,7 +50,7 @@ export default function AboutPage() {
       <Section tone="surface" pad="lg">
         <SectionHeading
           eyebrow="About ARC"
-          title="A verified home for a runner’s whole story."
+          title="A lasting home for a runner’s whole story."
           description="We started ARC because every existing tool flattens running into something smaller than it is — a highlight reel, a wall of data, a list of links. Every runner deserves a real home for the whole arc. We’re starting with a small cohort of runners to prove it."
           align="center"
         />
@@ -95,8 +96,11 @@ export default function AboutPage() {
             </p>
             <p className="text-sm text-on-surface-variant">
               For now, email us directly:{' '}
-              <a className="font-semibold text-primary underline" href="mailto:hello@athletearc.ca">
-                hello@athletearc.ca
+              <a
+                className="font-semibold text-primary underline"
+                href={`mailto:${BRAND_CONTACT_EMAIL}`}
+              >
+                {BRAND_CONTACT_EMAIL}
               </a>
             </p>
             <div className="flex flex-wrap gap-3">

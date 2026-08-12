@@ -25,7 +25,9 @@ import {
   saveEdits,
   clearEdits,
   type AthleteEdits,
+  type EditCoreValue as CoreValue,
   type EditHighlight as Highlight,
+  type EditPersonalBest as PersonalBest,
   type EditRace as Race,
   type EditRoadmapItem as RoadmapItem,
 } from '@/lib/athleteEdits';
@@ -34,6 +36,7 @@ import { ConnectStripeCard } from './ConnectStripeCard';
 import { profileToEdits, saveEditsToApi, toManageSaveError } from '@/lib/manageApi';
 import {
   COVER_IMAGE_OPTIONS,
+  IMAGE_UPLOAD_ACCEPT,
   PROFILE_IMAGE_OPTIONS,
   filesToPersistedImageRefs,
   toImageUploadErrorMessage,
@@ -43,7 +46,16 @@ import { uid } from '@/lib/uid';
 const inputClass =
   'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/25';
 
-const EMPTY_EDITS: AthleteEdits = { highlights: [], races: [], roadmap: [], gallery: [] };
+const EMPTY_EDITS: AthleteEdits = {
+  storyIntro: '',
+  storyBody: '',
+  personalBests: [],
+  coreValues: [],
+  highlights: [],
+  races: [],
+  roadmap: [],
+  gallery: [],
+};
 
 type ConfirmRequest = {
   title: string;
@@ -159,7 +171,18 @@ type ApiEditorState =
   | { kind: 'signed-out' }
   | { kind: 'not-owner'; ownerSlug: string | null }
   | { kind: 'load-error' }
-  | { kind: 'ready'; athleteName: string; edits: AthleteEdits; coverPhoto: string };
+  | {
+      kind: 'ready';
+      athleteSlug: string;
+      athleteName: string;
+      edits: AthleteEdits;
+      coverPhoto: string;
+    };
+
+// `/athletes/me/manage` is the slug-free alias for "my own page". Stripe's
+// account-link return/refresh URLs are configured once per environment and
+// cannot carry a per-athlete slug, so they land here.
+const OWN_PROFILE_SLUG_ALIAS = 'me';
 
 function ManageProfileApi({
   athleteSlug,
@@ -186,12 +209,15 @@ function ManageProfileApi({
     fetchMyProfile()
       .then((profile) => {
         if (!active) return;
-        if (profile.athleteSlug !== athleteSlug) {
+        const isOwnPage =
+          athleteSlug === OWN_PROFILE_SLUG_ALIAS || profile.athleteSlug === athleteSlug;
+        if (!isOwnPage) {
           setState({ kind: 'not-owner', ownerSlug: profile.athleteSlug });
           return;
         }
         setState({
           kind: 'ready',
+          athleteSlug: profile.athleteSlug,
           athleteName: profile.fullName,
           edits: profileToEdits(profile),
           coverPhoto: profile.heroMediaUrl ?? initialCoverPhoto,
@@ -218,7 +244,7 @@ function ManageProfileApi({
 
   return (
     <ApiEditorReady
-      athleteSlug={athleteSlug}
+      athleteSlug={state.athleteSlug}
       athleteName={state.athleteName}
       initialCoverPhoto={state.coverPhoto}
       initialEdits={state.edits}
@@ -451,7 +477,15 @@ function EditorLayout({
   topSlot?: ReactNode;
   footer: ReactNode;
 }) {
-  const { highlights, races, roadmap, gallery } = edits;
+  const { storyIntro, storyBody, personalBests, coreValues, highlights, races, roadmap, gallery } =
+    edits;
+  const setStoryIntro = (value: string) =>
+    setEdits((current) => ({ ...current, storyIntro: value }));
+  const setStoryBody = (value: string) => setEdits((current) => ({ ...current, storyBody: value }));
+  const setPersonalBests = (updater: (prev: PersonalBest[]) => PersonalBest[]) =>
+    setEdits((current) => ({ ...current, personalBests: updater(current.personalBests) }));
+  const setCoreValues = (updater: (prev: CoreValue[]) => CoreValue[]) =>
+    setEdits((current) => ({ ...current, coreValues: updater(current.coreValues) }));
   const setHighlights = (updater: (prev: Highlight[]) => Highlight[]) =>
     setEdits((current) => ({ ...current, highlights: updater(current.highlights) }));
   const setRaces = (updater: (prev: Race[]) => Race[]) =>
@@ -578,6 +612,38 @@ function EditorLayout({
       {topSlot ? <div className="mb-6">{topSlot}</div> : null}
 
       <div className="space-y-6">
+        {/* Your story */}
+        <SectionCard icon="book" title="Your Story" count={storyBody.trim() ? 1 : 0}>
+          <div className="space-y-5">
+            <div>
+              <label className="label-bold mb-2 block text-on-surface" htmlFor="story-intro">
+                Tagline
+              </label>
+              <input
+                id="story-intro"
+                value={storyIntro}
+                onChange={(event) => setStoryIntro(event.target.value)}
+                placeholder="One line your profile leads with — e.g. Marathoner chasing a sub-2:30 in Tokyo"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="label-bold mb-2 block text-on-surface" htmlFor="story-body">
+                Your story
+              </label>
+              <textarea
+                id="story-body"
+                rows={10}
+                value={storyBody}
+                onChange={(event) => setStoryBody(event.target.value)}
+                placeholder="What got you started? What are you chasing? Write it in your own voice."
+                className={inputClass}
+              />
+              <Recommendation text="Leave a blank line between paragraphs — each block becomes its own paragraph in the My Story section on your public profile." />
+            </div>
+          </div>
+        </SectionCard>
+
         {/* Photos */}
         <SectionCard icon="camera" title="Photos" count={gallery.length + 1}>
           {uploadError ? (
@@ -600,7 +666,7 @@ function EditorLayout({
               <label className="absolute bottom-3 right-3 inline-flex cursor-pointer items-center gap-1.5 rounded-pill bg-black/60 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-black/80">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_UPLOAD_ACCEPT}
                   className="hidden"
                   onChange={(event) => {
                     const files = event.target.files;
@@ -616,7 +682,7 @@ function EditorLayout({
                 Replace cover
               </label>
             </div>
-            <Recommendation text="Best on the app: a wide landscape shot, 16:9, at least 1920 × 1080 px (JPG or WebP, under 5 MB). It fills the full-width hero banner, so keep faces and key action near the centre." />
+            <Recommendation text="Best on the app: a wide landscape shot, 16:9, at least 1920 × 1080 px, under 5 MB. JPG, PNG, WebP, and iPhone HEIC photos all work. It fills the full-width hero banner, so keep faces and key action near the centre." />
           </div>
 
           {/* Gallery */}
@@ -626,7 +692,7 @@ function EditorLayout({
               <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-input border-2 border-dashed border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:border-primary hover:text-primary">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_UPLOAD_ACCEPT}
                   multiple
                   className="hidden"
                   onChange={(event) => {
@@ -658,6 +724,96 @@ function EditorLayout({
               ))}
             </div>
             <Recommendation text="Gallery photos display as squares — upload 1:1 crops at least 800 × 800 px so they stay sharp on high-resolution screens." />
+          </div>
+        </SectionCard>
+
+        {/* Personal Bests */}
+        <SectionCard icon="timer" title="Personal Bests" count={personalBests.length}>
+          {personalBests.length > 0 ? (
+            <div className="space-y-3">
+              {personalBests.map((best) => (
+                <div
+                  key={best.id}
+                  className="space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="grid flex-1 gap-3 md:grid-cols-2">
+                      <input
+                        aria-label="Distance or event"
+                        value={best.label}
+                        onChange={(event) =>
+                          setPersonalBests((prev) =>
+                            prev.map((entry) =>
+                              entry.id === best.id ? { ...entry, label: event.target.value } : entry
+                            )
+                          )
+                        }
+                        placeholder="Distance (e.g. Marathon)"
+                        className={inputClass}
+                      />
+                      <input
+                        aria-label="Time"
+                        value={best.value}
+                        onChange={(event) =>
+                          setPersonalBests((prev) =>
+                            prev.map((entry) =>
+                              entry.id === best.id ? { ...entry, value: event.target.value } : entry
+                            )
+                          )
+                        }
+                        placeholder="Time (e.g. 2:34:11)"
+                        className={inputClass}
+                      />
+                    </div>
+                    <DeleteRowButton
+                      label={`Delete ${best.label || 'personal best'}`}
+                      onClick={() =>
+                        setConfirmRequest({
+                          title: 'Delete this personal best?',
+                          body: (
+                            <p>
+                              <strong>{best.label || 'This personal best'}</strong> will be removed
+                              from your public profile.
+                            </p>
+                          ),
+                          confirmLabel: 'Delete',
+                          onConfirm: () =>
+                            setPersonalBests((prev) =>
+                              prev.filter((entry) => entry.id !== best.id)
+                            ),
+                        })
+                      }
+                    />
+                  </div>
+                  <input
+                    aria-label="Results URL"
+                    type="url"
+                    value={best.resultsUrl ?? ''}
+                    onChange={(event) =>
+                      setPersonalBests((prev) =>
+                        prev.map((entry) =>
+                          entry.id === best.id ? { ...entry, resultsUrl: event.target.value } : entry
+                        )
+                      )
+                    }
+                    placeholder="Results URL (optional)"
+                    className={inputClass}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              <EmptyState label="No personal bests yet." />
+            </ul>
+          )}
+          <div className="mt-5 flex justify-end">
+            <AddRowButton
+              label="Add a personal best"
+              onClick={() =>
+                setPersonalBests((prev) => [...prev, { id: uid(), label: '', value: '' }])
+              }
+            />
           </div>
         </SectionCard>
 
@@ -837,6 +993,78 @@ function EditorLayout({
           </form>
         </SectionCard>
 
+        {/* Core Values */}
+        <SectionCard icon="diamond" title="Core Values" count={coreValues.length}>
+          {coreValues.length > 0 ? (
+            <div className="space-y-3">
+              {coreValues.map((value) => (
+                <div
+                  key={value.id}
+                  className="flex items-start gap-3 rounded-input border border-outline-variant bg-surface-container-low p-4"
+                >
+                  <div className="grid flex-1 gap-3 md:grid-cols-[1fr_1.6fr]">
+                    <input
+                      aria-label="Value"
+                      value={value.title}
+                      onChange={(event) =>
+                        setCoreValues((prev) =>
+                          prev.map((entry) =>
+                            entry.id === value.id ? { ...entry, title: event.target.value } : entry
+                          )
+                        )
+                      }
+                      placeholder="Value (e.g. Mental health)"
+                      className={inputClass}
+                    />
+                    <input
+                      aria-label="What it means to you"
+                      value={value.body}
+                      onChange={(event) =>
+                        setCoreValues((prev) =>
+                          prev.map((entry) =>
+                            entry.id === value.id ? { ...entry, body: event.target.value } : entry
+                          )
+                        )
+                      }
+                      placeholder="What it means to you (e.g. Running is medicine.)"
+                      className={inputClass}
+                    />
+                  </div>
+                  <DeleteRowButton
+                    label={`Delete ${value.title || 'core value'}`}
+                    onClick={() =>
+                      setConfirmRequest({
+                        title: 'Delete this core value?',
+                        body: (
+                          <p>
+                            <strong>{value.title || 'This value'}</strong> will be removed from your
+                            public profile.
+                          </p>
+                        ),
+                        confirmLabel: 'Delete',
+                        onConfirm: () =>
+                          setCoreValues((prev) => prev.filter((entry) => entry.id !== value.id)),
+                      })
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              <EmptyState label="No core values yet." />
+            </ul>
+          )}
+          <div className="mt-5 flex justify-end">
+            <AddRowButton
+              label="Add a core value"
+              onClick={() =>
+                setCoreValues((prev) => [...prev, { id: uid(), title: '', body: '' }])
+              }
+            />
+          </div>
+        </SectionCard>
+
         {/* Roadmap */}
         <SectionCard icon="flag" title="2026 Roadmap" count={roadmap.length}>
           {roadmap.length > 0 ? (
@@ -944,7 +1172,7 @@ function PhotoUploader({
       <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-input border-2 border-dashed border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:border-primary hover:text-primary">
         <input
           type="file"
-          accept="image/*"
+          accept={IMAGE_UPLOAD_ACCEPT}
           multiple
           className="hidden"
           onChange={(event) => {
@@ -1044,6 +1272,33 @@ function AddButton() {
     >
       <Icon name="plus" className="h-4 w-4" />
       Add
+    </button>
+  );
+}
+
+function AddRowButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-input bg-primary-container px-4 py-2 text-sm font-bold text-on-primary transition-colors hover:bg-primary active:scale-95"
+    >
+      <Icon name="plus" className="h-4 w-4" />
+      {label}
+    </button>
+  );
+}
+
+function DeleteRowButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error"
+    >
+      <Icon name="trash" className="h-4 w-4" />
     </button>
   );
 }

@@ -339,6 +339,7 @@ export function feedItemToView(
     detail: item.detail,
     photo: item.photoUrl ? unsplashPhoto(item.photoUrl, 640) : undefined,
     when: item.occurredAtLabel || RESULT_WHENS[index % RESULT_WHENS.length],
+    occurredAt: item.occurredAt,
     cheers: Math.max(7, 72 - index * 5),
     verified: item.isVerified,
   };

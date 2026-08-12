@@ -11,8 +11,6 @@ import { useOnboarding } from '../_components/OnboardingContext';
 import { formInputClass as inputClass } from '@/components/ui/formStyles';
 
 
-const sports = ['Road running', 'Trail & ultra'];
-
 const storyPrompts = [
   { label: 'What got you started?', scaffold: 'What got me started: ' },
   { label: 'A race that changed you', scaffold: 'A race that changed me: ' },
@@ -74,53 +72,27 @@ export function PersonalBasicsForm() {
                 type="text"
                 value={profile.name}
                 onChange={(event) => update({ name: event.target.value })}
-                placeholder="e.g. Cassandra de Winter"
+                placeholder="e.g. Maya Okafor"
                 className={inputClass}
               />
             </Field>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Field label="Primary discipline" htmlFor="sport">
-                <div className="relative">
-                  <select
-                    id="sport"
-                    value={profile.discipline}
-                    onChange={(event) => update({ discipline: event.target.value })}
-                    className={`${inputClass} appearance-none pr-10 ${profile.discipline ? '' : 'text-tertiary'}`}
-                  >
-                    <option value="" disabled>
-                      Select your discipline
-                    </option>
-                    {sports.map((option) => (
-                      <option key={option} value={option} className="text-on-surface">
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  <Icon
-                    name="chevron"
-                    className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-tertiary"
-                  />
-                </div>
-              </Field>
-
-              <Field label="Location (city, country)" htmlFor="location">
-                <div className="relative">
-                  <Icon
-                    name="location"
-                    className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-tertiary"
-                  />
-                  <input
-                    id="location"
-                    type="text"
-                    value={profile.location}
-                    onChange={(event) => update({ location: event.target.value })}
-                    placeholder="e.g. Lethbridge, AB"
-                    className={`${inputClass} pl-10`}
-                  />
-                </div>
-              </Field>
-            </div>
+            <Field label="Location (city, country)" htmlFor="location">
+              <div className="relative">
+                <Icon
+                  name="location"
+                  className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-tertiary"
+                />
+                <input
+                  id="location"
+                  type="text"
+                  value={profile.location}
+                  onChange={(event) => update({ location: event.target.value })}
+                  placeholder="e.g. Lethbridge, AB"
+                  className={`${inputClass} pl-10`}
+                />
+              </div>
+            </Field>
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">

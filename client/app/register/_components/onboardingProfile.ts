@@ -9,7 +9,6 @@ export type PreviousRace = { id: string; name: string; result: string; resultUrl
 
 export type OnboardingProfile = {
   name: string;
-  discipline: string;
   location: string;
   bio: string;
   personalBests: PersonalBest[];
@@ -21,7 +20,6 @@ export type OnboardingProfile = {
 
 export const emptyOnboardingProfile: OnboardingProfile = {
   name: '',
-  discipline: '',
   location: '',
   bio: '',
   personalBests: [],

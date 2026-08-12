@@ -1,4 +1,5 @@
 import { ApiError } from './api';
+import { BRAND_CONTACT_EMAIL } from './brand';
 
 // Maps a thrown auth error to one plain, user-facing sentence (never a raw
 // payload or code — Context §11, client/AGENTS.md minimalism). Mapping is keyed
@@ -15,8 +16,7 @@ export type AuthErrorView = {
   linkToSignIn?: boolean;
 };
 
-const INVITE_ONLY_MESSAGE =
-  'Access is currently invite-only — contact hello@athletearc.ca';
+const INVITE_ONLY_MESSAGE = `Access is currently invite-only — contact ${BRAND_CONTACT_EMAIL}`;
 const GENERIC_MESSAGE = 'Something went wrong — please try again.';
 
 export function toAuthErrorView(kind: AuthKind, error: unknown): AuthErrorView {

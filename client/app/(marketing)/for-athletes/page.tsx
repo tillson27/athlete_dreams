@@ -23,7 +23,7 @@ const pillars: { icon: IconName; title: string; body: string; tone: string }[] =
     icon: 'shield',
     title: 'Look the part',
     tone: 'bg-secondary/10 text-secondary',
-    body: 'A verified, professional profile — with results synced from Strava and official race databases — that makes your running count, whether you run for medals or just for yourself.',
+    body: 'A professional profile — with results synced from Strava and official race databases — that makes your running count, whether you run for medals or just for yourself.',
   },
   {
     icon: 'groups',
@@ -73,7 +73,7 @@ const comparisons = [
   {
     old: 'A link in bio',
     oldBody: 'A name and a PR on a plain, forgettable page.',
-    arc: 'Verified, professional, and unmistakably yours.',
+    arc: 'Professional and unmistakably yours.',
   },
 ];
 
@@ -118,7 +118,7 @@ export default function ForAthletesPage() {
                 <Icon name="arrow" className="h-4 w-4" />
               </Link>
               <Link
-                href="/athletes/cassandra-de-winter"
+                href="/athletes/maya-okafor"
                 className="inline-flex items-center justify-center gap-2 rounded-button border border-white/20 bg-white/10 px-8 py-4 text-base font-bold tracking-[0.05em] text-white backdrop-blur-md transition-all hover:bg-white/20"
               >
                 See a live example
@@ -186,51 +186,44 @@ export default function ForAthletesPage() {
                 <span className="h-3 w-3 rounded-full bg-primary-container/70" />
                 <span className="h-3 w-3 rounded-full bg-success/70" />
                 <span className="ml-3 flex-1 truncate rounded-pill bg-surface px-3 py-1 text-xs text-on-surface-variant">
-                  {profileUrl('cassandra-de-winter')}
+                  {profileUrl('maya-okafor')}
                 </span>
               </div>
               {/* mini profile */}
               <div>
                 <div className="relative h-56 md:h-64">
                   <Image
-                    src={img('1502904550040-7534597429ae', 1200)}
-                    alt="Cassandra de Winter's ARC profile"
+                    src={img('1571008887538-b36bb32f4571', 1200)}
+                    alt="Maya Okafor's ARC profile"
                     fill
                     sizes="(max-width: 768px) 100vw, 768px"
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                    <span className="mb-2 inline-flex items-center gap-1 rounded-pill bg-success px-2.5 py-1 text-[11px] font-bold tracking-[0.05em]">
-                      <Icon name="check-badge" className="h-3.5 w-3.5" />
-                      Verified Athlete
-                    </span>
                     <h3 className="font-display text-2xl font-extrabold leading-tight md:text-3xl">
-                      Cassandra de Winter
+                      Maya Okafor
                     </h3>
-                    <p className="label-bold mt-1 text-white/90">
-                      Elite Endurance &amp; Trail · Lethbridge, AB
-                    </p>
+                    <p className="label-bold mt-1 text-white/90">Road Marathon · Toronto, ON</p>
                   </div>
                 </div>
                 <div className="grid gap-4 p-6 sm:grid-cols-3">
                   <div className="rounded-input bg-surface-container-low p-4">
                     <p className="label-bold text-on-surface-variant">Marathon PB</p>
-                    <p className="font-display text-xl font-bold text-on-surface">2:34:43</p>
+                    <p className="font-display text-xl font-bold text-on-surface">2:34:11</p>
                   </div>
                   <div className="rounded-input bg-surface-container-low p-4">
                     <p className="label-bold text-on-surface-variant">Next up</p>
-                    <p className="font-display text-lg font-bold text-on-surface">
-                      Lost Soul 100-miler
-                    </p>
+                    <p className="font-display text-lg font-bold text-on-surface">Tokyo Marathon</p>
                   </div>
                   <div className="rounded-input bg-surface-container-low p-4">
                     <p className="label-bold text-on-surface-variant">Followers</p>
-                    <p className="font-display text-xl font-bold text-on-surface">12.4k</p>
+                    <p className="font-display text-xl font-bold text-on-surface">9.8k</p>
                   </div>
                   <div className="sm:col-span-3">
                     <p className="border-l-4 border-primary pl-4 italic text-on-surface-variant">
-                      “I run to show my kids what chasing something wholeheartedly looks like.”
+                      “I run to show the kids in my Lagos neighbourhood that bodies move and minds
+                      heal.”
                     </p>
                   </div>
                 </div>
@@ -241,11 +234,11 @@ export default function ForAthletesPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-on-surface-variant">
               A real ARC profile —{' '}
-              <span className="font-semibold text-on-surface">Cassandra de Winter</span>. Yours could
-              look just as good.
+              <span className="font-semibold text-on-surface">Maya Okafor</span>. Yours could look
+              just as good.
             </p>
             <Link
-              href="/athletes/cassandra-de-winter"
+              href="/athletes/maya-okafor"
               className="mt-2 inline-flex items-center gap-2 font-bold text-primary hover:underline"
             >
               View the full profile
@@ -375,11 +368,11 @@ export default function ForAthletesPage() {
                 real runner.”
               </blockquote>
               <p className="mt-6 label-bold text-on-surface-variant">
-                Cassandra de Winter · Endurance &amp; trail
+                Maya Okafor · Road marathon
               </p>
               <div className="mt-8 flex items-center justify-center gap-3">
                 <div className="flex -space-x-3">
-                  {['CW', 'LV', 'PE', 'MO'].map((initials) => (
+                  {['MO', 'LV', 'PE', 'PS'].map((initials) => (
                     <span
                       key={initials}
                       className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-surface bg-primary-container text-xs font-bold text-on-primary-container"

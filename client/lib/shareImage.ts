@@ -59,26 +59,9 @@ export function drawShareCard(
   ctx.font = `600 ${base * 0.028}px ${fonts.body}`;
   ctx.fillText('- My athletic resume', pad + wordmarkW + base * 0.022, pad + base * 0.013);
 
-  // Verified pill.
-  const pillLabel = 'VERIFIED ATHLETE';
-  const pillFont = base * 0.026;
-  ctx.font = `700 ${pillFont}px ${fonts.body}`;
-  const labelW = ctx.measureText(pillLabel).width;
-  const pillH = base * 0.058;
-  const padX = base * 0.028;
-  const checkW = base * 0.045;
-  const pillY = pad + base * 0.05 + base * 0.028;
-  roundRect(ctx, pad, pillY, labelW + padX * 2 + checkW, pillH, pillH / 2);
-  ctx.fillStyle = 'rgba(27,142,45,0.92)';
-  ctx.fill();
-  ctx.fillStyle = '#ffffff';
-  drawCheck(ctx, pad + padX, pillY + pillH / 2, base * 0.02);
-  ctx.textBaseline = 'middle';
-  ctx.fillText(pillLabel, pad + padX + checkW, pillY + pillH / 2 + base * 0.002);
-
   // Content block, anchored to the bottom — scales to fit when many items are picked.
   const maxW = W > H ? W * 0.64 : W - pad * 2;
-  const contentTop = pillY + pillH + base * 0.03;
+  const contentTop = pad + base * 0.05 + base * 0.028 + base * 0.058 + base * 0.03;
   const available = H - pad - contentTop;
 
   let nameSize = base * 0.11;

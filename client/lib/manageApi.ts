@@ -1,21 +1,31 @@
 import type {
   AthleteProfile,
+  ReplacePersonalBestsRequest,
   SetAthleteGalleryRequest,
   SetAthleteHighlightsRequest,
   SetAthleteRaceResultsRequest,
   SetAthleteRoadmapRequest,
+  UpdateAthleteProfileRequest,
 } from 'fad-common';
 import {
   ApiError,
   patchMyProfile,
   replaceMyGallery,
   replaceMyHighlights,
+  replaceMyPersonalBests,
   replaceMyRaces,
   replaceMyRoadmap,
 } from './api';
 import { unsplashPhoto } from './unsplash';
 import { uid } from './uid';
-import type { AthleteEdits, EditHighlight, EditRace, EditRoadmapItem } from './athleteEdits';
+import type {
+  AthleteEdits,
+  EditCoreValue,
+  EditHighlight,
+  EditPersonalBest,
+  EditRace,
+  EditRoadmapItem,
+} from './athleteEdits';
 
 // Pure, framework-free persistence for the /manage editor in `api` mode. The
 // editor consumes these to load the owner's four editable sets from
@@ -33,6 +43,10 @@ import type { AthleteEdits, EditHighlight, EditRace, EditRoadmapItem } from './a
 //               resultsUrl <-> resultUrl; links <-> links; photos <-> photoRefs.
 //   roadmap:    name <-> eventName; date <-> displayDate.
 //   gallery:    display URL (composed via unsplashPhoto) <-> stored media ref.
+//   storyIntro: <-> storyIntro (the tagline the profile leads with).
+//   storyBody:  one textarea <-> storyBody (blank-line-separated paragraphs).
+//   bests:      label <-> label; value <-> value; resultsUrl <-> resultUrl.
+//   coreValues: title <-> title; body <-> body.
 //
 // Photos/gallery come back as bare media refs or absolute URLs; the editor
 // renders them with next/image, so a display URL is composed on load and the
@@ -79,10 +93,31 @@ function toEditGallery(profile: AthleteProfile): string[] {
   return (profile.gallery ?? []).map((ref) => unsplashPhoto(ref));
 }
 
+function toEditPersonalBests(profile: AthleteProfile): EditPersonalBest[] {
+  return (profile.personalBests ?? []).map((best) => ({
+    id: uid(),
+    label: best.label,
+    value: best.value,
+    ...(best.resultUrl ? { resultsUrl: best.resultUrl } : {}),
+  }));
+}
+
+function toEditCoreValues(profile: AthleteProfile): EditCoreValue[] {
+  return (profile.coreValues ?? []).map((value) => ({
+    id: uid(),
+    title: value.title,
+    body: value.body,
+  }));
+}
+
 // Public API contract: derive the editor's `AthleteEdits` snapshot from the
 // owner's rich profile DTO (mirrors `deriveEdits` for the mock/static source).
 export function profileToEdits(profile: AthleteProfile): AthleteEdits {
   return {
+    storyIntro: profile.storyIntro ?? '',
+    storyBody: (profile.storyBody ?? []).join('\n\n'),
+    personalBests: toEditPersonalBests(profile),
+    coreValues: toEditCoreValues(profile),
     highlights: toEditHighlights(profile),
     races: toEditRaces(profile),
     roadmap: toEditRoadmap(profile),
@@ -144,6 +179,37 @@ function toGalleryRequest(gallery: string[]): SetAthleteGalleryRequest {
   return { gallery };
 }
 
+function toPersonalBests(bests: EditPersonalBest[]): ReplacePersonalBestsRequest['personalBests'] {
+  return bests
+    .filter((best) => best.label.trim() && best.value.trim())
+    .map((best) => {
+      const resultUrl = best.resultsUrl?.trim();
+      return {
+        label: best.label.trim(),
+        value: best.value.trim(),
+        ...(resultUrl ? { resultUrl } : {}),
+      };
+    });
+}
+
+// Story and core values ride the same PATCH. `storyIntro` is only sent when the
+// athlete typed one, because the publish guard treats an empty tagline as
+// "unpublishable" and a blank PATCH would silently un-publish a live profile.
+function toStoryAndValuesPatch(edits: AthleteEdits): UpdateAthleteProfileRequest {
+  const patch: UpdateAthleteProfileRequest = {
+    coreValues: edits.coreValues
+      .filter((value) => value.title.trim() && value.body.trim())
+      .map((value) => ({ title: value.title.trim(), body: value.body.trim() })),
+  };
+  const storyIntro = edits.storyIntro.trim();
+  if (storyIntro) patch.storyIntro = storyIntro;
+  patch.storyBody = edits.storyBody
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 0);
+  return patch;
+}
+
 // --- Save behind the seam ---
 
 // Save the editor sets via their owner-scoped endpoints. Runs sequentially so a
@@ -153,9 +219,11 @@ export async function saveEditsToApi(
   edits: AthleteEdits,
   coverPhoto?: string
 ): Promise<void> {
-  if (coverPhoto) {
-    await patchMyProfile({ heroMediaUrl: coverPhoto });
-  }
+  await patchMyProfile({
+    ...toStoryAndValuesPatch(edits),
+    ...(coverPhoto ? { heroMediaUrl: coverPhoto } : {}),
+  });
+  await replaceMyPersonalBests(toPersonalBests(edits.personalBests));
   await replaceMyHighlights(toHighlightsRequest(edits.highlights));
   await replaceMyRaces(toRacesRequest(edits.races));
   await replaceMyRoadmap(toRoadmapRequest(edits.roadmap));

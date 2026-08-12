@@ -14,7 +14,7 @@ export default function SignUpPage() {
           Tell your story.
         </h1>
         <p className="mt-2 text-sm text-on-surface-variant">
-          Build a verified athlete profile in about 15 minutes — your story, your results, and the
+          Build your athlete profile in about 15 minutes — your story, your results, and the
           values you run by. Bring people along for the journey.
         </p>
         <SignUpForm />

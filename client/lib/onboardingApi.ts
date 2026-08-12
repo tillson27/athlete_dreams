@@ -32,10 +32,8 @@ import type {
 // wording stay directly verifiable against a running API.
 //
 // Field mapping (wizard field -> API field), faithful to the seed semantics and
-// the publish guard (`storyIntro` + >=1 personal best + `disciplineLabel`):
+// the publish guard (`storyIntro` + >=1 personal best):
 //   name         -> athleteSlug (slugified, 409-retried) + fullName
-//   discipline   -> disciplineLabel (free text) and drives primarySport = RUNNING
-//                   (the wizard only offers running disciplines)
 //   location     -> hometown
 //   bio ("story")-> storyBody (paragraph array; the long narrative)
 //   mission      -> storyIntro (the short tagline hook the profile leads with)
@@ -92,8 +90,6 @@ export function toStep1Patch(profile: OnboardingProfile): UpdateAthleteProfileRe
   const patch: UpdateAthleteProfileRequest = {};
   const fullName = profile.name.trim();
   if (fullName) patch.fullName = fullName;
-  const discipline = profile.discipline.trim();
-  if (discipline) patch.disciplineLabel = discipline;
   const hometown = profile.location.trim();
   if (hometown) patch.hometown = hometown;
   const storyBody = paragraphsFromBio(profile.bio);
@@ -181,7 +177,6 @@ export function profileToOnboarding(apiProfile: AthleteProfile): OnboardingProfi
 
   return {
     name: apiProfile.fullName,
-    discipline: apiProfile.disciplineLabel ?? '',
     location: apiProfile.hometown ?? '',
     bio: (apiProfile.storyBody ?? []).join('\n\n'),
     personalBests,
@@ -282,7 +277,6 @@ export async function publishDraft(): Promise<void> {
 const PUBLISH_MISSING_SENTENCES: Record<string, string> = {
   storyIntro: 'Add your tagline in Step 3',
   personalBests: 'Add at least one personal best in Step 2',
-  disciplineLabel: 'Choose your discipline in Step 1',
 };
 
 export function toPublishChecklist(details: unknown): string[] {

@@ -17,6 +17,10 @@ const sessionStore = createBrowserStore<{ name?: string; published?: boolean }>(
 
 const DEFAULT_COVER = unsplashPhoto('1571008887538-b36bb32f4571', 1400);
 
+// The wizard no longer asks athletes to pick a running category, so every
+// preview reads back the one launch discipline.
+const DEFAULT_DISCIPLINE_LABEL = 'Running';
+
 export function loadOnboardingProfileView(
   athleteSlug: string,
   coverPhoto?: string
@@ -57,7 +61,6 @@ function onboardingProfileToProfileView(
   coverPhoto?: string
 ): ProfileView {
   const fullName = profile.name?.trim() || nameFromSlug(athleteSlug);
-  const discipline = profile.discipline?.trim() || 'Running';
   const hometown = profile.location?.trim() || '';
   const storyBody = paragraphsFromBio(profile.bio ?? '');
   const storyIntro = profile.mission?.trim() ?? '';
@@ -65,7 +68,7 @@ function onboardingProfileToProfileView(
   const athlete: MockAthlete = {
     athleteSlug,
     fullName,
-    headline: storyIntro || discipline,
+    headline: storyIntro || DEFAULT_DISCIPLINE_LABEL,
     bio: storyBody.join('\n\n'),
     primarySport: 'RUNNING',
     runnerLevel: 'EVERYDAY',
@@ -83,7 +86,7 @@ function onboardingProfileToProfileView(
     athleteSlug,
     handle: '',
     followers: '',
-    disciplineLabel: discipline,
+    disciplineLabel: DEFAULT_DISCIPLINE_LABEL,
     arcSubtitle: '',
     storyIntro,
     storyBody,

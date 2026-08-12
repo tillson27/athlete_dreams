@@ -125,9 +125,9 @@ export function ReviewSummary() {
             <div className="flex items-center gap-4 rounded-card bg-surface-container-high p-4">
               <Icon name="lock" className="h-6 w-6 shrink-0 text-secondary" />
               <div>
-                <h4 className="label-bold text-on-surface">Verified results</h4>
+                <h4 className="label-bold text-on-surface">Results links</h4>
                 <p className="text-xs text-on-surface-variant">
-                  Any result you link to its official page shows a verified badge on your profile.
+                  Any result you link to its official page shows a Results link on your profile.
                 </p>
               </div>
             </div>

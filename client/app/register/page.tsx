@@ -36,7 +36,7 @@ const steps: {
     number: '4',
     icon: 'fact-check',
     title: '4. Review & Publish',
-    body: 'The final sprint. Review your funding targets, breakdown of fund usage, and launch your "Epic." Any race you link to its official results carries a verified badge.',
+    body: 'The final sprint. Review your funding targets, breakdown of fund usage, and launch your "Epic." Any race you link to its official results links straight to them.',
   },
 ];
 
@@ -107,9 +107,9 @@ export default function OnboardingGuidePage() {
                         </div>
                       </div>
                       <div className="rounded-lg bg-surface-container p-4">
-                        <span className="label-bold text-primary-container">VERIFIED</span>
+                        <span className="label-bold text-primary-container">RESULTS</span>
                         <div className="mt-2 flex items-center gap-2">
-                          <Icon name="check-circle" className="h-4 w-4 text-secondary" />
+                          <Icon name="link" className="h-4 w-4 text-secondary" />
                           <span className="text-xs">Race results</span>
                         </div>
                       </div>

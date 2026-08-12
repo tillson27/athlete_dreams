@@ -25,9 +25,15 @@ export type EditRace = {
   photos: string[];
 };
 export type EditRoadmapItem = { id: string; name: string; date: string };
+export type EditPersonalBest = { id: string; label: string; value: string; resultsUrl?: string };
+export type EditCoreValue = { id: string; title: string; body: string };
 
 export type AthleteEdits = {
   coverPhoto?: string;
+  storyIntro: string;
+  storyBody: string;
+  personalBests: EditPersonalBest[];
+  coreValues: EditCoreValue[];
   highlights: EditHighlight[];
   races: EditRace[];
   roadmap: EditRoadmapItem[];
@@ -40,6 +46,18 @@ const storeFor = (slug: string) => createBrowserStore<AthleteEdits>(`arc-manage-
 // Public API contract: derive an editable snapshot from published profile data.
 export function deriveEdits(profile: RichAthleteProfile): AthleteEdits {
   return {
+    storyIntro: profile.storyIntro,
+    storyBody: profile.storyBody.join('\n\n'),
+    personalBests: profile.personalBests.map((best) => ({
+      id: uid(),
+      label: best.label,
+      value: best.value,
+    })),
+    coreValues: profile.coreValues.map((value) => ({
+      id: uid(),
+      title: value.title,
+      body: value.body,
+    })),
     highlights: [...profile.careerHighlights, ...profile.moreResults].map((highlight) => ({
       id: uid(),
       title: highlight.title,
@@ -68,8 +86,18 @@ export function deriveEdits(profile: RichAthleteProfile): AthleteEdits {
   };
 }
 
+// Edits saved before the story/bests/values sections existed are missing those
+// keys, so every read is normalized back to the full shape.
 export function loadEdits(slug: string): AthleteEdits | null {
-  return storeFor(slug).read();
+  const saved = storeFor(slug).read();
+  if (!saved) return null;
+  return {
+    ...saved,
+    storyIntro: saved.storyIntro ?? '',
+    storyBody: saved.storyBody ?? '',
+    personalBests: saved.personalBests ?? [],
+    coreValues: saved.coreValues ?? [],
+  };
 }
 
 export function saveEdits(slug: string, edits: AthleteEdits) {

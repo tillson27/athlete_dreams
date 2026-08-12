@@ -14,6 +14,9 @@
 export const BRAND_NAME_FULL = 'ATHLETE ARC';
 export const BRAND_NAME_SHORT = 'ARC';
 
+/** The one public contact address. Every surface that shows an email reads this. */
+export const BRAND_CONTACT_EMAIL = 'info@athletearc.ca';
+
 export const BRAND_MARK_VIEW_BOX = '0 0 120 72';
 export const BRAND_MARK_WIDTH = 120;
 export const BRAND_MARK_HEIGHT = 72;

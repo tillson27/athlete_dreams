@@ -5,11 +5,11 @@ import { LinkButton, ArrowGlyph } from '@/components/ui/Button';
 export const metadata: Metadata = {
   title: 'Mission',
   description:
-    'ARC is the home for a runner’s whole story — verified results, the journey behind them, and the community that carries you forward.',
+    'ARC is the home for a runner’s whole story — the results, the journey behind them, and the community that carries you forward.',
   openGraph: {
     title: 'Mission · ARC',
     description:
-      'Every run is part of a bigger story. ARC gives runners a verified home for the whole arc — not just the finish line.',
+      'Every run is part of a bigger story. ARC gives runners a lasting home for the whole arc — not just the finish line.',
   },
 };
 
@@ -22,7 +22,7 @@ const pillars = [
   {
     step: '02',
     title: 'Earn real legitimacy',
-    body: 'Results linked to official, public results pages earn a verified badge — legitimacy that actually means something.',
+    body: 'Link your results to the official, public results pages — legitimacy anyone can check for themselves.',
   },
   {
     step: '03',
@@ -59,7 +59,7 @@ export default function MissionPage() {
           <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
             Instagram flattens your running to a highlight reel. Strava buries it in data. A link-in-bio
             says nothing. ARC gives every runner &mdash; from the first-time half-marathoner to the
-            amateur-elite &mdash; a verified home for the whole arc: the story, the results, and the
+            amateur-elite &mdash; a lasting home for the whole arc: the story, the results, and the
             community that carries you forward.
           </p>
 
@@ -98,7 +98,7 @@ export default function MissionPage() {
       </div>
 
       <p className="relative mx-auto mt-10 max-w-[1200px] text-xs text-white/55">
-        Verified results · the story behind them · the community around them. Story first, always.
+        Real results · the story behind them · the community around them. Story first, always.
       </p>
     </section>
   );

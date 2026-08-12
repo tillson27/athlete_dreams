@@ -116,6 +116,7 @@ function toMilestoneItem(source: AthleteFeedSourceRow): OrderedFeedItem | null {
       detail: highlight.detail ?? highlight.title,
       photoUrl: toPhotoUrl(highlight.photoRefs),
       occurredAtLabel: 'Recent milestone',
+      occurredAt: new Date(occurredAtMs).toISOString(),
       isVerified: hasResultUrl(highlight.resultUrl),
     },
   };
@@ -133,6 +134,7 @@ function toRaceItem(source: AthleteFeedSourceRow): OrderedFeedItem | null {
       detail: race.resultSummary,
       photoUrl: toPhotoUrl(race.photoRefs),
       occurredAtLabel: race.displayDate,
+      occurredAt: new Date(occurredAtMs).toISOString(),
       isVerified: hasResultUrl(race.resultUrl),
     },
   };
@@ -150,6 +152,7 @@ function toRoadmapItem(source: AthleteFeedSourceRow): OrderedFeedItem | null {
       detail: `Up next · ${displayDate}`,
       photoUrl: null,
       occurredAtLabel: displayDate,
+      occurredAt: event.eventStartDate.toISOString(),
       isVerified: false,
     },
   };
@@ -169,6 +172,7 @@ function toTrainingItem(source: AthleteFeedSourceRow): OrderedFeedItem | null {
       detail: training.latestMeta,
       photoUrl: null,
       occurredAtLabel: 'Latest session',
+      occurredAt: null,
       isVerified: false,
     },
   };

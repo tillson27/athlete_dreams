@@ -20,8 +20,8 @@ import {
   EditedGallery,
 } from './ProfileEditableSections';
 
-// Data-driven athlete profile — the Stitch "Cassandra" layout, generalized so
-// every athlete in the runner-launch roster gets the same flagship treatment.
+// Data-driven athlete profile — the flagship layout every athlete in the
+// runner-launch roster renders through.
 // Rich per-athlete content lives in lib/athleteProfiles.ts; the editable
 // sections (highlights, races, roadmap, gallery) hydrate any saved edits.
 
@@ -31,21 +31,6 @@ const profileTabs = [
   { label: 'Results', href: '#results' },
   { label: 'Training', href: '#training' },
   { label: 'Gallery', href: '#gallery' },
-];
-
-const verifiedProofs = [
-  {
-    title: 'Official results',
-    body: 'Results earn a verified badge when linked to an official, public results page.',
-  },
-  {
-    title: 'Receipts on funded expenses',
-    body: 'When backing opens, every campaign is itemized and expenses are proven with receipts.',
-  },
-  {
-    title: 'Post-event updates',
-    body: 'Athletes share recaps after key events, so supporters see the outcome.',
-  },
 ];
 
 const chapterTone: Record<'secondary' | 'tertiary' | 'primary', string> = {
@@ -125,10 +110,6 @@ export function AthleteProfile({
         />
         <div aria-hidden="true" className="grain pointer-events-none absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-8 text-white md:px-16 md:py-12">
-          <span className="mb-3 inline-flex items-center gap-1 rounded-pill bg-success px-3 py-1 text-xs font-bold tracking-[0.05em] text-white">
-            <Icon name="check-badge" className="h-4 w-4" />
-            Verified Athlete
-          </span>
           <h1 className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight drop-shadow-sm md:text-6xl lg:text-7xl">
             {athlete.fullName}
           </h1>
@@ -166,59 +147,21 @@ export function AthleteProfile({
         <ProfileTabNav tabs={profileTabs} />
 
         {/* QUICK ACTIONS (desktop — mobile uses the sticky bottom bar) */}
-        <section className="relative z-10 -mt-12 hidden md:block">
-          <div className="card-lift flex flex-col items-center justify-center gap-4 rounded-card bg-surface-container-lowest p-6 md:flex-row md:justify-end md:p-8">
-            <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row">
-              {profile.supportEnabled ? (
-                <BackThisAthleteCta
-                  athleteName={athlete.fullName}
-                  campaignId={donateCampaignId}
-                  className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
-                />
-              ) : (
-                <FollowButton slug={athlete.athleteSlug} variant="block" className="md:w-auto md:px-8" />
-              )}
-              <ShareCard resume={shareResume} />
-              <OwnerManageLink athleteSlug={athlete.athleteSlug} />
-            </div>
+        <section className="relative z-10 -mt-10 hidden md:block">
+          <div className="card-lift ml-auto flex w-fit items-center gap-3 rounded-card bg-surface-container-lowest p-4">
+            {profile.supportEnabled ? (
+              <BackThisAthleteCta
+                athleteName={athlete.fullName}
+                campaignId={donateCampaignId}
+                className="inline-flex min-h-12 items-center justify-center rounded-button bg-primary-container px-8 py-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+              />
+            ) : (
+              <FollowButton slug={athlete.athleteSlug} variant="block" className="md:w-auto md:px-8" />
+            )}
+            <ShareCard resume={shareResume} />
+            <OwnerManageLink athleteSlug={athlete.athleteSlug} />
           </div>
         </section>
-
-        {/* VERIFIED — the badge, with proof behind it */}
-        <details className="group mt-6 overflow-hidden rounded-card border border-success/30 bg-success/5">
-          <summary className="flex cursor-pointer list-none flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center md:p-5">
-            <span className="flex items-center gap-2.5 text-sm font-semibold text-on-surface">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success text-white">
-                <Icon name="check-badge" className="h-4 w-4" />
-              </span>
-              <span>
-                Verified results
-                <span className="hidden font-normal text-on-surface-variant sm:inline">
-                  {' '}
-                  · linked to official results pages
-                </span>
-              </span>
-            </span>
-            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-secondary">
-              How we verify
-              <Icon name="chevron" className="h-4 w-4 transition-transform group-open:rotate-180" />
-            </span>
-          </summary>
-          <div className="grid gap-3 border-t border-success/20 p-4 sm:grid-cols-3 md:p-5">
-            {verifiedProofs.map((proof) => (
-              <div
-                key={proof.title}
-                className="flex items-start gap-2.5 rounded-input bg-surface-container-lowest p-3"
-              >
-                <Icon name="check-badge" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                <div>
-                  <p className="label-bold text-on-surface">{proof.title}</p>
-                  <p className="mt-0.5 text-xs text-on-surface-variant">{proof.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </details>
 
         {/* THE ARC — collapsible narrative timeline */}
         <details id="arc" open className="group mt-8 scroll-mt-32 md:mt-16">
@@ -416,21 +359,38 @@ export function AthleteProfile({
               />
             </section>
 
-            {/* Core Values */}
-            <div className="card-lift order-11 rounded-card bg-inverse-surface p-8 text-white md:order-none">
-              <h3 className="mb-6 flex items-center gap-2 font-display text-xl font-bold text-primary-container">
-                <Icon name="diamond" className="h-6 w-6" />
-                Core Values
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {profile.coreValues.map((value) => (
-                  <div key={value.title} className="rounded-input border border-white/15 p-4">
-                    <p className="label-bold mb-1 text-primary-container">{value.title}</p>
-                    <p className="text-xs text-white/70">{value.body}</p>
+            {/* Core Values — onboarding captures bare value words, the manage
+                editor adds the "what it means to me" line, so render whichever
+                the athlete has rather than an empty card. */}
+            {profile.coreValues.length > 0 || athlete.values.length > 0 ? (
+              <div className="card-lift order-11 rounded-card bg-inverse-surface p-8 text-white md:order-none">
+                <h3 className="mb-6 flex items-center gap-2 font-display text-xl font-bold text-primary-container">
+                  <Icon name="diamond" className="h-6 w-6" />
+                  Core Values
+                </h3>
+                {profile.coreValues.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    {profile.coreValues.map((value) => (
+                      <div key={value.title} className="rounded-input border border-white/15 p-4">
+                        <p className="label-bold mb-1 text-primary-container">{value.title}</p>
+                        <p className="text-xs text-white/70">{value.body}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {athlete.values.map((value) => (
+                      <span
+                        key={value}
+                        className="rounded-pill border border-white/15 px-3 py-1.5 text-sm font-semibold text-primary-container"
+                      >
+                        {value}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            ) : null}
           </div>
 
           {/* RIGHT COLUMN */}

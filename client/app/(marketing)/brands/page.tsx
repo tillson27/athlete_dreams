@@ -46,7 +46,7 @@ export default function BrandsPage() {
               Sponsor athletes who fit your story.
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-on-surface-variant">
-              ARC is a working directory of athletes with verified accomplishments, current campaigns, and stated values. Find the athlete you want to back — and skip the agent gauntlet.
+              ARC is a working directory of athletes with sourced accomplishments, current campaigns, and stated values. Find the athlete you want to back — and skip the agent gauntlet.
             </p>
             <div className="flex flex-wrap gap-3">
               <LinkButton href="/athletes" tone="primary" size="lg">

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { BRAND_CONTACT_EMAIL } from '@/lib/brand';
 
 // Root error boundary — replaces Next's default error screen with a branded
 // recovery page. `reset` re-renders the segment that threw.
@@ -19,8 +20,8 @@ export default function RootErrorPage({
       </h1>
       <p className="max-w-md text-base text-on-surface-variant">
         An unexpected error interrupted the page. Try again — and if it keeps happening, email{' '}
-        <a className="font-semibold text-primary underline" href="mailto:hello@athletearc.ca">
-          hello@athletearc.ca
+        <a className="font-semibold text-primary underline" href={`mailto:${BRAND_CONTACT_EMAIL}`}>
+          {BRAND_CONTACT_EMAIL}
         </a>
         .
       </p>

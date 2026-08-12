@@ -6,17 +6,17 @@ import { Badge } from '@/components/ui/Badge';
 export const metadata: Metadata = {
   title: 'How it works',
   description:
-    'How runners and their supporters use ARC — from building a verified profile to following the whole journey.',
+    'How runners and their supporters use ARC — from building a profile to following the whole journey.',
 };
 
 const athleteSteps = [
   {
     title: 'Build your profile',
-    body: 'Your story, photos, personal bests, and the values you run by. About 15 minutes from sign-up to a live, verified profile.',
+    body: 'Your story, photos, personal bests, and the values you run by. About 15 minutes from sign-up to a live profile.',
   },
   {
-    title: 'Get verified',
-    body: 'Connect Strava and link your official results. ARC confirms your times and identity so your badge carries real weight.',
+    title: 'Back it up',
+    body: 'Link your official race results so anyone reading your profile can check the times for themselves.',
   },
   {
     title: 'Share it with your world',
@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
         <SectionHeading
           eyebrow="How ARC works"
           title="A home for runners, and the people who follow them."
-          description="ARC is one network with two jobs: give runners a verified home for their whole story, and give their people a front-row seat. Pick your role — the path is straightforward."
+          description="ARC is one network with two jobs: give runners a lasting home for their whole story, and give their people a front-row seat. Pick your role — the path is straightforward."
           align="center"
         />
       </Section>

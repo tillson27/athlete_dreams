@@ -97,11 +97,11 @@ export function ProfilePreview({
                       </p>
                       {best.resultUrl ? (
                         <span
-                          className="inline-flex text-success"
-                          title="Verified result"
-                          aria-label="Verified result"
+                          className="inline-flex text-secondary"
+                          title="Results link"
+                          aria-label="Results link"
                         >
-                          <Icon name="verified" className="h-3.5 w-3.5 shrink-0" />
+                          <Icon name="link" className="h-3.5 w-3.5 shrink-0" />
                         </span>
                       ) : null}
                     </div>
@@ -127,11 +127,11 @@ export function ProfilePreview({
                     </span>
                     {item.resultUrl ? (
                       <span
-                        className="mt-0.5 inline-flex shrink-0 text-success"
-                        title="Verified result"
-                        aria-label="Verified result"
+                        className="mt-0.5 inline-flex shrink-0 text-secondary"
+                        title="Results link"
+                        aria-label="Results link"
                       >
-                        <Icon name="verified" className="h-3.5 w-3.5" />
+                        <Icon name="link" className="h-3.5 w-3.5" />
                       </span>
                     ) : null}
                   </li>
@@ -155,11 +155,11 @@ export function ProfilePreview({
                     </span>
                     {item.resultUrl ? (
                       <span
-                        className="mt-0.5 inline-flex shrink-0 text-success"
-                        title="Verified result"
-                        aria-label="Verified result"
+                        className="mt-0.5 inline-flex shrink-0 text-secondary"
+                        title="Results link"
+                        aria-label="Results link"
                       >
-                        <Icon name="verified" className="h-3.5 w-3.5" />
+                        <Icon name="link" className="h-3.5 w-3.5" />
                       </span>
                     ) : null}
                   </li>
