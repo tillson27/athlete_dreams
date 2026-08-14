@@ -30,7 +30,8 @@
     "script:agents:sync": "node scripts/sync-agents-instructions.js",
     "script:skills:sync": "node scripts/sync-skills-folders.js",
     "script:skills:check": "node scripts/enforce-skill-length.js",
-    "script:rules:check": "node scripts/check-expired-rules.js"
+    "script:rules:check": "node scripts/check-expired-rules.js",
+    "script:brand:mark": "node scripts/generate-brand-mark.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
