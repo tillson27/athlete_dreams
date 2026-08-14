@@ -22,7 +22,7 @@ export const solutionSlide: Slide = {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-on-primary">
               <Megaphone className="h-4 w-4" />
             </span>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Pillar 01 · The wedge</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface">Pillar 01 · The wedge</p>
           </div>
           <h3 className="font-display text-lg font-bold text-on-surface">Crowdfunding</h3>
           <p className="text-[12px] leading-relaxed text-on-primary-container/85">

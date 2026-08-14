@@ -144,7 +144,7 @@ export function WhyArcSection() {
                 for others to follow.
               </p>
               <div className="mt-6 border-l-4 border-primary pl-4">
-                <p className="eyebrow text-primary">Author your legacy</p>
+                <p className="eyebrow text-on-surface">Author your legacy</p>
                 <p className="mt-1 leading-relaxed text-on-surface-variant">
                   The premier storytelling platform for athletes who want their full journey seen,
                   supported, and celebrated.

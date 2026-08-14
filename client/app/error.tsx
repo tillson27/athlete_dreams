@@ -14,7 +14,7 @@ export default function RootErrorPage({
 }) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center gap-6 px-5 py-24 text-center">
-      <p className="label-bold text-primary">Something went wrong</p>
+      <p className="label-bold text-on-surface">Something went wrong</p>
       <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
         We tripped, but we&rsquo;re back up.
       </h1>

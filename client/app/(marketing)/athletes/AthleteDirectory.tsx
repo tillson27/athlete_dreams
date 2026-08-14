@@ -181,7 +181,7 @@ export function AthleteDirectory() {
               value={filters.search}
               onChange={(event) => updateFilters({ search: event.target.value })}
               placeholder="Search by name, discipline, or city…"
-              className="w-full rounded-input border border-outline-variant bg-surface-container-lowest px-12 py-4 text-base text-on-surface shadow-sm transition-all placeholder:text-on-surface-variant focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
+              className="w-full rounded-input border border-outline-variant bg-surface-container-lowest px-12 py-4 text-base text-on-surface shadow-sm transition-all placeholder:text-on-surface-variant focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus/30"
             />
           </label>
           <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar md:hidden">

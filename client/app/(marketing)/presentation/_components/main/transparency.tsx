@@ -76,7 +76,7 @@ export const transparencySlide: Slide = {
 
         <div className="col-span-5 flex flex-col gap-3">
           <div className="flex flex-col gap-2 rounded-2xl border border-primary/30 bg-primary-soft/40 p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Why this matters</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface">Why this matters</p>
             <h3 className="font-display text-lg font-bold text-on-surface">
               Transparency drives the second donation.
             </h3>

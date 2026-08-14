@@ -53,7 +53,7 @@ export const tractionSlide: Slide = {
         </div>
 
         <div className="col-span-5 flex flex-col gap-3 rounded-2xl border border-primary/30 bg-primary-soft/40 p-5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Case · Maya Okafor</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface">Case · Maya Okafor</p>
           <h3 className="font-display text-xl font-bold text-on-surface">
             $1,840 raised toward Tokyo Marathon &mdash; in 9 days, from 48 backers.
           </h3>

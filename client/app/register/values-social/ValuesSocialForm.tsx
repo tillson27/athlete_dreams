@@ -52,7 +52,7 @@ export function ValuesSocialForm() {
         {/* FORM */}
         <div className="order-2 flex flex-col gap-10">
           <section>
-            <span className="eyebrow mb-2 block text-primary md:hidden">
+            <span className="eyebrow mb-2 block text-on-surface md:hidden">
               Step 3 of 4
             </span>
             <h1 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
@@ -64,7 +64,7 @@ export function ValuesSocialForm() {
           </section>
 
           <section>
-            <label className="label-bold mb-3 block text-primary">
+            <label className="label-bold mb-3 block text-on-surface">
               Your values (pick up to {MAX_VALUES})
             </label>
             <div className="flex flex-wrap gap-3">
@@ -90,7 +90,7 @@ export function ValuesSocialForm() {
           </section>
 
           <section>
-            <label className="label-bold mb-2 block text-primary" htmlFor="mission">
+            <label className="label-bold mb-2 block text-on-surface" htmlFor="mission">
               Your tagline
             </label>
             <div className="relative">
@@ -101,7 +101,7 @@ export function ValuesSocialForm() {
                 value={profile.mission}
                 onChange={(event) => update({ mission: event.target.value })}
                 placeholder="e.g. Chasing sunrises and sub-3 marathons."
-                className="w-full rounded-input border border-outline-variant bg-surface-container-low px-4 py-4 outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+                className="w-full rounded-input border border-outline-variant bg-surface-container-low px-4 py-4 outline-none transition-all focus:border-focus focus:ring-2 focus:ring-focus/20"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant/50">
                 {profile.mission.length}/100

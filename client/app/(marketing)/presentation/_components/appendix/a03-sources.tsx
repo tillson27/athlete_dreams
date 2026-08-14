@@ -59,7 +59,7 @@ export const a03Sources: Slide = {
             key={source.id}
             className="flex items-start gap-3 rounded-card border border-outline-variant/70 bg-surface-container-lowest p-4"
           >
-            <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-[11px] font-bold text-primary">
+            <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 text-[11px] font-bold text-on-surface">
               {source.id}
             </span>
             <span className="text-[12px] leading-relaxed text-on-surface">{source.label}</span>

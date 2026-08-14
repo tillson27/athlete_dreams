@@ -54,7 +54,7 @@ import {
 import { uid } from '@/lib/uid';
 
 const inputClass =
-  'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/25';
+  'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-focus focus:ring-2 focus:ring-focus/25';
 
 const EMPTY_EDITS: AthleteEdits = {
   storyIntro: '',
@@ -1431,7 +1431,7 @@ function EditorLayout({
             href={publicHref}
             target="_blank"
             rel="noreferrer"
-            className="label-bold inline-flex min-h-11 items-center justify-center gap-2 rounded-pill border-2 border-primary px-5 py-2.5 text-primary transition-colors hover:bg-primary hover:text-on-primary"
+            className="label-bold inline-flex min-h-11 items-center justify-center gap-2 rounded-pill border-2 border-primary px-5 py-2.5 text-on-surface transition-colors hover:bg-primary hover:text-on-primary"
           >
             View public page
             <Icon name="external" className="h-4 w-4" />

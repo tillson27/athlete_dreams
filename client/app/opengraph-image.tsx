@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import {
   BRAND_ARC_COLOR,
+  BRAND_INK_COLOR,
   BRAND_MARK_ARC_PATH,
   BRAND_MARK_LETTER_PATH,
   BRAND_MARK_VIEW_BOX,
@@ -17,7 +18,7 @@ export const alt = 'Athlete Arc — a home for your athletic story';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-const markHeight = 79;
+const markHeight = 72;
 
 // Satori cannot read the woff2 files `next/font` produces, so the display and body
 // faces are loaded here as TrueType. Weights must match those used below — Satori
@@ -56,7 +57,7 @@ export default async function OpenGraphImage() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: 72,
-          backgroundColor: '#181c1e',
+          backgroundColor: BRAND_INK_COLOR,
           color: '#ffffff',
           fontFamily: 'Inter',
         }}
@@ -74,7 +75,7 @@ export default async function OpenGraphImage() {
               fontFamily: 'Montserrat',
               fontWeight: 800,
               fontSize: 54,
-              letterSpacing: 0.5,
+              letterSpacing: 1.1,
             }}
           >
             ATHLETE ARC

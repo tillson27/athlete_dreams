@@ -62,6 +62,8 @@ Tiered: file **Core** now; **Optional** as budget/roadmap allow.
 
 A wide letter **"A"** with a flat apex and open (crossbar-less) counter, crossed by a **tapered orange crescent arc** that extends past both legs. Used above or beside the `ATHLETE ARC` wordmark set in a bold geometric sans.
 
+**Artwork revised 2026-08-14** (proportions and overlap; the construction and colours are unchanged). The letter is now **severed by the arc**: a clear gap runs along both sides of the crescent where it crosses, so the "A" reads as three separate elements — an apex cap and two legs — rather than a continuous letter behind a band. Flag this to the agent: it is the feature most likely to affect how the mark is classified, and it may read as a device rather than a plain letter.
+
 - **Artwork of record:** `client/lib/brand.ts` — single source of truth for the paths and colours. Rendered lockups ship from `client/components/site/Logo.tsx`.
 - **Colours:** ink `#181c1e`, arc `#ff5f1f`, ground `#f7fafc`. Advise whether to claim colour or file without a colour claim; a mark filed in black and white is generally broader.
 

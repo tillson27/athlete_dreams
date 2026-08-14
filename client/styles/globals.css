@@ -3,9 +3,24 @@
 /*
  * ARC — Champion Flow design system.
  *
- * Palette: Champion Orange primary + Olympic Blue secondary + Stadium Charcoal text
- * on a cool surface (#f7fafc). Tokens are exposed as Tailwind v4 theme vars so
- * utilities like `bg-primary`, `text-on-surface`, `ring-outline-variant` work.
+ * The logo is three colours — ink, arc orange, paper — and so is the UI. Arc
+ * Orange (#ff5f1f, the exact orange in the mark) is the only chromatic brand
+ * colour; everything else is ink, paper, or a neutral grey between them. Tokens
+ * are exposed as Tailwind v4 theme vars so utilities like `bg-primary`,
+ * `text-on-surface`, `ring-outline-variant` work.
+ *
+ * Two rules keep this honest, because #ff5f1f is only 3.04:1 on paper — enough
+ * for shapes and large type, short of WCAG AA for body copy:
+ *
+ *   Orange is for shapes. Fills, the arc, progress, primary buttons, and display
+ *   type ≥24px. Never small text, never a link. Labels sitting on an orange fill
+ *   are ink (5.7:1), not white (3.0:1) — hence `--color-on-primary` being ink.
+ *
+ *   Ink is for text. Body copy, labels, and inline links are ink. The `secondary`
+ *   ramp is ink-based for exactly this reason — it used to be Olympic Blue.
+ *
+ * Blue survives in one place only: `--color-focus`, where it has an
+ * accessibility job no brand colour should override.
  */
 @theme {
   /* Surface tiers */
@@ -18,7 +33,7 @@
   --color-surface-container-highest: #e0e3e5;
   --color-surface-dim: #d7dadc;
   --color-on-surface: #181c1e;
-  --color-on-surface-variant: #5b4138;
+  --color-on-surface-variant: #5a6367;
 
   /* Inverse / dark sections */
   --color-inverse-surface: #2d3133;
@@ -27,28 +42,34 @@
   --color-on-background: #181c1e;
 
   /* Outlines */
-  --color-outline: #8f7066;
-  --color-outline-variant: #e3bfb3;
+  --color-outline: #8b9497;
+  --color-outline-variant: #dde2e5;
 
-  /* Champion Orange */
-  --color-primary: #ab3600;
-  --color-primary-strong: #832700;
-  --color-on-primary: #ffffff;
+  /* Arc Orange — the one brand colour, taken from the mark. Shapes only. */
+  --color-primary: #ff5f1f;
+  /* Same hue, not a second colour: `bright` is the hover lift (an ink label needs
+     the fill to get lighter, not darker), `strong` deepens the progress tail. */
+  --color-primary-bright: #ff7a45;
+  --color-primary-strong: #d94a12;
+  --color-on-primary: #181c1e;
   --color-primary-container: #ff5f1f;
-  --color-on-primary-container: #561700;
-  --color-primary-soft: #ffdbcf;
+  --color-on-primary-container: #181c1e;
+  --color-primary-soft: #ffe4d9;
 
-  /* Olympic Blue */
-  --color-secondary: #0453cd;
+  /* Secondary — ink, not a second hue. Carries text and quiet fills. */
+  --color-secondary: #181c1e;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #356ee7;
-  --color-on-secondary-container: #fefcff;
-  --color-secondary-soft: #dae2ff;
+  --color-secondary-container: #2d3133;
+  --color-on-secondary-container: #ffffff;
+  --color-secondary-soft: #eceff1;
 
   /* Tertiary / neutral accent */
   --color-tertiary: #5d5e61;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #939496;
+
+  /* Focus only — deliberately outside the brand palette so it never blends in. */
+  --color-focus: #0453cd;
 
   /* Status */
   --color-success: #1b8e2d;
@@ -93,7 +114,7 @@ html, body {
 
 ::selection {
   background-color: var(--color-primary-container);
-  color: var(--color-on-primary);
+  color: var(--color-on-primary-container);
 }
 
 /* Honour the user's reduced-motion preference. */
@@ -106,16 +127,16 @@ html, body {
 
 /* Visible focus ring on every focusable element. */
 :focus-visible {
-  outline: 2px solid var(--color-secondary);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 /* ---------- Champion Flow component helpers ---------- */
 
-/* Gradient progress fill: single warm ramp so progress reads as one brand voice. */
+/* Progress fill: one orange, deepened at the tail so the bar still reads as a ramp. */
 .progress-gradient {
-  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
+  background: linear-gradient(90deg, var(--color-primary-strong) 0%, var(--color-primary) 100%);
 }
 
 /* Glass chips that sit on top of athlete photography. */

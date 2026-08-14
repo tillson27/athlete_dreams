@@ -53,7 +53,7 @@ export default function SupportComingSoonPage() {
         <div className="grid gap-10 md:grid-cols-[1fr_1.2fr] md:items-center">
           {/* Sample itemized campaign — transparency is the whole point */}
           <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
-            <p className="eyebrow text-primary">What backing will look like</p>
+            <p className="eyebrow text-on-surface">What backing will look like</p>
             <h2 className="mt-2 font-display text-xl font-bold text-on-surface">
               A season, itemized.
             </h2>

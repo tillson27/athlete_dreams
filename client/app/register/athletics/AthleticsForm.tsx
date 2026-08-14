@@ -60,7 +60,7 @@ export function AthleticsForm() {
         {/* FORM */}
         <div className="order-2 flex flex-col gap-8">
           <div>
-            <span className="eyebrow mb-2 block text-primary md:hidden">
+            <span className="eyebrow mb-2 block text-on-surface md:hidden">
               Step 2 of 4
             </span>
             <h2 className="mb-2 font-display text-4xl font-extrabold text-on-surface">

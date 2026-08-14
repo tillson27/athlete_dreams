@@ -37,7 +37,7 @@ export function SuccessStoriesSection() {
                       <h4 className="font-display text-2xl font-bold text-on-surface">
                         {story.name}
                       </h4>
-                      <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                      <p className="text-xs font-bold uppercase tracking-wider text-on-surface">
                         {story.sport}
                       </p>
                     </div>

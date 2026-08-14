@@ -7,7 +7,7 @@ export default function RootNotFoundPage() {
   return (
     <AthleteRouteFallback>
       <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col items-center justify-center gap-6 px-5 py-24 text-center">
-        <p className="label-bold text-primary">404</p>
+        <p className="label-bold text-on-surface">404</p>
         <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
           That dream isn&rsquo;t on our map yet.
         </h1>

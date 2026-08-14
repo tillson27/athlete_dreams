@@ -78,7 +78,7 @@ export function EditedHighlights({
         <button
           type="button"
           aria-expanded={showAllHighlights}
-          className="label-bold flex w-full items-center justify-center gap-2 py-3 text-primary hover:underline"
+          className="label-bold flex w-full items-center justify-center gap-2 py-3 text-on-surface hover:underline"
           onClick={() => setShowAllHighlights((current) => !current)}
         >
           {showAllHighlights ? 'Show fewer' : moreLabel}
@@ -128,7 +128,7 @@ export function EditedRaces({
         <button
           type="button"
           aria-expanded={showAllRaces}
-          className="label-bold flex w-full items-center justify-center gap-2 py-3 text-primary hover:underline"
+          className="label-bold flex w-full items-center justify-center gap-2 py-3 text-on-surface hover:underline"
           onClick={() => setShowAllRaces((current) => !current)}
         >
           {showAllRaces ? 'Show fewer' : moreLabel}
@@ -180,7 +180,7 @@ export function EditedGallery({ slug, defaults }: { slug: string; defaults: Athl
           <button
             key={photo.id}
             type="button"
-            className="relative aspect-square overflow-hidden rounded bg-surface-container transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
+            className="relative aspect-square overflow-hidden rounded bg-surface-container transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2"
             onClick={() => setOpenIndex(index)}
           >
             <Image

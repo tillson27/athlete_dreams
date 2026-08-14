@@ -77,7 +77,7 @@ export const visionSlide: Slide = {
               <span
                 className={
                   index === 0
-                    ? 'rounded-pill bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary'
+                    ? 'rounded-pill bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-on-surface'
                     : 'rounded-pill bg-surface-container-highest px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant'
                 }
               >

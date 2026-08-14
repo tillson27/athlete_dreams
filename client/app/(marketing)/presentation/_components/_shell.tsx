@@ -46,7 +46,7 @@ export function SlideShell({
           className={
             tone === 'dark'
               ? 'mb-4 inline-flex w-fit items-center gap-2 rounded-pill bg-primary-container/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-container'
-              : 'mb-4 inline-flex w-fit items-center gap-2 rounded-pill bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary'
+              : 'mb-4 inline-flex w-fit items-center gap-2 rounded-pill bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface'
           }
         >
           <span

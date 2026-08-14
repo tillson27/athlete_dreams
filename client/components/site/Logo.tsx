@@ -53,7 +53,7 @@ export function LogoLockup({
     <span className="flex items-center gap-2.5 select-none">
       <ArcMark tone={tone} className={`${markSizeClassName[size]} shrink-0`} />
       <span
-        className={`whitespace-nowrap font-display font-extrabold leading-none tracking-[0.01em] ${wordmarkSizeClassName[size]} ${
+        className={`whitespace-nowrap font-display font-extrabold leading-none tracking-[0.02em] ${wordmarkSizeClassName[size]} ${
           tone === 'dark' ? 'text-on-surface' : 'text-white'
         }`}
       >

@@ -68,7 +68,7 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
                 <strong className="text-on-surface">{followers}</strong> followers
               </span>
             ) : null}
-            <span className="label-bold inline-flex items-center gap-1 text-primary transition-transform group-hover:translate-x-0.5">
+            <span className="label-bold inline-flex items-center gap-1 text-on-surface transition-transform group-hover:translate-x-0.5">
               View profile
               <ArrowIcon className="h-4 w-4" />
             </span>

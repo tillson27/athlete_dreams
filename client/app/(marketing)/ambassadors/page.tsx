@@ -66,7 +66,7 @@ export default function AmbassadorsPage() {
               key={problem.label}
               className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-7"
             >
-              <p className="label-bold text-primary">{problem.label}</p>
+              <p className="label-bold text-on-surface">{problem.label}</p>
               <p className="mt-3 text-base leading-relaxed text-on-surface">{problem.body}</p>
             </div>
           ))}

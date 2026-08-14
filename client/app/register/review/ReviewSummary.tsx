@@ -37,7 +37,7 @@ export function ReviewSummary() {
       {/* Completion bar */}
       <div className="mb-12">
         <div className="mb-2 flex items-center justify-between">
-          <span className="label-bold text-primary">Profile complete</span>
+          <span className="label-bold text-on-surface">Profile complete</span>
           <span className="label-bold text-on-surface">100%</span>
         </div>
         <ProgressBar percent={100} heightClassName="h-3" />

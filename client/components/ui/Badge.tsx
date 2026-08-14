@@ -14,7 +14,7 @@ const toneClasses: Record<Tone, string> = {
   primary: 'bg-primary text-on-primary',
   'primary-soft': 'bg-primary-soft text-on-primary-container',
   secondary: 'bg-secondary text-on-secondary',
-  'secondary-soft': 'bg-secondary-soft text-on-secondary-container',
+  'secondary-soft': 'bg-secondary-soft text-on-surface',
   success: 'bg-success text-white',
   live: 'bg-primary-container text-on-primary',
   inverse: 'bg-inverse-surface text-inverse-on-surface',

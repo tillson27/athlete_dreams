@@ -134,7 +134,7 @@ export default function ForAthletesPage() {
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
-              <p className="label-bold text-primary">Why runners join</p>
+              <p className="label-bold text-on-surface">Why runners join</p>
               <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
                 Built for your story, not your stats.
               </h2>
@@ -167,7 +167,7 @@ export default function ForAthletesPage() {
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
-              <p className="label-bold text-primary">Your professional home</p>
+              <p className="label-bold text-on-surface">Your professional home</p>
               <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
                 A profile you’ll be proud to share.
               </h2>
@@ -253,7 +253,7 @@ export default function ForAthletesPage() {
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
-              <p className="label-bold text-primary">Why ARC</p>
+              <p className="label-bold text-on-surface">Why ARC</p>
               <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
                 More than a bio link.
               </h2>
@@ -272,7 +272,7 @@ export default function ForAthletesPage() {
                   </p>
                   <p className="mt-1 text-on-surface-variant">{comparison.oldBody}</p>
                   <div className="my-5 h-px bg-outline-variant/60" />
-                  <p className="label-bold text-primary">On ARC</p>
+                  <p className="label-bold text-on-surface">On ARC</p>
                   <p className="mt-1 font-display text-lg font-bold text-on-surface">
                     {comparison.arc}
                   </p>
@@ -288,7 +288,7 @@ export default function ForAthletesPage() {
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
-              <p className="label-bold text-primary">You belong here</p>
+              <p className="label-bold text-on-surface">You belong here</p>
               <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
                 Whatever kind of runner you are.
               </h2>
@@ -325,7 +325,7 @@ export default function ForAthletesPage() {
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
-              <p className="label-bold text-primary">The glow-up</p>
+              <p className="label-bold text-on-surface">The glow-up</p>
               <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
                 Fifteen minutes from a profile you’ll want to show off.
               </h2>

@@ -56,7 +56,7 @@ export function Eyebrow({
   className?: string;
 }) {
   return (
-    <p className={`eyebrow text-primary ${className ?? ''}`}>{children}</p>
+    <p className={`eyebrow text-on-surface ${className ?? ''}`}>{children}</p>
   );
 }
 
@@ -79,7 +79,7 @@ export function SectionHeading({
     >
       {eyebrow ? (
         <p
-          className={`eyebrow ${onDark ? 'text-primary-container' : 'text-primary'}`}
+          className={`eyebrow ${onDark ? 'text-primary-container' : 'text-on-surface'}`}
         >
           {eyebrow}
         </p>

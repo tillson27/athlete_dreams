@@ -30,7 +30,7 @@ export function ProfilePreview({
   return (
     <div className={sticky ? 'md:sticky md:top-24' : ''}>
       {showMeta ? (
-        <p className="label-bold mb-3 flex items-center gap-2 text-primary">
+        <p className="label-bold mb-3 flex items-center gap-2 text-on-surface">
           <Sparkle className="h-4 w-4" />
           Live preview
         </p>

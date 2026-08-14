@@ -405,7 +405,7 @@ function DashboardView({
             <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="font-display text-xl font-bold text-on-surface">Finish your profile</h2>
-                <span className="label-bold text-primary">{completeness}%</span>
+                <span className="label-bold text-on-surface">{completeness}%</span>
               </div>
               <ProgressBar percent={completeness} className="mb-6" />
               <ul className="space-y-2">

@@ -182,7 +182,7 @@ export function PublishPanel() {
                 <h2 className="font-display text-2xl font-extrabold text-on-surface">
                   Make it stronger
                 </h2>
-                <span className="label-bold shrink-0 text-primary">
+                <span className="label-bold shrink-0 text-on-surface">
                   {completionPct}% complete
                 </span>
               </div>

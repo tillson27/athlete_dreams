@@ -53,7 +53,7 @@ export function FeedCard({
           className={`mt-1 ${
             item.kind === 'result'
               ? 'font-display text-lg font-bold text-on-surface'
-              : 'label-bold text-primary'
+              : 'label-bold text-on-surface'
           }`}
         >
           {item.detail}

@@ -15,7 +15,7 @@ export const dynamic = 'force-static';
 export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
 
-const markHeight = 84;
+const markHeight = 76;
 
 export default function AppleIcon() {
   return new ImageResponse(

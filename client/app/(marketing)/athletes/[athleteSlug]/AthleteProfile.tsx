@@ -170,7 +170,7 @@ export function AthleteProfile({
         <details id="arc" open className="group mt-8 scroll-mt-32 md:mt-16">
           <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
             <div className="max-w-3xl">
-              <p className="eyebrow text-primary">The Arc</p>
+              <p className="eyebrow text-on-surface">The Arc</p>
               <h2 className="mt-2 font-display text-3xl font-bold text-on-surface md:text-4xl">
                 {firstName}&rsquo;s journey
               </h2>
@@ -274,7 +274,7 @@ export function AthleteProfile({
               <div className="mt-4 text-lg leading-relaxed text-on-surface">
                 <p className="mb-4">{profile.storyIntro}</p>
                 <details className="group">
-                  <summary className="label-bold inline-flex cursor-pointer list-none items-center gap-1 text-primary transition-all hover:underline">
+                  <summary className="label-bold inline-flex cursor-pointer list-none items-center gap-1 text-on-surface transition-all hover:underline">
                     <span className="group-open:hidden">See more</span>
                     <span className="hidden group-open:inline">See less</span>
                     <Icon name="chevron" className="h-4 w-4 transition-transform group-open:rotate-180" />
@@ -544,7 +544,7 @@ export function AthleteProfile({
         {/* GROWTH LOOP — every profile is a recruiting billboard */}
         <section className="mt-6 flex flex-col items-center justify-between gap-5 rounded-card border border-outline-variant bg-surface-container-low p-6 text-center md:flex-row md:p-8 md:text-left">
           <div>
-            <p className="eyebrow text-primary">{peerNoun} like {firstName} call ARC home</p>
+            <p className="eyebrow text-on-surface">{peerNoun} like {firstName} call ARC home</p>
             <h3 className="mt-1 font-display text-xl font-bold text-on-surface md:text-2xl">
               Like what you see? Build your own.
             </h3>

@@ -5,14 +5,14 @@ type Tone = 'primary' | 'secondary' | 'ghost' | 'inverse' | 'ink';
 type Size = 'sm' | 'md' | 'lg';
 
 // Champion Flow button hierarchy:
-//   primary    → Champion Orange container fill, the workhorse CTA.
-//   secondary  → Olympic Blue outline on light surfaces (or paper-translucent on dark).
+//   primary    → Arc Orange fill with an ink label, the workhorse CTA.
+//   secondary  → ink outline on light surfaces (or paper-translucent on dark).
 //   ghost      → text only, hover background tint.
 //   inverse    → white pill on dark sections (CTA banner, hero overlays).
 //   ink        → Stadium Charcoal fill (used on light-cards when orange is reserved).
 const toneClasses: Record<Tone, string> = {
   primary:
-    'bg-primary-container text-on-primary hover:bg-primary active:scale-[0.97] shadow-[0_1px_0_rgba(255,255,255,0.08)_inset,0_8px_24px_-12px_rgba(171,54,0,0.45)]',
+    'bg-primary text-on-primary hover:bg-primary-bright active:scale-[0.97] shadow-[0_1px_0_rgba(255,255,255,0.08)_inset,0_8px_24px_-12px_rgba(255,95,31,0.55)]',
   secondary:
     'bg-transparent text-secondary ring-2 ring-inset ring-secondary hover:bg-secondary hover:text-on-secondary active:scale-[0.97]',
   ghost:

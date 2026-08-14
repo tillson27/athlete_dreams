@@ -115,7 +115,7 @@ export function SignInForm() {
               type="button"
               onClick={handleResend}
               disabled={resendStatus === 'sending'}
-              className="label-bold min-h-11 rounded-pill border border-primary px-4 py-2 text-primary transition-colors hover:bg-primary hover:text-on-primary disabled:opacity-60"
+              className="label-bold min-h-11 rounded-pill border border-primary px-4 py-2 text-on-surface transition-colors hover:bg-primary hover:text-on-primary disabled:opacity-60"
             >
               {resendStatus === 'sent'
                 ? 'Verification sent'

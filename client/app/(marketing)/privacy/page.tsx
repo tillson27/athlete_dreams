@@ -70,7 +70,7 @@ const sections: { title: string; paragraphs: string[]; bullets?: string[] }[] = 
 export default function PrivacyPage() {
   return (
     <section className="mx-auto w-full max-w-3xl px-5 py-16 md:py-20">
-      <p className="eyebrow text-primary">Legal</p>
+      <p className="eyebrow text-on-surface">Legal</p>
       <h1 className="mt-2 font-display text-4xl font-extrabold text-on-surface md:text-5xl">
         Privacy Policy
       </h1>

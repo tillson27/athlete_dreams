@@ -15,7 +15,7 @@ export const dynamic = 'force-static';
 export const size = { width: 256, height: 256 };
 export const contentType = 'image/png';
 
-const markHeight = 125;
+const markHeight = 112;
 
 export default function Icon() {
   return new ImageResponse(
