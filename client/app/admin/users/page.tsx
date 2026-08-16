@@ -126,11 +126,11 @@ export default function AdminUsersPage() {
               users.map((user) => (
                 <tr
                   key={user.userId}
-                  onClick={() => router.push(`/admin/users/${user.userId}`)}
+                  onClick={() => router.push(`/admin/users/detail?userId=${user.userId}`)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
-                      router.push(`/admin/users/${user.userId}`);
+                      router.push(`/admin/users/detail?userId=${user.userId}`);
                     }
                   }}
                   role="link"

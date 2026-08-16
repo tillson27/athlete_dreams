@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { PlatformRole, type AdminUserDetail } from 'fad-common';
 import {
@@ -14,8 +14,8 @@ const roleOptions = Object.values(PlatformRole);
 
 export default function AdminUserDetailClient() {
   const router = useRouter();
-  const params = useParams<{ userId: string }>();
-  const userId = params.userId;
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('userId') ?? '';
   const [user, setUser] = useState<AdminUserDetail | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<PlatformRole[]>([]);
   const [loading, setLoading] = useState(true);
