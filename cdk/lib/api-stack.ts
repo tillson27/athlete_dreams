@@ -133,7 +133,7 @@ export class ApiStack extends Stack {
     const emailApiKey = Secret.fromSecretNameV2(
       this,
       'EmailApiKey',
-      emailSecretName(config, EMAIL_API_KEY_SECRET_SUFFIX)
+      resendSecretName(config, EMAIL_API_KEY_SECRET_SUFFIX)
     );
 
     const logGroup = new LogGroup(this, 'ApiLogGroup', {
@@ -506,8 +506,8 @@ function stripeSecretName(config: EnvironmentConfig, suffix: string): string {
   return `arc/${config.envName}/stripe/${suffix}`;
 }
 
-function emailSecretName(config: EnvironmentConfig, suffix: string): string {
-  return `arc/${config.envName}/email/${suffix}`;
+function resendSecretName(config: EnvironmentConfig, suffix: string): string {
+  return `arc/${config.envName}/resend/${suffix}`;
 }
 
 function emailParameterValue(
