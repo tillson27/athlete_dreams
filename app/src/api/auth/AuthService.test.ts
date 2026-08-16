@@ -14,6 +14,7 @@ import { SignupAllowlistService } from '../../services/infrastructure/SignupAllo
 import { TokenHasher } from '../../services/infrastructure/TokenHasher';
 import { EmailService } from '../../services/infrastructure/EmailService';
 import { Logger } from '../../services/infrastructure/Logger';
+import { PlatformRoleRepository } from '../../repositories/PlatformRoleRepository';
 import { BadRequestError, UnauthorizedError } from '../../shared/errors';
 
 type EmailVerificationTokenRecord = EmailVerificationToken & { user: User };
@@ -224,6 +225,9 @@ function makeService(seedUsers: User[] = []): {
     error: vi.fn(),
     debug: vi.fn(),
   };
+  const platformRoleRepository = {
+    hasRole: vi.fn(async () => false),
+  };
 
   return {
     service: new AuthService(
@@ -236,7 +240,8 @@ function makeService(seedUsers: User[] = []): {
       tokenHasher as unknown as TokenHasher,
       emailService as unknown as EmailService,
       logger as unknown as Logger,
-      { capture: vi.fn(), identify: vi.fn(), captureException: vi.fn(), flush: vi.fn(), shutdown: vi.fn() } as unknown as import('../../services/infrastructure/PostHogService').PostHogService
+      { capture: vi.fn(), identify: vi.fn(), captureException: vi.fn(), flush: vi.fn(), shutdown: vi.fn() } as unknown as import('../../services/infrastructure/PostHogService').PostHogService,
+      platformRoleRepository as unknown as PlatformRoleRepository
     ),
     users,
     emailVerificationTokens,

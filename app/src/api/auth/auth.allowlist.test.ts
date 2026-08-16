@@ -3,6 +3,7 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { buildTestApp } from '../../test/buildTestApp';
 import { SignupAllowlistService } from '../../services/infrastructure/SignupAllowlistService';
+import { SignupAllowlistRepository } from '../../repositories/SignupAllowlistRepository';
 
 const runDbTests = process.env.RUN_DB_TESTS === '1';
 
@@ -25,28 +26,33 @@ function setAllowlist(value: string | undefined): void {
 describe('SignupAllowlistService', () => {
   afterEach(() => setAllowlist(originalAllowlist));
 
-  const service = new SignupAllowlistService();
+  const repository = {
+    findAll: async () => [],
+  };
+  const service = new SignupAllowlistService(
+    repository as unknown as SignupAllowlistRepository
+  );
 
-  it('is open when unset or blank', () => {
+  it('is open when unset or blank', async () => {
     setAllowlist(undefined);
-    expect(service.isEnforced()).toBe(false);
-    expect(service.isAllowed('anyone@anywhere.example')).toBe(true);
+    await expect(service.isEnforced()).resolves.toBe(false);
+    await expect(service.isAllowed('anyone@anywhere.example')).resolves.toBe(true);
     setAllowlist('  ,  ');
-    expect(service.isAllowed('anyone@anywhere.example')).toBe(true);
+    await expect(service.isAllowed('anyone@anywhere.example')).resolves.toBe(true);
   });
 
-  it('matches exact emails case-insensitively', () => {
+  it('matches exact emails case-insensitively', async () => {
     setAllowlist('Listed@Example.com');
-    expect(service.isAllowed('listed@example.com')).toBe(true);
-    expect(service.isAllowed('LISTED@EXAMPLE.COM')).toBe(true);
-    expect(service.isAllowed('other@example.com')).toBe(false);
+    await expect(service.isAllowed('listed@example.com')).resolves.toBe(true);
+    await expect(service.isAllowed('LISTED@EXAMPLE.COM')).resolves.toBe(true);
+    await expect(service.isAllowed('other@example.com')).resolves.toBe(false);
   });
 
-  it('matches whole-domain entries', () => {
+  it('matches whole-domain entries', async () => {
     setAllowlist('@invited.example');
-    expect(service.isAllowed('anyone@invited.example')).toBe(true);
-    expect(service.isAllowed('anyone@uninvited.example')).toBe(false);
-    expect(service.isAllowed('anyone@sub.invited.example')).toBe(false);
+    await expect(service.isAllowed('anyone@invited.example')).resolves.toBe(true);
+    await expect(service.isAllowed('anyone@uninvited.example')).resolves.toBe(false);
+    await expect(service.isAllowed('anyone@sub.invited.example')).resolves.toBe(false);
   });
 });
 

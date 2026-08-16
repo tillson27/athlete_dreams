@@ -109,6 +109,14 @@ model PlatformRoleAssignment {
   @@map("platform_role_assignments")
 }
 
+model SignupAllowlistEntry {
+  id        String   @id @default(uuid()) @db.Uuid
+  entry     String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("signup_allowlist_entries")
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Team membership (no workspace tier)
 // ─────────────────────────────────────────────────────────────────────────────

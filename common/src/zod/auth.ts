@@ -65,6 +65,7 @@ export const authSessionSchema = z.object({
   accessToken: z.string(),
   accessTokenExpiresAt: z.string().datetime(),
   mustVerifyEmail: z.boolean(),
+  isAdmin: z.boolean(),
 });
 
 export type AuthSession = z.infer<typeof authSessionSchema>;

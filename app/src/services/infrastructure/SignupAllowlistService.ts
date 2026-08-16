@@ -1,34 +1,38 @@
 import { singleton } from 'tsyringe';
+import { SignupAllowlistRepository } from '../../repositories/SignupAllowlistRepository';
 
 /**
- * Invite gate over auth entry points, driven by SIGNUP_EMAIL_ALLOWLIST
- * (comma-separated; entries are exact emails like `a@b.c` or whole domains
- * like `@b.c`, matched case-insensitively). Unset/empty = open (no gate).
- * The env var is re-read per call so tests and config reloads take effect
- * without rebuilding the DI container.
+ * Public API contract: invite gate entries are exact emails like `a@b.c` or
+ * whole domains like `@b.c`, matched case-insensitively. Env entries and DB
+ * entries are unioned; if both are empty, sign-up/sign-in is open.
  */
 @singleton()
 export class SignupAllowlistService {
   private cachedRawValue: string | undefined;
   private cachedEntries: string[] = [];
 
-  isEnforced(): boolean {
-    return this.parseEntries().length > 0;
+  constructor(private readonly signupAllowlistRepository: SignupAllowlistRepository) {}
+
+  async isEnforced(): Promise<boolean> {
+    if (this.getEnvEntries().length > 0) {
+      return true;
+    }
+    return (await this.signupAllowlistRepository.findAll()).length > 0;
   }
 
-  isAllowed(email: string): boolean {
-    const entries = this.parseEntries();
+  async isAllowed(email: string): Promise<boolean> {
+    const dbEntries = await this.signupAllowlistRepository.findAll();
+    const entries = [
+      ...this.getEnvEntries(),
+      ...dbEntries.map((entry) => normalizeAllowlistEntry(entry.entry)),
+    ];
     if (entries.length === 0) {
       return true;
     }
-    const normalizedEmail = email.trim().toLowerCase();
-    const emailDomain = normalizedEmail.slice(normalizedEmail.indexOf('@'));
-    return entries.some((entry) =>
-      entry.startsWith('@') ? entry === emailDomain : entry === normalizedEmail
-    );
+    return entries.some((entry) => isAllowlistMatch(email, entry));
   }
 
-  private parseEntries(): string[] {
+  getEnvEntries(): string[] {
     const rawValue = process.env.SIGNUP_EMAIL_ALLOWLIST ?? '';
     if (rawValue !== this.cachedRawValue) {
       this.cachedRawValue = rawValue;
@@ -39,4 +43,14 @@ export class SignupAllowlistService {
     }
     return this.cachedEntries;
   }
+}
+
+export function normalizeAllowlistEntry(entry: string): string {
+  return entry.trim().toLowerCase();
+}
+
+export function isAllowlistMatch(email: string, entry: string): boolean {
+  const normalizedEmail = email.trim().toLowerCase();
+  const emailDomain = normalizedEmail.slice(normalizedEmail.indexOf('@'));
+  return entry.startsWith('@') ? entry === emailDomain : entry === normalizedEmail;
 }

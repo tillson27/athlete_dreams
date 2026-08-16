@@ -10,8 +10,36 @@ import {
   createDonationResponseSchema,
   errorResponseSchema,
   followListResponseSchema,
+  adminAddAllowlistEntryRequestSchema,
+  adminAllowlistEntrySchema,
+  adminAllowlistResponseSchema,
+  adminAnalyticsResponseSchema,
+  adminAthleteListResponseSchema,
+  adminAthletePublishRequestSchema,
+  adminCampaignListResponseSchema,
+  adminDonationListResponseSchema,
+  adminUpdateCampaignStatusRequestSchema,
+  adminUpdateUserRolesRequestSchema,
+  adminUserDetailSchema,
+  adminUserListResponseSchema,
   publishAthleteProfileResponseSchema,
   userSchema,
+  type AdminAddAllowlistEntryRequest,
+  type AdminAllowlistEntry,
+  type AdminAllowlistResponse,
+  type AdminAnalyticsResponse,
+  type AdminAthleteListQuery,
+  type AdminAthleteListResponse,
+  type AdminAthletePublishRequest,
+  type AdminCampaignListQuery,
+  type AdminCampaignListResponse,
+  type AdminDonationListQuery,
+  type AdminDonationListResponse,
+  type AdminUpdateCampaignStatusRequest,
+  type AdminUpdateUserRolesRequest,
+  type AdminUserDetail,
+  type AdminUserListQuery,
+  type AdminUserListResponse,
   type AthleteCampaignsResponse,
   type AthleteDirectoryQuery,
   type AthleteDirectoryResponse,
@@ -419,4 +447,133 @@ export function createDonation(body: CreateDonationRequest): Promise<CreateDonat
     body,
     authed: true,
   });
+}
+
+export function fetchAdminUsers(
+  params: Partial<AdminUserListQuery> = {}
+): Promise<AdminUserListResponse> {
+  const query = toQueryString({
+    search: params.search,
+    role: params.role,
+    limit: params.limit,
+    cursor: params.cursor,
+  });
+  return apiRequest(`/v1/admin/users${query}`, adminUserListResponseSchema, { authed: true });
+}
+
+export function fetchAdminUserDetail(userId: string): Promise<AdminUserDetail> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}`,
+    adminUserDetailSchema,
+    { authed: true }
+  );
+}
+
+export function updateAdminUserRoles(
+  userId: string,
+  body: AdminUpdateUserRolesRequest
+): Promise<AdminUserDetail> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}/roles`,
+    adminUserDetailSchema,
+    { method: 'PATCH', body: adminUpdateUserRolesRequestSchema.parse(body), authed: true }
+  );
+}
+
+export function deleteAdminUser(userId: string): Promise<AuthActionResponse> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}`,
+    authActionResponseSchema,
+    { method: 'DELETE', authed: true }
+  );
+}
+
+export function fetchAdminAthletes(
+  params: Partial<AdminAthleteListQuery> = {}
+): Promise<AdminAthleteListResponse> {
+  const query = toQueryString({
+    published: params.published,
+    sport: params.sport,
+    limit: params.limit,
+    cursor: params.cursor,
+  });
+  return apiRequest(`/v1/admin/athletes${query}`, adminAthleteListResponseSchema, {
+    authed: true,
+  });
+}
+
+export function adminPublishAthlete(
+  athleteId: string,
+  body: AdminAthletePublishRequest
+): Promise<AuthActionResponse> {
+  return apiRequest(
+    `/v1/admin/athletes/${encodeURIComponent(athleteId)}/publish`,
+    authActionResponseSchema,
+    { method: 'POST', body: adminAthletePublishRequestSchema.parse(body), authed: true }
+  );
+}
+
+export function fetchAdminCampaigns(
+  params: Partial<AdminCampaignListQuery> = {}
+): Promise<AdminCampaignListResponse> {
+  const query = toQueryString({
+    status: params.status,
+    athleteId: params.athleteId,
+    limit: params.limit,
+    cursor: params.cursor,
+  });
+  return apiRequest(`/v1/admin/campaigns${query}`, adminCampaignListResponseSchema, {
+    authed: true,
+  });
+}
+
+export function adminUpdateCampaignStatus(
+  campaignId: string,
+  body: AdminUpdateCampaignStatusRequest
+): Promise<AuthActionResponse> {
+  return apiRequest(
+    `/v1/admin/campaigns/${encodeURIComponent(campaignId)}/status`,
+    authActionResponseSchema,
+    { method: 'PATCH', body: adminUpdateCampaignStatusRequestSchema.parse(body), authed: true }
+  );
+}
+
+export function fetchAdminDonations(
+  params: Partial<AdminDonationListQuery> = {}
+): Promise<AdminDonationListResponse> {
+  const query = toQueryString({
+    status: params.status,
+    athleteId: params.athleteId,
+    limit: params.limit,
+    cursor: params.cursor,
+  });
+  return apiRequest(`/v1/admin/donations${query}`, adminDonationListResponseSchema, {
+    authed: true,
+  });
+}
+
+export function fetchAdminAnalytics(): Promise<AdminAnalyticsResponse> {
+  return apiRequest('/v1/admin/analytics', adminAnalyticsResponseSchema, { authed: true });
+}
+
+export function fetchAdminAllowlist(): Promise<AdminAllowlistResponse> {
+  return apiRequest('/v1/admin/allowlist', adminAllowlistResponseSchema, { authed: true });
+}
+
+export function addAdminAllowlistEntry(
+  body: AdminAddAllowlistEntryRequest
+): Promise<AdminAllowlistEntry> {
+  return apiRequest('/v1/admin/allowlist', adminAllowlistEntrySchema, {
+    method: 'POST',
+    body: adminAddAllowlistEntryRequestSchema.parse(body),
+    authed: true,
+  });
+}
+
+export function deleteAdminAllowlistEntry(entryId: string): Promise<AuthActionResponse> {
+  return apiRequest(
+    `/v1/admin/allowlist/${encodeURIComponent(entryId)}`,
+    authActionResponseSchema,
+    { method: 'DELETE', authed: true }
+  );
 }

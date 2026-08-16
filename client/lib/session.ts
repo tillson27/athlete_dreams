@@ -17,6 +17,7 @@ export type Session = {
   email: string;
   published: boolean;
   mustVerifyEmail: boolean;
+  isAdmin: boolean;
 };
 
 export type AuthResult = {
@@ -46,6 +47,7 @@ type AuthRecord = {
   accessToken: string;
   user: User;
   published: boolean;
+  isAdmin: boolean;
 };
 
 const authStore = createBrowserStore<AuthRecord>('arc-auth', 'arc-auth-change');
@@ -63,6 +65,7 @@ function authRecordToSession(record: AuthRecord | null): Session | null {
     email: record.user.email,
     published: record.published,
     mustVerifyEmail: !record.user.emailVerifiedAt,
+    isAdmin: record.isAdmin ?? false,
   };
 }
 
@@ -79,11 +82,16 @@ export async function signUp({
 }): Promise<AuthResult> {
   if (DATA_SOURCE === 'api') {
     const session = await apiSignUp({ email, password: password ?? '', displayName: name });
-    authStore.write({ accessToken: session.accessToken, user: session.user, published: false });
+    authStore.write({
+      accessToken: session.accessToken,
+      user: session.user,
+      published: false,
+      isAdmin: session.isAdmin,
+    });
     return { mustVerifyEmail: session.mustVerifyEmail };
   }
   mockAccountStore.write({ name, email });
-  sessionStore.write({ name, email, published: false, mustVerifyEmail: false });
+  sessionStore.write({ name, email, published: false, mustVerifyEmail: false, isAdmin: false });
   seedOnboardingName(name);
   return { mustVerifyEmail: false };
 }
@@ -97,7 +105,12 @@ export async function signIn({
 }): Promise<AuthResult> {
   if (DATA_SOURCE === 'api') {
     const session = await apiSignIn({ email, password: password ?? '' });
-    authStore.write({ accessToken: session.accessToken, user: session.user, published: false });
+    authStore.write({
+      accessToken: session.accessToken,
+      user: session.user,
+      published: false,
+      isAdmin: session.isAdmin,
+    });
     return { mustVerifyEmail: session.mustVerifyEmail };
   }
   const account = mockAccountStore.read();
@@ -109,6 +122,7 @@ export async function signIn({
     email: account.email,
     published: false,
     mustVerifyEmail: false,
+    isAdmin: false,
   });
   return { mustVerifyEmail: false };
 }
@@ -136,6 +150,7 @@ export function markPublished() {
     email: existing?.email ?? '',
     published: true,
     mustVerifyEmail: false,
+    isAdmin: existing?.isAdmin ?? false,
   });
 }
 
@@ -173,7 +188,10 @@ export function useSession(): { session: Session | null; ready: boolean } {
       return authStore.subscribe(sync);
     }
 
-    const sync = () => setSession(sessionStore.read());
+    const sync = () => {
+      const storedSession = sessionStore.read();
+      setSession(storedSession ? { ...storedSession, isAdmin: storedSession.isAdmin ?? false } : null);
+    };
     sync();
     setReady(true);
     return sessionStore.subscribe(sync);

@@ -15,6 +15,13 @@ export function HeaderAuth({ variant = 'desktop' }: { variant?: 'desktop' | 'mob
     if (authed) {
       return (
         <>
+          {session?.isAdmin ? (
+            <li>
+              <Link href="/admin" className={mobileItemClass}>
+                Admin
+              </Link>
+            </li>
+          ) : null}
           <li>
             <Link href="/dashboard" className={mobileItemClass}>
               Dashboard
@@ -51,6 +58,11 @@ export function HeaderAuth({ variant = 'desktop' }: { variant?: 'desktop' | 'mob
   if (authed) {
     return (
       <>
+        {session?.isAdmin ? (
+          <LinkButton href="/admin" tone="secondary" size="sm">
+            Admin
+          </LinkButton>
+        ) : null}
         <LinkButton href="/dashboard" tone="primary" size="sm">
           Dashboard
         </LinkButton>

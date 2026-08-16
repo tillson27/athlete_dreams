@@ -10,4 +10,5 @@ export * from './zod/event';
 export * from './zod/donation';
 export * from './zod/sponsor';
 export * from './zod/auth';
+export * from './zod/admin';
 export * from './zod/shared';

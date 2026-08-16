@@ -13,4 +13,12 @@ export class PlatformRoleRepository {
       create: { userId, role },
     });
   }
+
+  async hasRole(userId: string, role: PlatformRole): Promise<boolean> {
+    const assignment = await this.prisma.platformRoleAssignment.findUnique({
+      where: { userId_role: { userId, role } },
+      select: { id: true },
+    });
+    return assignment !== null;
+  }
 }

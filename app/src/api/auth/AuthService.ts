@@ -22,6 +22,8 @@ import { Logger } from '../../services/infrastructure/Logger';
 import { PostHogService } from '../../services/infrastructure/PostHogService';
 import { BadRequestError, ConflictError, ForbiddenError, UnauthorizedError } from '../../shared/errors';
 import type { User } from '@prisma/client';
+import { PlatformRole } from '@prisma/client';
+import { PlatformRoleRepository } from '../../repositories/PlatformRoleRepository';
 
 const INVITE_ONLY_MESSAGE = 'Access is currently invite-only';
 const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password';
@@ -41,11 +43,12 @@ export class AuthService {
     private readonly tokenHasher: TokenHasher,
     private readonly emailService: EmailService,
     private readonly logger: Logger,
-    private readonly posthog: PostHogService
+    private readonly posthog: PostHogService,
+    private readonly platformRoleRepository: PlatformRoleRepository
   ) {}
 
   async signUp(input: SignUpRequest): Promise<AuthSession> {
-    if (!this.signupAllowlistService.isAllowed(input.email)) {
+    if (!(await this.signupAllowlistService.isAllowed(input.email))) {
       throw new ForbiddenError(INVITE_ONLY_MESSAGE);
     }
     const existing = await this.userRepository.findByEmail(input.email);
@@ -62,18 +65,18 @@ export class AuthService {
     });
 
     await this.sendSignupEmails(user);
-    return this.issueSession(user);
+    return this.issueSession(user, false);
   }
 
   async signIn(input: SignInRequest): Promise<AuthSession> {
-    if (!this.signupAllowlistService.isAllowed(input.email)) {
+    if (!(await this.signupAllowlistService.isAllowed(input.email))) {
       throw new ForbiddenError(INVITE_ONLY_MESSAGE);
     }
     const user = await this.userRepository.findByEmail(input.email);
     if (!user) throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE);
     const passwordMatches = await this.passwordHashService.verify(user.passwordHash, input.password);
     if (!passwordMatches) throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE);
-    return this.issueSession(user);
+    return this.issueSession(user, await this.platformRoleRepository.hasRole(user.id, PlatformRole.ADMIN));
   }
 
   async forgotPassword(input: ForgotPasswordRequest): Promise<void> {
@@ -165,7 +168,7 @@ export class AuthService {
     await this.issueAndSendVerificationEmail(user, new Date());
   }
 
-  private issueSession(user: User): AuthSession {
+  private issueSession(user: User, isAdmin: boolean): AuthSession {
     const { accessToken, accessTokenExpiresAt } = this.jwtService.issueAccessToken({
       sub: user.id,
       email: user.email,
@@ -175,6 +178,7 @@ export class AuthService {
       accessToken,
       accessTokenExpiresAt: accessTokenExpiresAt.toISOString(),
       mustVerifyEmail: !user.emailVerifiedAt,
+      isAdmin,
     };
   }
 

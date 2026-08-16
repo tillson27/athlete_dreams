@@ -6,6 +6,7 @@ import { requestIdMiddleware } from './middleware/requestIdMiddleware';
 import { errorHandler } from './middleware/errorHandler';
 import { HealthRouterFactory } from './api/health/HealthRouterFactory';
 import { AuthRouterFactory } from './api/auth/AuthRouterFactory';
+import { AdminRouterFactory } from './api/admin/AdminRouterFactory';
 import { UserRouterFactory } from './api/users/UserRouterFactory';
 import { TeamRouterFactory } from './api/teams/TeamRouterFactory';
 import { AthleteRouterFactory } from './api/athletes/AthleteRouterFactory';
@@ -55,6 +56,7 @@ export function buildApp(): express.Express {
   const routerFactories = [
     container.resolve(HealthRouterFactory),
     container.resolve(AuthRouterFactory),
+    container.resolve(AdminRouterFactory),
     container.resolve(UserRouterFactory),
     container.resolve(TeamRouterFactory),
     container.resolve(AthleteStripeRouterFactory),
