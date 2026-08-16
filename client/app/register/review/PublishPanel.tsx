@@ -322,10 +322,10 @@ export function PublishPanel() {
         type="button"
         onClick={publish}
         disabled={inFlight || blocked}
-        className={`flex w-full items-center justify-center gap-3 rounded-lg py-4 font-display text-2xl font-bold transition-all ${
+        className={`flex w-full items-center justify-center gap-3 rounded-lg py-4 font-display text-xl font-bold transition-all sm:text-2xl ${
           blocked
             ? 'cursor-not-allowed bg-surface-container-high text-on-surface-variant'
-            : 'bg-primary text-on-primary hover:bg-primary-strong active:scale-95 disabled:opacity-80'
+            : 'bg-secondary-container text-on-secondary-container shadow-lg shadow-secondary/20 hover:bg-on-surface active:scale-95 disabled:opacity-80'
         }`}
       >
         {status === 'publishing' ? (

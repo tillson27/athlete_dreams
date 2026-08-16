@@ -51,8 +51,12 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
     storyIntro?: string | null;
     withPersonalBest?: boolean;
     publishedAt?: Date | null;
+    emailVerified?: boolean;
   }): Promise<FixtureAthlete> {
     const { userId, email } = await createFixtureUser(overrides.suffix);
+    if (overrides.emailVerified) {
+      await prisma.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } });
+    }
     const slug = `${FIXTURE_PREFIX}-${overrides.suffix}`;
     const athlete = await prisma.athleteProfile.create({
       data: {
@@ -188,6 +192,7 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
         disciplineLabel: null,
         storyIntro: null,
         withPersonalBest: false,
+        emailVerified: true,
       });
 
       const response = await request(app)
@@ -197,10 +202,8 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       expect(response.status).toBe(422);
       expect(response.body.error.code).toBe('validation_error');
       const missing = response.body.error.details.missing as string[];
-      expect(missing).toEqual(
-        expect.arrayContaining(['storyIntro', 'personalBests', 'disciplineLabel'])
-      );
-      expect(missing).toHaveLength(3);
+      expect(missing).toEqual(expect.arrayContaining(['storyIntro', 'personalBests']));
+      expect(missing).toHaveLength(2);
 
       const stillUnpublished = await prisma.athleteProfile.findUniqueOrThrow({
         where: { id: fixture.athleteId },
@@ -208,20 +211,22 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       expect(stillUnpublished.publishedAt).toBeNull();
     });
 
-    it('reports only the specific missing item when partially complete', async () => {
+    it('publishes without a discipline when required story and results exist', async () => {
       const fixture = await createFixtureAthlete({
-        suffix: 'publish-missing-discipline',
+        suffix: 'publish-no-discipline',
         disciplineLabel: null,
         storyIntro: 'Ready to race.',
         withPersonalBest: true,
+        emailVerified: true,
       });
 
       const response = await request(app)
         .post('/v1/athletes/me/publish')
         .set('authorization', `Bearer ${fixture.accessToken}`);
 
-      expect(response.status).toBe(422);
-      expect(response.body.error.details.missing).toEqual(['disciplineLabel']);
+      expect(response.status).toBe(200);
+      const parsed = publishAthleteProfileResponseSchema.parse(response.body.data);
+      expect(parsed.athleteSlug).toBe(fixture.athleteSlug);
     });
 
     it('publishes once and is idempotent on repeat calls', async () => {
@@ -230,6 +235,7 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
         disciplineLabel: 'Trail Ultra',
         storyIntro: 'Born to climb.',
         withPersonalBest: true,
+        emailVerified: true,
       });
 
       const first = await request(app)

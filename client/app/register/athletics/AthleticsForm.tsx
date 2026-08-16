@@ -64,7 +64,7 @@ export function AthleticsForm() {
               Step 2 of 4
             </span>
             <h2 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
-              Your results
+              Step 2: Athletics &amp; Achievements
             </h2>
             <p className="text-lg text-tertiary">
               Add a few personal bests — they show up as the highlights on your profile. You can add
@@ -73,9 +73,12 @@ export function AthleticsForm() {
           </div>
 
           <div className="flex flex-col gap-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Icon name="trophy" className="h-7 w-7 text-primary" />
               <h3 className="font-display text-2xl font-bold text-on-surface">Personal bests</h3>
+              <span className="label-bold rounded-pill bg-error/10 px-2.5 py-1 text-xs text-error md:ml-auto">
+                Required to publish
+              </span>
             </div>
 
             {bests.length === 0 ? (

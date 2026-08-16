@@ -56,7 +56,7 @@ export function ValuesSocialForm() {
               Step 3 of 4
             </span>
             <h1 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
-              Values &amp; voice
+              Step 3: Values &amp; Voice
             </h1>
             <p className="text-lg text-on-surface-variant">
               What you stand for, in your own words — the values and voice behind your story.
@@ -90,8 +90,14 @@ export function ValuesSocialForm() {
           </section>
 
           <section>
-            <label className="label-bold mb-2 block text-on-surface" htmlFor="mission">
+            <label
+              className="label-bold mb-2 flex flex-wrap items-center gap-2 text-on-surface"
+              htmlFor="mission"
+            >
               Your tagline
+              <span className="rounded-pill bg-error/10 px-2.5 py-1 text-xs text-error">
+                Required to publish
+              </span>
             </label>
             <div className="relative">
               <input

@@ -275,9 +275,8 @@ export async function publishDraft(): Promise<void> {
 
 // Maps the publish-guard 422 keys to a plain checklist sentence apiece.
 const PUBLISH_MISSING_SENTENCES: Record<string, string> = {
-  storyIntro: 'Add your tagline in Step 3',
-  personalBests: 'Add at least one personal best in Step 2',
-  disciplineLabel: 'Add your discipline in Step 1',
+  storyIntro: 'Step 3 - Values & Voice: add your tagline',
+  personalBests: 'Step 2 - Athletics & Achievements: add at least one personal best',
 };
 
 export function toPublishChecklist(details: unknown): string[] {
