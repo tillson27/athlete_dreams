@@ -127,8 +127,8 @@ function buildFallbackProfile(athleteSlug: string): {
 
 function ProfileLoading({ athleteName }: { athleteName: string }) {
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <Icon name="sync" className="mx-auto h-8 w-8 animate-spin text-primary" />
         <h1 className="mt-4 font-display text-2xl font-extrabold text-on-surface">
           Loading {athleteName}
@@ -140,8 +140,8 @@ function ProfileLoading({ athleteName }: { athleteName: string }) {
 
 function ProfileUnavailable() {
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-surface-container text-on-surface-variant">
           <Icon name="person" className="h-7 w-7" />
         </span>

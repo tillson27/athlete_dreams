@@ -6,23 +6,23 @@ import { successStories } from '@/lib/homeContent';
 
 export function SuccessStoriesSection() {
   return (
-    <section className="bg-surface py-24">
+    <section className="bg-surface py-14 md:py-24">
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
         <Reveal>
-          <div className="mb-16 text-center">
+          <div className="mb-10 text-center md:mb-16">
             <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
               Success Stories
             </h2>
-            <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
+            <p className="mx-auto max-w-2xl leading-relaxed text-on-surface-variant md:text-lg">
               Real runners, real arcs — journeys unfolding on ARC right now.
             </p>
           </div>
         </Reveal>
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
           {successStories.map((story, index) => (
             <Reveal key={story.name} delay={index * 100} className="h-full">
               <div className="group h-full overflow-hidden rounded-card border border-outline-variant bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_55px_-24px_rgba(0,0,0,0.28)]">
-                <div className="relative h-64 overflow-hidden">
+                <div className="relative h-52 overflow-hidden sm:h-64">
                   <Image
                     src={story.image}
                     alt={story.name}
@@ -31,7 +31,7 @@ export function SuccessStoriesSection() {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <div className="p-8">
+                <div className="p-5 sm:p-6 md:p-8">
                   <div className="mb-4 flex items-start justify-between">
                     <div>
                       <h4 className="font-display text-2xl font-bold text-on-surface">

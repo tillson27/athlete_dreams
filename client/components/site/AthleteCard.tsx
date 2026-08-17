@@ -25,7 +25,7 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
       href={athleteProfileHref(athlete.athleteSlug)}
       className="card-lift card-lift-hover group flex flex-col overflow-hidden rounded-card bg-surface-container-lowest ring-1 ring-inset ring-outline-variant/60 md:h-72 md:flex-row"
     >
-      <div className="relative h-64 w-full overflow-hidden bg-surface-container md:h-full md:w-80">
+      <div className="relative h-44 w-full overflow-hidden bg-surface-container sm:h-56 md:h-full md:w-80">
         {athlete.heroMediaUrl ? (
           <Image
             src={athlete.heroMediaUrl}
@@ -36,15 +36,15 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
             className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
           />
         ) : null}
-        <div className="absolute left-4 top-4">
-          <span className="inline-flex items-center rounded-pill bg-inverse-surface/85 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white backdrop-blur">
+        <div className="absolute left-3 top-3 md:left-4 md:top-4">
+          <span className="inline-flex items-center rounded-pill bg-inverse-surface/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur md:px-3 md:text-xs">
             {LEVEL_LABEL[athlete.runnerLevel]}
           </span>
         </div>
       </div>
-      <div className="flex flex-1 flex-col justify-between gap-5 p-6 md:p-7">
-        <div className="space-y-3">
-          <h3 className="font-display text-2xl font-bold leading-tight text-on-surface md:text-[26px]">
+      <div className="flex flex-1 flex-col justify-between gap-4 p-4 sm:p-5 md:gap-5 md:p-7">
+        <div className="space-y-2 md:space-y-3">
+          <h3 className="font-display text-xl font-bold leading-tight text-on-surface sm:text-2xl md:text-[26px]">
             {athlete.fullName}
           </h3>
           <p className="label-bold text-secondary">
@@ -53,11 +53,11 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
           <p className="line-clamp-2 text-sm text-on-surface-variant">{athlete.headline}</p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           {topHighlight ? (
-            <span className="inline-flex items-center gap-2 rounded-pill bg-surface-container-low px-3 py-1.5 text-xs font-bold text-on-surface">
+            <span className="inline-flex min-w-0 items-center gap-2 rounded-pill bg-surface-container-low px-3 py-1.5 text-xs font-bold text-on-surface">
               <Icon name="medal" className="h-4 w-4 shrink-0 text-primary" />
-              {topHighlight}
+              <span className="truncate">{topHighlight}</span>
             </span>
           ) : (
             <span />

@@ -51,7 +51,9 @@ import {
   PROFILE_IMAGE_OPTIONS,
   filesToPersistedImageRefs,
   toImageUploadErrorMessage,
+  type PrepareImagesProgress,
 } from '@/lib/imageUploads';
+import { ATHLETE_GALLERY_MAX_PHOTOS } from 'fad-common';
 import { uid } from '@/lib/uid';
 
 const inputClass =
@@ -555,17 +557,45 @@ function EditorLayout({
   const [highlightPhotos, setHighlightPhotos] = useState<string[]>([]);
   const [racePhotos, setRacePhotos] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<PrepareImagesProgress | null>(null);
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
 
   const prepareImages = (
     files: FileList | File[],
     options: typeof COVER_IMAGE_OPTIONS,
-    onReady: (refs: string[]) => void
+    onReady: (refs: string[]) => void,
+    notice?: string
   ) => {
     setUploadError(null);
-    void filesToPersistedImageRefs(files, options)
-      .then(onReady)
-      .catch((error: unknown) => setUploadError(toImageUploadErrorMessage(error)));
+    void filesToPersistedImageRefs(files, options, setUploadProgress)
+      .then(({ refs, failures }) => {
+        if (refs.length > 0) onReady(refs);
+        const messages = notice ? [notice, ...failures] : failures;
+        setUploadError(messages.length > 0 ? messages.join(' ') : null);
+      })
+      .catch((error: unknown) => setUploadError(toImageUploadErrorMessage(error)))
+      .finally(() => setUploadProgress(null));
+  };
+
+  // Only fills the slots the gallery has left, so the athlete is told up front
+  // instead of the save PUT rejecting the whole set at the cap.
+  const addGalleryPhotos = (files: FileList) => {
+    const remaining = ATHLETE_GALLERY_MAX_PHOTOS - gallery.length;
+    if (remaining <= 0) {
+      setUploadError(
+        `Your gallery is full at ${ATHLETE_GALLERY_MAX_PHOTOS} photos. Remove one to add another.`
+      );
+      return;
+    }
+    const picked = Array.from(files);
+    prepareImages(
+      picked.slice(0, remaining),
+      PROFILE_IMAGE_OPTIONS,
+      (refs) => setGallery((prev) => [...prev, ...refs]),
+      picked.length > remaining
+        ? `Added the first ${remaining} — your gallery holds ${ATHLETE_GALLERY_MAX_PHOTOS} photos.`
+        : undefined
+    );
   };
 
   const addHighlight = (event: FormEvent<HTMLFormElement>) => {
@@ -631,18 +661,18 @@ function EditorLayout({
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-5 py-12 md:px-16">
+    <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-5 md:px-16 md:py-12">
       {/* Header */}
-      <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div className="mb-8 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-pill bg-secondary-soft px-3 py-1 text-xs font-bold uppercase tracking-[0.05em] text-secondary">
             <Icon name="pencil" className="h-3.5 w-3.5" />
             Athlete view
           </span>
-          <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-on-surface md:text-4xl">
+          <h1 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-on-surface sm:text-3xl md:mt-4 md:text-4xl">
             Manage your page
           </h1>
-          <p className="mt-2 text-on-surface-variant">
+          <p className="mt-2 text-sm text-on-surface-variant md:text-base">
             Add races and achievements to {athleteName}&rsquo;s profile.
           </p>
         </div>
@@ -727,7 +757,7 @@ function EditorLayout({
             >
               {(item, index, sortable) => (
                 <div
-                  className={`space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4 ${
+                  className={`space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-3 sm:p-4 ${
                     sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
                   }`}
                 >
@@ -850,6 +880,7 @@ function EditorLayout({
                     </label>
                   </div>
                   <PhotoUploader
+                    multiple={false}
                     photos={item.photo ? [item.photo] : []}
                     onPick={(files) =>
                       prepareImages(files, PROFILE_IMAGE_OPTIONS, ([photo]) => {
@@ -946,6 +977,7 @@ function EditorLayout({
               {uploadError}
             </p>
           ) : null}
+          <UploadProgressNotice progress={uploadProgress} />
           {/* Cover photo */}
           <div className="mb-6">
             <p className="label-bold mb-2 text-on-surface">Cover photo</p>
@@ -977,38 +1009,46 @@ function EditorLayout({
                 Replace cover
               </label>
             </div>
-            <Recommendation text="Best on the app: a wide landscape shot, 16:9, at least 1920 × 1080 px, under 5 MB. JPG, PNG, WebP, and iPhone HEIC photos all work. It fills the full-width hero banner, so keep faces and key action near the centre." />
+            <Recommendation text="Best on the app: a wide landscape shot, 16:9, at least 1920 × 1080 px. JPG, PNG, WebP, and iPhone HEIC photos all work. It fills the full-width hero banner, so keep faces and key action near the centre." />
           </div>
 
           {/* Gallery */}
           <div>
-            <p className="label-bold mb-2 text-on-surface">Gallery</p>
-            <div className="flex flex-wrap gap-3">
-              <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-input border-2 border-dashed border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:border-primary hover:text-primary">
-                <input
-                  type="file"
-                  accept={IMAGE_UPLOAD_ACCEPT}
-                  multiple
-                  className="hidden"
-                  onChange={(event) => {
-                    if (event.target.files?.length) {
-                      prepareImages(event.target.files, PROFILE_IMAGE_OPTIONS, (refs) => {
-                        setGallery((prev) => [...prev, ...refs]);
-                      });
-                    }
-                    event.target.value = '';
-                  }}
-                />
-                <Icon name="plus" className="h-5 w-5" />
-                <span className="mt-1 text-[10px] font-bold">Add photos</span>
-              </label>
+            <div className="mb-2 flex items-baseline justify-between gap-3">
+              <p className="label-bold text-on-surface">Gallery</p>
+              <p className="text-xs text-on-surface-variant">
+                {gallery.length} of {ATHLETE_GALLERY_MAX_PHOTOS}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+              {gallery.length < ATHLETE_GALLERY_MAX_PHOTOS ? (
+                <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-input border-2 border-dashed border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:border-primary hover:text-primary sm:aspect-auto sm:h-24 sm:w-24">
+                  <input
+                    type="file"
+                    accept={IMAGE_UPLOAD_ACCEPT}
+                    multiple
+                    className="hidden"
+                    onChange={(event) => {
+                      if (event.target.files?.length) addGalleryPhotos(event.target.files);
+                      event.target.value = '';
+                    }}
+                  />
+                  <Icon name="plus" className="h-5 w-5" />
+                  <span className="mt-1 text-[10px] font-bold">Add photos</span>
+                </label>
+              ) : null}
               {gallery.map((url, index) => (
-                <div key={url} className="relative h-24 w-24 overflow-hidden rounded-input">
-                  <Image src={url} alt={`Gallery photo ${index + 1}`} fill unoptimized sizes="96px" className="object-cover" />
+                <div
+                  key={`${index}-${url.slice(-24)}`}
+                  className="relative aspect-square overflow-hidden rounded-input sm:aspect-auto sm:h-24 sm:w-24"
+                >
+                  <Image src={url} alt={`Gallery photo ${index + 1}`} fill unoptimized sizes="(max-width: 640px) 33vw, 96px" className="object-cover" />
                   <button
                     type="button"
-                    onClick={() => setGallery((prev) => prev.filter((entry) => entry !== url))}
-                    aria-label="Remove photo"
+                    onClick={() =>
+                      setGallery((prev) => prev.filter((_, entryIndex) => entryIndex !== index))
+                    }
+                    aria-label={`Remove gallery photo ${index + 1}`}
                     className="absolute right-0 top-0 flex h-11 w-11 items-start justify-end rounded-input p-1 text-white"
                   >
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/60 transition-colors hover:bg-black/80">
@@ -1018,7 +1058,7 @@ function EditorLayout({
                 </div>
               ))}
             </div>
-            <Recommendation text="Gallery photos display as squares — upload 1:1 crops at least 800 × 800 px so they stay sharp on high-resolution screens." />
+            <Recommendation text="Gallery photos display as squares — upload 1:1 crops at least 800 × 800 px so they stay sharp on high-resolution screens. Pick several at once; they upload one after another." />
           </div>
         </SectionCard>
 
@@ -1029,7 +1069,7 @@ function EditorLayout({
               {personalBests.map((best) => (
                 <div
                   key={best.id}
-                  className="space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4"
+                  className="space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-3 sm:p-4"
                 >
                   <div className="flex items-start gap-3">
                     <div className="grid flex-1 gap-3 md:grid-cols-2">
@@ -1122,7 +1162,7 @@ function EditorLayout({
             >
               {(item, index, sortable) => (
                 <div
-                  className={`space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-4 ${
+                  className={`space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-3 sm:p-4 ${
                     sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
                   }`}
                 >
@@ -1181,7 +1221,7 @@ function EditorLayout({
             </ul>
           )}
 
-          <form onSubmit={addHighlight} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-4">
+          <form onSubmit={addHighlight} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-3 sm:p-4">
             <div className="grid gap-3 md:grid-cols-3">
               <input name="title" placeholder="Event (e.g. 2026 Boston Marathon)" className={inputClass} />
               <input name="date" placeholder="Date (e.g. Apr 20, 2026)" className={inputClass} />
@@ -1195,7 +1235,9 @@ function EditorLayout({
                   setHighlightPhotos((prev) => [...prev, ...refs])
                 )
               }
-              onRemove={(url) => setHighlightPhotos((prev) => prev.filter((entry) => entry !== url))}
+              onRemove={(index) =>
+                setHighlightPhotos((prev) => prev.filter((_, entryIndex) => entryIndex !== index))
+              }
             />
             <div className="flex justify-end">
               <AddButton />
@@ -1213,7 +1255,7 @@ function EditorLayout({
             >
               {(item, index, sortable) => (
                 <div
-                  className={`space-y-3 rounded-r-input border-l-4 border-primary bg-surface-container-low/60 p-4 ${
+                  className={`space-y-3 rounded-r-input border-l-4 border-primary bg-surface-container-low/60 p-3 sm:p-4 ${
                     sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
                   }`}
                 >
@@ -1266,7 +1308,7 @@ function EditorLayout({
             </ul>
           )}
 
-          <form onSubmit={addRace} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-4">
+          <form onSubmit={addRace} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-3 sm:p-4">
             <div className="grid gap-3 md:grid-cols-3">
               <input name="name" placeholder="Event name" className={inputClass} />
               <input name="date" placeholder="Date (e.g. Oct 12, 2025)" className={inputClass} />
@@ -1280,7 +1322,9 @@ function EditorLayout({
                   setRacePhotos((prev) => [...prev, ...refs])
                 )
               }
-              onRemove={(url) => setRacePhotos((prev) => prev.filter((entry) => entry !== url))}
+              onRemove={(index) =>
+                setRacePhotos((prev) => prev.filter((_, entryIndex) => entryIndex !== index))
+              }
             />
             <div className="flex justify-end">
               <AddButton />
@@ -1295,7 +1339,7 @@ function EditorLayout({
               {coreValues.map((value) => (
                 <div
                   key={value.id}
-                  className="flex items-start gap-3 rounded-input border border-outline-variant bg-surface-container-low p-4"
+                  className="flex items-start gap-3 rounded-input border border-outline-variant bg-surface-container-low p-3 sm:p-4"
                 >
                   <div className="grid flex-1 gap-3 md:grid-cols-[1fr_1.6fr]">
                     <input
@@ -1370,7 +1414,7 @@ function EditorLayout({
             >
               {(item, index, sortable) => (
                 <div
-                  className={`flex items-center justify-between gap-4 rounded-input border border-outline-variant bg-surface-container-low p-4 ${
+                  className={`flex items-center justify-between gap-3 rounded-input border border-outline-variant bg-surface-container-low p-3 sm:gap-4 sm:p-4 ${
                     sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
                   }`}
                 >
@@ -1453,22 +1497,26 @@ function EditorLayout({
   );
 }
 
+// `multiple={false}` is for slots that hold exactly one photo — the picker must
+// not advertise multi-select when every file but the first is discarded.
 function PhotoUploader({
   photos,
   onPick,
   onRemove,
+  multiple = true,
 }: {
   photos: string[];
   onPick: (files: FileList) => void;
-  onRemove: (url: string) => void;
+  onRemove: (index: number) => void;
+  multiple?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
       <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-input border-2 border-dashed border-outline-variant/60 bg-surface-container-low text-on-surface-variant transition-colors hover:border-primary hover:text-primary">
         <input
           type="file"
           accept={IMAGE_UPLOAD_ACCEPT}
-          multiple
+          multiple={multiple}
           className="hidden"
           onChange={(event) => {
             if (event.target.files?.length) onPick(event.target.files);
@@ -1476,15 +1524,20 @@ function PhotoUploader({
           }}
         />
         <Icon name="camera" className="h-5 w-5" />
-        <span className="mt-1 text-[10px] font-bold">Add photos</span>
+        <span className="mt-1 text-[10px] font-bold">
+          {multiple ? 'Add photos' : photos.length > 0 ? 'Replace' : 'Add photo'}
+        </span>
       </label>
-      {photos.map((url) => (
-        <div key={url} className="relative h-20 w-20 overflow-hidden rounded-input">
-          <Image src={url} alt="Race photo" fill unoptimized sizes="80px" className="object-cover" />
+      {photos.map((url, index) => (
+        <div
+          key={`${index}-${url.slice(-24)}`}
+          className="relative h-20 w-20 overflow-hidden rounded-input"
+        >
+          <Image src={url} alt={`Photo ${index + 1}`} fill unoptimized sizes="80px" className="object-cover" />
           <button
             type="button"
-            onClick={() => onRemove(url)}
-            aria-label="Remove photo"
+            onClick={() => onRemove(index)}
+            aria-label={`Remove photo ${index + 1}`}
             className="absolute right-0 top-0 flex h-11 w-11 items-start justify-end rounded-input p-1 text-white"
           >
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/60 transition-colors hover:bg-black/80">
@@ -1494,6 +1547,23 @@ function PhotoUploader({
         </div>
       ))}
     </div>
+  );
+}
+
+function UploadProgressNotice({ progress }: { progress: PrepareImagesProgress | null }) {
+  if (!progress) return null;
+  const label =
+    progress.total === 1
+      ? 'Processing your photo…'
+      : `Processing photo ${Math.min(progress.completed + 1, progress.total)} of ${progress.total}…`;
+  return (
+    <p
+      role="status"
+      className="mb-4 flex items-center gap-2 rounded-input bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface-variant"
+    >
+      <Icon name="history" className="h-4 w-4 shrink-0 animate-spin text-primary" />
+      {label}
+    </p>
   );
 }
 
@@ -1546,10 +1616,10 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 md:p-8">
-      <div className="mb-6 flex items-center gap-3">
-        <Icon name={icon} className="h-6 w-6 text-primary" />
-        <h2 className="font-display text-xl font-bold text-on-surface">{title}</h2>
+    <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-4 sm:p-6 md:p-8">
+      <div className="mb-5 flex items-center gap-2.5 md:mb-6 md:gap-3">
+        <Icon name={icon} className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" />
+        <h2 className="font-display text-lg font-bold text-on-surface md:text-xl">{title}</h2>
         <span className="rounded-pill bg-surface-container px-2.5 py-0.5 text-xs font-bold text-on-surface-variant">
           {count}
         </span>
@@ -1660,13 +1730,15 @@ function DragHandle({
   label: string;
   dragHandleProps: SortableItemRenderProps['dragHandleProps'];
 }) {
+  // Hidden on phones: dragging competes with page scroll on touch, and it costs
+  // 44px of a 390px row. The item menu's Move up / Move down cover reordering there.
   return (
     <button
       {...dragHandleProps}
       type="button"
       aria-label={label}
       title="Drag to reorder"
-      className="mt-0.5 flex h-11 w-11 shrink-0 cursor-grab items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition-colors hover:border-primary hover:text-primary active:cursor-grabbing"
+      className="mt-0.5 hidden h-11 w-11 shrink-0 cursor-grab items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition-colors hover:border-primary hover:text-primary active:cursor-grabbing sm:flex"
     >
       <Icon name="drag-handle" className="h-4 w-4" />
     </button>
@@ -1793,8 +1865,8 @@ function EditorGate({
   }[variant];
 
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/20 text-primary">
           <Icon name={copy.icon} className="h-7 w-7" />
         </span>

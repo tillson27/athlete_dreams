@@ -6,13 +6,13 @@ import { ledgerLines, ledgerTotalCents } from '@/lib/homeContent';
 
 export function BackingTeaserSection() {
   return (
-    <section className="border-y border-outline-variant bg-surface-container-low py-24">
+    <section className="border-y border-outline-variant bg-surface-container-low py-14 md:py-24">
       <Reveal>
-        <div className="mx-auto mb-16 w-full max-w-[var(--spacing-container-max)] px-5 text-center md:px-16">
+        <div className="mx-auto mb-10 w-full md:mb-16 max-w-[var(--spacing-container-max)] px-5 text-center md:px-16">
           <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
             Backing your favourite runners is coming.
           </h2>
-          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-on-surface-variant">
+          <p className="mx-auto max-w-2xl leading-relaxed text-on-surface-variant md:text-lg">
             We&rsquo;re launching story-first, with crowdfunding coming next. You&rsquo;ll be able
             to fund a specific race, trip, gear purchase, or training block — chip in one-time or
             back an athlete&rsquo;s whole season, and see exactly where every dollar lands. Athletes
@@ -22,9 +22,9 @@ export function BackingTeaserSection() {
         </div>
       </Reveal>
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
           {/* Itemized-season preview — transparency you can audit */}
-          <div className="flex flex-col items-start gap-6 rounded-card border border-outline-variant bg-white p-8 shadow-sm md:flex-row">
+          <div className="flex flex-col items-start gap-6 rounded-card border border-outline-variant bg-white p-5 shadow-sm sm:p-6 md:flex-row md:p-8">
             <div className="flex-1">
               <Icon name="fact-check" className="mb-4 h-8 w-8 text-primary" />
               <h4 className="mb-3 font-display text-xl font-bold text-on-surface">
@@ -80,12 +80,12 @@ export function BackingTeaserSection() {
           </div>
 
           {/* Until-then card */}
-          <div className="flex flex-col justify-center rounded-card bg-inverse-surface p-8 text-white shadow-sm">
+          <div className="flex flex-col justify-center rounded-card bg-inverse-surface p-5 text-white shadow-sm sm:p-6 md:p-8">
             <Icon name="heart" className="mb-6 h-9 w-9 text-primary-container" />
             <h4 className="mb-4 font-display text-2xl font-bold">
               Until then, follow the journey.
             </h4>
-            <p className="text-lg leading-relaxed text-white/80">
+            <p className="leading-relaxed text-white/80 md:text-lg">
               The runners you follow today are the ones you&rsquo;ll be able to back tomorrow —
               and they&rsquo;ll see you in their corner from day one.
             </p>

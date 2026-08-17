@@ -25,11 +25,13 @@ export function Section({
   id?: string;
   pad?: 'sm' | 'md' | 'lg' | 'xl';
 }) {
+  // Mobile gets a tighter rhythm than desktop — at 390px wide, desktop's
+  // section gaps push every section past a full screen of dead space.
   const padClass = {
-    sm: 'py-10 md:py-14',
-    md: 'py-14 md:py-20',
-    lg: 'py-20 md:py-24',
-    xl: 'py-24 md:py-32',
+    sm: 'py-8 md:py-14',
+    md: 'py-12 md:py-20',
+    lg: 'py-14 md:py-24',
+    xl: 'py-16 md:py-32',
   }[pad];
 
   return (

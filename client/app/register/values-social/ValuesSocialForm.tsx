@@ -45,17 +45,17 @@ export function ValuesSocialForm() {
       {fromReview ? <EditReturnBanner /> : null}
       <div className="grid gap-10 md:grid-cols-2 md:items-start">
         {/* LIVE PREVIEW */}
-        <div className="order-1">
+        <div className="order-2 md:order-1">
           <ProfilePreview />
         </div>
 
         {/* FORM */}
-        <div className="order-2 flex flex-col gap-10">
+        <div className="order-1 flex flex-col gap-10 md:order-2">
           <section>
             <span className="eyebrow mb-2 block text-on-surface md:hidden">
               Step 3 of 4
             </span>
-            <h1 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
+            <h1 className="mb-2 font-display text-2xl font-extrabold text-on-surface sm:text-3xl md:text-4xl">
               Step 3: Values &amp; Voice
             </h1>
             <p className="text-lg text-on-surface-variant">

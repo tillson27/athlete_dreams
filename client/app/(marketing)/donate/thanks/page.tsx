@@ -36,7 +36,7 @@ function DonateThanksContent() {
     : 'Congratulations on being a part of this athlete’s journey';
 
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col justify-center px-5 py-16 text-center">
+    <div className="mx-auto flex min-h-[70vh] w-full max-w-lg flex-col justify-center px-5 py-12 text-center sm:py-16">
       <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8 md:p-10">
         <span className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-success/15 text-success">
           <Icon name="heart" className="h-8 w-8" />

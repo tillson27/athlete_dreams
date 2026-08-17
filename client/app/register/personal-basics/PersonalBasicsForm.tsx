@@ -46,17 +46,17 @@ export function PersonalBasicsForm() {
       {fromReview ? <EditReturnBanner /> : null}
       <div className="grid gap-10 md:grid-cols-2 md:items-start">
         {/* LIVE PREVIEW */}
-        <div className="order-1">
+        <div className="order-2 md:order-1">
           <ProfilePreview />
         </div>
 
         {/* FORM */}
-        <div className="order-2 flex flex-col gap-8">
+        <div className="order-1 flex flex-col gap-8 md:order-2">
           <div>
             <span className="eyebrow mb-2 block text-on-surface md:hidden">
               Step 1 of 4
             </span>
-            <h2 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
+            <h2 className="mb-2 font-display text-2xl font-extrabold text-on-surface sm:text-3xl md:text-4xl">
               Let&rsquo;s build your profile
             </h2>
             <p className="text-lg text-tertiary">
@@ -65,7 +65,7 @@ export function PersonalBasicsForm() {
             </p>
           </div>
 
-          <form className="flex flex-col gap-6 rounded-card border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+          <form className="flex flex-col gap-6 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-8">
             <Field label="Your name" htmlFor="full_name">
               <input
                 id="full_name"

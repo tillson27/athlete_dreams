@@ -145,7 +145,7 @@ export function PublishPanel() {
           ))}
         </div>
 
-        <div className="relative mx-auto flex min-h-full max-w-lg flex-col items-center justify-center px-5 py-16 text-center">
+        <div className="relative mx-auto flex min-h-full max-w-lg flex-col items-center justify-center px-5 py-12 text-center sm:py-16">
           <span className="mb-6 inline-flex items-center gap-2 rounded-pill bg-success/15 px-4 py-2 text-success">
             <Icon name="check-circle" className="h-5 w-5" />
             <span className="label-bold">Profile published</span>

@@ -82,17 +82,17 @@ export function CommunityClient() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-10 md:px-16 md:py-12">
+    <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-8 md:px-16 md:py-12">
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-6 md:mb-8">
         <span className="inline-flex items-center gap-2 rounded-pill bg-secondary-soft px-3 py-1 text-xs font-bold uppercase tracking-[0.05em] text-secondary">
           <Icon name="timer" className="h-3.5 w-3.5" />
           Coming soon
         </span>
-        <h1 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-on-surface md:text-5xl">
+        <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-on-surface md:mt-4 md:text-5xl">
           Community
         </h1>
-        <p className="mt-2 max-w-2xl text-lg text-on-surface-variant">
+        <p className="mt-2 max-w-2xl text-on-surface-variant md:text-lg">
           Here&rsquo;s a preview of what&rsquo;s coming. Soon this will be a live feed of
           results and the road ahead, from the runners you follow — cheer them on and never miss a
           start line. The journey is better with people in it.
@@ -101,7 +101,7 @@ export function CommunityClient() {
 
       {/* Tabs + discipline filters */}
       <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-1 rounded-pill bg-surface-container p-1">
+        <div className="flex gap-1 self-start rounded-pill bg-surface-container p-1 md:self-auto">
           <TabButton active={tab === 'everyone'} onClick={() => setTab('everyone')}>
             Everyone
           </TabButton>
@@ -158,7 +158,7 @@ export function CommunityClient() {
           {tab === 'following' && ready && follows.length === 0 ? (
             <EmptyFollowing signedIn={Boolean(session)} />
           ) : visible.length === 0 ? (
-            <p className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center text-on-surface-variant">
+            <p className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-6 text-center sm:p-10 text-on-surface-variant">
               Nothing here yet for this filter.
             </p>
           ) : (
@@ -175,7 +175,7 @@ export function CommunityClient() {
 
         {/* Sidebar */}
         <aside className="space-y-6 lg:sticky lg:top-24 lg:col-span-4 lg:self-start">
-          <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
             <h2 className="mb-1 font-display text-lg font-bold text-on-surface">Racing soon</h2>
             <p className="mb-4 text-xs text-on-surface-variant">Be there when it counts.</p>
             <ul className="space-y-4">
@@ -216,7 +216,7 @@ export function CommunityClient() {
             </ul>
           </section>
 
-          <section className="relative overflow-hidden rounded-card bg-inverse-surface p-6 text-white">
+          <section className="relative overflow-hidden rounded-card bg-inverse-surface p-5 text-white md:p-6">
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_center,_var(--color-primary-container)_1px,_transparent_1px)] [background-size:36px_36px]"
@@ -242,8 +242,8 @@ export function CommunityClient() {
 
 function CommunityState({ title, body }: { title: string; body: string }) {
   return (
-    <main className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+    <main className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-8">
         <h1 className="font-display text-2xl font-extrabold text-on-surface">{title}</h1>
         <p className="mt-3 text-on-surface-variant">{body}</p>
       </div>

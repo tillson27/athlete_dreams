@@ -13,18 +13,18 @@ export function TellYourArcSection() {
       />
       <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
         <Reveal>
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+          <div className="mx-auto mb-10 max-w-2xl text-center md:mb-12">
             <h2 className="mb-6 font-display text-3xl font-bold text-on-surface md:text-5xl">
               Tell Your Arc
             </h2>
-            <p className="text-lg leading-relaxed text-on-surface-variant">
+            <p className="leading-relaxed text-on-surface-variant md:text-lg">
               Your athletic career deserves a professional home. Launch your athlete profile in
               three simple steps designed for elite performance.
             </p>
           </div>
         </Reveal>
 
-        <div className="mx-auto mb-12 grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="mx-auto mb-12 grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
           {arcSteps.map((step, index) => (
             <Reveal key={step.number} delay={index * 90} className="h-full">
               <div className="group relative flex h-full flex-col items-center rounded-card border border-outline-variant/30 bg-white/60 p-6 text-center transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_26px_50px_-24px_rgba(171,54,0,0.4)]">
@@ -51,7 +51,7 @@ export function TellYourArcSection() {
         <div className="flex justify-center">
           <Link
             href={authHref('/sign-up', '/register/personal-basics')}
-            className="inline-flex items-center justify-center rounded-card bg-primary-container px-12 py-5 text-lg font-bold tracking-[0.05em] text-on-primary shadow-xl transition-all hover:-translate-y-1 hover:shadow-primary/25 active:scale-95"
+            className="inline-flex items-center justify-center rounded-card bg-primary-container px-8 py-4 font-bold tracking-[0.05em] sm:px-12 sm:py-5 sm:text-lg text-on-primary shadow-xl transition-all hover:-translate-y-1 hover:shadow-primary/25 active:scale-95"
           >
             Start your journey
           </Link>

@@ -4,9 +4,9 @@ import { authHref } from '@/lib/authRedirect';
 
 export function HomeCtaSection() {
   return (
-    <section className="bg-surface-bright px-5 py-20 md:px-16">
+    <section className="bg-surface-bright px-5 py-14 md:px-16 md:py-20">
       <Reveal>
-        <div className="relative overflow-hidden rounded-[2rem] bg-inverse-surface p-12 text-center md:p-20">
+        <div className="relative overflow-hidden rounded-[2rem] bg-inverse-surface p-7 text-center sm:p-10 md:p-20">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_center,_var(--color-primary-container)_1px,_transparent_1px)] [background-size:40px_40px]"
@@ -15,7 +15,7 @@ export function HomeCtaSection() {
             <h2 className="mb-6 font-display text-3xl font-bold text-white md:text-5xl">
               Ready to follow the next great story?
             </h2>
-            <p className="mb-10 text-lg leading-relaxed text-white/70">
+            <p className="mb-8 leading-relaxed text-white/70 md:mb-10 md:text-lg">
               Runners are telling their whole arc on ARC — the comebacks, the 5 a.m. miles, the
               breakthroughs. Every follow puts someone in their corner.
             </p>

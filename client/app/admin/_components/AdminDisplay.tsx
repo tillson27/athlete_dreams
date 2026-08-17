@@ -7,7 +7,7 @@ export function AdminPageTitle({ title, eyebrow }: { title: string; eyebrow: str
   return (
     <div>
       <p className="text-sm font-semibold uppercase text-on-surface-variant">{eyebrow}</p>
-      <h1 className="mt-1 font-display text-3xl font-bold">{title}</h1>
+      <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{title}</h1>
     </div>
   );
 }

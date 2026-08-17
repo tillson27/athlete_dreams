@@ -255,9 +255,13 @@ export const setAthleteRoadmapRequestSchema = z
 
 export type SetAthleteRoadmapRequest = z.infer<typeof setAthleteRoadmapRequestSchema>;
 
+// Exported so the editor can stop the athlete at the cap while picking photos,
+// rather than letting the save PUT fail validation after the fact.
+export const ATHLETE_GALLERY_MAX_PHOTOS = 12;
+
 export const setAthleteGalleryRequestSchema = z
   .object({
-    gallery: z.array(mediaRefSchema).max(12),
+    gallery: z.array(mediaRefSchema).max(ATHLETE_GALLERY_MAX_PHOTOS),
   })
   .strict();
 

@@ -9,7 +9,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
+      {/* No bottom padding for the fixed mobile nav here — SiteFooter's `pb-24`
+          already clears it, and doubling up left an empty band above the footer. */}
+      <main className="flex-1">{children}</main>
       <SiteFooter />
       <MobileBottomNav />
     </>

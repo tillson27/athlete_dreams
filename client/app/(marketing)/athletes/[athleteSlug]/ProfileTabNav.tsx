@@ -33,7 +33,7 @@ export function ProfileTabNav({ tabs }: { tabs: { label: string; href: string }[
         <a
           key={tab.href}
           href={tab.href}
-          className="flex min-h-11 shrink-0 items-center rounded-pill px-4 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container active:bg-surface-container"
+          className="flex min-h-11 shrink-0 items-center rounded-pill px-3 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container active:bg-surface-container"
         >
           {tab.label}
         </a>

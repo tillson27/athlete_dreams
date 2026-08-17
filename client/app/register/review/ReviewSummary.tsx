@@ -23,7 +23,7 @@ export function ReviewSummary() {
               <Icon name="verified" className="h-4 w-4" />
               <span className="label-bold">FINAL STEP</span>
             </div>
-            <h1 className="mb-4 font-display text-4xl font-extrabold text-on-surface">
+            <h1 className="mb-4 font-display text-2xl font-extrabold text-on-surface sm:text-3xl md:text-4xl">
               You&rsquo;re one tap away, {firstName}.
             </h1>
             <p className="max-w-2xl text-lg text-on-surface-variant">
@@ -150,7 +150,7 @@ function ReviewCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+    <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
       <div className="mb-6 flex items-start justify-between">
         <div className="flex items-center gap-3">
           <Icon name={icon} className="h-6 w-6 text-primary" />

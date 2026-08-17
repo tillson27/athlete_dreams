@@ -22,8 +22,8 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
   };
 
   return (
-    <section className="bg-surface py-20">
-      <div className="mx-auto mb-12 flex w-full max-w-[var(--spacing-container-max)] items-end justify-between px-5 md:px-16">
+    <section className="bg-surface py-14 md:py-20">
+      <div className="mx-auto mb-8 flex w-full md:mb-12 max-w-[var(--spacing-container-max)] items-end justify-between px-5 md:px-16">
         <div>
           <h3 className="font-display text-3xl font-bold text-on-surface md:text-4xl">
             Trending Athletes
@@ -54,7 +54,7 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
 
       <div
         ref={railRef}
-        className="no-scrollbar flex gap-6 overflow-x-auto px-5 pb-10 md:px-16"
+        className="no-scrollbar flex gap-4 overflow-x-auto px-5 pb-8 md:gap-6 md:px-16 md:pb-10"
       >
         {athletes.map((athlete) => (
           <Link
@@ -62,7 +62,7 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
             href={athlete.href}
             className="group min-w-[256px] overflow-hidden rounded-card bg-surface-container-lowest shadow-[0px_4px_20px_rgba(0,0,0,0.04)] transition-transform hover:scale-[1.02] md:min-w-[304px]"
           >
-            <div className="relative h-64 bg-surface-container">
+            <div className="relative h-52 bg-surface-container sm:h-64">
               <Image
                 src={athlete.image}
                 alt={athlete.name}
@@ -71,7 +71,7 @@ export function TrendingAthletes({ athletes }: { athletes: TrendingAthlete[] }) 
                 className="object-cover"
               />
             </div>
-            <div className="p-8">
+            <div className="p-5 sm:p-6 md:p-8">
               <div className="mb-4">
                 <h4 className="font-display text-2xl font-bold text-on-surface">
                   {athlete.name}

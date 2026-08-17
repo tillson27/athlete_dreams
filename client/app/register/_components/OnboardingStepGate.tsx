@@ -84,7 +84,7 @@ function GatePanel({
 }) {
   return (
     <section className="mx-auto flex min-h-[55vh] w-full max-w-md flex-col justify-center text-center">
-      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-8">
         <Icon
           name={icon}
           className={`mx-auto h-8 w-8 text-primary ${spinning ? 'animate-spin' : ''}`}

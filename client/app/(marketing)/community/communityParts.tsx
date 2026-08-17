@@ -26,7 +26,7 @@ export function TabButton({
 
 export function EmptyFollowing({ signedIn }: { signedIn: boolean }) {
   return (
-    <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-10 text-center">
+    <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-6 text-center sm:p-10">
       <h3 className="font-display text-xl font-bold text-on-surface">
         You&rsquo;re not following anyone yet
       </h3>

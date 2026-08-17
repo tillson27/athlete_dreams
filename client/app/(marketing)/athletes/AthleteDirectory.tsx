@@ -174,18 +174,18 @@ export function AthleteDirectory() {
         </div>
       </aside>
 
-      <main className="flex-1 px-5 py-10 md:px-8 md:py-12">
-        <header className="mb-8">
-          <h1 className="font-display text-3xl font-extrabold leading-tight text-on-surface md:text-5xl">
+      <main className="flex-1 px-5 py-8 md:px-8 md:py-12">
+        <header className="mb-6 md:mb-8">
+          <h1 className="font-display text-[28px] font-extrabold leading-tight text-on-surface sm:text-3xl md:text-5xl">
             Discover runners
           </h1>
-          <p className="mt-3 max-w-2xl text-lg text-on-surface-variant">
+          <p className="mt-2 max-w-2xl text-base text-on-surface-variant md:mt-3 md:text-lg">
             Runners telling the whole story — from first finish lines to podiums. Follow the
             ones whose journey you want to be part of.
           </p>
         </header>
 
-        <div className="mb-8 space-y-4">
+        <div className="mb-6 space-y-3 md:mb-8 md:space-y-4">
           <label className="relative flex-1">
             <span className="sr-only">Search</span>
             <SearchIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-on-surface-variant" />
@@ -193,35 +193,56 @@ export function AthleteDirectory() {
               type="text"
               value={filters.search}
               onChange={(event) => updateFilters({ search: event.target.value })}
-              placeholder="Search by name, discipline, or city…"
-              className="w-full rounded-input border border-outline-variant bg-surface-container-lowest px-12 py-4 text-base text-on-surface shadow-sm transition-all placeholder:text-on-surface-variant focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus/30"
+              placeholder="Search name, discipline, or city…"
+              className="w-full rounded-input border border-outline-variant bg-surface-container-lowest py-3 pl-11 pr-4 text-base text-on-surface shadow-sm transition-all placeholder:text-on-surface-variant focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus/30 md:px-12 md:py-4"
             />
           </label>
-          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar md:hidden">
-            {COUNTRIES.map((country) => {
-              const active = filters.country === country.code;
-              return (
+
+          {/* Mobile filter bar — the sidebar's Region group plus the result count
+              and reset that only the desktop sidebar otherwise carries. */}
+          <div className="md:hidden">
+            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar">
+              {COUNTRIES.map((country) => {
+                const active = filters.country === country.code;
+                return (
+                  <button
+                    key={country.code}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => updateFilters({ country: country.code })}
+                    className={`label-bold inline-flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-pill px-4 transition-colors ${
+                      active
+                        ? 'bg-primary text-on-primary'
+                        : 'bg-surface-container-lowest text-on-surface-variant ring-1 ring-inset ring-outline-variant'
+                    }`}
+                  >
+                    {country.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-2.5 flex items-center justify-between gap-3">
+              <p className="text-xs text-on-surface-variant">
+                <strong className="text-on-surface">{filtered.length}</strong>{' '}
+                {filtered.length === 1 ? 'runner' : 'runners'}
+              </p>
+              {isFiltered ? (
                 <button
-                  key={country.code}
                   type="button"
-                  onClick={() => updateFilters({ country: country.code })}
-                  className={`label-bold min-h-11 whitespace-nowrap rounded-pill px-4 py-2 transition-colors ${
-                    active
-                      ? 'bg-primary text-on-primary'
-                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-                  }`}
+                  onClick={clear}
+                  className="text-xs font-semibold text-on-surface-variant underline underline-offset-2 transition-colors hover:text-primary"
                 >
-                  {country.label}
+                  Clear filters
                 </button>
-              );
-            })}
+              ) : null}
+            </div>
           </div>
         </div>
 
         {filtered.length === 0 ? (
-          <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-12 text-center">
+          <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-6 text-center md:p-12">
             <Badge tone="soft">No matching runners</Badge>
-            <p className="mt-4 text-on-surface-variant">
+            <p className="mt-4 text-sm text-on-surface-variant md:text-base">
               We&rsquo;re still onboarding runners that fit these filters. Check back soon — or forward
               ARC to someone who fits.
             </p>
@@ -233,7 +254,7 @@ export function AthleteDirectory() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
               {pagedAthletes.map((athlete) => (
                 <AthleteRow key={athlete.athleteSlug} athlete={athlete} />
               ))}
@@ -272,8 +293,8 @@ export function AthleteDirectory() {
 
 function DirectoryState({ title, body }: { title: string; body: string }) {
   return (
-    <main className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+    <main className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-8">
         <h1 className="font-display text-2xl font-extrabold text-on-surface">{title}</h1>
         <p className="mt-3 text-on-surface-variant">{body}</p>
       </div>

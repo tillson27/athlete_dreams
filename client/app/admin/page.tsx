@@ -109,7 +109,7 @@ function PageTitle({ title, subtitle }: { title: string; subtitle: string }) {
       <p className="text-sm font-semibold uppercase text-on-surface-variant">
         {subtitle}
       </p>
-      <h1 className="mt-1 font-display text-3xl font-bold">{title}</h1>
+      <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{title}</h1>
     </div>
   );
 }

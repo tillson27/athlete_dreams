@@ -102,7 +102,7 @@ export default function ForAthletesPage() {
             <span className="label-bold inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/10 px-3.5 py-1.5 text-white backdrop-blur">
               For runners
             </span>
-            <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-white md:text-6xl">
+            <h1 className="mt-6 font-display text-[32px] font-extrabold leading-[1.02] sm:text-4xl tracking-tight text-white md:text-6xl">
               Every run is part of a bigger story. Give yours a home.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/85 md:text-xl">
@@ -131,7 +131,7 @@ export default function ForAthletesPage() {
       </section>
 
       {/* VALUE PILLARS */}
-      <section className="bg-surface py-20 md:py-28">
+      <section className="bg-surface py-14 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -145,10 +145,10 @@ export default function ForAthletesPage() {
               </p>
             </div>
           </Reveal>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid md:mt-14 gap-6 md:grid-cols-3">
             {pillars.map((pillar, index) => (
               <Reveal key={pillar.title} delay={index * 90} className="h-full">
-                <div className="group flex h-full flex-col rounded-card border border-outline-variant/50 bg-surface-container-lowest p-8 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_50px_-24px_rgba(171,54,0,0.35)]">
+                <div className="group flex h-full flex-col rounded-card border border-outline-variant/50 bg-surface-container-lowest p-6 shadow-sm transition-all sm:p-8 duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_50px_-24px_rgba(171,54,0,0.35)]">
                   <span
                     className={`mb-6 flex h-14 w-14 items-center justify-center rounded-xl ${pillar.tone} transition-transform duration-300 group-hover:scale-110`}
                   >
@@ -164,7 +164,7 @@ export default function ForAthletesPage() {
       </section>
 
       {/* PROFILE SHOWCASE */}
-      <section className="border-y border-outline-variant bg-surface-container-low py-20 md:py-28">
+      <section className="border-y border-outline-variant bg-surface-container-low py-14 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -250,7 +250,7 @@ export default function ForAthletesPage() {
       </section>
 
       {/* MORE THAN A BIO LINK */}
-      <section className="bg-surface py-20 md:py-28">
+      <section className="bg-surface py-14 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -264,10 +264,10 @@ export default function ForAthletesPage() {
               </p>
             </div>
           </Reveal>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid md:mt-14 gap-6 md:grid-cols-3">
             {comparisons.map((comparison, index) => (
               <Reveal key={comparison.old} delay={index * 90} className="h-full">
-                <div className="flex h-full flex-col rounded-card border border-outline-variant/50 bg-surface-container-lowest p-8">
+                <div className="flex h-full flex-col rounded-card border border-outline-variant/50 bg-surface-container-lowest p-6 sm:p-8">
                   <p className="font-semibold text-on-surface-variant/70 line-through">
                     {comparison.old}
                   </p>
@@ -285,7 +285,7 @@ export default function ForAthletesPage() {
       </section>
 
       {/* FOR EVERY RUNNER */}
-      <section className="bg-surface py-20 md:py-28">
+      <section className="bg-surface py-14 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -322,7 +322,7 @@ export default function ForAthletesPage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="border-y border-outline-variant bg-surface-container-low py-20 md:py-28">
+      <section className="border-y border-outline-variant bg-surface-container-low py-14 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -332,10 +332,10 @@ export default function ForAthletesPage() {
               </h2>
             </div>
           </Reveal>
-          <div className="mt-14 grid gap-8 md:grid-cols-3">
+          <div className="mt-10 grid md:mt-14 gap-8 md:grid-cols-3">
             {steps.map((step, index) => (
               <Reveal key={step.number} delay={index * 90} className="h-full">
-                <div className="flex h-full flex-col rounded-card border border-outline-variant/40 bg-surface-container-lowest p-8">
+                <div className="flex h-full flex-col rounded-card border border-outline-variant/40 bg-surface-container-lowest p-6 sm:p-8">
                   <span className="font-display text-5xl font-extrabold text-primary/20">
                     {step.number}
                   </span>
@@ -360,7 +360,7 @@ export default function ForAthletesPage() {
       </section>
 
       {/* PEER PROOF */}
-      <section className="bg-surface py-20 md:py-28">
+      <section className="bg-surface py-14 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-3xl text-center">
@@ -392,7 +392,7 @@ export default function ForAthletesPage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="bg-surface-bright px-5 py-20 md:px-16">
+      <section className="bg-surface-bright px-5 py-14 md:px-16 md:py-20">
         <div className="relative overflow-hidden rounded-[2rem] bg-inverse-surface p-12 text-center md:p-20">
           <div
             aria-hidden="true"

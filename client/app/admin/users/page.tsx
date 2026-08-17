@@ -62,7 +62,7 @@ export default function AdminUsersPage() {
     <section className="grid gap-5">
       <div>
         <p className="text-sm font-semibold uppercase text-on-surface-variant">Admin</p>
-        <h1 className="mt-1 font-display text-3xl font-bold">Users</h1>
+        <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">Users</h1>
       </div>
 
       <div className="grid gap-3 rounded-[8px] border border-outline-variant bg-surface-container-lowest p-4 md:grid-cols-[1fr_220px]">

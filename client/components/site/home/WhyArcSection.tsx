@@ -27,14 +27,14 @@ export function WhyArcSection() {
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-b from-[#140b08]/85 via-[#160d09]/80 to-surface"
         />
-        <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 pb-28 pt-20 md:px-16">
+        <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 pb-24 pt-14 md:px-16 md:pb-28 md:pt-20">
           <Reveal>
             <div className="max-w-3xl">
-              <h2 className="mb-5 font-display text-4xl font-extrabold leading-[1.05] text-white md:text-5xl">
+              <h2 className="mb-4 font-display text-[30px] font-extrabold leading-[1.05] text-white sm:text-4xl md:mb-5 md:text-5xl">
                 The Missing Bridge in{' '}
                 <span className="text-primary-container">Athletic Identity.</span>
               </h2>
-              <p className="max-w-2xl text-lg leading-relaxed text-white/75">
+              <p className="max-w-2xl leading-relaxed text-white/75 md:text-lg">
                 From fragmented posts to a unified legacy. Arc gives athletes one professional home
                 to turn their performance into a story worth following and supporting.
               </p>
@@ -44,12 +44,12 @@ export function WhyArcSection() {
       </div>
 
       {/* Body */}
-      <div className="relative z-10 mx-auto -mt-12 w-full max-w-[var(--spacing-container-max)] px-5 pb-24 md:px-16">
+      <div className="relative z-10 mx-auto -mt-12 w-full max-w-[var(--spacing-container-max)] px-5 pb-14 md:px-16 md:pb-24">
         {/* The problem — two forces Arc bridges */}
         <div className="relative">
           <div className="grid gap-6 md:grid-cols-2 md:gap-16">
             <Reveal className="h-full">
-              <div className="card-lift flex h-full flex-col rounded-card border border-secondary/30 bg-white p-7">
+              <div className="card-lift flex h-full flex-col rounded-card border border-secondary/30 bg-white p-5 sm:p-7">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary-soft text-secondary">
                     <Icon name="insights" className="h-6 w-6" />
@@ -85,7 +85,7 @@ export function WhyArcSection() {
             </Reveal>
 
             <Reveal delay={90} className="h-full">
-              <div className="card-lift flex h-full flex-col rounded-card border border-primary/30 bg-white p-7">
+              <div className="card-lift flex h-full flex-col rounded-card border border-primary/30 bg-white p-5 sm:p-7">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
                     <Icon name="heart" className="h-6 w-6" />
@@ -129,7 +129,7 @@ export function WhyArcSection() {
         </div>
 
         {/* What Arc builds instead */}
-        <div className="mt-20 grid gap-12 md:grid-cols-2">
+        <div className="mt-14 grid gap-10 md:mt-20 md:grid-cols-2 md:gap-12">
           <Reveal>
             <div>
               <span className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-on-primary shadow-lg shadow-primary/20">
@@ -138,7 +138,7 @@ export function WhyArcSection() {
               <h3 className="mb-4 font-display text-2xl font-bold text-on-surface md:text-3xl">
                 Unified Athletic Identity
               </h3>
-              <p className="text-lg leading-relaxed text-on-surface-variant">
+              <p className="leading-relaxed text-on-surface-variant md:text-lg">
                 No more cobbling together fragmented posts across multiple platforms. In ARC, your
                 complete athletic narrative lives front and center — authentic, polished, and easy
                 for others to follow.
@@ -161,7 +161,7 @@ export function WhyArcSection() {
               <h3 className="mb-4 font-display text-2xl font-bold text-on-surface md:text-3xl">
                 From Spectators to Supporters
               </h3>
-              <p className="text-lg leading-relaxed text-on-surface-variant">
+              <p className="leading-relaxed text-on-surface-variant md:text-lg">
                 Athletes who share their authentic stories create a powerful opportunity for
                 supporters to follow their journey, feel like an integral part of it, and
                 contribute meaningfully when backing opens.

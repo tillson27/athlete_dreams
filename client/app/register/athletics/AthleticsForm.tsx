@@ -53,17 +53,17 @@ export function AthleticsForm() {
       {fromReview ? <EditReturnBanner /> : null}
       <div className="grid gap-10 md:grid-cols-2 md:items-start">
         {/* LIVE PREVIEW */}
-        <div className="order-1">
+        <div className="order-2 md:order-1">
           <ProfilePreview />
         </div>
 
         {/* FORM */}
-        <div className="order-2 flex flex-col gap-8">
+        <div className="order-1 flex flex-col gap-8 md:order-2">
           <div>
             <span className="eyebrow mb-2 block text-on-surface md:hidden">
               Step 2 of 4
             </span>
-            <h2 className="mb-2 font-display text-4xl font-extrabold text-on-surface">
+            <h2 className="mb-2 font-display text-2xl font-extrabold text-on-surface sm:text-3xl md:text-4xl">
               Step 2: Athletics &amp; Achievements
             </h2>
             <p className="text-lg text-tertiary">
@@ -74,8 +74,8 @@ export function AthleticsForm() {
 
           <div className="flex flex-col gap-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
             <div className="flex flex-wrap items-center gap-3">
-              <Icon name="trophy" className="h-7 w-7 text-primary" />
-              <h3 className="font-display text-2xl font-bold text-on-surface">Personal bests</h3>
+              <Icon name="trophy" className="h-6 w-6 shrink-0 text-primary sm:h-7 sm:w-7" />
+              <h3 className="font-display text-xl font-bold text-on-surface sm:text-2xl">Personal bests</h3>
               <span className="label-bold rounded-pill bg-error/10 px-2.5 py-1 text-xs text-error md:ml-auto">
                 Required to publish
               </span>
@@ -176,10 +176,10 @@ export function AthleticsForm() {
           </div>
 
           <div className="flex flex-col gap-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
-            <div className="flex items-center gap-3">
-              <Icon name="medal" className="h-7 w-7 text-primary" />
-              <h3 className="font-display text-2xl font-bold text-on-surface">Career highlights</h3>
-              <span className="label-bold ml-auto text-tertiary">Optional</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Icon name="medal" className="h-6 w-6 shrink-0 text-primary sm:h-7 sm:w-7" />
+              <h3 className="font-display text-xl font-bold text-on-surface sm:text-2xl">Career highlights</h3>
+              <span className="label-bold text-tertiary sm:ml-auto">Optional</span>
             </div>
 
             {highlights.length > 0 ? (
@@ -247,10 +247,10 @@ export function AthleticsForm() {
           </div>
 
           <div className="flex flex-col gap-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:p-8">
-            <div className="flex items-center gap-3">
-              <Icon name="flag" className="h-7 w-7 text-primary" />
-              <h3 className="font-display text-2xl font-bold text-on-surface">Previous races</h3>
-              <span className="label-bold ml-auto text-tertiary">Optional</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Icon name="flag" className="h-6 w-6 shrink-0 text-primary sm:h-7 sm:w-7" />
+              <h3 className="font-display text-xl font-bold text-on-surface sm:text-2xl">Previous races</h3>
+              <span className="label-bold text-tertiary sm:ml-auto">Optional</span>
             </div>
 
             {races.length > 0 ? (

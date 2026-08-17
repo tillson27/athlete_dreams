@@ -258,7 +258,7 @@ function ApiProfileSummary({ profile }: { profile: AthleteProfile }) {
   const discipline = profile.disciplineLabel ?? '';
   const tagline = profile.storyIntro ?? '';
   return (
-    <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-6">
+    <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
       <p className="font-display text-xl font-bold text-on-surface">{profile.fullName}</p>
       {discipline ? <p className="mt-1 text-sm text-on-surface-variant">{discipline}</p> : null}
       {profile.hometown ? (
@@ -318,22 +318,22 @@ function DashboardView({
   const showChecklist = completedCount < checklist.length;
 
   return (
-    <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-12 md:px-16">
+    <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-8 md:px-16 md:py-12">
       {/* Header */}
-      <header className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between md:mb-10">
         <div>
           <span
             className={`mb-3 inline-flex items-center gap-2 rounded-pill px-3 py-1.5 text-xs font-bold ${
               published ? 'bg-success/15 text-success' : 'bg-primary-container/20 text-primary'
             }`}
           >
-            <Icon name={published ? 'check-circle' : 'history'} className="h-4 w-4" />
+            <Icon name={published ? 'check-circle' : 'history'} className="h-4 w-4 shrink-0" />
             {published ? 'Profile live' : 'Draft — not published yet'}
           </span>
-          <h1 className="font-display text-4xl font-extrabold text-on-surface">
+          <h1 className="font-display text-3xl font-extrabold text-on-surface md:text-4xl">
             Welcome back, {firstName}.
           </h1>
-          <p className="mt-1 text-lg text-on-surface-variant">
+          <p className="mt-1 text-on-surface-variant md:text-lg">
             Your home base — manage your story, share it, and keep it growing.
           </p>
         </div>
@@ -372,8 +372,8 @@ function DashboardView({
           ) : null}
 
           {/* Quick actions */}
-          <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
-            <h2 className="mb-4 font-display text-xl font-bold text-on-surface">Quick actions</h2>
+          <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
+            <h2 className="mb-4 font-display text-lg font-bold text-on-surface md:text-xl">Quick actions</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <ActionTile
                 icon="person"
@@ -382,40 +382,42 @@ function DashboardView({
                 href={profileHref}
               />
               <ActionTile icon="trophy" title="Edit profile" subtitle="Highlights & races" href={manageHref} />
-              <button
-                type="button"
-                onClick={copyLink}
-                className="flex flex-col items-start gap-2 rounded-lg border border-outline-variant bg-surface-container-low p-4 text-left transition-all hover:border-secondary active:scale-[0.98]"
-              >
-                <Icon name={copied ? 'check' : 'link'} className="h-6 w-6 text-primary" />
-                <span className="label-bold text-on-surface">{copied ? 'Copied!' : 'Share link'}</span>
-                <span className="text-xs text-on-surface-variant">{copied ? 'Link copied' : 'Copy your URL'}</span>
+              <button type="button" onClick={copyLink} className={actionTileClass}>
+                <Icon name={copied ? 'check' : 'link'} className="h-6 w-6 shrink-0 text-primary" />
+                <span className="min-w-0">
+                  <span className="label-bold block text-on-surface">{copied ? 'Copied!' : 'Share link'}</span>
+                  <span className="block text-xs text-on-surface-variant">{copied ? 'Link copied' : 'Copy your URL'}</span>
+                </span>
               </button>
             </div>
           </section>
 
           {showChecklist ? (
-            <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="font-display text-xl font-bold text-on-surface">Finish your profile</h2>
-                <span className="label-bold text-on-surface">{completeness}%</span>
+            <section className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-5 md:p-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="font-display text-lg font-bold text-on-surface md:text-xl">Finish your profile</h2>
+                <span className="label-bold shrink-0 text-on-surface">{completeness}%</span>
               </div>
               <ProgressBar percent={completeness} className="mb-6" />
               <ul className="space-y-2">
                 {checklist.map((item) => (
                   <li
                     key={item.label}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant/50 p-3"
+                    className="flex items-start justify-between gap-3 rounded-lg border border-outline-variant/50 p-3 sm:items-center"
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex min-w-0 items-start gap-3 sm:items-center">
                       <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full sm:mt-0 ${
                           item.done ? 'bg-success text-white' : 'bg-surface-container text-on-surface-variant'
                         }`}
                       >
                         {item.done ? <Icon name="check" className="h-4 w-4" /> : null}
                       </span>
-                      <span className={item.done ? 'text-on-surface-variant line-through' : 'text-on-surface'}>
+                      <span
+                        className={`text-sm sm:text-base ${
+                          item.done ? 'text-on-surface-variant line-through' : 'text-on-surface'
+                        }`}
+                      >
                         {item.label}
                       </span>
                     </span>
@@ -495,6 +497,11 @@ function RuntimeAwareLink({
   );
 }
 
+// Row on phones (three stacked full-width cards ate the fold), stacked tile from
+// the `sm` breakpoint up where the three-column grid kicks in.
+const actionTileClass =
+  'flex flex-row items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low p-4 text-left transition-all hover:border-secondary active:scale-[0.98] sm:flex-col sm:items-start sm:gap-2';
+
 function ActionTile({
   icon,
   title,
@@ -506,31 +513,35 @@ function ActionTile({
   subtitle: string;
   href: string;
 }) {
-  const className =
-    'flex flex-col items-start gap-2 rounded-lg border border-outline-variant bg-surface-container-low p-4 transition-all hover:border-secondary active:scale-[0.98]';
+  const body = (
+    <>
+      <Icon name={icon} className="h-6 w-6 shrink-0 text-primary" />
+      <span className="min-w-0">
+        <span className="label-bold block text-on-surface">{title}</span>
+        <span className="block text-xs text-on-surface-variant">{subtitle}</span>
+      </span>
+    </>
+  );
+
   if (href.startsWith('/athletes/')) {
     return (
-      <a href={href} className={className}>
-        <Icon name={icon} className="h-6 w-6 text-primary" />
-        <span className="label-bold text-on-surface">{title}</span>
-        <span className="text-xs text-on-surface-variant">{subtitle}</span>
+      <a href={href} className={actionTileClass}>
+        {body}
       </a>
     );
   }
 
   return (
-    <Link href={href} className={className}>
-      <Icon name={icon} className="h-6 w-6 text-primary" />
-      <span className="label-bold text-on-surface">{title}</span>
-      <span className="text-xs text-on-surface-variant">{subtitle}</span>
+    <Link href={href} className={actionTileClass}>
+      {body}
     </Link>
   );
 }
 
 function SignedOutGate() {
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/20 text-primary">
           <Icon name="lock" className="h-7 w-7" />
         </span>
@@ -561,8 +572,8 @@ function SignedOutGate() {
 // onboarding to create one (Context §11).
 function NoProfileGate({ firstName }: { firstName: string }) {
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/20 text-primary">
           <Icon name="rocket" className="h-7 w-7" />
         </span>
@@ -587,8 +598,8 @@ function NoProfileGate({ firstName }: { firstName: string }) {
 
 function ProfileErrorGate({ firstName }: { firstName: string }) {
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-16 text-center">
-      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-8">
+    <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col justify-center px-5 py-12 text-center sm:py-16">
+      <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/20 text-primary">
           <Icon name="history" className="h-7 w-7" />
         </span>

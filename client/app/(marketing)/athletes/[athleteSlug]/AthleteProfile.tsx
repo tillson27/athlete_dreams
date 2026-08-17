@@ -110,7 +110,7 @@ export function AthleteProfile({
         />
         <div aria-hidden="true" className="grain pointer-events-none absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 py-8 text-white md:px-16 md:py-12">
-          <h1 className="font-display text-4xl font-extrabold leading-[1.02] tracking-tight drop-shadow-sm md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-balance text-[32px] font-extrabold leading-[1.02] tracking-tight drop-shadow-sm sm:text-4xl md:text-6xl lg:text-7xl">
             {athlete.fullName}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-white/90">
@@ -240,7 +240,7 @@ export function AthleteProfile({
           <div className="contents md:col-span-8 md:block md:space-y-6">
             {/* Featured Video */}
             {profile.featuredVideo ? (
-              <section className="card-lift order-2 rounded-card bg-surface-container-lowest p-8 md:order-none">
+              <section className="card-lift order-2 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none">
                 <CardHeading icon="play">Featured Video</CardHeading>
                 <div className="relative mt-6 aspect-video overflow-hidden rounded-input bg-surface-container">
                   <Image
@@ -268,10 +268,10 @@ export function AthleteProfile({
             {/* My Story */}
             <article
               id="story"
-              className="card-lift order-1 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none"
+              className="card-lift order-1 scroll-mt-32 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none"
             >
               <CardHeading icon="book">My Story</CardHeading>
-              <div className="mt-4 text-lg leading-relaxed text-on-surface">
+              <div className="mt-4 leading-relaxed text-on-surface md:text-lg">
                 <p className="mb-4">{profile.storyIntro}</p>
                 <details className="group">
                   <summary className="label-bold inline-flex cursor-pointer list-none items-center gap-1 text-on-surface transition-all hover:underline">
@@ -291,7 +291,7 @@ export function AthleteProfile({
             {/* Personal Bests */}
             <div
               id="results"
-              className="card-lift order-3 scroll-mt-32 rounded-card bg-surface-container-lowest p-8 md:order-none"
+              className="card-lift order-3 scroll-mt-32 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none"
             >
               <CardHeading icon="timer">Personal Bests</CardHeading>
               <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -306,7 +306,7 @@ export function AthleteProfile({
 
             {/* Power Profile — cycling-only */}
             {profile.powerProfile ? (
-              <div className="card-lift order-3 rounded-card bg-surface-container-lowest p-8 md:order-none">
+              <div className="card-lift order-3 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none">
                 <CardHeading icon="insights">Power Profile</CardHeading>
                 <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <div className="rounded-input bg-primary-soft p-4">
@@ -344,7 +344,7 @@ export function AthleteProfile({
             ) : null}
 
             {/* Career Highlights */}
-            <div className="card-lift order-4 rounded-card bg-surface-container-lowest p-8 md:order-none">
+            <div className="card-lift order-4 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none">
               <CardHeading icon="medal">{profile.highlightsHeading ?? 'Career Highlights'}</CardHeading>
               <EditedHighlights
                 slug={athlete.athleteSlug}
@@ -354,7 +354,7 @@ export function AthleteProfile({
             </div>
 
             {/* Previous Races */}
-            <section className="card-lift order-8 rounded-card bg-surface-container-lowest p-8 md:order-none">
+            <section className="card-lift order-8 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none">
               <CardHeading icon="history">{profile.racesHeading ?? 'Previous Races'}</CardHeading>
               <EditedRaces
                 slug={athlete.athleteSlug}
@@ -367,13 +367,13 @@ export function AthleteProfile({
                 editor adds the "what it means to me" line, so render whichever
                 the athlete has rather than an empty card. */}
             {profile.coreValues.length > 0 || athlete.values.length > 0 ? (
-              <div className="card-lift order-11 rounded-card bg-inverse-surface p-8 text-white md:order-none">
+              <div className="card-lift order-11 rounded-card bg-inverse-surface p-5 text-white sm:p-6 md:order-none md:p-8">
                 <h3 className="mb-6 flex items-center gap-2 font-display text-xl font-bold text-primary-container">
                   <Icon name="diamond" className="h-6 w-6" />
                   Core Values
                 </h3>
                 {profile.coreValues.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                     {profile.coreValues.map((value) => (
                       <div key={value.title} className="rounded-input border border-white/15 p-4">
                         <p className="label-bold mb-1 text-primary-container">{value.title}</p>
@@ -400,7 +400,7 @@ export function AthleteProfile({
           {/* RIGHT COLUMN */}
           <aside className="contents md:col-span-4 md:block md:space-y-6">
             {/* Community */}
-            <div className="card-lift order-6 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
+            <div className="card-lift order-6 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-5 md:p-6 md:order-none">
               <CardHeading icon="groups">Community</CardHeading>
               <div className={`grid gap-4 ${profile.supportEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <div>
@@ -422,7 +422,7 @@ export function AthleteProfile({
             </div>
 
             {/* Roadmap */}
-            <div className="card-lift order-5 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
+            <div className="card-lift order-5 rounded-card border border-surface-container bg-surface-container-lowest p-5 md:p-6 md:order-none">
               <h3 className="mb-6 font-display text-xl font-bold text-on-surface">
                 {profile.roadmapTitle}
               </h3>
@@ -432,7 +432,7 @@ export function AthleteProfile({
             {/* Live Training Feed */}
             <div
               id="training"
-              className="card-lift order-7 scroll-mt-32 space-y-6 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none"
+              className="card-lift order-7 scroll-mt-32 space-y-6 rounded-card border border-surface-container bg-surface-container-lowest p-5 md:p-6 md:order-none"
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-xl font-bold text-on-surface">
@@ -478,7 +478,7 @@ export function AthleteProfile({
 
             {/* Recent Backers */}
             {profile.supportEnabled && profile.recentBackers ? (
-              <div className="card-lift order-10 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none">
+              <div className="card-lift order-10 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-5 md:p-6 md:order-none">
                 <h3 className="font-display text-xl font-bold text-on-surface">Recent Backers</h3>
                 <div className="space-y-4">
                   {profile.recentBackers.map((backer) => (
@@ -506,7 +506,7 @@ export function AthleteProfile({
             {/* Photo Gallery */}
             <div
               id="gallery"
-              className="card-lift order-12 scroll-mt-32 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-6 md:order-none"
+              className="card-lift order-12 scroll-mt-32 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-5 md:p-6 md:order-none"
             >
               <CardHeading icon="gallery">Photo Gallery</CardHeading>
               <EditedGallery slug={athlete.athleteSlug} defaults={editDefaults} />

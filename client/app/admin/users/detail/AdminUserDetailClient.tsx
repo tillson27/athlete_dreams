@@ -109,7 +109,7 @@ export default function AdminUserDetailClient() {
     <section className="grid gap-5">
       <div>
         <p className="text-sm font-semibold uppercase text-on-surface-variant">User Detail</p>
-        <h1 className="mt-1 font-display text-3xl font-bold">{user.displayName}</h1>
+        <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{user.displayName}</h1>
       </div>
 
       {message ? (
