@@ -198,10 +198,12 @@ export function AthleteDirectory() {
             />
           </label>
 
-          {/* Mobile filter bar — the sidebar's Region group plus the result count
-              and reset that only the desktop sidebar otherwise carries. */}
           <div className="md:hidden">
-            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar">
+            <div
+              className="grid grid-cols-3 gap-1 rounded-[8px] border border-outline-variant bg-surface-container p-1 shadow-sm"
+              role="group"
+              aria-label="Region filters"
+            >
               {COUNTRIES.map((country) => {
                 const active = filters.country === country.code;
                 return (
@@ -210,10 +212,10 @@ export function AthleteDirectory() {
                     type="button"
                     aria-pressed={active}
                     onClick={() => updateFilters({ country: country.code })}
-                    className={`label-bold inline-flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-pill px-4 transition-colors ${
+                    className={`flex min-h-9 min-w-0 items-center justify-center rounded-[6px] px-2 text-center text-[13px] font-bold leading-none transition-colors ${
                       active
-                        ? 'bg-primary text-on-primary'
-                        : 'bg-surface-container-lowest text-on-surface-variant ring-1 ring-inset ring-outline-variant'
+                        ? 'bg-primary text-on-primary shadow-sm'
+                        : 'text-on-surface-variant hover:bg-surface-container-lowest hover:text-on-surface'
                     }`}
                   >
                     {country.label}
@@ -221,7 +223,7 @@ export function AthleteDirectory() {
                 );
               })}
             </div>
-            <div className="mt-2.5 flex items-center justify-between gap-3">
+            <div className="mt-3 flex items-center justify-between gap-3">
               <p className="text-xs text-on-surface-variant">
                 <strong className="text-on-surface">{filtered.length}</strong>{' '}
                 {filtered.length === 1 ? 'runner' : 'runners'}
