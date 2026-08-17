@@ -19,14 +19,14 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   metadataBase: new URL('https://athletearc.ca'),
   title: {
-    default: 'ARC — Back the athletes you believe in',
+    default: 'Your athletic journey, your arc, told in one place',
     template: '%s · ARC',
   },
   description:
     "The world's most transparent athlete funding network. Back specific events, follow the math, and watch the dream come together.",
   openGraph: {
     type: 'website',
-    title: 'ARC — Back the athletes you believe in',
+    title: 'Your athletic journey, your arc, told in one place',
     description:
       'Crowdfund the athletes you believe in. See exactly what their money pays for and follow them every step of the way.',
     siteName: 'ARC',
