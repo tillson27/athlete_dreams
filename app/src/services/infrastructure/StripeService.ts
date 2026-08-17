@@ -39,6 +39,10 @@ export class StripeService {
   // Stripe's fee; Stripe owns KYC and negative-balance liability.
   createConnectedAccount(): Promise<Stripe.Account> {
     return this.stripe.accounts.create({
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
       controller: {
         stripe_dashboard: { type: 'full' },
         fees: { payer: 'account' },

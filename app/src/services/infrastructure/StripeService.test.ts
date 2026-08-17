@@ -65,6 +65,10 @@ describe('StripeService', () => {
     const service = await loadService();
     await service.createConnectedAccount();
     expect(accountsCreate).toHaveBeenCalledWith({
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
       controller: {
         stripe_dashboard: { type: 'full' },
         fees: { payer: 'account' },
