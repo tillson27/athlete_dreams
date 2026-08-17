@@ -56,6 +56,29 @@ describe('AthleteStripeService.startOnboarding', () => {
     expect(stripe.createAccountLink).toHaveBeenCalledWith('acct_existing');
   });
 
+  it('returns a typed service error when Stripe account creation fails', async () => {
+    athletes.findByUserId.mockResolvedValue({ id: 'a1', stripeAccountId: null });
+    stripe.createConnectedAccount.mockRejectedValue(new Error('stripe unavailable'));
+
+    await expect(makeService().startOnboarding('u1')).rejects.toMatchObject({
+      httpStatus: 503,
+      errorCode: 'service_unavailable',
+    });
+
+    expect(athletes.setStripeAccount).not.toHaveBeenCalled();
+    expect(stripe.createAccountLink).not.toHaveBeenCalled();
+  });
+
+  it('returns a typed service error when Stripe account link creation fails', async () => {
+    athletes.findByUserId.mockResolvedValue({ id: 'a1', stripeAccountId: 'acct_existing' });
+    stripe.createAccountLink.mockRejectedValue(new Error('missing return url'));
+
+    await expect(makeService().startOnboarding('u1')).rejects.toMatchObject({
+      httpStatus: 503,
+      errorCode: 'service_unavailable',
+    });
+  });
+
   it('rejects when the caller has no athlete profile', async () => {
     athletes.findByUserId.mockResolvedValue(null);
     await expect(makeService().startOnboarding('u1')).rejects.toThrow('athlete profile');

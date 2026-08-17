@@ -10,7 +10,7 @@ import { PayoutEventRepository } from '../../repositories/PayoutEventRepository'
 import { StripeService } from '../../services/infrastructure/StripeService';
 import { getStripeAccountReadiness } from '../../services/infrastructure/stripeAccountReadiness';
 import { Logger } from '../../services/infrastructure/Logger';
-import { ForbiddenError } from '../../shared/errors';
+import { ForbiddenError, ServiceUnavailableError } from '../../shared/errors';
 
 const RECENT_PAYOUTS_LIMIT = 10;
 
@@ -29,7 +29,13 @@ export class AthleteStripeService {
 
     let stripeAccountId = athlete.stripeAccountId;
     if (!stripeAccountId) {
-      const account = await this.stripe.createConnectedAccount();
+      let account: Awaited<ReturnType<StripeService['createConnectedAccount']>>;
+      try {
+        account = await this.stripe.createConnectedAccount();
+      } catch (error) {
+        this.logger.warn({ athleteId: athlete.id, err: error }, 'stripe.account_create_failed');
+        throw new ServiceUnavailableError('Could not start Stripe onboarding');
+      }
       stripeAccountId = account.id;
       await this.athletes.setStripeAccount(athlete.id, stripeAccountId);
       this.logger.info(
@@ -38,7 +44,16 @@ export class AthleteStripeService {
       );
     }
 
-    const link = await this.stripe.createAccountLink(stripeAccountId);
+    let link: Awaited<ReturnType<StripeService['createAccountLink']>>;
+    try {
+      link = await this.stripe.createAccountLink(stripeAccountId);
+    } catch (error) {
+      this.logger.warn(
+        { athleteId: athlete.id, accountId: stripeAccountId, err: error },
+        'stripe.account_link_create_failed'
+      );
+      throw new ServiceUnavailableError('Could not start Stripe onboarding');
+    }
     return { onboardingUrl: link.url };
   }
 
