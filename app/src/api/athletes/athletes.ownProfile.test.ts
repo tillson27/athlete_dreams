@@ -246,17 +246,8 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete own-profile and personal-bests
         .send({ personalBests: [{ label: 'Marathon', value: '3:01:12' }] });
       expect(pbs.status).toBe(200);
 
-      const unverifiedPublish = await request(app)
-        .post('/v1/athletes/me/publish')
-        .set('authorization', `Bearer ${fixture.accessToken}`);
-      expect(unverifiedPublish.status).toBe(403);
-      expect(unverifiedPublish.body.error.code).toBe('forbidden');
-
-      await prisma.user.update({
-        where: { id: fixture.userId },
-        data: { emailVerifiedAt: new Date() },
-      });
-
+      // An unverified email is a nudge, not a gate: publishing is the athlete's
+      // first taste of the product and must not wait on an inbox round trip.
       const published = await request(app)
         .post('/v1/athletes/me/publish')
         .set('authorization', `Bearer ${fixture.accessToken}`);

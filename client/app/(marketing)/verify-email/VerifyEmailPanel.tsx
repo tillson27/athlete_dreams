@@ -6,21 +6,25 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { authInputClass } from '@/components/ui/formStyles';
-import { resendVerification, verifyEmail } from '@/lib/api';
+import { ApiError, resendVerification, verifyEmail } from '@/lib/api';
 import { refreshSessionUser, useSession } from '@/lib/session';
 
-type VerificationState = 'checking' | 'verified' | 'failed' | 'missing';
+type VerificationState = 'checking' | 'verified' | 'expired' | 'errored' | 'missing';
 type ResendState = 'idle' | 'sending' | 'sent';
 
 export function VerifyEmailPanel() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const { session } = useSession();
+  const { session, ready: sessionReady } = useSession();
   const [verificationState, setVerificationState] = useState<VerificationState>(
     token ? 'checking' : 'missing'
   );
   const [resendState, setResendState] = useState<ResendState>('idle');
   const [resendError, setResendError] = useState<string | null>(null);
+  // Without this the signed-in-and-verified athlete lands on a resend form whose
+  // request the API no-ops (it refuses to re-send to a verified address), so the
+  // page would promise an email that never arrives.
+  const alreadyVerified = sessionReady && Boolean(session) && !session?.mustVerifyEmail;
   // Guard against double-invocation (React Strict Mode mounts effects twice in dev;
   // a second call would find the token already consumed and show a false "expired" error).
   const verifyCalledRef = useRef(false);
@@ -37,10 +41,17 @@ export function VerifyEmailPanel() {
     let cancelled = false;
     verifyEmail({ token })
       .then(async () => {
-        await refreshSessionUser();
+        // Best-effort only. The server has already verified the address by this
+        // point, so a stale access token (the emailed link outlives the session)
+        // must never downgrade a real success into an "expired link" message.
+        await refreshSessionUser().catch(() => undefined);
         if (!cancelled) setVerificationState('verified');
       })
-      .catch(() => { if (!cancelled) setVerificationState('failed'); });
+      .catch((cause: unknown) => {
+        if (cancelled) return;
+        const rejectedToken = cause instanceof ApiError && cause.status === 400;
+        setVerificationState(rejectedToken ? 'expired' : 'errored');
+      });
     return () => { cancelled = true; };
   }, [token]);
 
@@ -80,15 +91,31 @@ export function VerifyEmailPanel() {
           </div>
         </div>
       ) : null}
-      {verificationState === 'failed' ? (
+      {verificationState !== 'checking' && verificationState !== 'verified' && alreadyVerified ? (
+        <StatusMessage
+          icon="check-circle"
+          title="Your email is already verified."
+          body="Nothing left to do here."
+          tone="neutral"
+        />
+      ) : null}
+      {verificationState === 'expired' && !alreadyVerified ? (
         <StatusMessage
           icon="info"
           title="This verification link has expired."
-          body="Request a new link and use the most recent email."
+          body="Links last 48 hours. Send yourself a new one below."
           tone="error"
         />
       ) : null}
-      {verificationState === 'missing' ? (
+      {verificationState === 'errored' && !alreadyVerified ? (
+        <StatusMessage
+          icon="info"
+          title="We couldn't reach the server to check your link."
+          body="Your link is still good — reload this page to try again."
+          tone="error"
+        />
+      ) : null}
+      {verificationState === 'missing' && !alreadyVerified ? (
         <StatusMessage
           icon="shield"
           title="Request a fresh verification email."
@@ -96,7 +123,7 @@ export function VerifyEmailPanel() {
           tone="neutral"
         />
       ) : null}
-      {verificationState !== 'verified' ? (
+      {verificationState !== 'verified' && !alreadyVerified ? (
         <form className="space-y-4" onSubmit={handleResend}>
           <label className="block space-y-1.5">
             <span className="label-bold text-on-surface">Email</span>
@@ -144,7 +171,7 @@ function StatusMessage({
   tone,
   spinning = false,
 }: {
-  icon: 'info' | 'shield' | 'sync';
+  icon: 'check-circle' | 'info' | 'shield' | 'sync';
   title: string;
   body?: string;
   tone: 'neutral' | 'error';

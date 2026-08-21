@@ -28,8 +28,7 @@ import {
   AthleteRepository,
 } from '../../repositories/AthleteRepository';
 import { PlatformRoleRepository } from '../../repositories/PlatformRoleRepository';
-import { UserRepository } from '../../repositories/UserRepository';
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors';
+import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors';
 
 type RaceResultRelation = AthleteProfileWithRelations['raceResults'][number];
 type AccomplishmentRelation = AthleteProfileWithRelations['accomplishments'][number];
@@ -41,8 +40,7 @@ type PersonalBestRelation = AthleteProfileWithRelations['personalBests'][number]
 export class AthleteService {
   constructor(
     private readonly athleteRepository: AthleteRepository,
-    private readonly platformRoleRepository: PlatformRoleRepository,
-    private readonly userRepository: UserRepository
+    private readonly platformRoleRepository: PlatformRoleRepository
   ) {}
 
   async listDirectory(query: AthleteDirectoryQuery): Promise<AthleteDirectoryResponse> {
@@ -123,10 +121,6 @@ export class AthleteService {
 
   async publishMyProfile(userId: string): Promise<PublishAthleteProfileResponse> {
     const athlete = await this.requireOwnProfile(userId);
-    const user = await this.userRepository.findById(userId);
-    if (!user?.emailVerifiedAt) {
-      throw new ForbiddenError('Verify your email before publishing your profile');
-    }
     assertPublishable(athlete);
     const published = await this.athleteRepository.setPublished(athlete.id);
     return {

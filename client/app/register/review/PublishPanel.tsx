@@ -58,8 +58,7 @@ export function PublishPanel() {
   const profileRouteReady = mode === 'api' ? Boolean(draftSlug) : hasName;
   const manageHref = athleteManageHref(slug);
   const publicUrl = profileUrl(slug);
-  const publishBlockedByAccount =
-    mode === 'api' && (!sessionReady || !session || session.mustVerifyEmail);
+  const publishBlockedByAccount = mode === 'api' && (!sessionReady || !session);
   // Split so the button only renders as unavailable when something the athlete
   // must act on blocks it; an in-flight publish keeps the primary treatment and
   // shows the spinner instead.
@@ -280,20 +279,16 @@ export function PublishPanel() {
           Sign in before publishing your profile.
         </p>
       ) : mode === 'api' && session?.mustVerifyEmail ? (
-        <div
-          role="alert"
-          className="rounded-input border border-secondary/30 bg-secondary-soft/40 px-4 py-4 text-sm"
-        >
-          <p className="font-bold text-on-surface">Email verification required</p>
+        <div className="rounded-input border border-secondary/30 bg-secondary-soft/40 px-4 py-4 text-sm">
+          <p className="font-bold text-on-surface">Verify your email when you get a chance</p>
           <p className="mt-1 text-on-surface-variant">
-            Check your inbox and click the link we sent you. Once verified, come back here to
-            publish.
+            Publishing works either way. Verifying keeps account recovery secure.
           </p>
           <Link
             href="/verify-email"
-            className="mt-3 inline-flex items-center gap-2 rounded-button bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-all hover:bg-primary-strong active:scale-95"
+            className="mt-3 inline-flex items-center gap-2 font-semibold text-primary hover:underline"
           >
-            Resend verification email
+            Send the verification email
             <Icon name="arrow-forward" className="h-4 w-4" />
           </Link>
         </div>

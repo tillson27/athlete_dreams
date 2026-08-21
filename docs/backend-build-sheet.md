@@ -191,6 +191,8 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 - `EmailVerificationToken` and `PasswordResetToken` store SHA-256 token hashes, expiry, and single-use consumption state.
 - `EmailService` sends verification, welcome, and password-reset emails through Resend using env-configured sender settings.
 - `AuthService` sends verification on sign-up, supports forgot/reset/resend/verify flows, and exposes verification state in the auth session contract.
+- Verification is **idempotent** and **non-invalidating**: re-presenting a consumed link succeeds once the address is verified, and a resend leaves previously mailed links usable until they expire (48h). Password reset keeps the stricter invalidate-on-reissue behaviour.
+- An unverified email does **not** gate publishing or account access — it renders as a nudge only.
 - Remaining account-hardening work: refresh-token rotation, distributed rate limiting, cloud sender/domain operations, and team invites.
 
 **Teams (contracts already exist: `createTeamRequestSchema`, `inviteTeamMemberRequestSchema`, `teamInvitationSchema`, `teamMembershipSchema`)**

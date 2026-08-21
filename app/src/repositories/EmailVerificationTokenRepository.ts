@@ -55,12 +55,4 @@ export class EmailVerificationTokenRepository {
       return true;
     });
   }
-
-  async invalidateAllForUser(userId: string, usedAt: Date): Promise<number> {
-    const result = await this.prisma.emailVerificationToken.updateMany({
-      where: { userId, usedAt: null },
-      data: { usedAt },
-    });
-    return result.count;
-  }
 }

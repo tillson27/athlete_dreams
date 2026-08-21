@@ -51,12 +51,8 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
     storyIntro?: string | null;
     withPersonalBest?: boolean;
     publishedAt?: Date | null;
-    emailVerified?: boolean;
   }): Promise<FixtureAthlete> {
     const { userId, email } = await createFixtureUser(overrides.suffix);
-    if (overrides.emailVerified) {
-      await prisma.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } });
-    }
     const slug = `${FIXTURE_PREFIX}-${overrides.suffix}`;
     const athlete = await prisma.athleteProfile.create({
       data: {
@@ -192,7 +188,6 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
         disciplineLabel: null,
         storyIntro: null,
         withPersonalBest: false,
-        emailVerified: true,
       });
 
       const response = await request(app)
@@ -217,7 +212,6 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
         disciplineLabel: null,
         storyIntro: 'Ready to race.',
         withPersonalBest: true,
-        emailVerified: true,
       });
 
       const response = await request(app)
@@ -235,7 +229,6 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
         disciplineLabel: 'Trail Ultra',
         storyIntro: 'Born to climb.',
         withPersonalBest: true,
-        emailVerified: true,
       });
 
       const first = await request(app)
@@ -251,6 +244,24 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       expect(second.status).toBe(200);
       const secondParsed = publishAthleteProfileResponseSchema.parse(second.body.data);
       expect(secondParsed.publishedAt).toBe(firstParsed.publishedAt);
+    });
+
+    it('publishes for an athlete who has not verified their email', async () => {
+      const fixture = await createFixtureAthlete({
+        suffix: 'publish-unverified',
+        disciplineLabel: 'Track',
+        storyIntro: 'First season back.',
+        withPersonalBest: true,
+      });
+
+      const user = await prisma.user.findUniqueOrThrow({ where: { id: fixture.userId } });
+      expect(user.emailVerifiedAt).toBeNull();
+
+      const response = await request(app)
+        .post('/v1/athletes/me/publish')
+        .set('authorization', `Bearer ${fixture.accessToken}`);
+
+      expect(response.status).toBe(200);
     });
   });
 

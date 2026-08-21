@@ -35,6 +35,15 @@ function userFixture(overrides: Partial<User> = {}): User {
   };
 }
 
+// The fake TokenHasher below hashes as `hash:<plaintext>`, so a stored row can
+// be read back as the link the athlete received.
+function plaintextTokenOf(token: EmailVerificationTokenRecord | undefined): string {
+  if (!token) {
+    throw new Error('Missing verification token fixture.');
+  }
+  return token.tokenHash.replace(/^hash:/, '');
+}
+
 function makeService(seedUsers: User[] = []): {
   service: AuthService;
   users: Map<string, User>;
@@ -113,7 +122,13 @@ function makeService(seedUsers: User[] = []): {
       }
     ),
     findByHash: vi.fn(async (tokenHash: string) => {
-      return emailVerificationTokens.find((token) => token.tokenHash === tokenHash) ?? null;
+      const token = emailVerificationTokens.find((candidate) => candidate.tokenHash === tokenHash);
+      if (!token) {
+        return null;
+      }
+      // Mirror Prisma's `include: { user: true }`, which joins the user as it
+      // exists now rather than as it looked when the token row was written.
+      return { ...token, user: users.get(token.userId) ?? token.user };
     }),
     markUsed: vi.fn(async (tokenId: string, usedAt: Date) => {
       const token = emailVerificationTokens.find((candidate) => candidate.id === tokenId);
@@ -135,16 +150,6 @@ function makeService(seedUsers: User[] = []): {
         return true;
       }
     ),
-    invalidateAllForUser: vi.fn(async (userId: string, usedAt: Date) => {
-      let count = 0;
-      for (const token of emailVerificationTokens) {
-        if (token.userId === userId && !token.usedAt) {
-          token.usedAt = usedAt;
-          count += 1;
-        }
-      }
-      return count;
-    }),
   };
 
   const passwordResetTokenRepository = {
@@ -343,5 +348,39 @@ describe('AuthService', () => {
 
     expect(emailVerificationTokens[0]?.usedAt).toBeInstanceOf(Date);
     expect(users.get(user.id)?.emailVerifiedAt).toBeInstanceOf(Date);
+  });
+
+  it('treats a second click on an already-consumed link as success', async () => {
+    const user = userFixture();
+    const { service, emailVerificationTokens, users } = makeService([user]);
+    await service.resendVerification({ email: user.email });
+    const token = plaintextTokenOf(emailVerificationTokens[0]);
+
+    await service.verifyEmail({ token });
+    await expect(service.verifyEmail({ token })).resolves.toBeUndefined();
+    expect(users.get(user.id)?.emailVerifiedAt).toBeInstanceOf(Date);
+  });
+
+  it('keeps earlier verification links alive when a new one is sent', async () => {
+    const user = userFixture();
+    const { service, emailVerificationTokens, users } = makeService([user]);
+
+    await service.resendVerification({ email: user.email });
+    await service.resendVerification({ email: user.email });
+
+    expect(emailVerificationTokens).toHaveLength(2);
+    expect(emailVerificationTokens.every((token) => token.usedAt === null)).toBe(true);
+
+    await service.verifyEmail({ token: plaintextTokenOf(emailVerificationTokens[0]) });
+    expect(users.get(user.id)?.emailVerifiedAt).toBeInstanceOf(Date);
+  });
+
+  it('does not send another email once the address is verified', async () => {
+    const user = userFixture({ emailVerifiedAt: new Date('2026-07-19T12:00:00.000Z') });
+    const { service, emailService } = makeService([user]);
+
+    await service.resendVerification({ email: user.email });
+
+    expect(emailService.sendVerification).not.toHaveBeenCalled();
   });
 });

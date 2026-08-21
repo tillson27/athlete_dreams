@@ -139,6 +139,22 @@ export class AuthService {
     const tokenHash = this.tokenHasher.hashToken(input.token);
     const emailVerificationToken = await this.emailVerificationTokenRepository.findByHash(tokenHash);
     const now = new Date();
+    if (!emailVerificationToken) {
+      throw new BadRequestError('Invalid or expired token');
+    }
+
+    // Verification is idempotent: a link that already did its job must keep
+    // reporting success. Clicking twice, an inbox link scanner pre-fetching, or
+    // a retried request would otherwise tell an already-verified athlete their
+    // link expired and push them into a resend loop they can never escape.
+    if (emailVerificationToken.user.emailVerifiedAt) {
+      this.logger.info(
+        { userId: emailVerificationToken.userId, tokenId: emailVerificationToken.id },
+        'auth.verification.already_verified'
+      );
+      return;
+    }
+
     if (!isUsableToken(emailVerificationToken, now)) {
       throw new BadRequestError('Invalid or expired token');
     }
@@ -197,8 +213,13 @@ export class AuthService {
     );
   }
 
+  // Outstanding verification links are deliberately NOT invalidated when a new
+  // one is issued. Inboxes thread these emails under one subject, so athletes
+  // routinely open an earlier copy; killing superseded links made every resend
+  // break the message the athlete was most likely to click. A verification token
+  // only proves mailbox ownership, is single-use, and expires on its own — unlike
+  // password reset, where invalidating the predecessor is worth the friction.
   private async issueAndSendVerificationEmail(user: User, issuedAt: Date): Promise<void> {
-    await this.emailVerificationTokenRepository.invalidateAllForUser(user.id, issuedAt);
     const issuedToken = this.issueToken(
       tokenTtlMs(emailVerificationTokenTtlHours(), 3_600_000),
       issuedAt
@@ -216,7 +237,7 @@ export class AuthService {
         this.emailService.sendVerification({
           to: user.email,
           displayName: user.displayName,
-          verifyUrl: `${appUrl()}/verify-email?token=${issuedToken.plaintextToken}`,
+          verifyUrl: `${appUrl()}/verify-email?token=${encodeURIComponent(issuedToken.plaintextToken)}`,
         }),
       { userId: user.id, tokenId: token.id }
     );
