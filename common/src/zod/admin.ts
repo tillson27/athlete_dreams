@@ -42,7 +42,6 @@ export const adminUserDetailSchema = adminUserSummarySchema.extend({
   updatedAt: isoDateTimeSchema,
   athleteSlug: z.string().nullable(),
   publishedAt: isoDateTimeSchema.nullable(),
-  athleteId: idSchema.nullable(),
   signupAllowlistStatus: z.nativeEnum(SignupAllowlistStatus),
   signupAllowlistIsEnforced: z.boolean(),
 });

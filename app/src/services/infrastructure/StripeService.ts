@@ -37,11 +37,13 @@ export class StripeService {
   // Standard connected account via controller properties (a bare create also
   // yields Standard). The connected account is merchant of record and pays
   // Stripe's fee; Stripe owns KYC and negative-balance liability.
+  // Only `card_payments` is requested: direct charges need nothing else, and
+  // `transfers` would collect KYC for a platform-to-account money movement the
+  // non-custodial invariant above forbids us from ever making.
   createConnectedAccount(): Promise<Stripe.Account> {
     return this.stripe.accounts.create({
       capabilities: {
         card_payments: { requested: true },
-        transfers: { requested: true },
       },
       controller: {
         stripe_dashboard: { type: 'full' },

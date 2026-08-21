@@ -90,10 +90,12 @@ export class AdminService {
     if (user.emailVerifiedAt) {
       throw new BadRequestError('Email is already verified');
     }
-    await this.adminRepository.markUserEmailVerified(userId, new Date());
-    // Bypasses proof of mailbox ownership, so it is recorded independently of
-    // the request log until a first-class admin audit trail exists.
-    this.logger.warn({ targetUserId: userId }, 'admin.user_email_manually_verified');
+    const overridden = await this.adminRepository.markUserEmailVerified(userId, new Date());
+    if (overridden) {
+      // Bypasses proof of mailbox ownership, so it is recorded independently of
+      // the request log until a first-class admin audit trail exists.
+      this.logger.warn({ targetUserId: userId }, 'admin.user_email_manually_verified');
+    }
     return this.getUserDetail(userId);
   }
 
@@ -369,7 +371,6 @@ function toAdminUserDetail(
     updatedAt: user.updatedAt.toISOString(),
     athleteSlug: user.athleteProfile?.athleteSlug ?? null,
     publishedAt: user.athleteProfile?.publishedAt?.toISOString() ?? null,
-    athleteId: user.athleteProfile?.id ?? null,
     signupAllowlistStatus: isSignupAllowed
       ? SignupAllowlistStatus.Allowed
       : SignupAllowlistStatus.Blocked,

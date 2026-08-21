@@ -109,6 +109,7 @@ describe('AdminService.markUserEmailVerified', () => {
     adminRepository.findUserDetail
       .mockResolvedValueOnce(userRow())
       .mockResolvedValueOnce(userRow({ emailVerifiedAt: new Date('2026-08-04T00:00:00.000Z') }));
+    adminRepository.markUserEmailVerified.mockResolvedValue(true);
 
     const detail = await makeService().markUserEmailVerified('u1');
 
@@ -126,6 +127,17 @@ describe('AdminService.markUserEmailVerified', () => {
       BadRequestError
     );
     expect(adminRepository.markUserEmailVerified).not.toHaveBeenCalled();
+  });
+
+  it('does not record an override that a concurrent verification already won', async () => {
+    adminRepository.findUserDetail
+      .mockResolvedValueOnce(userRow())
+      .mockResolvedValueOnce(userRow({ emailVerifiedAt: new Date('2026-08-04T00:00:00.000Z') }));
+    adminRepository.markUserEmailVerified.mockResolvedValue(false);
+
+    await makeService().markUserEmailVerified('u1');
+
+    expect(logger.warn).not.toHaveBeenCalled();
   });
 });
 

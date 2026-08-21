@@ -110,8 +110,8 @@ export function SignInForm() {
           className="space-y-3 rounded-input bg-primary-container/20 px-4 py-3 text-sm text-on-surface"
         >
           <p className="font-semibold">
-            Please verify your email first. You are signed in, but publishing stays locked until
-            verification is complete.
+            You&rsquo;re signed in. Verifying your email keeps account recovery secure — everything
+            else, including publishing, works either way.
           </p>
           <div className="flex flex-wrap gap-2">
             <button

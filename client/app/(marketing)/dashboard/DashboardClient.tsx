@@ -345,7 +345,7 @@ function DashboardView({
           {mustVerifyEmail ? (
             <div className="flex flex-col items-start gap-3 rounded-card border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-on-surface">
-                Verify your email before publishing your profile to the network.
+                Verify your email when you get a chance — it keeps account recovery secure.
               </p>
               <Link
                 href="/verify-email"

@@ -130,10 +130,10 @@ We are **not** the merchant of record. Athletes hold **Standard** Connect accoun
 **Contract** (`common/`)
 - `types/enums.ts`: add `DonationEventType`.
 - `donation.ts`: `createDonationResponseSchema = { donation, checkoutUrl }`.
-- `athlete.ts`: `athleteStripeStatusSchema = { stripeConnected, chargesEnabled, payoutsEnabled, onboardingUrl? }`.
+- `athlete.ts`: `athleteStripeStatusSchema = { stripeConnected, chargesEnabled, payoutsEnabled, onboardingUrl?, recentPayouts }`.
 
 **Infra service** — `app/src/services/infrastructure/StripeService.ts`
-- Onboarding: `createConnectedAccount()`, `createAccountLink(accountId)`, `retrieveAccount(id)`.
+- Onboarding: `createConnectedAccount()`, `createAccountLink(accountId)`, `retrieveAccount(id)`. The account requests **only** the `card_payments` capability — direct charges need nothing more, and `transfers` would collect KYC for a platform-to-account movement the non-custodial model forbids.
 - Charge: `createDonationCheckoutSession({ amountCents, stripeAccountId, metadata })` — hosted Checkout direct charge through the `Stripe-Account` header, **no** `application_fee_amount`, `transfer_data`, or `on_behalf_of`.
 - `constructWebhookEvent(rawBody, signature)` — Connect signing secret.
 
