@@ -148,8 +148,29 @@ if [[ "${API_ONLY}" != "true" ]]; then
   NEXT_PUBLIC_API_BASE_URL="https://athletearc.ca" \
     npm run build --prefix "${REPO_ROOT}/client"
 
+  # Must run before the sync: the CloudFront viewer-request function owns the
+  # extensionless-route rewrites (/icon, /apple-icon, /favicon.ico, /about…).
+  # Syncing objects without deploying the stack leaves new routes 404ing.
+  log "Deploying ${WEB_STACK}…"
+  npm --prefix "${CDK_DIR}" install --silent
+  (cd "${CDK_DIR}" && npx cdk deploy "${WEB_STACK}" \
+    -c env="${ENV}" \
+    --require-approval never)
+  ok "${WEB_STACK} deployed."
+
   log "Syncing static export to s3://${WEB_BUCKET}…"
   aws s3 sync "${REPO_ROOT}/client/out/" "s3://${WEB_BUCKET}" --delete --region "${REGION}"
+
+  # Next.js emits generated image routes (`client/app/icon.tsx` and siblings) as
+  # extensionless keys, so `aws s3 sync` cannot infer a type and falls back to
+  # binary/octet-stream — which browsers refuse to render. Restamp them.
+  for generated_image_key in icon apple-icon opengraph-image; do
+    aws s3 cp \
+      "${REPO_ROOT}/client/out/${generated_image_key}" \
+      "s3://${WEB_BUCKET}/${generated_image_key}" \
+      --content-type image/png --region "${REGION}" > /dev/null
+  done
+  ok "Generated image routes stamped as image/png."
 
   DIST_ID="$(aws cloudformation describe-stacks \
     --stack-name "${WEB_STACK}" --region "${REGION}" \

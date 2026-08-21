@@ -15,7 +15,9 @@ export const dynamic = 'force-static';
 export const size = { width: 256, height: 256 };
 export const contentType = 'image/png';
 
-const markHeight = 112;
+// The mark is wide and short (124×67), so it must be sized off width to stay
+// legible at 16px tab scale — height-driven sizing leaves it a thin sliver.
+const markHeight = 130;
 
 export default function Icon() {
   return new ImageResponse(
