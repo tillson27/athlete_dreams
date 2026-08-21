@@ -10,6 +10,7 @@ import {
   adminDonationListQuerySchema,
   adminUpdateCampaignStatusRequestSchema,
   adminUpdateUserRolesRequestSchema,
+  adminUserDonationListQuerySchema,
   adminUserListQuerySchema,
   idSchema,
 } from 'fad-common';
@@ -147,6 +148,71 @@ export class AdminController {
       event: 'admin_user_role_updated',
       properties: { targetUserId: userId, roles: body.roles },
     });
+    ResponseHandler.success(res, 200, response);
+  };
+
+  resendUserVerification = async (req: Request, res: Response): Promise<void> => {
+    const adminUserId = requireAdminUserId(req);
+    const { userId } = parseRequestParams(userIdParamsSchema, req);
+    await this.adminService.resendUserVerification(userId);
+    this.logger.info({ adminUserId, targetUserId: userId }, 'admin.user_verification_resent');
+    this.posthog.capture({
+      distinctId: adminUserId,
+      event: 'admin_user_verification_resent',
+      properties: { targetUserId: userId },
+    });
+    ResponseHandler.success(res, 200, AUTH_ACTION_RESPONSE);
+  };
+
+  markUserEmailVerified = async (req: Request, res: Response): Promise<void> => {
+    const adminUserId = requireAdminUserId(req);
+    const { userId } = parseRequestParams(userIdParamsSchema, req);
+    const response = await this.adminService.markUserEmailVerified(userId);
+    this.logger.warn({ adminUserId, targetUserId: userId }, 'admin.user_email_marked_verified');
+    this.posthog.capture({
+      distinctId: adminUserId,
+      event: 'admin_user_email_marked_verified',
+      properties: { targetUserId: userId },
+    });
+    ResponseHandler.success(res, 200, response);
+  };
+
+  sendUserPasswordReset = async (req: Request, res: Response): Promise<void> => {
+    const adminUserId = requireAdminUserId(req);
+    const { userId } = parseRequestParams(userIdParamsSchema, req);
+    await this.adminService.sendUserPasswordReset(userId);
+    this.logger.info({ adminUserId, targetUserId: userId }, 'admin.user_password_reset_sent');
+    this.posthog.capture({
+      distinctId: adminUserId,
+      event: 'admin_user_password_reset_sent',
+      properties: { targetUserId: userId },
+    });
+    ResponseHandler.success(res, 200, AUTH_ACTION_RESPONSE);
+  };
+
+  addUserToAllowlist = async (req: Request, res: Response): Promise<void> => {
+    const adminUserId = requireAdminUserId(req);
+    const { userId } = parseRequestParams(userIdParamsSchema, req);
+    const response = await this.adminService.addUserToAllowlist(userId);
+    this.logger.info({ adminUserId, targetUserId: userId }, 'admin.user_added_to_allowlist');
+    this.posthog.capture({
+      distinctId: adminUserId,
+      event: 'admin_user_added_to_allowlist',
+      properties: { targetUserId: userId },
+    });
+    ResponseHandler.success(res, 200, response);
+  };
+
+  getUserStripeStatus = async (req: Request, res: Response): Promise<void> => {
+    const { userId } = parseRequestParams(userIdParamsSchema, req);
+    const response = await this.adminService.getUserStripeStatus(userId);
+    ResponseHandler.success(res, 200, response);
+  };
+
+  listUserDonations = async (req: Request, res: Response): Promise<void> => {
+    const { userId } = parseRequestParams(userIdParamsSchema, req);
+    const query = parseRequestQuery(adminUserDonationListQuerySchema, req);
+    const response = await this.adminService.listUserDonations(userId, query);
     ResponseHandler.success(res, 200, response);
   };
 

@@ -11,7 +11,9 @@ import type { KeysetCursor } from '../shared/keysetCursor';
 
 const adminUserInclude = Prisma.validator<Prisma.UserInclude>()({
   platformRoleAssignments: { select: { role: true } },
-  athleteProfile: { select: { id: true, athleteSlug: true, publishedAt: true } },
+  athleteProfile: {
+    select: { id: true, athleteSlug: true, publishedAt: true, stripeAccountId: true },
+  },
 });
 
 export type AdminUserRow = Prisma.UserGetPayload<{ include: typeof adminUserInclude }>;
@@ -57,6 +59,12 @@ export interface AdminCampaignListParams {
 export interface AdminDonationListParams {
   status?: DonationStatus;
   athleteId?: string;
+  limit: number;
+  cursor?: KeysetCursor;
+}
+
+export interface AdminSupporterDonationListParams {
+  supporterUserId: string;
   limit: number;
   cursor?: KeysetCursor;
 }
@@ -138,11 +146,33 @@ export class AdminRepository {
     return { donations: donations.slice(0, params.limit), hasMore };
   }
 
+  async listDonationsBySupporter(params: AdminSupporterDonationListParams): Promise<{
+    donations: AdminDonationRow[];
+    hasMore: boolean;
+  }> {
+    const donations = await this.prisma.donation.findMany({
+      where: adminSupporterDonationWhere(params),
+      include: adminDonationInclude,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: params.limit + 1,
+    });
+    const hasMore = donations.length > params.limit;
+    return { donations: hasMore ? donations.slice(0, params.limit) : donations, hasMore };
+  }
+
   findUserDetail(userId: string): Promise<AdminUserRow | null> {
     return this.prisma.user.findFirst({
       where: { id: userId, deletedAt: null },
       include: adminUserInclude,
     });
+  }
+
+  async markUserEmailVerified(userId: string, verifiedAt: Date): Promise<boolean> {
+    const result = await this.prisma.user.updateMany({
+      where: { id: userId, deletedAt: null, emailVerifiedAt: null },
+      data: { emailVerifiedAt: verifiedAt },
+    });
+    return result.count > 0;
   }
 
   async replaceUserRoles(userId: string, roles: PlatformRole[]): Promise<void> {
@@ -279,6 +309,23 @@ function adminDonationWhere(params: AdminDonationListParams): Prisma.DonationWhe
       deletedAt: null,
       ...(params.athleteId ? { athleteId: params.athleteId } : {}),
     },
+    ...(params.cursor
+      ? {
+          OR: [
+            { createdAt: { lt: params.cursor.createdAt } },
+            { createdAt: params.cursor.createdAt, id: { lt: params.cursor.id } },
+          ],
+        }
+      : {}),
+  };
+}
+
+function adminSupporterDonationWhere(
+  params: AdminSupporterDonationListParams
+): Prisma.DonationWhereInput {
+  return {
+    supporterUserId: params.supporterUserId,
+    campaign: { deletedAt: null },
     ...(params.cursor
       ? {
           OR: [

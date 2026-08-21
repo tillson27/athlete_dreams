@@ -1,7 +1,16 @@
 import { z } from 'zod';
 import { CampaignStatus, CampaignType, DonationStatus, SportCategory } from '../types/enums';
 import { PlatformRole } from '../types/roles';
+import { athleteStripeStatusSchema } from './athlete';
 import { idSchema, isoDateTimeSchema, moneyCentsSchema, paginationResponseSchema } from './shared';
+
+export const SignupAllowlistStatus = {
+  Allowed: 'ALLOWED',
+  Blocked: 'BLOCKED',
+} as const;
+
+export type SignupAllowlistStatus =
+  (typeof SignupAllowlistStatus)[keyof typeof SignupAllowlistStatus];
 
 export const adminUserSummarySchema = z.object({
   userId: idSchema,
@@ -33,9 +42,28 @@ export const adminUserDetailSchema = adminUserSummarySchema.extend({
   updatedAt: isoDateTimeSchema,
   athleteSlug: z.string().nullable(),
   publishedAt: isoDateTimeSchema.nullable(),
+  athleteId: idSchema.nullable(),
+  signupAllowlistStatus: z.nativeEnum(SignupAllowlistStatus),
+  signupAllowlistIsEnforced: z.boolean(),
 });
 
 export type AdminUserDetail = z.infer<typeof adminUserDetailSchema>;
+
+// Public API contract: admins read Stripe state for an athlete other than
+// themselves, so the connected-account id is exposed here (and nowhere in the
+// athlete-facing contract) to build a Stripe dashboard deep link.
+export const adminUserStripeStatusSchema = athleteStripeStatusSchema.extend({
+  stripeAccountId: z.string().nullable(),
+});
+
+export type AdminUserStripeStatus = z.infer<typeof adminUserStripeStatusSchema>;
+
+export const adminUserDonationListQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  cursor: z.string().optional(),
+});
+
+export type AdminUserDonationListQuery = z.infer<typeof adminUserDonationListQuerySchema>;
 
 export const adminUpdateUserRolesRequestSchema = z
   .object({
@@ -145,6 +173,11 @@ export type AdminDonationListQuery = z.infer<typeof adminDonationListQuerySchema
 export const adminDonationListResponseSchema = paginationResponseSchema(adminDonationItemSchema);
 
 export type AdminDonationListResponse = z.infer<typeof adminDonationListResponseSchema>;
+
+export const adminUserDonationListResponseSchema =
+  paginationResponseSchema(adminDonationItemSchema);
+
+export type AdminUserDonationListResponse = z.infer<typeof adminUserDonationListResponseSchema>;
 
 export const adminDailyStatSchema = z.object({
   date: z.string(),

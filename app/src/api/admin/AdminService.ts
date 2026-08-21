@@ -14,16 +14,23 @@ import type {
   AdminDonationListQuery,
   AdminDonationListResponse,
   AdminUserDetail,
+  AdminUserDonationListQuery,
+  AdminUserDonationListResponse,
   AdminUserListQuery,
   AdminUserListResponse,
+  AdminUserStripeStatus,
   AdminUserSummary,
 } from 'fad-common';
+import { SignupAllowlistStatus } from 'fad-common';
 import {
   AdminRepository,
   type AdminCampaignRow,
   type AdminDonationRow,
   type AdminUserRow,
 } from '../../repositories/AdminRepository';
+import { AuthService } from '../auth/AuthService';
+import { AthleteStripeService } from '../athleteStripe/AthleteStripeService';
+import { Logger } from '../../services/infrastructure/Logger';
 import { SignupAllowlistRepository } from '../../repositories/SignupAllowlistRepository';
 import {
   normalizeAllowlistEntry,
@@ -41,7 +48,10 @@ export class AdminService {
   constructor(
     private readonly adminRepository: AdminRepository,
     private readonly signupAllowlistRepository: SignupAllowlistRepository,
-    private readonly signupAllowlistService: SignupAllowlistService
+    private readonly signupAllowlistService: SignupAllowlistService,
+    private readonly authService: AuthService,
+    private readonly athleteStripeService: AthleteStripeService,
+    private readonly logger: Logger
   ) {}
 
   async listUsers(query: AdminUserListQuery): Promise<AdminUserListResponse> {
@@ -59,11 +69,83 @@ export class AdminService {
   }
 
   async getUserDetail(userId: string): Promise<AdminUserDetail> {
+    const user = await this.requireUser(userId);
+    const [isAllowed, isEnforced] = await Promise.all([
+      this.signupAllowlistService.isAllowed(user.email),
+      this.signupAllowlistService.isEnforced(),
+    ]);
+    return toAdminUserDetail(user, isAllowed, isEnforced);
+  }
+
+  async resendUserVerification(userId: string): Promise<void> {
+    const user = await this.requireUser(userId);
+    if (user.emailVerifiedAt) {
+      throw new BadRequestError('Email is already verified');
+    }
+    await this.authService.resendVerification({ email: user.email });
+  }
+
+  async markUserEmailVerified(userId: string): Promise<AdminUserDetail> {
+    const user = await this.requireUser(userId);
+    if (user.emailVerifiedAt) {
+      throw new BadRequestError('Email is already verified');
+    }
+    await this.adminRepository.markUserEmailVerified(userId, new Date());
+    // Bypasses proof of mailbox ownership, so it is recorded independently of
+    // the request log until a first-class admin audit trail exists.
+    this.logger.warn({ targetUserId: userId }, 'admin.user_email_manually_verified');
+    return this.getUserDetail(userId);
+  }
+
+  async sendUserPasswordReset(userId: string): Promise<void> {
+    const user = await this.requireUser(userId);
+    await this.authService.forgotPassword({ email: user.email });
+  }
+
+  async addUserToAllowlist(userId: string): Promise<AdminUserDetail> {
+    const user = await this.requireUser(userId);
+    if (await this.signupAllowlistService.isAllowed(user.email)) {
+      throw new ConflictError('User is already allowed to sign in');
+    }
+    await this.addAllowlistEntry({ entry: user.email });
+    return this.getUserDetail(userId);
+  }
+
+  // Each call reaches Stripe and, when the account is not yet ready, mints a
+  // fresh single-use onboarding link — so this must stay behind an explicit
+  // admin action rather than loading with the user detail page.
+  async getUserStripeStatus(userId: string): Promise<AdminUserStripeStatus> {
+    const user = await this.requireUser(userId);
+    if (!user.athleteProfile) {
+      throw new BadRequestError('User does not have an athlete profile');
+    }
+    const status = await this.athleteStripeService.getStatus(userId);
+    return { ...status, stripeAccountId: user.athleteProfile.stripeAccountId };
+  }
+
+  async listUserDonations(
+    userId: string,
+    query: AdminUserDonationListQuery
+  ): Promise<AdminUserDonationListResponse> {
+    await this.requireUser(userId);
+    const limit = query.limit ?? DEFAULT_ADMIN_PAGE_LIMIT;
+    const { donations, hasMore } = await this.adminRepository.listDonationsBySupporter({
+      supporterUserId: userId,
+      limit,
+      cursor: query.cursor ? decodeKeysetCursor(query.cursor) : undefined,
+    });
+    return {
+      items: donations.map(toAdminDonationItem),
+      nextCursor: hasMore ? encodeKeysetCursor(donations[donations.length - 1]) : null,
+    };
+  }
+
+  private async requireUser(userId: string): Promise<AdminUserRow> {
     const user = await this.adminRepository.findUserDetail(userId);
     if (!user) {
       throw new NotFoundError('User');
     }
-    return toAdminUserDetail(user);
+    return user;
   }
 
   async listAthletes(query: AdminAthleteListQuery): Promise<AdminAthleteListResponse> {
@@ -126,10 +208,7 @@ export class AdminService {
   }
 
   async updateUserRoles(userId: string, roles: AdminUserDetail['roles']): Promise<AdminUserDetail> {
-    const user = await this.adminRepository.findUserDetail(userId);
-    if (!user) {
-      throw new NotFoundError('User');
-    }
+    await this.requireUser(userId);
     await this.adminRepository.replaceUserRoles(userId, roles);
     return this.getUserDetail(userId);
   }
@@ -280,12 +359,21 @@ function toAdminUserSummary(user: AdminUserRow): AdminUserSummary {
   };
 }
 
-function toAdminUserDetail(user: AdminUserRow): AdminUserDetail {
+function toAdminUserDetail(
+  user: AdminUserRow,
+  isSignupAllowed: boolean,
+  isSignupAllowlistEnforced: boolean
+): AdminUserDetail {
   return {
     ...toAdminUserSummary(user),
     updatedAt: user.updatedAt.toISOString(),
     athleteSlug: user.athleteProfile?.athleteSlug ?? null,
     publishedAt: user.athleteProfile?.publishedAt?.toISOString() ?? null,
+    athleteId: user.athleteProfile?.id ?? null,
+    signupAllowlistStatus: isSignupAllowed
+      ? SignupAllowlistStatus.Allowed
+      : SignupAllowlistStatus.Blocked,
+    signupAllowlistIsEnforced: isSignupAllowlistEnforced,
   };
 }
 

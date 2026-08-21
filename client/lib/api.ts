@@ -21,7 +21,9 @@ import {
   adminUpdateCampaignStatusRequestSchema,
   adminUpdateUserRolesRequestSchema,
   adminUserDetailSchema,
+  adminUserDonationListResponseSchema,
   adminUserListResponseSchema,
+  adminUserStripeStatusSchema,
   publishAthleteProfileResponseSchema,
   userSchema,
   type AdminAddAllowlistEntryRequest,
@@ -38,8 +40,11 @@ import {
   type AdminUpdateCampaignStatusRequest,
   type AdminUpdateUserRolesRequest,
   type AdminUserDetail,
+  type AdminUserDonationListQuery,
+  type AdminUserDonationListResponse,
   type AdminUserListQuery,
   type AdminUserListResponse,
+  type AdminUserStripeStatus,
   type AthleteCampaignsResponse,
   type AthleteDirectoryQuery,
   type AthleteDirectoryResponse,
@@ -485,6 +490,58 @@ export function deleteAdminUser(userId: string): Promise<AuthActionResponse> {
     `/v1/admin/users/${encodeURIComponent(userId)}`,
     authActionResponseSchema,
     { method: 'DELETE', authed: true }
+  );
+}
+
+export function resendAdminUserVerification(userId: string): Promise<AuthActionResponse> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}/resend-verification`,
+    authActionResponseSchema,
+    { method: 'POST', authed: true }
+  );
+}
+
+export function markAdminUserEmailVerified(userId: string): Promise<AdminUserDetail> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}/mark-verified`,
+    adminUserDetailSchema,
+    { method: 'POST', authed: true }
+  );
+}
+
+export function sendAdminUserPasswordReset(userId: string): Promise<AuthActionResponse> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}/send-password-reset`,
+    authActionResponseSchema,
+    { method: 'POST', authed: true }
+  );
+}
+
+export function addAdminUserToAllowlist(userId: string): Promise<AdminUserDetail> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}/allowlist`,
+    adminUserDetailSchema,
+    { method: 'POST', authed: true }
+  );
+}
+
+export function fetchAdminUserStripeStatus(userId: string): Promise<AdminUserStripeStatus> {
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}/stripe`,
+    adminUserStripeStatusSchema,
+    { authed: true }
+  );
+}
+
+export function fetchAdminUserDonations(
+  userId: string,
+  params: Partial<AdminUserDonationListQuery> = {}
+): Promise<AdminUserDonationListResponse> {
+  const query = toQueryString({ limit: params.limit, cursor: params.cursor });
+  return apiRequest(
+    `/v1/admin/users/${encodeURIComponent(userId)}/donations${query}`,
+    adminUserDonationListResponseSchema,
+    { authed: true }
   );
 }
 

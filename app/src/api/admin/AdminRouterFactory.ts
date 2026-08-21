@@ -23,6 +23,21 @@ export class AdminRouterFactory extends BaseRouterFactory {
     router.get('/users', this.wrap(this.adminController.listUsers));
     router.get('/users/:userId', this.wrap(this.adminController.getUserDetail));
     router.patch('/users/:userId/roles', this.wrap(this.adminController.updateUserRoles));
+    router.get('/users/:userId/stripe', this.wrap(this.adminController.getUserStripeStatus));
+    router.get('/users/:userId/donations', this.wrap(this.adminController.listUserDonations));
+    router.post(
+      '/users/:userId/resend-verification',
+      this.wrap(this.adminController.resendUserVerification)
+    );
+    router.post(
+      '/users/:userId/mark-verified',
+      this.wrap(this.adminController.markUserEmailVerified)
+    );
+    router.post(
+      '/users/:userId/send-password-reset',
+      this.wrap(this.adminController.sendUserPasswordReset)
+    );
+    router.post('/users/:userId/allowlist', this.wrap(this.adminController.addUserToAllowlist));
     router.delete('/users/:userId', this.wrap(this.adminController.deleteUser));
     router.get('/analytics', this.wrap(this.adminController.getAnalytics));
     router.get('/athletes', this.wrap(this.adminController.listAthletes));
