@@ -304,6 +304,53 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       expect(reread.accomplishments.map((entry) => entry.title)).toEqual(['Only one now']);
     });
 
+    it('round-trips a highlight occurredOn date without timezone drift', async () => {
+      const fixture = await createFixtureAthlete({
+        suffix: 'set-highlight-date',
+        publishedAt: new Date(),
+      });
+      const originalTimezone = process.env.TZ;
+      process.env.TZ = 'Pacific/Auckland';
+      try {
+        const put = await request(app)
+          .put('/v1/athletes/me/highlights')
+          .set('authorization', `Bearer ${fixture.accessToken}`)
+          .send({
+            highlights: [{ title: 'Oceania Championships', occurredOn: '2026-04-20' }],
+          });
+        expect(put.status).toBe(200);
+
+        const parsed = athleteProfileSchema.parse(
+          (
+            await request(app)
+              .get('/v1/athletes/me')
+              .set('authorization', `Bearer ${fixture.accessToken}`)
+          ).body.data
+        );
+        expect(parsed.accomplishments[0]?.occurredOn).toBe('2026-04-20');
+
+        const cleared = await request(app)
+          .put('/v1/athletes/me/highlights')
+          .set('authorization', `Bearer ${fixture.accessToken}`)
+          .send({ highlights: [{ title: 'Oceania Championships' }] });
+        expect(cleared.status).toBe(200);
+        const reread = athleteProfileSchema.parse(
+          (
+            await request(app)
+              .get('/v1/athletes/me')
+              .set('authorization', `Bearer ${fixture.accessToken}`)
+          ).body.data
+        );
+        expect(reread.accomplishments[0]?.occurredOn).toBeNull();
+      } finally {
+        if (originalTimezone === undefined) {
+          delete process.env.TZ;
+        } else {
+          process.env.TZ = originalTimezone;
+        }
+      }
+    });
+
     it('replaces race results and preserves submitted order via sortOrder', async () => {
       const fixture = await createFixtureAthlete({ suffix: 'set-races', publishedAt: new Date() });
 

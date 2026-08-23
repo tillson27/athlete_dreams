@@ -137,6 +137,7 @@ function toHighlightEntries(
       careerHighlights.push({
         title: accomplishment.title,
         detail: accomplishment.detail ?? accomplishment.description ?? '',
+        ...(accomplishment.occurredOn ? { date: accomplishment.occurredOn } : {}),
         tone: toneByTitle.get(accomplishment.title) ?? 'primary',
         images: accomplishment.photoRefs,
       });
@@ -144,6 +145,7 @@ function toHighlightEntries(
       moreResults.push({
         title: accomplishment.title,
         detail: accomplishment.detail ?? accomplishment.description ?? '',
+        ...(accomplishment.occurredOn ? { date: accomplishment.occurredOn } : {}),
         images: accomplishment.photoRefs,
       });
     }

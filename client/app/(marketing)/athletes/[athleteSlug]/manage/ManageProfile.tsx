@@ -59,6 +59,8 @@ import { uid } from '@/lib/uid';
 const inputClass =
   'w-full rounded-input border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none transition-all focus:border-focus focus:ring-2 focus:ring-focus/25';
 
+const PROFILE_ITEM_MAX_PHOTOS = 12;
+
 const EMPTY_EDITS: AthleteEdits = {
   storyIntro: '',
   storyBody: '',
@@ -105,6 +107,18 @@ function moveItem<T>(list: T[], index: number, direction: -1 | 1): T[] {
   const next = [...list];
   [next[index], next[target]] = [next[target], next[index]];
   return next;
+}
+
+const manageDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+function formatManageDate(value: string): string {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : manageDateFormatter.format(parsed);
 }
 
 // Mode seam. Mock mode (static preview / prototype) seeds from the published
@@ -559,6 +573,10 @@ function EditorLayout({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<PrepareImagesProgress | null>(null);
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
+  const [editingHighlightId, setEditingHighlightId] = useState<string | null>(null);
+  const [editingRaceId, setEditingRaceId] = useState<string | null>(null);
+  const [editingRoadmapId, setEditingRoadmapId] = useState<string | null>(null);
+  const [editingError, setEditingError] = useState<string | null>(null);
 
   const prepareImages = (
     files: FileList | File[],
@@ -596,6 +614,69 @@ function EditorLayout({
         ? `Added the first ${remaining} — your gallery holds ${ATHLETE_GALLERY_MAX_PHOTOS} photos.`
         : undefined
     );
+  };
+
+  const addItemPhotos = (
+    files: FileList,
+    existingCount: number,
+    onReady: (refs: string[]) => void
+  ) => {
+    const remaining = PROFILE_ITEM_MAX_PHOTOS - existingCount;
+    if (remaining <= 0) {
+      setUploadError(`This item is full at ${PROFILE_ITEM_MAX_PHOTOS} photos.`);
+      return;
+    }
+    const picked = Array.from(files);
+    prepareImages(
+      picked.slice(0, remaining),
+      PROFILE_IMAGE_OPTIONS,
+      onReady,
+      picked.length > remaining
+        ? `Added the first ${remaining} — this item holds ${PROFILE_ITEM_MAX_PHOTOS} photos.`
+        : undefined
+    );
+  };
+
+  const startEditingHighlight = (highlightId: string) => {
+    setEditingError(null);
+    setEditingHighlightId(highlightId);
+  };
+
+  const startEditingRace = (raceId: string) => {
+    setEditingError(null);
+    setEditingRaceId(raceId);
+  };
+
+  const startEditingRoadmap = (roadmapId: string) => {
+    setEditingError(null);
+    setEditingRoadmapId(roadmapId);
+  };
+
+  const finishHighlightEdit = (highlight: Highlight) => {
+    if (!highlight.title.trim()) {
+      setEditingError('Add a title before closing this highlight.');
+      return;
+    }
+    setEditingError(null);
+    setEditingHighlightId(null);
+  };
+
+  const finishRaceEdit = (race: Race) => {
+    if (!race.name.trim()) {
+      setEditingError('Add an event name before closing this race.');
+      return;
+    }
+    setEditingError(null);
+    setEditingRaceId(null);
+  };
+
+  const finishRoadmapEdit = (item: RoadmapItem) => {
+    if (!item.name.trim() || !item.date.trim()) {
+      setEditingError('Add both event name and date before closing this roadmap item.');
+      return;
+    }
+    setEditingError(null);
+    setEditingRoadmapId(null);
   };
 
   const addHighlight = (event: FormEvent<HTMLFormElement>) => {
@@ -1178,7 +1259,7 @@ function EditorLayout({
                       <div className="min-w-0">
                         <p className="label-bold text-on-surface">{item.title}</p>
                         <p className="text-xs text-on-surface-variant">
-                          {item.date ? `${item.date} • ` : ''}
+                          {item.date ? `${formatManageDate(item.date)} • ` : ''}
                           {item.detail}
                         </p>
                         <ResultsLink url={item.resultsUrl} />
@@ -1186,6 +1267,7 @@ function EditorLayout({
                     </div>
                     <ItemMenu
                       label={`Actions for ${item.title}`}
+                      onEdit={() => startEditingHighlight(item.id)}
                       onMoveUp={
                         index > 0
                           ? () => setHighlights((prev) => moveItem(prev, index, -1))
@@ -1205,13 +1287,63 @@ function EditorLayout({
                             </p>
                           ),
                           confirmLabel: 'Delete',
-                          onConfirm: () =>
-                            setHighlights((prev) => prev.filter((entry) => entry.id !== item.id)),
+                          onConfirm: () => {
+                            if (editingHighlightId === item.id) setEditingHighlightId(null);
+                            setHighlights((prev) => prev.filter((entry) => entry.id !== item.id));
+                            setEditingError(null);
+                          },
                         })
                       }
                     />
                   </div>
-                  <PhotoStrip photos={item.photos} />
+                  {editingHighlightId === item.id ? (
+                    <EditableResultRow
+                      titleLabel="Event"
+                      detailLabel="Result"
+                      dateType="date"
+                      title={item.title}
+                      date={item.date ?? ''}
+                      detail={item.detail}
+                      resultsUrl={item.resultsUrl ?? ''}
+                      photos={item.photos}
+                      error={editingError}
+                      onPatch={(patch) =>
+                        setHighlights((prev) =>
+                          prev.map((entry) =>
+                            entry.id === item.id ? { ...entry, ...patch } : entry
+                          )
+                        )
+                      }
+                      onAddPhotos={(files) =>
+                        addItemPhotos(files, item.photos.length, (refs) =>
+                          setHighlights((prev) =>
+                            prev.map((entry) =>
+                              entry.id === item.id
+                                ? { ...entry, photos: [...entry.photos, ...refs] }
+                                : entry
+                            )
+                          )
+                        )
+                      }
+                      onRemovePhoto={(photoIndex) =>
+                        setHighlights((prev) =>
+                          prev.map((entry) =>
+                            entry.id === item.id
+                              ? {
+                                  ...entry,
+                                  photos: entry.photos.filter(
+                                    (_, entryIndex) => entryIndex !== photoIndex
+                                  ),
+                                }
+                              : entry
+                          )
+                        )
+                      }
+                      onDone={() => finishHighlightEdit(item)}
+                    />
+                  ) : (
+                    <PhotoStrip photos={item.photos} />
+                  )}
                 </div>
               )}
             </SortableList>
@@ -1224,14 +1356,14 @@ function EditorLayout({
           <form onSubmit={addHighlight} className="mt-5 space-y-3 rounded-input border border-outline-variant/60 bg-surface p-3 sm:p-4">
             <div className="grid gap-3 md:grid-cols-3">
               <input name="title" placeholder="Event (e.g. 2026 Boston Marathon)" className={inputClass} />
-              <input name="date" placeholder="Date (e.g. Apr 20, 2026)" className={inputClass} />
+              <input name="date" type="date" className={inputClass} />
               <input name="detail" placeholder="Result (e.g. 1st Female — 2:34:43)" className={inputClass} />
             </div>
             <input name="resultsUrl" type="url" placeholder="Results URL (https://results.race.com/...)" className={inputClass} />
             <PhotoUploader
               photos={highlightPhotos}
               onPick={(files) =>
-                prepareImages(files, PROFILE_IMAGE_OPTIONS, (refs) =>
+                addItemPhotos(files, highlightPhotos.length, (refs) =>
                   setHighlightPhotos((prev) => [...prev, ...refs])
                 )
               }
@@ -1275,6 +1407,7 @@ function EditorLayout({
                     </div>
                     <ItemMenu
                       label={`Actions for ${item.name}`}
+                      onEdit={() => startEditingRace(item.id)}
                       onMoveUp={
                         index > 0 ? () => setRaces((prev) => moveItem(prev, index, -1)) : undefined
                       }
@@ -1292,13 +1425,73 @@ function EditorLayout({
                             </p>
                           ),
                           confirmLabel: 'Delete',
-                          onConfirm: () =>
-                            setRaces((prev) => prev.filter((entry) => entry.id !== item.id)),
+                          onConfirm: () => {
+                            if (editingRaceId === item.id) setEditingRaceId(null);
+                            setRaces((prev) => prev.filter((entry) => entry.id !== item.id));
+                            setEditingError(null);
+                          },
                         })
                       }
                     />
                   </div>
-                  <PhotoStrip photos={item.photos} />
+                  {editingRaceId === item.id ? (
+                    <EditableResultRow
+                      titleLabel="Event name"
+                      detailLabel="Result"
+                      dateType="text"
+                      title={item.name}
+                      date={item.date}
+                      detail={item.result}
+                      resultsUrl={item.resultsUrl ?? ''}
+                      photos={item.photos}
+                      error={editingError}
+                      onPatch={(patch) =>
+                        setRaces((prev) =>
+                          prev.map((entry) =>
+                            entry.id === item.id
+                              ? {
+                                  ...entry,
+                                  ...(patch.title !== undefined ? { name: patch.title } : {}),
+                                  ...(patch.date !== undefined ? { date: patch.date } : {}),
+                                  ...(patch.detail !== undefined ? { result: patch.detail } : {}),
+                                  ...(patch.resultsUrl !== undefined
+                                    ? { resultsUrl: patch.resultsUrl }
+                                    : {}),
+                                }
+                              : entry
+                          )
+                        )
+                      }
+                      onAddPhotos={(files) =>
+                        addItemPhotos(files, item.photos.length, (refs) =>
+                          setRaces((prev) =>
+                            prev.map((entry) =>
+                              entry.id === item.id
+                                ? { ...entry, photos: [...entry.photos, ...refs] }
+                                : entry
+                            )
+                          )
+                        )
+                      }
+                      onRemovePhoto={(photoIndex) =>
+                        setRaces((prev) =>
+                          prev.map((entry) =>
+                            entry.id === item.id
+                              ? {
+                                  ...entry,
+                                  photos: entry.photos.filter(
+                                    (_, entryIndex) => entryIndex !== photoIndex
+                                  ),
+                                }
+                              : entry
+                          )
+                        )
+                      }
+                      onDone={() => finishRaceEdit(item)}
+                    />
+                  ) : (
+                    <PhotoStrip photos={item.photos} />
+                  )}
                 </div>
               )}
             </SortableList>
@@ -1318,7 +1511,7 @@ function EditorLayout({
             <PhotoUploader
               photos={racePhotos}
               onPick={(files) =>
-                prepareImages(files, PROFILE_IMAGE_OPTIONS, (refs) =>
+                addItemPhotos(files, racePhotos.length, (refs) =>
                   setRacePhotos((prev) => [...prev, ...refs])
                 )
               }
@@ -1414,44 +1607,65 @@ function EditorLayout({
             >
               {(item, index, sortable) => (
                 <div
-                  className={`flex items-center justify-between gap-3 rounded-input border border-outline-variant bg-surface-container-low p-3 sm:gap-4 sm:p-4 ${
+                  className={`space-y-3 rounded-input border border-outline-variant bg-surface-container-low p-3 sm:p-4 ${
                     sortable.isDragging ? 'shadow-xl ring-2 ring-primary/25' : ''
                   }`}
                 >
-                  <div className="flex min-w-0 items-start gap-3">
-                    <DragHandle
-                      label={`Drag ${item.name}`}
-                      dragHandleProps={sortable.dragHandleProps}
-                    />
-                    <div className="min-w-0">
-                      <p className="label-bold text-on-surface">{item.name}</p>
-                      <p className="text-xs text-on-surface-variant">{item.date}</p>
+                  <div className="flex items-center justify-between gap-3 sm:gap-4">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <DragHandle
+                        label={`Drag ${item.name}`}
+                        dragHandleProps={sortable.dragHandleProps}
+                      />
+                      <div className="min-w-0">
+                        <p className="label-bold text-on-surface">{item.name}</p>
+                        <p className="text-xs text-on-surface-variant">{item.date}</p>
+                      </div>
                     </div>
+                    <ItemMenu
+                      label={`Actions for ${item.name}`}
+                      onEdit={() => startEditingRoadmap(item.id)}
+                      onMoveUp={
+                        index > 0 ? () => setRoadmap((prev) => moveItem(prev, index, -1)) : undefined
+                      }
+                      onMoveDown={
+                        index < roadmap.length - 1
+                          ? () => setRoadmap((prev) => moveItem(prev, index, 1))
+                          : undefined
+                      }
+                      onDelete={() =>
+                        setConfirmRequest({
+                          title: 'Delete this roadmap item?',
+                          body: (
+                            <p>
+                              <strong>{item.name}</strong> will be removed from your public profile.
+                            </p>
+                          ),
+                          confirmLabel: 'Delete',
+                          onConfirm: () => {
+                            if (editingRoadmapId === item.id) setEditingRoadmapId(null);
+                            setRoadmap((prev) => prev.filter((entry) => entry.id !== item.id));
+                            setEditingError(null);
+                          },
+                        })
+                      }
+                    />
                   </div>
-                  <ItemMenu
-                    label={`Actions for ${item.name}`}
-                    onMoveUp={
-                      index > 0 ? () => setRoadmap((prev) => moveItem(prev, index, -1)) : undefined
-                    }
-                    onMoveDown={
-                      index < roadmap.length - 1
-                        ? () => setRoadmap((prev) => moveItem(prev, index, 1))
-                        : undefined
-                    }
-                    onDelete={() =>
-                      setConfirmRequest({
-                        title: 'Delete this roadmap item?',
-                        body: (
-                          <p>
-                            <strong>{item.name}</strong> will be removed from your public profile.
-                          </p>
-                        ),
-                        confirmLabel: 'Delete',
-                        onConfirm: () =>
-                          setRoadmap((prev) => prev.filter((entry) => entry.id !== item.id)),
-                      })
-                    }
-                  />
+                  {editingRoadmapId === item.id ? (
+                    <EditableRoadmapRow
+                      name={item.name}
+                      date={item.date}
+                      error={editingError}
+                      onPatch={(patch) =>
+                        setRoadmap((prev) =>
+                          prev.map((entry) =>
+                            entry.id === item.id ? { ...entry, ...patch } : entry
+                          )
+                        )
+                      }
+                      onDone={() => finishRoadmapEdit(item)}
+                    />
+                  ) : null}
                 </div>
               )}
             </SortableList>
@@ -1577,6 +1791,133 @@ function PhotoStrip({ photos }: { photos: string[] }) {
         </div>
       ))}
     </div>
+  );
+}
+
+type EditableResultPatch = {
+  title?: string;
+  date?: string;
+  detail?: string;
+  resultsUrl?: string;
+};
+
+function EditableResultRow({
+  titleLabel,
+  detailLabel,
+  dateType,
+  title,
+  date,
+  detail,
+  resultsUrl,
+  photos,
+  error,
+  onPatch,
+  onAddPhotos,
+  onRemovePhoto,
+  onDone,
+}: {
+  titleLabel: string;
+  detailLabel: string;
+  dateType: 'date' | 'text';
+  title: string;
+  date: string;
+  detail: string;
+  resultsUrl: string;
+  photos: string[];
+  error: string | null;
+  onPatch: (patch: EditableResultPatch) => void;
+  onAddPhotos: (files: FileList) => void;
+  onRemovePhoto: (index: number) => void;
+  onDone: () => void;
+}) {
+  return (
+    <div className="space-y-3 rounded-input border border-outline-variant/60 bg-surface p-3 sm:p-4">
+      <div className="grid gap-3 md:grid-cols-3">
+        <input
+          aria-label={titleLabel}
+          value={title}
+          onChange={(event) => onPatch({ title: event.target.value })}
+          placeholder={titleLabel}
+          className={inputClass}
+        />
+        <input
+          aria-label="Date"
+          type={dateType}
+          value={date}
+          onChange={(event) => onPatch({ date: event.target.value })}
+          placeholder={dateType === 'date' ? undefined : 'Date'}
+          className={inputClass}
+        />
+        <input
+          aria-label={detailLabel}
+          value={detail}
+          onChange={(event) => onPatch({ detail: event.target.value })}
+          placeholder={detailLabel}
+          className={inputClass}
+        />
+      </div>
+      <input
+        aria-label="Results URL"
+        type="url"
+        value={resultsUrl}
+        onChange={(event) => onPatch({ resultsUrl: event.target.value })}
+        placeholder="Results URL (optional)"
+        className={inputClass}
+      />
+      <PhotoUploader photos={photos} onPick={onAddPhotos} onRemove={onRemovePhoto} />
+      {error ? <p className="text-sm font-semibold text-error">{error}</p> : null}
+      <div className="flex justify-end">
+        <DoneButton onClick={onDone} />
+      </div>
+    </div>
+  );
+}
+
+function EditableRoadmapRow({
+  name,
+  date,
+  error,
+  onPatch,
+  onDone,
+}: {
+  name: string;
+  date: string;
+  error: string | null;
+  onPatch: (patch: Partial<RoadmapItem>) => void;
+  onDone: () => void;
+}) {
+  return (
+    <div className="grid gap-3 rounded-input border border-outline-variant/60 bg-surface p-3 sm:p-4 md:grid-cols-[1.5fr_1.2fr_auto]">
+      <input
+        aria-label="Upcoming event"
+        value={name}
+        onChange={(event) => onPatch({ name: event.target.value })}
+        placeholder="Upcoming event"
+        className={inputClass}
+      />
+      <input
+        aria-label="Date"
+        value={date}
+        onChange={(event) => onPatch({ date: event.target.value })}
+        placeholder="Date"
+        className={inputClass}
+      />
+      <DoneButton onClick={onDone} />
+      {error ? <p className="text-sm font-semibold text-error md:col-span-3">{error}</p> : null}
+    </div>
+  );
+}
+
+function DoneButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-input bg-secondary px-4 py-2 text-sm font-bold text-on-secondary transition-colors hover:bg-secondary/90 active:scale-95"
+    >
+      <Icon name="check" className="h-4 w-4" />
+      Done
+    </button>
   );
 }
 
@@ -1747,11 +2088,13 @@ function DragHandle({
 
 function ItemMenu({
   label,
+  onEdit,
   onMoveUp,
   onMoveDown,
   onDelete,
 }: {
   label: string;
+  onEdit?: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
   onDelete: () => void;
@@ -1779,6 +2122,17 @@ function ItemMenu({
         role="menu"
         className="absolute right-0 top-11 z-20 w-44 overflow-hidden rounded-input border border-outline-variant bg-surface-container-lowest py-1 text-on-surface shadow-xl"
       >
+        {onEdit ? (
+          <button
+            type="button"
+            role="menuitem"
+            onClick={(event) => runAction(event, onEdit)}
+            className={menuItemClass}
+          >
+            <Icon name="pencil" className="h-4 w-4" />
+            Edit
+          </button>
+        ) : null}
         <button
           type="button"
           role="menuitem"

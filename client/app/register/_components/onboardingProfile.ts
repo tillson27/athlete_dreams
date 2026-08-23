@@ -1,3 +1,5 @@
+import type { AthleteStoryAnswers } from 'fad-common';
+
 // Shared onboarding view-model types. Kept framework-free (no React, no
 // 'use client') so both the client context (OnboardingContext) and the pure
 // persistence layer (client/lib/onboardingApi.ts) can import them without
@@ -10,7 +12,9 @@ export type PreviousRace = { id: string; name: string; result: string; resultUrl
 export type OnboardingProfile = {
   name: string;
   location: string;
+  heroPhoto?: string;
   bio: string;
+  storyAnswers: AthleteStoryAnswers;
   personalBests: PersonalBest[];
   careerHighlights: CareerHighlight[];
   previousRaces: PreviousRace[];
@@ -21,7 +25,9 @@ export type OnboardingProfile = {
 export const emptyOnboardingProfile: OnboardingProfile = {
   name: '',
   location: '',
+  heroPhoto: undefined,
   bio: '',
+  storyAnswers: {},
   personalBests: [],
   careerHighlights: [],
   previousRaces: [],

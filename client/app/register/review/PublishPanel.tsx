@@ -228,6 +228,30 @@ export function PublishPanel() {
 
   return (
     <div className="space-y-4">
+      <section className="rounded-card border border-outline-variant bg-surface-container-low p-5">
+        <h3 className="label-bold text-on-surface">What publishing does</h3>
+        <p className="mt-2 flex items-center gap-2 text-sm text-on-surface-variant">
+          <Icon name="link" className="h-4 w-4 shrink-0 text-secondary" />
+          <span className="truncate">{publicUrl}</span>
+        </p>
+        <ul className="mt-4 space-y-2 text-sm text-on-surface-variant">
+          <li className="flex gap-2">
+            <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            It becomes a public page anyone can open.
+          </li>
+          <li className="flex gap-2">
+            <Icon name="instagram" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            Put this link in your Instagram bio.
+          </li>
+          <li className="flex gap-2">
+            <Icon name="pencil" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            Keep editing after it is live.
+          </li>
+        </ul>
+        <p className="mt-4 text-xs text-on-surface-variant">
+          Your public profile also includes IG Story and Post share-card exports once it is live.
+        </p>
+      </section>
       <div className={`flex items-center gap-4 ${error ? 'animate-pulse' : ''}`}>
         <input
           id="terms"
@@ -341,7 +365,7 @@ export function PublishPanel() {
         )}
       </button>
       <p className="text-center text-xs text-on-surface-variant">
-        Your profile will be live immediately upon publishing.
+        Publish when your tagline and first personal best are ready; the link stays editable.
       </p>
     </div>
   );

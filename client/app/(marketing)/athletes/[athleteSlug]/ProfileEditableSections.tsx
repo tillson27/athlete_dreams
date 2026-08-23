@@ -70,6 +70,7 @@ export function EditedHighlights({
           key={highlight.id}
           title={highlight.title}
           detail={highlight.detail}
+          date={highlight.date}
           tone={toneFor(index)}
           images={highlight.photos}
         />

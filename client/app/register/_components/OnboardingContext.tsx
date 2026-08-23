@@ -147,10 +147,18 @@ function ApiOnboardingProvider({ children }: { children: ReactNode }) {
       return;
     }
     let active = true;
+    const accountName = session?.name?.trim();
     setHydrating(true);
     loadDraftProfile()
       .then((draft) => {
-        if (!active || !draft) return;
+        if (!active) return;
+        if (!draft) {
+          if (!accountName || dirtyRef.current) return;
+          setProfile((current) =>
+            current.name.trim() ? current : { ...current, name: accountName }
+          );
+          return;
+        }
         rememberDraft(draft);
         if (!dirtyRef.current) {
           setProfile(profileToOnboarding(draft));

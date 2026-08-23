@@ -360,7 +360,8 @@ function DashboardView({
           {!published ? (
             <div className="flex flex-col items-start gap-3 rounded-card border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-on-surface">
-                Your profile isn&rsquo;t live yet. Finish the last step to publish it to the network.
+                Publish your profile to create a public link for your Instagram bio. You can keep
+                editing it after it is live.
               </p>
               <Link
                 href={draftCtaHref}

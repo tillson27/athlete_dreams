@@ -1,11 +1,13 @@
 import type {
   AthleteProfile,
+  AthleteStoryAnswers,
   CreateAthleteProfileRequest,
   ReplacePersonalBestsRequest,
   SetAthleteHighlightsRequest,
   SetAthleteRaceResultsRequest,
   UpdateAthleteProfileRequest,
 } from 'fad-common';
+import { athleteStoryAnswersSchema } from 'fad-common';
 import {
   ApiError,
   createMyProfile,
@@ -24,6 +26,7 @@ import type {
   PersonalBest,
   PreviousRace,
 } from '@/app/register/_components/onboardingProfile';
+import { hasStoryAnswers } from './storyDraft';
 
 // Pure, framework-free persistence for the onboarding wizard in `api` mode.
 // `OnboardingContext` consumes these to create the profile on step-1 advance,
@@ -86,7 +89,10 @@ export function toCreateRequest(
 // Step 1 (identity + story): everything create can't take that step 1 owns.
 // `primarySport` is create-only, so it is not repeated here. `storyBody` carries
 // the long-form bio; `storyIntro` (the tagline) is a step-3 field.
-export function toStep1Patch(profile: OnboardingProfile): UpdateAthleteProfileRequest {
+export function toStep1Patch(
+  profile: OnboardingProfile,
+  existing: AthleteProfile | null
+): UpdateAthleteProfileRequest {
   const patch: UpdateAthleteProfileRequest = {};
   const fullName = profile.name.trim();
   if (fullName) patch.fullName = fullName;
@@ -94,6 +100,13 @@ export function toStep1Patch(profile: OnboardingProfile): UpdateAthleteProfileRe
   if (hometown) patch.hometown = hometown;
   const storyBody = paragraphsFromBio(profile.bio);
   if (storyBody.length > 0) patch.storyBody = storyBody;
+  if (profile.heroPhoto?.trim()) patch.heroMediaUrl = profile.heroPhoto.trim();
+  if (hasStoryAnswers(profile.storyAnswers) || hasStoredStoryAnswers(existing)) {
+    patch.presentation = {
+      ...(existing?.presentation ?? {}),
+      storyAnswers: profile.storyAnswers,
+    };
+  }
   return patch;
 }
 
@@ -178,7 +191,9 @@ export function profileToOnboarding(apiProfile: AthleteProfile): OnboardingProfi
   return {
     name: apiProfile.fullName,
     location: apiProfile.hometown ?? '',
+    heroPhoto: apiProfile.heroMediaUrl ?? undefined,
     bio: (apiProfile.storyBody ?? []).join('\n\n'),
+    storyAnswers: parseStoryAnswers(apiProfile.presentation),
     personalBests,
     careerHighlights,
     previousRaces,
@@ -249,10 +264,19 @@ export async function saveStep1(
   profile: OnboardingProfile,
   existing: AthleteProfile | null
 ): Promise<AthleteProfile> {
-  if (!existing) {
-    await createProfileWithSlugRetry(profile);
-  }
-  return patchMyProfile(toStep1Patch(profile));
+  const draft = existing ?? (await createProfileWithSlugRetry(profile));
+  return patchMyProfile(toStep1Patch(profile, draft));
+}
+
+function parseStoryAnswers(presentation: AthleteProfile['presentation']): AthleteStoryAnswers {
+  if (!presentation || typeof presentation !== 'object') return {};
+  const parsed = athleteStoryAnswersSchema.safeParse(presentation.storyAnswers);
+  return parsed.success ? parsed.data : {};
+}
+
+function hasStoredStoryAnswers(existing: AthleteProfile | null): boolean {
+  if (!existing?.presentation || typeof existing.presentation !== 'object') return false;
+  return 'storyAnswers' in existing.presentation;
 }
 
 // Step 2 set-replaces run sequentially so a mid-step failure surfaces one clear

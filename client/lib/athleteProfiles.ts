@@ -19,6 +19,7 @@ export type ArcChapter = {
 export type HighlightEntry = {
   title: string;
   detail: string;
+  date?: string;
   tone: ProfileTone;
   images: string[];
 };
@@ -26,6 +27,7 @@ export type HighlightEntry = {
 export type ExtraHighlight = {
   title: string;
   detail: string;
+  date?: string;
   images: string[];
 };
 

@@ -133,6 +133,7 @@ export function deriveEdits(profile: RichAthleteProfile): AthleteEdits {
       id: uid(),
       title: highlight.title,
       detail: highlight.detail,
+      ...(highlight.date ? { date: highlight.date } : {}),
       photos: highlight.images.map((image) => unsplashPhoto(image)),
     })),
     races: [

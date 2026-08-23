@@ -98,6 +98,7 @@ export interface HighlightInput {
   title: string;
   detail?: string;
   resultUrl?: string;
+  occurredOn?: Date;
   photoRefs: string[];
 }
 
@@ -228,6 +229,7 @@ export class AthleteRepository {
             title: highlight.title,
             detail: highlight.detail,
             resultUrl: highlight.resultUrl,
+            occurredOn: highlight.occurredOn,
             photoRefs: highlight.photoRefs,
             createdAt: orderedAt[index],
           })),

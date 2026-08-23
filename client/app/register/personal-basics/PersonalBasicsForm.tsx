@@ -1,6 +1,8 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import type { AthleteStoryAnswers, AthleteStoryQuestionId } from 'fad-common';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
@@ -9,36 +11,92 @@ import { EditReturnBanner } from '../_components/EditReturnBanner';
 import { StepAdvance } from '../_components/StepAdvance';
 import { useOnboarding } from '../_components/OnboardingContext';
 import { formInputClass as inputClass } from '@/components/ui/formStyles';
-
-
-const storyPrompts = [
-  { label: 'What got you started?', scaffold: 'What got me started: ' },
-  { label: 'A race that changed you', scaffold: 'A race that changed me: ' },
-  { label: "What you're chasing now", scaffold: "What I'm chasing now: " },
-  { label: 'The hardest part', scaffold: 'The hardest part has been: ' },
-  { label: "Who's in your corner", scaffold: 'In my corner: ' },
-];
+import {
+  COVER_IMAGE_OPTIONS,
+  IMAGE_UPLOAD_ACCEPT,
+  filesToPersistedImageRefs,
+  toImageUploadErrorMessage,
+  type PrepareImagesProgress,
+} from '@/lib/imageUploads';
+import { STORY_QUESTIONS, composeStoryDraft, hasStoryAnswers } from '@/lib/storyDraft';
 
 export function PersonalBasicsForm() {
   const fromReview = useSearchParams().get('from') === 'review';
   const { profile, update } = useOnboarding();
   const bioRef = useRef<HTMLTextAreaElement>(null);
+  const heroInputRef = useRef<HTMLInputElement>(null);
+  const lastGeneratedRef = useRef('');
+  const [uploadProgress, setUploadProgress] = useState<PrepareImagesProgress | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const insertPrompt = (scaffold: string) => {
-    const current = profile.bio;
-    if (current.includes(scaffold.trim())) {
-      bioRef.current?.focus();
+  const generatedDraft = composeStoryDraft(profile.storyAnswers);
+  const athleteEditedStory =
+    hasStoryAnswers(profile.storyAnswers) &&
+    profile.bio.trim().length > 0 &&
+    profile.bio !== generatedDraft;
+
+  useEffect(() => {
+    if (generatedDraft && profile.bio === generatedDraft) {
+      lastGeneratedRef.current = generatedDraft;
+    }
+  }, [generatedDraft, profile.bio]);
+
+  const applyStoryAnswers = (nextAnswers: AthleteStoryAnswers) => {
+    const nextDraft = composeStoryDraft(nextAnswers);
+    const shouldPreserveStory =
+      profile.bio.trim().length > 0 && profile.bio !== lastGeneratedRef.current;
+    if (shouldPreserveStory) {
+      update({ storyAnswers: nextAnswers });
       return;
     }
-    const separator = current.trim().length === 0 ? '' : current.endsWith('\n') ? '' : '\n\n';
-    const next = `${current}${separator}${scaffold}`;
-    update({ bio: next });
-    requestAnimationFrame(() => {
-      const element = bioRef.current;
-      if (!element) return;
-      element.focus();
-      element.setSelectionRange(next.length, next.length);
+    lastGeneratedRef.current = nextDraft;
+    update({ storyAnswers: nextAnswers, bio: nextDraft });
+  };
+
+  const toggleStorySelection = (questionId: AthleteStoryQuestionId, selection: string) => {
+    const currentAnswer = profile.storyAnswers[questionId] ?? { selections: [] };
+    const selections = currentAnswer.selections.includes(selection)
+      ? currentAnswer.selections.filter((entry) => entry !== selection)
+      : [...currentAnswer.selections, selection];
+    applyStoryAnswers({
+      ...profile.storyAnswers,
+      [questionId]: {
+        ...currentAnswer,
+        selections,
+      },
     });
+  };
+
+  const updateExtraWords = (questionId: AthleteStoryQuestionId, extraWords: string) => {
+    const currentAnswer = profile.storyAnswers[questionId] ?? { selections: [] };
+    applyStoryAnswers({
+      ...profile.storyAnswers,
+      [questionId]: {
+        ...currentAnswer,
+        extraWords,
+      },
+    });
+  };
+
+  const rewriteStory = () => {
+    lastGeneratedRef.current = generatedDraft;
+    update({ bio: generatedDraft });
+    requestAnimationFrame(() => bioRef.current?.focus());
+  };
+
+  const pickHero = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadError(null);
+    void filesToPersistedImageRefs(files, COVER_IMAGE_OPTIONS, setUploadProgress)
+      .then(({ refs, failures }) => {
+        if (refs[0]) update({ heroPhoto: refs[0] });
+        if (failures[0]) setUploadError(failures[0]);
+      })
+      .catch((error: unknown) => setUploadError(toImageUploadErrorMessage(error)))
+      .finally(() => {
+        setUploadProgress(null);
+        if (heroInputRef.current) heroInputRef.current.value = '';
+      });
   };
 
   return (
@@ -75,6 +133,9 @@ export function PersonalBasicsForm() {
                 placeholder="e.g. Maya Okafor"
                 className={inputClass}
               />
+              <p className="text-xs text-on-surface-variant">
+                We started with your account name. You can change it here.
+              </p>
             </Field>
 
             <Field label="Location (city, country)" htmlFor="location">
@@ -94,6 +155,57 @@ export function PersonalBasicsForm() {
               </div>
             </Field>
 
+            <Field label="Hero photo" htmlFor="hero_photo">
+              <div className="flex flex-col gap-3 rounded-input border border-outline-variant bg-surface p-3">
+                {profile.heroPhoto ? (
+                  <Image
+                    src={profile.heroPhoto}
+                    alt=""
+                    width={640}
+                    height={180}
+                    className="h-32 w-full rounded-input object-cover"
+                    unoptimized={profile.heroPhoto.startsWith('data:')}
+                  />
+                ) : null}
+                <div className="flex flex-wrap items-center gap-3">
+                  <label
+                    htmlFor="hero_photo"
+                    className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-bold text-on-secondary transition-all hover:bg-secondary/90"
+                  >
+                    <Icon name="camera" className="h-4 w-4" />
+                    Choose photo
+                  </label>
+                  {profile.heroPhoto ? (
+                    <button
+                      type="button"
+                      onClick={() => update({ heroPhoto: undefined })}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-sm font-bold text-on-surface-variant transition-all hover:border-error hover:text-error"
+                    >
+                      <Icon name="trash" className="h-4 w-4" />
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+                <input
+                  ref={heroInputRef}
+                  id="hero_photo"
+                  type="file"
+                  accept={IMAGE_UPLOAD_ACCEPT}
+                  className="sr-only"
+                  onChange={(event) => pickHero(event.target.files)}
+                />
+                <p className="text-xs text-on-surface-variant">
+                  Wide landscape works best: at least 1920x1080, faces near the centre.
+                </p>
+                {uploadProgress ? (
+                  <p className="text-xs font-semibold text-secondary">
+                    Preparing {uploadProgress.completed}/{uploadProgress.total}
+                  </p>
+                ) : null}
+                {uploadError ? <p className="text-sm font-semibold text-error">{uploadError}</p> : null}
+              </div>
+            </Field>
+
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <label className="label-bold text-on-surface" htmlFor="bio">
@@ -101,28 +213,75 @@ export function PersonalBasicsForm() {
                 </label>
                 <span className="text-xs text-tertiary">{profile.bio.length} characters</span>
               </div>
+              <div className="grid gap-4">
+                {STORY_QUESTIONS.map((question) => {
+                  const answer = profile.storyAnswers[question.questionId] ?? { selections: [] };
+                  return (
+                    <fieldset
+                      key={question.questionId}
+                      className="rounded-input border border-outline-variant bg-surface p-4"
+                    >
+                      <legend className="label-bold px-1 text-on-surface">
+                        {question.prompt}
+                      </legend>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {question.options.map((option) => {
+                          const active = answer.selections.includes(option);
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              aria-pressed={active}
+                              onClick={() => toggleStorySelection(question.questionId, option)}
+                              className={`rounded-full border px-3 py-2 text-xs font-bold transition-all ${
+                                active
+                                  ? 'border-primary bg-primary-container text-white'
+                                  : 'border-outline text-on-surface-variant hover:border-primary'
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <input
+                        type="text"
+                        maxLength={500}
+                        value={answer.extraWords ?? ''}
+                        onChange={(event) =>
+                          updateExtraWords(question.questionId, event.target.value)
+                        }
+                        placeholder="Add your own words"
+                        className={`${inputClass} mt-3`}
+                        aria-label={`${question.prompt} in your own words`}
+                      />
+                    </fieldset>
+                  );
+                })}
+              </div>
               <textarea
                 id="bio"
                 ref={bioRef}
                 rows={4}
                 value={profile.bio}
                 onChange={(event) => update({ bio: event.target.value })}
-                placeholder="What got you started? What are you chasing? Write it in your own voice — we'll help you polish it later."
+                placeholder="Your draft story will appear here as you answer the questions."
                 className={inputClass}
               />
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs font-bold text-tertiary">Need a spark?</span>
-                {storyPrompts.map((prompt) => (
+              {athleteEditedStory && generatedDraft ? (
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <p className="text-xs font-semibold text-on-surface-variant">
+                    Your story has edits, so chip changes will not overwrite it.
+                  </p>
                   <button
-                    key={prompt.label}
                     type="button"
-                    onClick={() => insertPrompt(prompt.scaffold)}
+                    onClick={rewriteStory}
                     className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1.5 text-xs font-semibold text-on-surface-variant transition-all hover:border-secondary hover:text-secondary active:scale-95"
                   >
-                    {prompt.label}
+                    Rewrite from my answers
                   </button>
-                ))}
-              </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="pt-4">
@@ -156,7 +315,7 @@ function Field({
 }: {
   label: string;
   htmlFor: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-2">

@@ -21,6 +21,7 @@ export function ProfilePreview({
   const { session } = useSession();
   const { location, bio, mission, values, personalBests, careerHighlights, previousRaces } =
     profile;
+  const heroPhoto = profile.heroPhoto || previewPhoto;
   const name = profile.name || session?.name || '';
   const slug = (mode === 'api' ? draftSlug : null) ?? (slugifyName(name) || 'your-name');
   const filledBests = personalBests.filter((best) => best.distance && best.time).slice(0, 3);
@@ -47,7 +48,14 @@ export function ProfilePreview({
         </div>
         {/* hero */}
         <div className="relative h-56 bg-surface-container">
-          <Image src={previewPhoto} alt="" fill sizes="(max-width: 768px) 100vw, 500px" className="object-cover" />
+          <Image
+            src={heroPhoto}
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 500px"
+            className="object-cover"
+            unoptimized={heroPhoto.startsWith('data:')}
+          />
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-t from-[#140b08]/90 via-[#160d09]/25 to-transparent"

@@ -73,6 +73,19 @@ export const athleteCoreValueSchema = z.object({
 
 export type AthleteCoreValue = z.infer<typeof athleteCoreValueSchema>;
 
+export const ATHLETE_STORY_QUESTION_IDS = ['origin', 'chasing', 'hardest', 'corner'] as const;
+
+export type AthleteStoryQuestionId = (typeof ATHLETE_STORY_QUESTION_IDS)[number];
+
+export const athleteStoryAnswerSchema = z.object({
+  selections: z.array(z.string().max(80)).max(8),
+  extraWords: z.string().max(500).optional(),
+});
+
+export const athleteStoryAnswersSchema = z.record(athleteStoryAnswerSchema);
+
+export type AthleteStoryAnswers = z.infer<typeof athleteStoryAnswersSchema>;
+
 export const athleteMediaSchema = z.object({
   athleteMediaId: idSchema,
   mediaUrl: mediaRefSchema,
@@ -214,6 +227,7 @@ const setHighlightInputSchema = z.object({
   title: z.string().min(1).max(200),
   detail: z.string().max(2000).optional(),
   resultUrl: z.string().url().optional(),
+  occurredOn: z.string().date().optional(),
   photoRefs: z.array(mediaRefSchema).max(12).optional(),
 });
 

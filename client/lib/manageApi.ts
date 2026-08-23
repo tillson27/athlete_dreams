@@ -40,9 +40,7 @@ import { profileToRichProfile } from './adapters';
 //
 // Field mapping (editor field <-> API DTO field):
 //   highlights: title <-> title; detail <-> detail; resultsUrl <-> resultUrl;
-//               photos <-> photoRefs. The editor's per-highlight `date` has no
-//               API column (the highlights set-replace contract carries no date),
-//               so it is dropped on save.
+//               date <-> occurredOn; photos <-> photoRefs.
 //   races:      name <-> resultName; date <-> displayDate; result <-> resultSummary;
 //               resultsUrl <-> resultUrl; links <-> links; photos <-> photoRefs.
 //   roadmap:    name <-> eventName; date <-> displayDate.
@@ -76,6 +74,7 @@ function toEditHighlights(profile: AthleteProfile): EditHighlight[] {
     id: uid(),
     title: accomplishment.title,
     detail: accomplishment.detail ?? accomplishment.description ?? '',
+    ...(accomplishment.occurredOn ? { date: accomplishment.occurredOn } : {}),
     ...(accomplishment.resultUrl ? { resultsUrl: accomplishment.resultUrl } : {}),
     photos: accomplishment.photoRefs.map((ref) => unsplashPhoto(ref)),
   }));
@@ -160,16 +159,29 @@ export function profileToEdits(profile: AthleteProfile): AthleteEdits {
 // --- editor -> DTO (save) ---
 
 function toHighlightsRequest(highlights: EditHighlight[]): SetAthleteHighlightsRequest {
+  const invalidHighlight = highlights.find(
+    (highlight) =>
+      !highlight.title.trim() &&
+      (highlight.detail.trim() ||
+        highlight.date?.trim() ||
+        highlight.resultsUrl?.trim() ||
+        highlight.photos.length > 0)
+  );
+  if (invalidHighlight) {
+    throw new Error('A saved highlight needs a title.');
+  }
   return {
     highlights: highlights
       .filter((highlight) => highlight.title.trim())
       .map((highlight) => {
         const detail = highlight.detail.trim();
         const resultUrl = highlight.resultsUrl?.trim();
+        const occurredOn = highlight.date?.trim();
         return {
           title: highlight.title.trim(),
           ...(detail ? { detail } : {}),
           ...(resultUrl ? { resultUrl } : {}),
+          ...(occurredOn ? { occurredOn } : {}),
           photoRefs: highlight.photos,
         };
       }),
@@ -177,6 +189,10 @@ function toHighlightsRequest(highlights: EditHighlight[]): SetAthleteHighlightsR
 }
 
 function toRacesRequest(races: EditRace[]): SetAthleteRaceResultsRequest {
+  const invalidRace = races.find((race) => !race.name.trim());
+  if (invalidRace) {
+    throw new Error('A saved race needs an event name.');
+  }
   return {
     races: races
       .filter((race) => race.name.trim())
@@ -197,6 +213,10 @@ function toRacesRequest(races: EditRace[]): SetAthleteRaceResultsRequest {
 }
 
 function toRoadmapRequest(roadmap: EditRoadmapItem[]): SetAthleteRoadmapRequest {
+  const invalidRoadmapItem = roadmap.find((item) => !item.name.trim() || !item.date.trim());
+  if (invalidRoadmapItem) {
+    throw new Error('A roadmap item needs both event name and date.');
+  }
   return {
     roadmap: roadmap
       .filter((item) => item.name.trim() && item.date.trim())

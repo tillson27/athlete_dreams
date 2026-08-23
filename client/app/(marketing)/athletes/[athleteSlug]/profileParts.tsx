@@ -8,11 +8,13 @@ import { unsplashPhoto } from '@/lib/unsplash';
 export function HighlightDropdown({
   title,
   detail,
+  date,
   tone,
   images,
 }: {
   title: string;
   detail: string;
+  date?: string;
   tone: 'primary' | 'secondary';
   images: string[];
 }) {
@@ -33,7 +35,10 @@ export function HighlightDropdown({
           </span>
           <div>
             <p className="label-bold text-on-surface">{title}</p>
-            <p className="text-xs text-on-surface-variant">{detail}</p>
+            <p className="text-xs text-on-surface-variant">
+              {date ? `${formatProfileDate(date)} • ` : ''}
+              {detail}
+            </p>
           </div>
         </div>
         <Icon name="chevron" className="h-5 w-5 transition-transform group-open:rotate-180" />
@@ -59,6 +64,18 @@ export function HighlightDropdown({
       ) : null}
     </details>
   );
+}
+
+const profileDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+function formatProfileDate(value: string): string {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : profileDateFormatter.format(parsed);
 }
 
 export function RaceDropdown({

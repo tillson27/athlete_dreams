@@ -157,6 +157,7 @@ export class AthleteService {
         title: highlight.title,
         detail: highlight.detail,
         resultUrl: highlight.resultUrl,
+        occurredOn: highlight.occurredOn ? new Date(highlight.occurredOn) : undefined,
         photoRefs: highlight.photoRefs ?? [],
       }))
     );

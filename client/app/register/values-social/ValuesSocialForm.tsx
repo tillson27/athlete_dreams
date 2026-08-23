@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/ui/Icon';
@@ -7,6 +8,7 @@ import { ProfilePreview } from '../_components/ProfilePreview';
 import { EditReturnBanner } from '../_components/EditReturnBanner';
 import { StepAdvance } from '../_components/StepAdvance';
 import { useOnboarding } from '../_components/OnboardingContext';
+import { formInputClass as inputClass } from '@/components/ui/formStyles';
 
 const VALUES = [
   'Grit',
@@ -22,13 +24,17 @@ const VALUES = [
   'Adventure',
   'Mental toughness',
 ];
-const MAX_VALUES = 3;
+const MAX_VALUES = 5;
+const MAX_VALUE_LENGTH = 40;
 
 export function ValuesSocialForm() {
   const fromReview = useSearchParams().get('from') === 'review';
   const { profile, update } = useOnboarding();
+  const [customValue, setCustomValue] = useState('');
+  const [valueHint, setValueHint] = useState<string | null>(null);
 
   const toggleValue = (value: string) => {
+    setValueHint(null);
     update((current) => {
       if (current.values.includes(value)) {
         return { values: current.values.filter((entry) => entry !== value) };
@@ -36,9 +42,38 @@ export function ValuesSocialForm() {
       if (current.values.length < MAX_VALUES) {
         return { values: [...current.values, value] };
       }
+      setValueHint(`Pick up to ${MAX_VALUES} values.`);
       return {};
     });
   };
+
+  const removeValue = (value: string) => {
+    setValueHint(null);
+    update((current) => ({ values: current.values.filter((entry) => entry !== value) }));
+  };
+
+  const addCustomValue = () => {
+    const value = customValue.trim().slice(0, MAX_VALUE_LENGTH);
+    if (!value) return;
+    setValueHint(null);
+    update((current) => {
+      const alreadyChosen = current.values.some(
+        (entry) => entry.toLowerCase() === value.toLowerCase()
+      );
+      if (alreadyChosen) {
+        setValueHint('That value is already selected.');
+        return {};
+      }
+      if (current.values.length >= MAX_VALUES) {
+        setValueHint(`Pick up to ${MAX_VALUES} values.`);
+        return {};
+      }
+      setCustomValue('');
+      return { values: [...current.values, value] };
+    });
+  };
+
+  const customSelectedValues = profile.values.filter((value) => !VALUES.includes(value));
 
   return (
     <>
@@ -86,6 +121,62 @@ export function ValuesSocialForm() {
                   </button>
                 );
               })}
+              {customSelectedValues.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed="true"
+                  onClick={() => removeValue(value)}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary bg-primary-container px-5 py-2.5 font-bold text-white transition-all hover:border-error"
+                >
+                  {value}
+                  <Icon name="close" className="h-4 w-4" />
+                </button>
+              ))}
+            </div>
+            <div className="mt-5 rounded-input border border-outline-variant bg-surface-container-lowest p-4">
+              <label className="label-bold text-on-surface" htmlFor="custom_value">
+                Add your own value
+              </label>
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <input
+                    id="custom_value"
+                    type="text"
+                    maxLength={MAX_VALUE_LENGTH}
+                    value={customValue}
+                    onChange={(event) => {
+                      setCustomValue(event.target.value);
+                      setValueHint(null);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter') return;
+                      event.preventDefault();
+                      addCustomValue();
+                    }}
+                    placeholder="e.g. Courage"
+                    className={`${inputClass} pr-16`}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant/50">
+                    {customValue.length}/{MAX_VALUE_LENGTH}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={addCustomValue}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-secondary px-5 py-2 text-sm font-bold text-on-secondary transition-all hover:bg-secondary/90"
+                >
+                  <Icon name="plus" className="h-4 w-4" />
+                  Add
+                </button>
+              </div>
+              {valueHint ? (
+                <p className="mt-2 text-sm font-semibold text-error">{valueHint}</p>
+              ) : (
+                <p className="mt-2 text-xs text-on-surface-variant">
+                  Selected values can be preset or your own words.
+                </p>
+              )}
             </div>
           </section>
 
