@@ -6,7 +6,7 @@ import { OnboardingStepGate } from '../_components/OnboardingStepGate';
 import { AthleticsForm } from './AthleticsForm';
 
 export const metadata: Metadata = {
-  title: 'Registration — Your Results',
+  title: 'Registration: Your Results',
 };
 
 export default function AthleticsPage() {

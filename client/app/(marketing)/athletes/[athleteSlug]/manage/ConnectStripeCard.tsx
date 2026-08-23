@@ -73,7 +73,7 @@ export function ConnectStripeCard() {
         icon="check"
         tone="success"
         title="Ready to receive donations"
-        body="Supporters can donate on your public page. Funds go straight to your Stripe account — ARC never holds your money."
+        body="Supporters can donate on your public page. Funds go straight to your Stripe account, and ARC never holds your money."
       >
         <PayoutList payouts={status.recentPayouts} />
       </CardShell>
@@ -106,7 +106,7 @@ function PayoutList({ payouts }: { payouts: AthletePayout[] }) {
   if (payouts.length === 0) {
     return (
       <p className="mt-4 text-sm text-on-surface-variant">
-        No payouts yet — Stripe pays out on your account&rsquo;s schedule.
+        No payouts yet. Stripe pays out on your account&rsquo;s schedule.
       </p>
     );
   }
@@ -157,7 +157,7 @@ const SETUP_STATE_COPY: Record<
 > = {
   not_connected: {
     title: 'Connect Stripe to receive donations',
-    body: 'Set up a Stripe account so supporters can back you. Funds go directly to you — ARC takes no fee.',
+    body: 'Set up a Stripe account so supporters can back you. Funds go directly to you, and ARC takes no fee.',
     actionLabel: 'Connect Stripe',
   },
   onboarding_incomplete: {

@@ -17,7 +17,7 @@ export const arcSteps: ArcStep[] = [
   {
     number: '01',
     title: 'Build Your Profile',
-    body: 'Your stats prove the work. Your story is why it matters — put both in your own words.',
+    body: 'Your stats prove the work. Your story is why it matters. Put both in your own words.',
     icon: 'person-add',
   },
   {
@@ -38,7 +38,7 @@ export const arcSteps: ArcStep[] = [
 export const trendingAthletes: TrendingAthlete[] = [
   {
     name: 'Priya Shah',
-    sport: 'Track — Middle Distance • Calgary, CAN',
+    sport: 'Track, Middle Distance • Calgary, CAN',
     image: unsplashPhoto('1461896836934-ffe607ba8211', 760),
     highlight: '4:11.38 1500m PB',
     followers: '4.7k',
@@ -98,13 +98,13 @@ export const successStories: SuccessStory[] = [
     highlight: '1st Para Division, Montréal Marathon',
     followers: '6.2k',
     quote:
-      'Running gave me back forward motion — literally. Every race, I carry the kids I met in the hospital with me.',
+      'Running gave me back forward motion, literally. Every race, I carry the kids I met in the hospital with me.',
     image: unsplashPhoto('1508973379184-7517410fb0bc', 900),
     href: '/athletes/felix-tremblay',
   },
   {
     name: 'Priya Shah',
-    sport: 'Track — Middle Distance • Canada',
+    sport: 'Track, Middle Distance • Canada',
     highlight: 'Gold, U Sports 1500m',
     followers: '4.7k',
     quote:

@@ -11,8 +11,8 @@
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
-    "db:migrate": "npm --prefix app exec prisma migrate dev",
-    "db:seed": "npm --prefix app exec prisma db seed",
+    "db:migrate": "npm run migrate --prefix app",
+    "db:seed": "npm run seed --prefix app",
     "db:setup": "npm run db:up && npm run db:migrate && npm run db:seed",
 
     "==": "==========================<BUILD & VALIDATION>==========================",

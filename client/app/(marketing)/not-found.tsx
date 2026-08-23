@@ -11,7 +11,7 @@ export default function NotFoundPage() {
           That dream isn&rsquo;t on our map yet.
         </h1>
         <p className="max-w-md text-base text-on-surface-variant">
-          The page you&rsquo;re looking for doesn&rsquo;t exist — or hasn&rsquo;t been built yet. Head back to the directory and find an athlete to back.
+          The page you&rsquo;re looking for doesn&rsquo;t exist, or hasn&rsquo;t been built yet. Head back to the directory and find an athlete to back.
         </p>
         <div className="flex flex-wrap gap-3">
           <LinkButton href="/" tone="primary">

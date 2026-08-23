@@ -180,7 +180,7 @@ export function AthleteDirectory() {
             Discover runners
           </h1>
           <p className="mt-2 max-w-2xl text-base text-on-surface-variant md:mt-3 md:text-lg">
-            Runners telling the whole story — from first finish lines to podiums. Follow the
+            Runners telling the whole story, from first finish lines to podiums. Follow the
             ones whose journey you want to be part of.
           </p>
         </header>
@@ -245,7 +245,7 @@ export function AthleteDirectory() {
           <div className="rounded-card border border-dashed border-outline-variant bg-surface-container-lowest p-6 text-center md:p-12">
             <Badge tone="soft">No matching runners</Badge>
             <p className="mt-4 text-sm text-on-surface-variant md:text-base">
-              We&rsquo;re still onboarding runners that fit these filters. Check back soon — or forward
+              We&rsquo;re still onboarding runners that fit these filters. Check back soon, or forward
               ARC to someone who fits.
             </p>
             <div className="mt-6">

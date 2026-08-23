@@ -6,7 +6,7 @@ import { OnboardingStepGate } from '../_components/OnboardingStepGate';
 import { ValuesSocialForm } from './ValuesSocialForm';
 
 export const metadata: Metadata = {
-  title: 'Registration — Values & Voice',
+  title: 'Registration: Values & Voice',
 };
 
 export default function ValuesSocialPage() {

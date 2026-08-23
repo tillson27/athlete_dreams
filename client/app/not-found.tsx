@@ -12,7 +12,7 @@ export default function RootNotFoundPage() {
           That dream isn&rsquo;t on our map yet.
         </h1>
         <p className="max-w-md text-base text-on-surface-variant">
-          The page you&rsquo;re looking for doesn&rsquo;t exist — or hasn&rsquo;t been built yet.
+          The page you&rsquo;re looking for doesn&rsquo;t exist, or hasn&rsquo;t been built yet.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Link

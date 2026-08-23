@@ -19,7 +19,7 @@ export default function RootErrorPage({
         We tripped, but we&rsquo;re back up.
       </h1>
       <p className="max-w-md text-base text-on-surface-variant">
-        An unexpected error interrupted the page. Try again — and if it keeps happening, email{' '}
+        An unexpected error interrupted the page. Try again, and if it keeps happening, email{' '}
         <a className="font-semibold text-primary underline" href={`mailto:${BRAND_CONTACT_EMAIL}`}>
           {BRAND_CONTACT_EMAIL}
         </a>

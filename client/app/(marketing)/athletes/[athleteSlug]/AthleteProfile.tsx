@@ -73,10 +73,10 @@ export function AthleteProfile({
     location: athlete.hometown,
     photo: athlete.heroMediaUrl,
     highlights: [...profile.careerHighlights, ...profile.moreResults].map(
-      (highlight) => `${highlight.title} — ${highlight.detail}`,
+      (highlight) => `${highlight.title}: ${highlight.detail}`,
     ),
     previousRaces: [...profile.previousRaces, ...profile.morePreviousRaces].map(
-      (race) => `${race.name} — ${race.result}`,
+      (race) => `${race.name}: ${race.result}`,
     ),
     stats: profile.personalBests.map((best) => ({ label: best.label, value: best.value })),
     url: profileUrl(athlete.athleteSlug),
@@ -89,7 +89,7 @@ export function AthleteProfile({
         {athlete.heroMediaUrl ? (
           <Image
             src={athlete.heroMediaUrl}
-            alt={`${athlete.fullName} — ${profile.disciplineLabel}`}
+            alt={`${athlete.fullName}, ${profile.disciplineLabel}`}
             fill
             priority
             unoptimized
@@ -231,7 +231,7 @@ export function AthleteProfile({
                     <div className="relative mt-4 aspect-[16/9] overflow-hidden rounded-input bg-surface-container md:max-w-md">
                       <Image
                         src={unsplashPhoto(chapter.image, 800)}
-                        alt={`${chapter.title} — ${athlete.fullName}`}
+                        alt={`${chapter.title}, ${athlete.fullName}`}
                         fill
                         sizes="(max-width: 768px) 100vw, 420px"
                         className="object-cover"
@@ -568,7 +568,7 @@ export function AthleteProfile({
               Like what you see? Build your own.
             </h3>
             <p className="mt-1 text-on-surface-variant">
-              A professional home for your {sportNoun} story — free while we&rsquo;re in pilot.
+              A professional home for your {sportNoun} story, free while we&rsquo;re in pilot.
             </p>
           </div>
           <Link
@@ -591,12 +591,12 @@ export function AthleteProfile({
             <BackThisAthleteCta
               athleteName={athlete.fullName}
               campaignId={donateCampaignId}
-              className="flex min-h-12 flex-1 items-center justify-center rounded-button bg-primary-container px-6 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+              className="flex min-h-12 flex-1 items-center justify-center whitespace-nowrap rounded-button bg-primary-container px-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95 sm:px-6"
             />
           ) : (
             <button
               type="button"
-              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95"
+              className="flex min-h-12 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-button bg-primary-container px-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95 sm:px-6"
             >
               <Icon name="person-add" className="h-4 w-4" />
               Follow {firstName}

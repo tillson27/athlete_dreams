@@ -8,9 +8,9 @@ import { profileUrl } from '@/lib/profileUrl';
 import { authHref } from '@/lib/authRedirect';
 
 export const metadata: Metadata = {
-  title: 'For Athletes — Your professional running home',
+  title: 'For Athletes: Your professional running home',
   description:
-    'Every runner has a story worth telling. ARC is the professional home for your running journey — your races, milestones, and community. Whatever your pace.',
+    'Every runner has a story worth telling. ARC is the professional home for your running journey: your races, milestones, and community. Whatever your pace.',
 };
 
 const pillars: { icon: IconName; title: string; body: string; tone: string }[] = [
@@ -18,19 +18,19 @@ const pillars: { icon: IconName; title: string; body: string; tone: string }[] =
     icon: 'book',
     title: 'Tell the whole story',
     tone: 'bg-primary/10 text-primary',
-    body: 'Your comeback, your training, the race that broke you and the one that made you. Not just a finish time — the human behind it.',
+    body: 'Your comeback, your training, the race that broke you and the one that made you. Not just a finish time. The human behind it.',
   },
   {
     icon: 'shield',
     title: 'Look the part',
     tone: 'bg-secondary/10 text-secondary',
-    body: 'A professional profile — with results synced from Strava and official race databases — that makes your running count, whether you run for medals or just for yourself.',
+    body: 'A professional profile, with results synced from Strava and official race databases, that makes your running count, whether you run for medals or just for yourself.',
   },
   {
     icon: 'groups',
     title: 'Bring people along',
     tone: 'bg-primary/10 text-primary',
-    body: 'The friends, family, and fellow runners who want to follow your journey — gathered in one place that’s truly yours.',
+    body: 'The friends, family, and fellow runners who want to follow your journey, gathered in one place that’s truly yours.',
   },
 ];
 
@@ -51,30 +51,12 @@ const steps = [
   {
     number: '02',
     title: 'Tell your story',
-    body: 'Races, PRs, milestones, and the why behind them — with guided prompts, so you never stare at a blank page.',
+    body: 'Races, PRs, milestones, and the why behind them, with guided prompts, so you never stare at a blank page.',
   },
   {
     number: '03',
     title: 'Bring your community',
     body: 'Share your profile and let the people who care about your running follow every step of the journey.',
-  },
-];
-
-const comparisons = [
-  {
-    old: 'Instagram',
-    oldBody: 'Your best race scrolls out of sight within a day.',
-    arc: 'A permanent home for your journey — the first thing people see.',
-  },
-  {
-    old: 'Strava',
-    oldBody: 'Splits and pace. The numbers, none of the meaning.',
-    arc: 'The story behind the numbers — why each run mattered.',
-  },
-  {
-    old: 'A link in bio',
-    oldBody: 'A name and a PR on a plain, forgettable page.',
-    arc: 'Professional and unmistakably yours.',
   },
 ];
 
@@ -107,7 +89,7 @@ export default function ForAthletesPage() {
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/85 md:text-xl">
               From your first half-marathon to your hundredth podium, ARC is the professional home
-              for your running journey — your races, your milestones, your people. Whatever your
+              for your running journey: your races, your milestones, your people. Whatever your
               pace.
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
@@ -122,7 +104,7 @@ export default function ForAthletesPage() {
                 href="/athletes/maya-okafor"
                 className="inline-flex items-center justify-center gap-2 rounded-button border border-white/20 bg-white/10 px-8 py-4 text-base font-bold tracking-[0.05em] text-white backdrop-blur-md transition-all hover:bg-white/20"
               >
-                See a live example
+                See an example profile
               </Link>
             </div>
             <p className="mt-5 text-sm text-white/60">Free while we’re in pilot · no team required</p>
@@ -140,8 +122,8 @@ export default function ForAthletesPage() {
                 Built for your story, not your stats.
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
-                Instagram forgets. Spreadsheets are cold. ARC is a home that treats your running like
-                it matters — because it does.
+                A profile that treats your running the way you experience it: a story you are in the
+                middle of, with the results to back it up.
               </p>
             </div>
           </Reveal>
@@ -173,8 +155,8 @@ export default function ForAthletesPage() {
                 A profile you’ll be proud to share.
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
-                Not a directory listing — an editorial home for who you are as a runner. Here’s a
-                real one; yours could look just as good.
+                An editorial home for who you are as a runner. Below is a sample profile built with
+                the same tools you get.
               </p>
             </div>
           </Reveal>
@@ -234,9 +216,7 @@ export default function ForAthletesPage() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-on-surface-variant">
-              A real ARC profile —{' '}
-              <span className="font-semibold text-on-surface">Maya Okafor</span>. Yours could look
-              just as good.
+              Sample profile. Every section here is one you fill in yourself.
             </p>
             <Link
               href="/athletes/maya-okafor"
@@ -245,41 +225,6 @@ export default function ForAthletesPage() {
               View the full profile
               <Icon name="arrow" className="h-4 w-4" />
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* MORE THAN A BIO LINK */}
-      <section className="bg-surface py-14 md:py-28">
-        <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="label-bold text-on-surface">Why ARC</p>
-              <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
-                More than a bio link.
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
-                Instagram is a highlight reel. Strava is a logbook. Your running deserves a home that
-                holds the whole story — and looks the part.
-              </p>
-            </div>
-          </Reveal>
-          <div className="mt-10 grid md:mt-14 gap-6 md:grid-cols-3">
-            {comparisons.map((comparison, index) => (
-              <Reveal key={comparison.old} delay={index * 90} className="h-full">
-                <div className="flex h-full flex-col rounded-card border border-outline-variant/50 bg-surface-container-lowest p-6 sm:p-8">
-                  <p className="font-semibold text-on-surface-variant/70 line-through">
-                    {comparison.old}
-                  </p>
-                  <p className="mt-1 text-on-surface-variant">{comparison.oldBody}</p>
-                  <div className="my-5 h-px bg-outline-variant/60" />
-                  <p className="label-bold text-on-surface">On ARC</p>
-                  <p className="mt-1 font-display text-lg font-bold text-on-surface">
-                    {comparison.arc}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
           </div>
         </div>
       </section>
@@ -295,7 +240,7 @@ export default function ForAthletesPage() {
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
                 ARC isn’t just for pros. Whether you’re logging lunch-break miles or lining up at the
-                elite corral — if you run, you have a story worth a home.
+                elite corral, you have a story worth a home.
               </p>
             </div>
           </Reveal>
@@ -328,7 +273,7 @@ export default function ForAthletesPage() {
             <div className="mx-auto max-w-2xl text-center">
               <p className="label-bold text-on-surface">The glow-up</p>
               <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
-                Fifteen minutes from a profile you’ll want to show off.
+                Ten minutes from a profile you’ll want to show off.
               </h2>
             </div>
           </Reveal>
@@ -359,33 +304,19 @@ export default function ForAthletesPage() {
         </div>
       </section>
 
-      {/* PEER PROOF */}
+      {/* PILOT COHORT */}
       <section className="bg-surface py-14 md:py-28">
         <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
           <Reveal>
             <div className="mx-auto max-w-3xl text-center">
-              <blockquote className="font-display text-2xl font-bold leading-snug text-on-surface md:text-4xl">
-                “ARC bridged the gap between my training and how I saw myself. I finally felt like a
-                real runner.”
-              </blockquote>
-              <p className="mt-6 label-bold text-on-surface-variant">
-                Maya Okafor · Road marathon
+              <p className="label-bold text-on-surface">The pilot cohort</p>
+              <h2 className="mt-3 font-display text-3xl font-bold text-on-surface md:text-5xl">
+                We are onboarding our first runners now.
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
+                Road, trail, ultra, and track, from first-time half-marathoners to amateur-elites.
+                Build a profile now and you help shape what ARC becomes.
               </p>
-              <div className="mt-8 flex items-center justify-center gap-3">
-                <div className="flex -space-x-3">
-                  {['MO', 'LV', 'PE', 'PS'].map((initials) => (
-                    <span
-                      key={initials}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-surface bg-primary-container text-xs font-bold text-on-primary-container"
-                    >
-                      {initials}
-                    </span>
-                  ))}
-                </div>
-                <span className="text-sm text-on-surface-variant">
-                  Join the runners already making it home.
-                </span>
-              </div>
             </div>
           </Reveal>
         </div>
@@ -403,7 +334,7 @@ export default function ForAthletesPage() {
               Your story deserves more than a finish time.
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-white/70">
-              Build your ARC profile in about 10 minutes — free while we’re in pilot.
+              Build your ARC profile in about 10 minutes. Free while we’re in pilot.
             </p>
             <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
               <Link

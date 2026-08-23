@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 export const metadata: Metadata = {
   title: 'How it works',
   description:
-    'How runners and their supporters use ARC — from building a profile to following the whole journey.',
+    'How runners and their supporters use ARC, from building a profile to following the whole journey.',
 };
 
 const athleteSteps = [
@@ -24,22 +24,22 @@ const athleteSteps = [
   },
   {
     title: 'Race. Then keep the story going',
-    body: 'Post race results and training updates. Your profile grows with every season — a living record instead of a lost highlight.',
+    body: 'Post race results and training updates. Your profile grows with every season, a living record instead of a lost highlight.',
   },
 ];
 
 const supporterSteps = [
   {
     title: 'Discover runners',
-    body: 'Browse by discipline, level, or region — from everyday run-club captains to amateur-elites. Read the whole story, not just the stats.',
+    body: 'Browse by discipline, level, or region, from everyday run-club captains to amateur-elites. Read the whole story, not just the stats.',
   },
   {
     title: 'Follow the journey',
-    body: 'Follow the runners you believe in and watch the arc unfold — the build-up, the setbacks, the breakthroughs, race by race.',
+    body: 'Follow the runners you believe in and watch the arc unfold: the build-up, the setbacks, the breakthroughs, race by race.',
   },
   {
     title: 'Show up on race day',
-    body: 'Some runners open their season to support. When they do, you can chip in toward a specific goal — and see exactly where it went.',
+    body: 'Some runners open their season to support. When they do, you can chip in toward a specific goal, and see exactly where it went.',
   },
 ];
 
@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
         <SectionHeading
           eyebrow="How ARC works"
           title="A home for runners, and the people who follow them."
-          description="ARC is one network with two jobs: give runners a lasting home for their whole story, and give their people a front-row seat. Pick your role — the path is straightforward."
+          description="ARC is one network with two jobs: give runners a lasting home for their whole story, and give their people a front-row seat. Pick your role. The path is straightforward."
           align="center"
         />
       </Section>
@@ -70,7 +70,7 @@ export default function HowItWorksPage() {
         <Persona
           tone="secondary"
           tag="For Followers"
-          title="Find runners worth following — and watch the arc unfold"
+          title="Find runners worth following, and watch the arc unfold"
           steps={supporterSteps}
           ctaLabel="Discover runners"
           ctaHref="/athletes"

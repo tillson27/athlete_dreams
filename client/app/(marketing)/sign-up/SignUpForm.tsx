@@ -21,7 +21,7 @@ const PANE_COPY: Record<Pane, { stepLabel: string; heading: string; hint: string
   name: {
     stepLabel: 'Your name',
     heading: 'First, what should we call you?',
-    hint: 'This is the name that heads your profile — you can change it later.',
+    hint: 'This is the name that heads your profile. You can change it later.',
   },
   email: {
     stepLabel: 'Your email',
@@ -30,7 +30,7 @@ const PANE_COPY: Record<Pane, { stepLabel: string; heading: string; hint: string
   },
   password: {
     stepLabel: 'Your password',
-    heading: 'Last one — pick a password.',
+    heading: 'Last one: pick a password.',
     hint: 'Ten characters or more, with a letter and a number.',
   },
 };
@@ -137,7 +137,7 @@ export function SignUpForm() {
               type="button"
               onClick={() => goToPane(index)}
               disabled={index > paneIndex}
-              aria-label={`Step ${index + 1} — ${PANE_COPY[paneName].stepLabel}`}
+              aria-label={`Step ${index + 1}: ${PANE_COPY[paneName].stepLabel}`}
               aria-current={index === paneIndex ? 'step' : undefined}
               className="flex min-h-11 items-center px-1"
             >

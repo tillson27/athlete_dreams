@@ -23,11 +23,11 @@ const problems = [
 const services = [
   {
     title: 'Sourcing',
-    body: 'We pull from our directory + targeted outreach. Quarterly cohorts sized to your program — never a single-source pipeline.',
+    body: 'We pull from our directory + targeted outreach. Quarterly cohorts sized to your program, never a single-source pipeline.',
   },
   {
     title: 'Intake',
-    body: 'Structured applications mapped to your brand values and required deliverables — no more free-text Google Forms.',
+    body: 'Structured applications mapped to your brand values and required deliverables. No more free-text Google Forms.',
   },
   {
     title: 'Pipeline tracking',
@@ -35,7 +35,7 @@ const services = [
   },
   {
     title: 'Activation & reporting',
-    body: 'Quarterly performance reports — deliverables shipped, content output, audience growth — tied to athlete profile updates.',
+    body: 'Quarterly performance reports covering deliverables shipped, content output, and audience growth, tied to athlete profile updates.',
   },
 ];
 
@@ -103,7 +103,7 @@ export default function AmbassadorsPage() {
                 Built for brands with 50+ ambassadors.
               </h2>
               <p className="max-w-xl text-base leading-relaxed text-white/85">
-                If you&rsquo;re running an ambassador program at scale — running brands, outdoor brands, nutrition, gear — we should talk. We&rsquo;ll scope your program in a 20-minute call and quote a flat quarterly fee.
+                If you&rsquo;re running an ambassador program at scale in running, outdoor, nutrition, or gear, we should talk. We&rsquo;ll scope your program in a 20-minute call and quote a flat quarterly fee.
               </p>
               <LinkButton href="/about#contact" tone="inverse" size="lg">
                 Start a scoping conversation
@@ -112,7 +112,7 @@ export default function AmbassadorsPage() {
             <ul className="space-y-3 text-sm text-white/90">
               {[
                 'Quarterly cohorts of 10–50 ambassadors.',
-                'Flat fee per quarter — no per-athlete pricing games.',
+                'Flat fee per quarter. No per-athlete pricing games.',
                 'Your team sees the same Kanban we do.',
               ].map((item) => (
                 <li

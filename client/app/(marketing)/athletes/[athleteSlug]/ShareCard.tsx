@@ -143,7 +143,7 @@ export function ShareCard({
 
   const share = () => {
     const url = resume.url.startsWith('http') ? resume.url : `https://${resume.url}`;
-    const text = `Back ${resume.name} on ARC — ${resume.tagline}.`;
+    const text = `Back ${resume.name} on ARC. ${resume.tagline}.`;
     const enc = encodeURIComponent;
     if (platform === 'x') {
       window.open(`https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(url)}`, '_blank', 'noopener');
@@ -162,10 +162,10 @@ export function ShareCard({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Share"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-button border border-outline text-primary transition-colors hover:bg-surface-container-low active:scale-95"
+          className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-button border border-outline px-4 text-sm font-bold tracking-[0.05em] text-primary transition-colors hover:bg-surface-container-low active:scale-95"
         >
           <ShareGlyph />
+          SHARE
         </button>
       ) : (
         <button
@@ -292,7 +292,7 @@ export function ShareCard({
             </div>
             <p className="mt-3 text-center text-xs text-on-surface-variant">
               {webIntent
-                ? 'The composer opens with your link — download the image and attach it to the post.'
+                ? 'The composer opens with your link. Download the image and attach it to the post.'
                 : `${current.label} doesn't allow direct web posting. Download the image, then add it to your ${current.label} post.`}
             </p>
           </div>

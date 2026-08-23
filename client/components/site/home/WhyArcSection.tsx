@@ -1,13 +1,7 @@
 import Image from 'next/image';
 import { Reveal } from '@/components/site/Reveal';
-import { Icon, type IconName } from '@/components/ui/Icon';
+import { Icon } from '@/components/ui/Icon';
 import { unsplashPhoto } from '@/lib/unsplash';
-
-const noiseRows: { icon: IconName; barWidth: string; opacity: string }[] = [
-  { icon: 'run', barWidth: 'w-2/3', opacity: 'opacity-90' },
-  { icon: 'trail', barWidth: 'w-1/2', opacity: 'opacity-60' },
-  { icon: 'timer', barWidth: 'w-3/5', opacity: 'opacity-35' },
-];
 
 export function WhyArcSection() {
   return (
@@ -27,7 +21,7 @@ export function WhyArcSection() {
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-b from-[#140b08]/85 via-[#160d09]/80 to-surface"
         />
-        <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 pb-24 pt-14 md:px-16 md:pb-28 md:pt-20">
+        <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 pb-14 pt-14 md:px-16 md:pb-20 md:pt-20">
           <Reveal>
             <div className="max-w-3xl">
               <h2 className="mb-4 font-display text-[30px] font-extrabold leading-[1.05] text-white sm:text-4xl md:mb-5 md:text-5xl">
@@ -44,92 +38,9 @@ export function WhyArcSection() {
       </div>
 
       {/* Body */}
-      <div className="relative z-10 mx-auto -mt-12 w-full max-w-[var(--spacing-container-max)] px-5 pb-14 md:px-16 md:pb-24">
-        {/* The problem — two forces Arc bridges */}
-        <div className="relative">
-          <div className="grid gap-6 md:grid-cols-2 md:gap-16">
-            <Reveal className="h-full">
-              <div className="card-lift flex h-full flex-col rounded-card border border-secondary/30 bg-white p-5 sm:p-7">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary-soft text-secondary">
-                    <Icon name="insights" className="h-6 w-6" />
-                  </span>
-                  <h4 className="font-display text-xl font-bold text-on-surface">The Strava Clutter</h4>
-                </div>
-                <p className="leading-relaxed text-on-surface-variant">
-                  Valuable performance data is buried in a sea of random kudos and casual activity
-                  history. While excellent for tracking, it lacks the{' '}
-                  <strong className="font-bold text-on-surface">
-                    intentionality of a professional resume
-                  </strong>
-                  .
-                </p>
-                <div className="mt-6 rounded-input bg-surface-container p-4">
-                  <p className="eyebrow mb-3 flex items-center gap-2 text-on-surface-variant">
-                    <Icon name="history" className="h-4 w-4" />
-                    Lost in the noise
-                  </p>
-                  <div className="space-y-2">
-                    {noiseRows.map((row) => (
-                      <div key={row.icon} className={`flex items-center gap-2.5 ${row.opacity}`}>
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-dim text-on-surface-variant">
-                          <Icon name={row.icon} className="h-4 w-4" />
-                        </span>
-                        <span className={`h-2 rounded-pill bg-surface-dim ${row.barWidth}`} />
-                        <span className="ml-auto h-4 w-10 shrink-0 rounded-pill bg-surface-dim" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={90} className="h-full">
-              <div className="card-lift flex h-full flex-col rounded-card border border-primary/30 bg-white p-5 sm:p-7">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                    <Icon name="heart" className="h-6 w-6" />
-                  </span>
-                  <h4 className="font-display text-xl font-bold text-on-surface">The Instagram Trap</h4>
-                </div>
-                <p className="leading-relaxed text-on-surface-variant">
-                  It&rsquo;s a{' '}
-                  <strong className="font-bold text-on-surface">highlight reel, not a story</strong>
-                  . It captures the peaks, but the full journey — and an athlete&rsquo;s past races
-                  and results — gets lost in the scroll.
-                </p>
-                <div className="mt-6 rounded-input bg-surface-container p-4">
-                  <p className="eyebrow mb-3 flex items-center gap-2 text-on-surface-variant">
-                    <Icon name="gallery" className="h-4 w-4" />
-                    The vanity metric
-                  </p>
-                  <div className="flex gap-2">
-                    {[0, 1, 2, 3].map((cell) => (
-                      <div key={cell} className="h-9 flex-1 rounded-md bg-surface-dim" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-
-          {/* Connector — bridges the two problems on wide screens */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-6 left-1/2 hidden -translate-x-1/2 flex-col items-center md:flex"
-          >
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-white shadow-lg">
-              <Icon name="run" className="h-6 w-6" />
-            </span>
-            <span className="my-2 w-px flex-1 bg-gradient-to-b from-secondary to-primary" />
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg">
-              <Icon name="camera" className="h-6 w-6" />
-            </span>
-          </div>
-        </div>
-
+      <div className="relative z-10 mx-auto w-full max-w-[var(--spacing-container-max)] px-5 pb-14 pt-14 md:px-16 md:pb-24 md:pt-20">
         {/* What Arc builds instead */}
-        <div className="mt-14 grid gap-10 md:mt-20 md:grid-cols-2 md:gap-12">
+        <div className="grid gap-10 md:grid-cols-2 md:gap-12">
           <Reveal>
             <div>
               <span className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-on-primary shadow-lg shadow-primary/20">
@@ -140,7 +51,7 @@ export function WhyArcSection() {
               </h3>
               <p className="leading-relaxed text-on-surface-variant md:text-lg">
                 No more cobbling together fragmented posts across multiple platforms. In ARC, your
-                complete athletic narrative lives front and center — authentic, polished, and easy
+                complete athletic narrative lives front and center: authentic, polished, and easy
                 for others to follow.
               </p>
               <div className="mt-6 border-l-4 border-primary pl-4">

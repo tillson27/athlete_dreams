@@ -611,7 +611,7 @@ function EditorLayout({
       PROFILE_IMAGE_OPTIONS,
       (refs) => setGallery((prev) => [...prev, ...refs]),
       picked.length > remaining
-        ? `Added the first ${remaining} — your gallery holds ${ATHLETE_GALLERY_MAX_PHOTOS} photos.`
+        ? `Added the first ${remaining}. Your gallery holds ${ATHLETE_GALLERY_MAX_PHOTOS} photos.`
         : undefined
     );
   };
@@ -632,7 +632,7 @@ function EditorLayout({
       PROFILE_IMAGE_OPTIONS,
       onReady,
       picked.length > remaining
-        ? `Added the first ${remaining} — this item holds ${PROFILE_ITEM_MAX_PHOTOS} photos.`
+        ? `Added the first ${remaining}. This item holds ${PROFILE_ITEM_MAX_PHOTOS} photos.`
         : undefined
     );
   };
@@ -790,7 +790,7 @@ function EditorLayout({
                 id="story-intro"
                 value={storyIntro}
                 onChange={(event) => setStoryIntro(event.target.value)}
-                placeholder="One line your profile leads with — e.g. Marathoner chasing a sub-2:30 in Tokyo"
+                placeholder="One line your profile leads with, e.g. Marathoner chasing a sub-2:30 in Tokyo"
                 className={inputClass}
               />
             </div>
@@ -806,7 +806,7 @@ function EditorLayout({
                 placeholder="What got you started? What are you chasing? Write it in your own voice."
                 className={inputClass}
               />
-              <Recommendation text="Leave a blank line between paragraphs — each block becomes its own paragraph in the My Story section on your public profile." />
+              <Recommendation text="Leave a blank line between paragraphs. Each block becomes its own paragraph in the My Story section on your public profile." />
             </div>
           </div>
         </SectionCard>
@@ -825,7 +825,7 @@ function EditorLayout({
               id="arc-subtitle"
               value={arcSubtitle}
               onChange={(event) => setArcSubtitle(event.target.value)}
-              placeholder="One line under the heading — e.g. From med-school stress runs to the Boston pro corral."
+              placeholder="One line under the heading, e.g. From med-school stress runs to the Boston pro corral."
               className={inputClass}
             />
           </div>
@@ -854,7 +854,7 @@ function EditorLayout({
                         onChange={(event) =>
                           patchChapter(setArcChapters, item.id, { era: event.target.value })
                         }
-                        placeholder="When (e.g. 2019 — 2021)"
+                        placeholder="When (e.g. 2019 to 2021)"
                         className={inputClass}
                       />
                       <input
@@ -975,7 +975,7 @@ function EditorLayout({
             </SortableList>
           ) : (
             <ul className="space-y-3">
-              <EmptyState label="No chapters yet — add the first one to start your journey." />
+              <EmptyState label="No chapters yet. Add the first one to start your journey." />
             </ul>
           )}
           <div className="mt-5 flex justify-end">
@@ -1139,7 +1139,7 @@ function EditorLayout({
                 </div>
               ))}
             </div>
-            <Recommendation text="Gallery photos display as squares — upload 1:1 crops at least 800 × 800 px so they stay sharp on high-resolution screens. Pick several at once; they upload one after another." />
+            <Recommendation text="Gallery photos display as squares, so upload 1:1 crops at least 800 × 800 px to keep them sharp on high-resolution screens. Pick several at once; they upload one after another." />
           </div>
         </SectionCard>
 
@@ -1357,7 +1357,7 @@ function EditorLayout({
             <div className="grid gap-3 md:grid-cols-3">
               <input name="title" placeholder="Event (e.g. 2026 Boston Marathon)" className={inputClass} />
               <input name="date" type="date" className={inputClass} />
-              <input name="detail" placeholder="Result (e.g. 1st Female — 2:34:43)" className={inputClass} />
+              <input name="detail" placeholder="Result (e.g. 1st Female, 2:34:43)" className={inputClass} />
             </div>
             <input name="resultsUrl" type="url" placeholder="Results URL (https://results.race.com/...)" className={inputClass} />
             <PhotoUploader
@@ -1505,7 +1505,7 @@ function EditorLayout({
             <div className="grid gap-3 md:grid-cols-3">
               <input name="name" placeholder="Event name" className={inputClass} />
               <input name="date" placeholder="Date (e.g. Oct 12, 2025)" className={inputClass} />
-              <input name="result" placeholder="Result (e.g. 1st Female — 2:39:50)" className={inputClass} />
+              <input name="result" placeholder="Result (e.g. 1st Female, 2:39:50)" className={inputClass} />
             </div>
             <input name="resultsUrl" type="url" placeholder="Results URL (https://results.race.com/...)" className={inputClass} />
             <PhotoUploader

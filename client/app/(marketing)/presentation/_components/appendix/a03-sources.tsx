@@ -3,7 +3,7 @@ import { SlideShell, type Slide } from '../_shell';
 const sources = [
   {
     id: 'S1',
-    label: 'IEG / SponsorshipX 2025 — North American sport sponsorship spend',
+    label: 'IEG / SponsorshipX 2025: North American sport sponsorship spend',
   },
   {
     id: 'S2',
@@ -23,11 +23,11 @@ const sources = [
   },
   {
     id: 'S6',
-    label: 'ARC primary research — athlete survey (n=120, 2025-2026)',
+    label: 'ARC primary research: athlete survey (n=120, 2025-2026)',
   },
   {
     id: 'S7',
-    label: 'ARC primary research — recurring donor interviews (n=38, 2026)',
+    label: 'ARC primary research: recurring donor interviews (n=38, 2026)',
   },
   {
     id: 'S8',

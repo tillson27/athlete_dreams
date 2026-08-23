@@ -67,7 +67,7 @@ export function AthleticsForm() {
               Step 2: Athletics &amp; Achievements
             </h2>
             <p className="text-lg text-tertiary">
-              Add a few personal bests — they show up as the highlights on your profile. You can add
+              Add a few personal bests. They show up as the highlights on your profile. You can add
               more later.
             </p>
           </div>
@@ -83,7 +83,7 @@ export function AthleticsForm() {
 
             {bests.length === 0 ? (
               <p className="rounded-lg border border-dashed border-outline-variant/60 p-4 text-center text-sm text-on-surface-variant">
-                No personal bests yet — add your first below.
+                No personal bests yet. Add your first below.
               </p>
             ) : (
               <div className="flex flex-col gap-3">
@@ -170,8 +170,8 @@ export function AthleticsForm() {
           <div className="flex items-start gap-3 rounded-card border border-dashed border-outline-variant bg-surface-container-low p-4">
             <Icon name="info" className="h-5 w-5 shrink-0 text-secondary" />
             <p className="text-sm text-on-surface-variant">
-              Career highlights and previous races are optional. Add what you have now, or skip for now
-              — you can fill them in anytime after your profile is created.
+              Career highlights and previous races are optional. Add what you have now, or skip and
+              fill them in anytime after your profile is created.
             </p>
           </div>
 
@@ -276,7 +276,7 @@ export function AthleticsForm() {
                         type="text"
                         value={item.result}
                         onChange={(event) => patchRace(item.id, { result: event.target.value })}
-                        placeholder="e.g. 1st Female — 2:34:43"
+                        placeholder="e.g. 1st Female, 2:34:43"
                         className={inputClass}
                       />
                     </div>

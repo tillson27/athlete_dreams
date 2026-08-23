@@ -3,7 +3,7 @@ import { DeckClient } from './_components/DeckClient';
 
 export const metadata: Metadata = {
   title: 'The ARC Story',
-  description: 'ARC — the idea, in slides.',
+  description: 'ARC, the idea, in slides.',
   robots: {
     index: false,
     follow: false,

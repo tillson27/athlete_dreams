@@ -7,7 +7,7 @@ import { BRAND_CONTACT_EMAIL } from '@/lib/brand';
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Why we built ARC — a lasting home for a runner’s whole story, where existing tools fall short, and how to get in touch.',
+    'Why we built ARC: a lasting home for a runner’s whole story, where existing tools fall short, and how to get in touch.',
 };
 
 const principles = [
@@ -17,22 +17,22 @@ const principles = [
   },
   {
     title: 'Receipts are the product.',
-    body: 'Every result links back to the official page it came from. No badge to trust — just the source, one click away.',
+    body: 'Every result links back to the official page it came from. No badge to trust, just the source, one click away.',
   },
   {
     title: 'Story before numbers.',
-    body: 'The comeback, the reason you lace up, the arc behind the athlete — that comes first. Metrics support the story; they don’t replace it.',
+    body: 'The comeback, the reason you lace up, the arc behind the athlete: that comes first. Metrics support the story; they don’t replace it.',
   },
   {
     title: 'Community over vanity.',
-    body: 'Followers, run clubs, and people who show up on race day — not a leaderboard sorted by follower count.',
+    body: 'Followers, run clubs, and people who show up on race day, not a leaderboard sorted by follower count.',
   },
 ];
 
 const alternatives = [
   {
     name: 'Instagram',
-    delta: 'A highlight reel with no context. A race photo gets 200 likes and disappears. ARC keeps the whole arc in one place — sourced and lasting.',
+    delta: 'A highlight reel with no context. A race photo gets 200 likes and disappears. ARC keeps the whole arc in one place, sourced and lasting.',
   },
   {
     name: 'Strava',
@@ -51,7 +51,7 @@ export default function AboutPage() {
         <SectionHeading
           eyebrow="About ARC"
           title="A lasting home for a runner’s whole story."
-          description="We started ARC because every existing tool flattens running into something smaller than it is — a highlight reel, a wall of data, a list of links. Every runner deserves a real home for the whole arc. We’re starting with a small cohort of runners to prove it."
+          description="We started ARC because every existing tool flattens running into something smaller than it is: a highlight reel, a wall of data, a list of links. Every runner deserves a real home for the whole arc. We’re starting with a small cohort of runners to prove it."
           align="center"
         />
       </Section>
@@ -114,7 +114,7 @@ export default function AboutPage() {
           </div>
           <ul className="space-y-3 text-sm">
             {[
-              'Runner cohort: now onboarding through 2026 Q2.',
+              'Runner cohort: onboarding now.',
               'Every discipline welcome: road, trail, ultra, and track.',
               'From first-time half-marathoners to amateur-elites.',
             ].map((line) => (

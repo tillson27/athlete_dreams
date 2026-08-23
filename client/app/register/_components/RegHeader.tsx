@@ -4,10 +4,10 @@ import { LogoLockup } from '@/components/site/Logo';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
 const REG_STEPS = [
-  { href: '/register/personal-basics', label: 'Step 1 — Basics' },
-  { href: '/register/athletics', label: 'Step 2 — Results' },
-  { href: '/register/values-social', label: 'Step 3 — Values' },
-  { href: '/register/review', label: 'Step 4 — Review' },
+  { href: '/register/personal-basics', label: 'Step 1: Basics' },
+  { href: '/register/athletics', label: 'Step 2: Results' },
+  { href: '/register/values-social', label: 'Step 3: Values' },
+  { href: '/register/review', label: 'Step 4: Review' },
 ];
 
 // Minimal transactional header used across the registration flow (Arc brand +

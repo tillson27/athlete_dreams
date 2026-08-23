@@ -5,11 +5,11 @@ import { LinkButton, ArrowGlyph } from '@/components/ui/Button';
 export const metadata: Metadata = {
   title: 'Mission',
   description:
-    'ARC is the home for a runner’s whole story — the results, the journey behind them, and the community that carries you forward.',
+    'ARC is the home for a runner’s whole story: the results, the journey behind them, and the community that carries you forward.',
   openGraph: {
     title: 'Mission · ARC',
     description:
-      'Every run is part of a bigger story. ARC gives runners a lasting home for the whole arc — not just the finish line.',
+      'Every run is part of a bigger story. ARC gives runners a lasting home for the whole arc, not just the finish line.',
   },
 };
 
@@ -17,17 +17,17 @@ const pillars = [
   {
     step: '01',
     title: 'Tell the whole story',
-    body: 'Not just a PB — the comeback, the 5 a.m. runs, the reason you lace up. The arc behind the athlete, told well.',
+    body: 'Not just a PB. The comeback, the 5 a.m. runs, the reason you lace up. The arc behind the athlete, told well.',
   },
   {
     step: '02',
     title: 'Earn real legitimacy',
-    body: 'Link your results to the official, public results pages — legitimacy anyone can check for themselves.',
+    body: 'Link your results to the official, public results pages, so legitimacy is something anyone can check for themselves.',
   },
   {
     step: '03',
     title: 'Bring people along',
-    body: 'Followers, run clubs, and supporters who watch the journey unfold — and show up on race day.',
+    body: 'Followers, run clubs, and supporters who watch the journey unfold, and show up on race day.',
   },
 ];
 
@@ -57,10 +57,8 @@ export default function MissionPage() {
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-            Instagram flattens your running to a highlight reel. Strava buries it in data. A link-in-bio
-            says nothing. ARC gives every runner &mdash; from the first-time half-marathoner to the
-            amateur-elite &mdash; a lasting home for the whole arc: the story, the results, and the
-            community that carries you forward.
+            ARC is where a runner&rsquo;s whole arc lives: the story, the results, and the people who
+            carry you forward. First-time half-marathoner or amateur-elite, you get the same home.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">

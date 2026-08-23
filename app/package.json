@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{ts,tsx}\"",
-    "migrate:create": "prisma migrate dev --create-only"
+    "migrate": "prisma migrate dev",
+    "migrate:create": "prisma migrate dev --create-only",
+    "seed": "prisma db seed"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

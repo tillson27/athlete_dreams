@@ -110,7 +110,7 @@ export function SignInForm() {
           className="space-y-3 rounded-input bg-primary-container/20 px-4 py-3 text-sm text-on-surface"
         >
           <p className="font-semibold">
-            You&rsquo;re signed in. Verifying your email keeps account recovery secure — everything
+            You&rsquo;re signed in. Verifying your email keeps account recovery secure, and everything
             else, including publishing, works either way.
           </p>
           <div className="flex flex-wrap gap-2">

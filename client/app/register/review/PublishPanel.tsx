@@ -193,7 +193,7 @@ export function PublishPanel() {
               />
               <p className="mt-4 text-base leading-relaxed text-on-surface">
                 Still to add: <strong>{missingSections.join(', ')}</strong>. Profiles with a full
-                race history get followed — and backed — far more often.
+                race history get followed, and backed, far more often.
               </p>
               <a
                 href={manageHref}
@@ -285,7 +285,7 @@ export function PublishPanel() {
         </p>
       ) : mode === 'mock' && missing.length > 0 ? (
         <p className="text-xs text-on-surface-variant">
-          Still missing {missing.join(', ')} — you can add them after publishing.
+          Still missing {missing.join(', ')}. You can add them after publishing.
         </p>
       ) : null}
       {mode === 'api' && !sessionReady ? (

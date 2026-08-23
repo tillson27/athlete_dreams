@@ -31,7 +31,7 @@ export function EmptyFollowing({ signedIn }: { signedIn: boolean }) {
         You&rsquo;re not following anyone yet
       </h3>
       <p className="mx-auto mt-2 max-w-md text-on-surface-variant">
-        Follow runners to build your feed — their results and upcoming races show up here.
+        Follow runners to build your feed. Their results and upcoming races show up here.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link

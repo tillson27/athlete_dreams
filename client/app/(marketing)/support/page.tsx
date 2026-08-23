@@ -5,13 +5,13 @@ import { Section, SectionHeading } from '@/components/site/Section';
 import { formatCents } from '@/lib/format';
 
 export const metadata: Metadata = {
-  title: 'Back an athlete — coming soon',
+  title: 'Back an athlete: coming soon',
   description:
-    'Transparent, direct-to-athlete backing is coming to ARC. See exactly what you fund — race entries, travel, coaching — and get a recap when the race is run.',
+    'Transparent, direct-to-athlete backing is coming to ARC. See exactly what you fund, from race entries to travel to coaching, and get a recap when the race is run.',
 };
 
 const sampleCostLines = [
-  { label: 'Race entry — Lost Soul 100-miler', amountCents: 45000 },
+  { label: 'Race entry, Lost Soul 100-miler', amountCents: 45000 },
   { label: 'Travel + accommodation', amountCents: 60000 },
   { label: 'Coaching block (8 weeks)', amountCents: 35000 },
   { label: 'Physio + recovery', amountCents: 20000 },
@@ -20,7 +20,7 @@ const sampleCostLines = [
 const steps = [
   {
     title: 'Pick a line item',
-    body: 'Every campaign is an itemized season — race entry, flights, coaching. You back the exact thing you want to make happen.',
+    body: 'Every campaign is an itemized season: race entry, flights, coaching. You back the exact thing you want to make happen.',
   },
   {
     title: 'Money goes to the athlete',
@@ -28,7 +28,7 @@ const steps = [
   },
   {
     title: 'See it land',
-    body: 'After the race you get a recap from the athlete — the result, the photos, and what your backing paid for.',
+    body: 'After the race you get a recap from the athlete: the result, the photos, and what your backing paid for.',
   },
 ];
 
@@ -42,8 +42,8 @@ export default function SupportComingSoonPage() {
             Backing athletes is on the way.
           </h1>
           <p className="mt-4 text-lg text-on-surface-variant">
-            We&rsquo;re launching ARC story-first. Transparent, direct-to-athlete backing — where you
-            fund a specific race, trip, or training block and see exactly where it lands — arrives
+            We&rsquo;re launching ARC story-first. Transparent, direct-to-athlete backing, where you
+            fund a specific race, trip, or training block and see exactly where it lands, arrives
             next.
           </p>
         </div>

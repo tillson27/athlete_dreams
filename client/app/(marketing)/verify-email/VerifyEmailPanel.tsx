@@ -111,7 +111,7 @@ export function VerifyEmailPanel() {
         <StatusMessage
           icon="info"
           title="We couldn't reach the server to check your link."
-          body="Your link is still good — reload this page to try again."
+          body="Your link is still good. Reload this page to try again."
           tone="error"
         />
       ) : null}

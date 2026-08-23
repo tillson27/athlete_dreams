@@ -38,7 +38,7 @@ function makeSource(overrides: Partial<AthleteFeedSourceRow> = {}): AthleteFeedS
         resultName: 'Boston Marathon',
         displayDate: 'April 21, 2025',
         occurredOn: null,
-        resultSummary: '2:31:04 — 12th',
+        resultSummary: '2:31:04, 12th',
         resultUrl: 'https://results.example.com/boston',
         links: null,
         photoRefs: ['https://images.example.com/race.jpg'],
@@ -86,7 +86,7 @@ describe('community feed derivation (pure)', () => {
     const milestone = byId.get('alex-runner-milestone-highlight-1');
     expect(milestone?.kind).toBe('result');
     expect(milestone?.category).toBe('milestone');
-    expect(milestone?.headline).toBe('Hit a milestone — National Champion 2024');
+    expect(milestone?.headline).toBe('Hit a milestone: National Champion 2024');
 
     const race = byId.get('alex-runner-race-race-1');
     expect(race?.kind).toBe('result');
@@ -101,7 +101,7 @@ describe('community feed derivation (pure)', () => {
     const training = byId.get('alex-runner-training-training');
     expect(training?.kind).toBe('roadmap');
     expect(training?.category).toBe('training');
-    expect(training?.headline).toBe('Logged a training run — Tempo intervals');
+    expect(training?.headline).toBe('Logged a training run: Tempo intervals');
   });
 
   it('derives isVerified from the source resultUrl only', () => {

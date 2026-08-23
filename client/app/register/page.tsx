@@ -19,13 +19,13 @@ const steps: {
     number: '1',
     icon: 'person',
     title: '1. Personal Basics',
-    body: 'Your name, your city, and a hero photo for the top of your page. Then four short questions — what got you into running, what you’re chasing, the hard part, who’s in your corner — draft your story for you, in your own words to edit.',
+    body: 'Your name, your city, and a hero photo for the top of your page. Then four short questions (what got you into running, what you’re chasing, the hard part, who’s in your corner) draft your story for you, in your own words to edit.',
   },
   {
     number: '2',
     icon: 'medal',
     title: '2. Athletics & Achievements',
-    body: 'Add the personal bests you want people to see. Career highlights and previous races are optional — add what you have now. Any result you link to its official page shows a Results link on your profile.',
+    body: 'Add the personal bests you want people to see. Career highlights and previous races are optional, so add what you have now. Any result you link to its official page shows a Results link on your profile.',
   },
   {
     number: '3',
@@ -37,7 +37,7 @@ const steps: {
     number: '4',
     icon: 'fact-check',
     title: '4. Review & Publish',
-    body: 'Give the profile a last look, then publish. You get a public page with a link you can put in your Instagram bio — and you can keep editing it after it’s live.',
+    body: 'Give the profile a last look, then publish. You get a public page with a link you can put in your Instagram bio, and you can keep editing it after it’s live.',
   },
 ];
 
@@ -60,7 +60,7 @@ export default function OnboardingGuidePage() {
             How to Build <span className="text-primary-container">Your Epic</span>
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-on-surface-variant">
-            Four steps to a public athlete page — your story, your results, and the values you run
+            Four steps to a public athlete page: your story, your results, and the values you run
             by. You can keep editing it after it goes live.
           </p>
         </section>

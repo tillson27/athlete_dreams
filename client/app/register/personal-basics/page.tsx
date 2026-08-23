@@ -6,7 +6,7 @@ import { OnboardingStepGate } from '../_components/OnboardingStepGate';
 import { PersonalBasicsForm } from './PersonalBasicsForm';
 
 export const metadata: Metadata = {
-  title: 'Registration — Personal Basics',
+  title: 'Registration: Personal Basics',
 };
 
 export default function PersonalBasicsPage() {

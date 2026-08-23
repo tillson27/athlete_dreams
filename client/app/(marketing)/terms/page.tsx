@@ -5,14 +5,14 @@ import { BRAND_CONTACT_EMAIL } from '@/lib/brand';
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description:
-    'The plain-English agreement for using ARC — your account, your content, and the Radical Transparency guidelines every athlete commits to.',
+    'The plain-English agreement for using ARC: your account, your content, and the Radical Transparency guidelines every athlete commits to.',
 };
 
 const sections: { id?: string; title: string; paragraphs: string[]; bullets?: string[] }[] = [
   {
     title: 'Who we are',
     paragraphs: [
-      'ARC is a home for an athlete’s story — a profile for your results, your journey, and the community following it. These terms are a plain-English agreement between you and ARC. By creating an account or using the site, you agree to them.',
+      'ARC is a home for an athlete’s story: a profile for your results, your journey, and the community following it. These terms are a plain-English agreement between you and ARC. By creating an account or using the site, you agree to them.',
     ],
   },
   {
@@ -29,7 +29,7 @@ const sections: { id?: string; title: string; paragraphs: string[]; bullets?: st
     ],
     bullets: [
       'Results you post must be real and yours. Where an official, public results page exists, link it so anyone can check.',
-      'Your story must be your own — no impersonation, no fabricated accomplishments.',
+      'Your story must be your own. No impersonation, no fabricated accomplishments.',
       'When crowdfunding opens: every campaign must itemize what the money is for, funded expenses must be backed by receipts, and supporters receive post-event updates showing the outcome.',
       'Breaking these guidelines can lead to content removal or account termination.',
     ],
@@ -37,7 +37,7 @@ const sections: { id?: string; title: string; paragraphs: string[]; bullets?: st
   {
     title: 'Backing and payments',
     paragraphs: [
-      'Crowdfunding is not live yet. Until it launches, no money moves through ARC. When backing opens, we’ll update these terms with the details — including fees, payment processing, and refunds — before any payment feature is available to you.',
+      'Crowdfunding is not live yet. Until it launches, no money moves through ARC. When backing opens, we’ll update these terms with the details, including fees, payment processing, and refunds, before any payment feature is available to you.',
     ],
   },
   {
@@ -53,7 +53,7 @@ const sections: { id?: string; title: string; paragraphs: string[]; bullets?: st
   {
     title: 'Your content',
     paragraphs: [
-      'Your story, photos, and results remain yours. By posting them on ARC, you give us permission to display and distribute them as part of running the platform — for example, showing your profile to visitors or in a share link preview. You can remove your content, or ask us to delete your account, at any time.',
+      'Your story, photos, and results remain yours. By posting them on ARC, you give us permission to display and distribute them as part of running the platform, for example showing your profile to visitors or in a share link preview. You can remove your content, or ask us to delete your account, at any time.',
     ],
   },
   {
@@ -65,7 +65,7 @@ const sections: { id?: string; title: string; paragraphs: string[]; bullets?: st
   {
     title: 'Changes to these terms',
     paragraphs: [
-      'As ARC grows — especially when crowdfunding launches — these terms will evolve. When they change in a way that matters, we’ll tell you on the site or by email before the change takes effect.',
+      'As ARC grows, and especially when crowdfunding launches, these terms will evolve. When they change in a way that matters, we’ll tell you on the site or by email before the change takes effect.',
     ],
   },
 ];
@@ -79,7 +79,7 @@ export default function TermsPage() {
       </h1>
       <p className="mt-3 text-sm text-on-surface-variant">Last updated: July 9, 2026</p>
       <p className="mt-6 text-lg leading-relaxed text-on-surface-variant">
-        We wrote these to be read. No walls of legalese — just what you can expect from ARC and
+        We wrote these to be read. No walls of legalese, just what you can expect from ARC and
         what ARC expects from you.
       </p>
 
@@ -112,7 +112,7 @@ export default function TermsPage() {
             >
               {BRAND_CONTACT_EMAIL}
             </a>{' '}
-            — we answer every email. Our privacy practices live in the{' '}
+            and we answer every email. Our privacy practices live in the{' '}
             <Link href="/privacy" className="font-semibold text-primary underline">
               Privacy Policy
             </Link>

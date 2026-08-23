@@ -328,7 +328,7 @@ export async function saveEditsToApi(
 // code (Context §11, client/AGENTS.md minimalism).
 export function toManageSaveError(error: unknown): string {
   if (error instanceof ApiError && error.status === 401) {
-    return 'Your session expired — sign in again to save your changes.';
+    return 'Your session expired. Sign in again to save your changes.';
   }
-  return "We couldn't save your changes — please try again.";
+  return "We couldn't save your changes. Please try again.";
 }

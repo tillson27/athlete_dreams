@@ -11,10 +11,11 @@ export function SuccessStoriesSection() {
         <Reveal>
           <div className="mb-10 text-center md:mb-16">
             <h2 className="mb-4 font-display text-3xl font-bold text-on-surface md:text-5xl">
-              Success Stories
+              What an arc looks like
             </h2>
             <p className="mx-auto max-w-2xl leading-relaxed text-on-surface-variant md:text-lg">
-              Real runners, real arcs — journeys unfolding on ARC right now.
+              Two example profiles, showing how a runner&rsquo;s results and story come together in
+              one place.
             </p>
           </div>
         </Reveal>

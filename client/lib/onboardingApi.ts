@@ -321,7 +321,7 @@ export function toPublishChecklist(details: unknown): string[] {
 // collided after we reserved one; every other failure is generic.
 export function toSaveErrorSentence(error: unknown): string {
   if (error instanceof ApiError && error.status === 409) {
-    return 'That profile URL is taken — try a slightly different name in Step 1.';
+    return 'That profile URL is taken. Try a slightly different name in Step 1.';
   }
-  return "We couldn't save your progress — please try again.";
+  return "We couldn't save your progress. Please try again.";
 }

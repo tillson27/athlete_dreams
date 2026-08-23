@@ -16,7 +16,7 @@ export function HomeCtaSection() {
               Ready to follow the next great story?
             </h2>
             <p className="mb-8 leading-relaxed text-white/70 md:mb-10 md:text-lg">
-              Runners are telling their whole arc on ARC — the comebacks, the 5 a.m. miles, the
+              Runners are telling their whole arc on ARC: the comebacks, the 5 a.m. miles, the
               breakthroughs. Every follow puts someone in their corner.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">

@@ -94,7 +94,7 @@ export function ValuesSocialForm() {
               Step 3: Values &amp; Voice
             </h1>
             <p className="text-lg text-on-surface-variant">
-              What you stand for, in your own words — the values and voice behind your story.
+              What you stand for, in your own words: the values and voice behind your story.
             </p>
           </section>
 

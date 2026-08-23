@@ -5,7 +5,7 @@ import { BRAND_CONTACT_EMAIL } from '@/lib/brand';
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
-    'What ARC collects, how it’s used, and the choices you have — written in plain English.',
+    'What ARC collects, how it’s used, and the choices you have, written in plain English.',
 };
 
 const sections: { title: string; paragraphs: string[]; bullets?: string[] }[] = [
@@ -13,10 +13,10 @@ const sections: { title: string; paragraphs: string[]; bullets?: string[] }[] = 
     title: 'What we collect',
     paragraphs: ['We collect only what we need to run ARC:'],
     bullets: [
-      'Account details — your name and email address when you sign up.',
-      'Profile content — the story, results, races, values, and photos you choose to publish. This content is public by design; that’s what a profile is for.',
-      'On-device data — while we build out our backend, in-progress profile edits and preferences (like who you follow) are stored in your own browser’s local storage, not on our servers.',
-      'Basic technical data — logs the hosting infrastructure records to keep the site running and secure.',
+      'Account details: your name and email address when you sign up.',
+      'Profile content: the story, results, races, values, and photos you choose to publish. This content is public by design; that’s what a profile is for.',
+      'On-device data: while we build out our backend, in-progress profile edits and preferences (like who you follow) are stored in your own browser’s local storage, not on our servers.',
+      'Basic technical data: logs the hosting infrastructure records to keep the site running and secure.',
     ],
   },
   {
@@ -26,7 +26,7 @@ const sections: { title: string; paragraphs: string[]; bullets?: string[] }[] = 
       'Create and display your athlete profile.',
       'Operate, maintain, and improve the platform.',
       'Reply when you contact us.',
-      'Send you service updates that affect your account — not marketing spam.',
+      'Send you service updates that affect your account, not marketing spam.',
     ],
   },
   {
@@ -62,7 +62,7 @@ const sections: { title: string; paragraphs: string[]; bullets?: string[] }[] = 
   {
     title: 'Changes to this policy',
     paragraphs: [
-      'As features launch — especially crowdfunding, which will involve payment providers — this policy will be updated before those features go live. Material changes will be announced on the site or by email.',
+      'As features launch, and especially crowdfunding, which will involve payment providers, this policy will be updated before those features go live. Material changes will be announced on the site or by email.',
     ],
   },
 ];
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
             >
               {BRAND_CONTACT_EMAIL}
             </a>{' '}
-            — we answer every email. Our platform rules live in the{' '}
+            and we answer every email. Our platform rules live in the{' '}
             <Link href="/terms" className="font-semibold text-primary underline">
               Terms of Service
             </Link>

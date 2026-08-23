@@ -16,8 +16,8 @@ export type AuthErrorView = {
   linkToSignIn?: boolean;
 };
 
-const INVITE_ONLY_MESSAGE = `Access is currently invite-only — contact ${BRAND_CONTACT_EMAIL}`;
-const GENERIC_MESSAGE = 'Something went wrong — please try again.';
+const INVITE_ONLY_MESSAGE = `Access is currently invite-only. Contact ${BRAND_CONTACT_EMAIL}`;
+const GENERIC_MESSAGE = 'Something went wrong. Please try again.';
 
 export function toAuthErrorView(kind: AuthKind, error: unknown): AuthErrorView {
   if (error instanceof ApiError) {
@@ -26,7 +26,7 @@ export function toAuthErrorView(kind: AuthKind, error: unknown): AuthErrorView {
     }
     if (kind === 'sign-up' && error.status === 409) {
       return {
-        message: 'An account already exists for this email —',
+        message: 'An account already exists for this email.',
         linkToSignIn: true,
       };
     }

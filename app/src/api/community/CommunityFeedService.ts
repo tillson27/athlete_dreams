@@ -112,7 +112,7 @@ function toMilestoneItem(source: AthleteFeedSourceRow): OrderedFeedItem | null {
     occurredAtMs,
     item: {
       ...baseItem(source, 'milestone', 'result', highlight.id),
-      headline: `Hit a milestone — ${highlight.title}`,
+      headline: `Hit a milestone: ${highlight.title}`,
       detail: highlight.detail ?? highlight.title,
       photoUrl: toPhotoUrl(highlight.photoRefs),
       occurredAtLabel: 'Recent milestone',
@@ -168,7 +168,7 @@ function toTrainingItem(source: AthleteFeedSourceRow): OrderedFeedItem | null {
     occurredAtMs: 0,
     item: {
       ...baseItem(source, 'training', 'roadmap', 'training'),
-      headline: `Logged a training run — ${training.latestTitle}`,
+      headline: `Logged a training run: ${training.latestTitle}`,
       detail: training.latestMeta,
       photoUrl: null,
       occurredAtLabel: 'Latest session',

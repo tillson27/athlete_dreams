@@ -328,13 +328,13 @@ function DashboardView({
             }`}
           >
             <Icon name={published ? 'check-circle' : 'history'} className="h-4 w-4 shrink-0" />
-            {published ? 'Profile live' : 'Draft — not published yet'}
+            {published ? 'Profile live' : 'Draft, not published yet'}
           </span>
           <h1 className="font-display text-3xl font-extrabold text-on-surface md:text-4xl">
             Welcome back, {firstName}.
           </h1>
           <p className="mt-1 text-on-surface-variant md:text-lg">
-            Your home base — manage your story, share it, and keep it growing.
+            Your home base for managing your story, sharing it, and keeping it growing.
           </p>
         </div>
       </header>
@@ -345,7 +345,7 @@ function DashboardView({
           {mustVerifyEmail ? (
             <div className="flex flex-col items-start gap-3 rounded-card border border-primary/30 bg-primary-container/10 p-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-on-surface">
-                Verify your email when you get a chance — it keeps account recovery secure.
+                Verify your email when you get a chance. It keeps account recovery secure.
               </p>
               <Link
                 href="/verify-email"

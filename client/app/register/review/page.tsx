@@ -5,7 +5,7 @@ import { OnboardingStepGate } from '../_components/OnboardingStepGate';
 import { ReviewSummary } from './ReviewSummary';
 
 export const metadata: Metadata = {
-  title: 'Registration — Final Review',
+  title: 'Registration: Final Review',
 };
 
 export default function FinalReviewPage() {

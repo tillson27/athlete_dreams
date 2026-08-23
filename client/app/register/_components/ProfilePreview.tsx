@@ -130,7 +130,7 @@ export function ProfilePreview({
                     <span className="flex-1">
                       <span className="font-bold text-on-surface">{item.title}</span>
                       {item.detail ? (
-                        <span className="text-on-surface-variant"> — {item.detail}</span>
+                        <span className="text-on-surface-variant">, {item.detail}</span>
                       ) : null}
                     </span>
                     {item.resultUrl ? (
@@ -158,7 +158,7 @@ export function ProfilePreview({
                     <span className="flex-1">
                       <span className="font-bold text-on-surface">{item.name}</span>
                       {item.result ? (
-                        <span className="text-on-surface-variant"> — {item.result}</span>
+                        <span className="text-on-surface-variant">, {item.result}</span>
                       ) : null}
                     </span>
                     {item.resultUrl ? (
@@ -195,7 +195,7 @@ export function ProfilePreview({
       </div>
       {showMeta ? (
         <p className="mt-3 text-center text-xs text-on-surface-variant">
-          Your public profile — it fills in as you go.
+          Your public profile. It fills in as you go.
         </p>
       ) : null}
     </div>

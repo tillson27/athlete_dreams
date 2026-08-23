@@ -81,7 +81,7 @@ async function fileToPersistedImageRef(
   options: PersistedImageOptions
 ): Promise<string> {
   if (file.size > MAX_SOURCE_IMAGE_BYTES) {
-    throw new ImageUploadError('That file is too large — choose an image under 25 MB.');
+    throw new ImageUploadError('That file is too large. Choose an image under 25 MB.');
   }
 
   const isHeic = await isHeicFile(file);

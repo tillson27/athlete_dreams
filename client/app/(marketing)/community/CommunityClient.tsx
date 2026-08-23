@@ -94,7 +94,7 @@ export function CommunityClient() {
         </h1>
         <p className="mt-2 max-w-2xl text-on-surface-variant md:text-lg">
           Here&rsquo;s a preview of what&rsquo;s coming. Soon this will be a live feed of
-          results and the road ahead, from the runners you follow — cheer them on and never miss a
+          results and the road ahead, from the runners you follow. Cheer them on and never miss a
           start line. The journey is better with people in it.
         </p>
       </header>
@@ -198,9 +198,9 @@ export function CommunityClient() {
                       {entry.event} · {entry.date}
                     </p>
                   </div>
-                  {calendarHref(`${entry.athleteName} — ${entry.event}`, entry.date) ? (
+                  {calendarHref(`${entry.athleteName}: ${entry.event}`, entry.date) ? (
                     <a
-                      href={calendarHref(`${entry.athleteName} — ${entry.event}`, entry.date)!}
+                      href={calendarHref(`${entry.athleteName}: ${entry.event}`, entry.date)!}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="Add race day to your calendar"

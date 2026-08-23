@@ -114,13 +114,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     followers: '9.8k',
     disciplineLabel: 'Road Marathon',
     arcSubtitle:
-      'From med-school stress runs to the Boston pro corral — the chapters behind the athlete, in her own words.',
+      'From med-school stress runs to the Boston pro corral. The chapters behind the athlete, in her own words.',
     storyIntro:
-      'Resident physician, marathoner, and first-generation athlete. I started running to stay sane during med school — five years later I’m chasing a sub-2:30 in Tokyo…',
+      'Resident physician, marathoner, and first-generation athlete. I started running to stay sane during med school. Five years later I’m chasing a sub-2:30 in Tokyo…',
     storyBody: [
       'I’m Maya. I split my childhood between Lagos and Toronto, and sport was the one language that worked in both places. But running didn’t become mine until med school, when forty-minute loops around the hospital were the only thing keeping my head above water.',
-      'Those stress runs turned into workouts, workouts turned into races, and somewhere along the way the hobby became a second calling. In 2025 I ran 2:34:11 at Boston — a number I didn’t believe belonged to me until I saw it on the clock.',
-      'Now I’m chasing a sub-2:30 at the Tokyo Marathon while finishing my residency. The double life is chaos, but it’s the point: I run to show the kids in my Lagos neighbourhood — and my patients — that bodies move and minds heal.',
+      'Those stress runs turned into workouts, workouts turned into races, and somewhere along the way the hobby became a second calling. In 2025 I ran 2:34:11 at Boston, a number I didn’t believe belonged to me until I saw it on the clock.',
+      'Now I’m chasing a sub-2:30 at the Tokyo Marathon while finishing my residency. The double life is chaos, but it’s the point: I run to show the kids in my Lagos neighbourhood, and my patients, that bodies move and minds heal.',
       'Being first-generation means nobody hands you the map. I want my racing to be a map for someone else.',
     ],
     personalBests: [
@@ -132,13 +132,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     careerHighlights: [
       {
         title: '2025 Boston Marathon',
-        detail: '2:34:11 (PB) — 14th Female',
+        detail: '2:34:11 (PB), 14th Female',
         tone: 'secondary',
         images: ['1540539234-c14a20fb7c7b', '1461896836934-ffe607ba8211'],
       },
       {
         title: '2026 Houston Half Marathon',
-        detail: '1:11:58 (PB) — 8th Female',
+        detail: '1:11:58 (PB), 8th Female',
         tone: 'primary',
         images: ['1594882645126-14020914d58d', '1483721310020-03333e577078'],
       },
@@ -146,12 +146,12 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     moreResults: [
       {
         title: '2024 Canadian 10K Championships',
-        detail: 'Silver — 33:28',
+        detail: 'Silver, 33:28',
         images: ['1461897104016-0b3b00cc81ee', '1533560904424-a0c61dc306fc'],
       },
       {
         title: '2022 NCAA Cross-Country Championships',
-        detail: 'All-American — 22nd',
+        detail: 'All-American, 22nd',
         images: ['1452626038306-9aae5e071dd3', '1596727147705-61a532a659bd'],
       },
     ],
@@ -160,7 +160,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Houston Half Marathon',
         date: 'Sunday, January 18, 2026',
-        result: '8th Female — 1:11:58 (PB)',
+        result: '8th Female, 1:11:58 (PB)',
         tone: 'secondary',
         links: [{ label: 'Official Houston Results', href: 'https://www.houstonmarathon.com' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1594882645126-14020914d58d'],
@@ -168,7 +168,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Toronto Waterfront Marathon',
         date: 'Sunday, October 19, 2025',
-        result: '1st Canadian Female — 2:35:12',
+        result: '1st Canadian Female, 2:35:12',
         tone: 'primary',
         links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Canadian Running Recap', href: 'https://runningmagazine.ca' }],
         images: ['1530143311094-34d807799e8f'],
@@ -176,7 +176,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Boston Marathon',
         date: 'Monday, April 21, 2025',
-        result: '14th Female — 2:34:11 (PB)',
+        result: '14th Female, 2:34:11 (PB)',
         tone: 'secondary',
         links: [{ label: 'Official B.A.A. Results', href: 'https://www.baa.org/races/boston-marathon/results' }, { label: 'World Athletics Profile', href: 'https://worldathletics.org' }],
         images: ['1540539234-c14a20fb7c7b', '1461896836934-ffe607ba8211'],
@@ -186,20 +186,20 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Canadian 10K Championships',
         date: 'Jun 8, 2024',
-        result: 'Silver — 33:28',
+        result: 'Silver, 33:28',
         images: ['1461897104016-0b3b00cc81ee', '1533560904424-a0c61dc306fc'],
       },
       {
         name: 'Ottawa Half Marathon',
         date: 'May 25, 2024',
-        result: '3rd Female — 1:12:40',
+        result: '3rd Female, 1:12:40',
         images: ['1452626038306-9aae5e071dd3', '1596727147705-61a532a659bd'],
       },
     ],
     moreRacesLabel: 'See more races (2024 & prior)',
     roadmapTitle: 'Road to Tokyo',
     roadmap: [
-      { name: 'Tokyo Marathon — sub-2:30 attempt', date: 'March 1, 2026' },
+      { name: 'Tokyo Marathon, sub-2:30 attempt', date: 'March 1, 2026' },
       { name: 'Ottawa 10K', date: 'May 23, 2026' },
       { name: 'Berlin Marathon', date: 'September 27, 2026' },
     ],
@@ -245,7 +245,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         icon: 'flag',
         tone: 'primary',
         current: true,
-        body: 'Tokyo, March 2026. Chasing a 2:2X while finishing residency — to show my patients and the kids back home that bodies move and minds heal.',
+        body: 'Tokyo, March 2026. Chasing a 2:2X while finishing residency, to show my patients and the kids back home that bodies move and minds heal.',
       },
     ],
     instagramPosts: [
@@ -282,14 +282,14 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     followers: '6.2k',
     disciplineLabel: 'Para Road Racing',
     arcSubtitle:
-      'From a hospital bed at 17 to the marathon start line — the chapters behind the athlete, in his own words.',
+      'From a hospital bed at 17 to the marathon start line. The chapters behind the athlete, in his own words.',
     storyIntro:
-      'I lost my left leg in a snowmobile accident at 17. Six years later, I race marathons on a running blade — and I’m chasing the Boston para division…',
+      'I lost my left leg in a snowmobile accident at 17. Six years later, I race marathons on a running blade, and I’m chasing the Boston para division…',
     storyBody: [
-      'Je m’appelle Félix. I grew up in Saguenay playing hockey and running the hills behind our house — until a snowmobile accident at 17 took my left leg below the knee and, for a while, everything I thought I was.',
+      'Je m’appelle Félix. I grew up in Saguenay playing hockey and running the hills behind our house, until a snowmobile accident at 17 took my left leg below the knee and, for a while, everything I thought I was.',
       'Rehab teaches you to count small wins: sitting up, standing, one step. The day I jogged ten metres on a borrowed running blade, I cried in front of the whole physio ward. Nobody there thought it was strange.',
-      'Running gave me back forward motion — literally. I went from a first 5K where I stopped six times, to para nationals, to finishing the Montréal Marathon in 3:04. Every race, I carry the kids I met in the hospital who are still waiting for their own first step.',
-      'Boston has a para division now. April 2026, je serai là. And I’ll be answering every message in French and English on the way — because a kid in Chicoutimi deserves the same map as a kid in Boston.',
+      'Running gave me back forward motion, literally. I went from a first 5K where I stopped six times, to para nationals, to finishing the Montréal Marathon in 3:04. Every race, I carry the kids I met in the hospital who are still waiting for their own first step.',
+      'Boston has a para division now. April 2026, je serai là. And I’ll be answering every message in French and English on the way, because a kid in Chicoutimi deserves the same map as a kid in Boston.',
     ],
     personalBests: [
       { label: '5km', value: '18:47' },
@@ -300,13 +300,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     careerHighlights: [
       {
         title: '2025 Montréal Marathon',
-        detail: '1st Para Division — 3:04:12 (PB)',
+        detail: '1st Para Division, 3:04:12 (PB)',
         tone: 'secondary',
         images: ['1530143311094-34d807799e8f', '1540539234-c14a20fb7c7b'],
       },
       {
         title: '2025 Canadian Para Athletics Championships',
-        detail: 'Gold — 5000m (T64)',
+        detail: 'Gold, 5000m (T64)',
         tone: 'primary',
         images: ['1461896836934-ffe607ba8211', '1483721310020-03333e577078'],
       },
@@ -314,12 +314,12 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     moreResults: [
       {
         title: '2024 Québec City Half Marathon',
-        detail: 'Para course record — 1:26:40',
+        detail: 'Para course record, 1:26:40',
         images: ['1594882645126-14020914d58d', '1461897104016-0b3b00cc81ee'],
       },
       {
         title: '2023 Défi Entreprises 5K',
-        detail: 'First race back — 24:51',
+        detail: 'First race back, 24:51',
         images: ['1517637633369-e4cc28755e01', '1486739985386-d4fae04ca6f7'],
       },
     ],
@@ -328,15 +328,15 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Marathon Beneva de Montréal',
         date: 'Sunday, September 21, 2025',
-        result: '1st Para Division — 3:04:12 (PB)',
+        result: '1st Para Division, 3:04:12 (PB)',
         tone: 'secondary',
         links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Radio-Canada Feature', href: 'https://ici.radio-canada.ca/sports' }],
         images: ['1540539234-c14a20fb7c7b'],
       },
       {
-        name: 'Canadian Para Athletics Championships — 5000m',
+        name: 'Canadian Para Athletics Championships, 5000m',
         date: 'Saturday, June 28, 2025',
-        result: 'Gold (T64) — 19:02',
+        result: 'Gold (T64), 19:02',
         tone: 'primary',
         links: [{ label: 'Athletics Canada Results', href: 'https://athletics.ca' }],
         images: ['1461896836934-ffe607ba8211'],
@@ -344,7 +344,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Québec City Half Marathon',
         date: 'Sunday, April 27, 2025',
-        result: '1st Para — 1:26:40 (CR)',
+        result: '1st Para, 1:26:40 (CR)',
         tone: 'secondary',
         links: [{ label: 'Sportstats Results', href: 'https://www.sportstats.ca' }, { label: 'Le Soleil Recap', href: 'https://www.lesoleil.com' }],
         images: ['1530143311094-34d807799e8f', '1452626038306-9aae5e071dd3'],
@@ -354,20 +354,20 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Défi Entreprises 10K',
         date: 'Jun 7, 2024',
-        result: '1st Para — 41:33',
+        result: '1st Para, 41:33',
         images: ['1533560904424-a0c61dc306fc', '1596727147705-61a532a659bd'],
       },
       {
         name: 'Course du Fjord 5K',
         date: 'Aug 17, 2023',
-        result: 'First race on the blade — 24:51',
+        result: 'First race on the blade, 24:51',
         images: ['1461897104016-0b3b00cc81ee', '1594882645126-14020914d58d'],
       },
     ],
     moreRacesLabel: 'See more races (2024 & prior)',
     roadmapTitle: 'Road to Boston',
     roadmap: [
-      { name: 'Boston Marathon — Para Division', date: 'April 20, 2026' },
+      { name: 'Boston Marathon, Para Division', date: 'April 20, 2026' },
       { name: 'Ottawa Marathon', date: 'May 24, 2026' },
       { name: 'Marathon Beneva de Montréal', date: 'September 20, 2026' },
     ],
@@ -397,7 +397,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         title: 'Learning everything twice',
         icon: 'history',
         tone: 'primary',
-        body: 'Sitting up. Standing. Walking. Then, on a borrowed running blade, ten jogging metres in the physio ward — and tears nobody found strange.',
+        body: 'Sitting up. Standing. Walking. Then, on a borrowed running blade, ten jogging metres in the physio ward, and tears nobody found strange.',
       },
       {
         era: '2023 – 2025',
@@ -413,7 +413,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         icon: 'flag',
         tone: 'primary',
         current: true,
-        body: 'April 2026. Je serai là — racing for every kid I met in the hospital who’s still waiting on their first step.',
+        body: 'April 2026. Je serai là, racing for every kid I met in the hospital who’s still waiting on their first step.',
       },
     ],
     instagramPosts: [
@@ -448,15 +448,15 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     athleteSlug: 'priya-shah',
     handle: '@priya.on.track',
     followers: '4.7k',
-    disciplineLabel: 'Track — Middle Distance',
+    disciplineLabel: 'Track, Middle Distance',
     arcSubtitle:
-      'From a gravel oval behind a Calgary school to the national standard — the chapters behind the athlete, in her own words.',
+      'From a gravel oval behind a Calgary school to the national standard. The chapters behind the athlete, in her own words.',
     storyIntro:
-      'Middle-distance runner chasing the Canadian 1500m standard — and trying to be the athlete I never saw on TV growing up…',
+      'Middle-distance runner chasing the Canadian 1500m standard, and trying to be the athlete I never saw on TV growing up…',
     storyBody: [
-      'I learned to race on a 400m gravel oval behind my school in northeast Calgary. No spikes, no timing chips — just a teacher with a stopwatch and a line of kids who wanted to be first to the fence.',
+      'I learned to race on a 400m gravel oval behind my school in northeast Calgary. No spikes, no timing chips, just a teacher with a stopwatch and a line of kids who wanted to be first to the fence.',
       'Track chose me before I chose it. But choosing it back was harder: I didn’t see South Asian women on start lines, and for a long time I wondered if the sport had a lane for me. It does. I’m in it.',
-      'In 2025 I won the U Sports 1500m title and ran 4:11.38 at the Harry Jerome Classic. The national standard is 4:07.50. That’s four seconds — a lifetime and nothing at all.',
+      'In 2025 I won the U Sports 1500m title and ran 4:11.38 at the Harry Jerome Classic. The national standard is 4:07.50. That’s four seconds: a lifetime and nothing at all.',
       'When I’m not training, I tutor math for high-schoolers in my old neighbourhood. Fast legs matter less to me than a kid seeing someone with her name run on TV.',
     ],
     personalBests: [
@@ -468,13 +468,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     careerHighlights: [
       {
         title: '2025 U Sports Championships',
-        detail: 'Gold — 1500m (4:14.02)',
+        detail: 'Gold, 1500m (4:14.02)',
         tone: 'secondary',
         images: ['1461896836934-ffe607ba8211', '1461897104016-0b3b00cc81ee'],
       },
       {
         title: '2025 Harry Jerome Classic',
-        detail: '1500m — 4:11.38 (PB)',
+        detail: '1500m, 4:11.38 (PB)',
         tone: 'primary',
         images: ['1483721310020-03333e577078', '1461897104016-0b3b00cc81ee'],
       },
@@ -482,37 +482,37 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     moreResults: [
       {
         title: '2024 Canadian U23 Championships',
-        detail: 'Silver — 1500m',
+        detail: 'Silver, 1500m',
         images: ['1452626038306-9aae5e071dd3', '1533560904424-a0c61dc306fc'],
       },
       {
         title: '2024 Victoria Track Classic',
-        detail: '3000m — 9:04.51 (PB)',
+        detail: '3000m, 9:04.51 (PB)',
         images: ['1461896836934-ffe607ba8211', '1594882645126-14020914d58d'],
       },
     ],
     moreResultsLabel: 'See more results',
     previousRaces: [
       {
-        name: 'Harry Jerome Track Classic — 1500m',
+        name: 'Harry Jerome Track Classic, 1500m',
         date: 'Friday, June 13, 2025',
-        result: '4th — 4:11.38 (PB)',
+        result: '4th, 4:11.38 (PB)',
         tone: 'secondary',
         links: [{ label: 'World Athletics Results', href: 'https://worldathletics.org' }, { label: 'Athletics Canada Recap', href: 'https://athletics.ca' }],
         images: ['1461897104016-0b3b00cc81ee'],
       },
       {
-        name: 'U Sports Championships — 1500m',
+        name: 'U Sports Championships, 1500m',
         date: 'Saturday, March 8, 2025',
-        result: 'Gold — 4:14.02',
+        result: 'Gold, 4:14.02',
         tone: 'primary',
         links: [{ label: 'U Sports Results', href: 'https://usports.ca' }, { label: 'The Gauntlet Feature', href: 'https://thegauntlet.ca' }],
         images: ['1461896836934-ffe607ba8211'],
       },
       {
-        name: 'Victoria Track Classic — 5000m',
+        name: 'Victoria Track Classic, 5000m',
         date: 'Saturday, May 17, 2025',
-        result: '6th — 15:52.10 (PB)',
+        result: '6th, 15:52.10 (PB)',
         tone: 'secondary',
         links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }],
         images: ['1483721310020-03333e577078', '1461897104016-0b3b00cc81ee'],
@@ -520,22 +520,22 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     ],
     morePreviousRaces: [
       {
-        name: 'Canadian U23 Championships — 1500m',
+        name: 'Canadian U23 Championships, 1500m',
         date: 'Jul 27, 2024',
-        result: 'Silver — 4:15.87',
+        result: 'Silver, 4:15.87',
         images: ['1452626038306-9aae5e071dd3', '1533560904424-a0c61dc306fc'],
       },
       {
-        name: 'Edmonton Indoor Open — 800m',
+        name: 'Edmonton Indoor Open, 800m',
         date: 'Feb 10, 2024',
-        result: '1st — 2:06.94 (PB)',
+        result: '1st, 2:06.94 (PB)',
         images: ['1461896836934-ffe607ba8211', '1594882645126-14020914d58d'],
       },
     ],
     moreRacesLabel: 'See more races (2024 & prior)',
     roadmapTitle: 'Chasing 4:07.50',
     roadmap: [
-      { name: 'Canadian Championships — 1500m', date: 'June 26, 2026' },
+      { name: 'Canadian Championships, 1500m', date: 'June 26, 2026' },
       { name: 'Harry Jerome Track Classic', date: 'July 10, 2026' },
       { name: 'NACAC Championships (goal)', date: 'August 2026' },
     ],
@@ -566,7 +566,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         icon: 'trophy',
         tone: 'primary',
         image: '1483721310020-03333e577078',
-        body: 'A U Sports 1500m title and a 4:11.38 PB at Harry Jerome. The question stopped being whether I belong — it became how fast.',
+        body: 'A U Sports 1500m title and a 4:11.38 PB at Harry Jerome. The question stopped being whether I belong. It became how fast.',
       },
       {
         era: 'Now',
@@ -574,7 +574,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         icon: 'flag',
         tone: 'primary',
         current: true,
-        body: 'The national standard is 4:07.50. Four seconds is a lifetime and nothing at all — and I plan to find them by June.',
+        body: 'The national standard is 4:07.50. Four seconds is a lifetime and nothing at all, and I plan to find them by June.',
       },
     ],
     instagramPosts: [
@@ -611,13 +611,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     followers: '15.1k',
     disciplineLabel: 'Trail & Ultra',
     arcSubtitle:
-      'From dawn runs on the Navajo Nation to a Western States golden ticket — the chapters behind the athlete, in his own words.',
+      'From dawn runs on the Navajo Nation to a Western States golden ticket. The chapters behind the athlete, in his own words.',
     storyIntro:
-      'I grew up running toward the sunrise on the Navajo Nation. Now I race 100-kilometre trails — and this June, Western States…',
+      'I grew up running toward the sunrise on the Navajo Nation. Now I race 100-kilometre trails, and this June, Western States…',
     storyBody: [
-      'Yá’át’ééh — I’m Jordan. On the Navajo Nation, running isn’t a workout; it’s older than that. My grandfather woke me before dawn to run east toward the sunrise, the way his grandfather woke him. I’ve been running toward something ever since.',
+      'Yá’át’ééh. I’m Jordan. On the Navajo Nation, running isn’t a workout; it’s older than that. My grandfather woke me before dawn to run east toward the sunrise, the way his grandfather woke him. I’ve been running toward something ever since.',
       'College cross-country in Division II gave me structure and a 2:28 marathon. But the roads always felt like borrowed shoes. The first time I raced 50 kilometres of singletrack above Flagstaff, I understood: the long way home was the whole point.',
-      'In February I finished 2nd overall at the Black Canyon 100K — a golden ticket to the Western States Endurance Run. One hundred miles, Olympic Valley to Auburn. The biggest stage in our sport.',
+      'In February I finished 2nd overall at the Black Canyon 100K, a golden ticket to the Western States Endurance Run. One hundred miles, Olympic Valley to Auburn. The biggest stage in our sport.',
       'I race for the rez kids who run dirt roads at 5 a.m. like I did, with no idea it can take them anywhere. Every start line I reach, I want to hold the door open behind me.',
     ],
     personalBests: [
@@ -629,13 +629,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     careerHighlights: [
       {
         title: '2026 Black Canyon 100K',
-        detail: '2nd Overall — 8:58:47 (Golden Ticket)',
+        detail: '2nd Overall, 8:58:47 (Golden Ticket)',
         tone: 'secondary',
         images: ['1519750157634-b6d493a0f77c', '1594882645126-14020914d58d'],
       },
       {
         title: '2025 Flagstaff Sky Peaks 50K',
-        detail: '1st Overall — 4:02:11',
+        detail: '1st Overall, 4:02:11',
         tone: 'primary',
         images: ['1465188162913-8fb5709d6d57', '1476480862126-209bfaa8edc8'],
       },
@@ -643,12 +643,12 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     moreResults: [
       {
         title: '2025 Canyon de Chelly Ultra 55K',
-        detail: '1st Overall — home-soil win',
+        detail: '1st Overall, home-soil win',
         images: ['1517637633369-e4cc28755e01', '1486218119243-13883505764c'],
       },
       {
         title: '2024 Javelina Jangover 75K',
-        detail: '3rd Overall — 6:48:02',
+        detail: '3rd Overall, 6:48:02',
         images: ['1486739985386-d4fae04ca6f7', '1533560904424-a0c61dc306fc'],
       },
     ],
@@ -657,7 +657,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Black Canyon 100K',
         date: 'Saturday, February 14, 2026',
-        result: '2nd Overall — 8:58:47 (Golden Ticket)',
+        result: '2nd Overall, 8:58:47 (Golden Ticket)',
         tone: 'secondary',
         links: [{ label: 'UltraSignup Results', href: 'https://ultrasignup.com' }, { label: 'iRunFar Coverage', href: 'https://www.irunfar.com' }, { label: 'Golden Ticket Announcement', href: 'https://www.wser.org' }],
         images: ['1465188162913-8fb5709d6d57'],
@@ -665,7 +665,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Canyon de Chelly Ultra 55K',
         date: 'Saturday, October 11, 2025',
-        result: '1st Overall — 4:31:26',
+        result: '1st Overall, 4:31:26',
         tone: 'primary',
         links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Navajo Times Feature', href: 'https://navajotimes.com' }],
         images: ['1486218119243-13883505764c'],
@@ -673,7 +673,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Flagstaff Sky Peaks 50K',
         date: 'Saturday, September 6, 2025',
-        result: '1st Overall — 4:02:11',
+        result: '1st Overall, 4:02:11',
         tone: 'secondary',
         links: [{ label: 'UltraSignup Results', href: 'https://ultrasignup.com' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1519750157634-b6d493a0f77c', '1476480862126-209bfaa8edc8'],
@@ -683,13 +683,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Javelina Jangover 75K',
         date: 'Sep 28, 2024',
-        result: '3rd Overall — 6:48:02',
+        result: '3rd Overall, 6:48:02',
         images: ['1486739985386-d4fae04ca6f7', '1517637633369-e4cc28755e01'],
       },
       {
         name: 'Phoenix Marathon',
         date: 'Feb 24, 2024',
-        result: '5th Overall — 2:28:54 (PB)',
+        result: '5th Overall, 2:28:54 (PB)',
         images: ['1533560904424-a0c61dc306fc', '1486218119243-13883505764c'],
       },
     ],
@@ -719,7 +719,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         title: 'Borrowed shoes',
         icon: 'medal',
         tone: 'tertiary',
-        body: 'Division II cross-country and a 2:28 road marathon. Good years — but the roads always felt like borrowed shoes.',
+        body: 'Division II cross-country and a 2:28 road marathon. Good years, but the roads always felt like borrowed shoes.',
       },
       {
         era: '2022 – 2025',
@@ -734,7 +734,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         title: 'The golden ticket',
         icon: 'trophy',
         tone: 'primary',
-        body: '2nd overall at Black Canyon 100K — 8:58:47 and a spot in the Western States Endurance Run. The biggest stage in our sport.',
+        body: '2nd overall at Black Canyon 100K: 8:58:47 and a spot in the Western States Endurance Run. The biggest stage in our sport.',
       },
       {
         era: 'Now',
@@ -780,13 +780,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     followers: '812',
     disciplineLabel: 'Road Running · Run-club captain',
     arcSubtitle:
-      'From couch-to-5K to a first marathon build — the chapters behind the runner, in her own words.',
+      'From couch-to-5K to a first marathon build. The chapters behind the runner, in her own words.',
     storyIntro:
       'Product designer by day, Tuesday-morning run-club captain by 6 a.m. Two years ago I couldn’t run a kilometre. This May, I’m running my first marathon…',
     storyBody: [
       'Hi, I’m Emma. Two years ago I was burnt out, sleeping badly, and couldn’t run to the end of my block in East Vancouver. A friend sent me a couch-to-5K plan as a joke. I did it out of spite.',
-      'My first 5K took 31 minutes and 6 seconds and I cried behind the finish-line tent. Not because it hurt — because I hadn’t known I was allowed to be proud of myself like that.',
-      'Then came the Tuesday run club. Then captaining it. Then a 1:47 half marathon that my group chat celebrated like an Olympic final. Nobody on this app needs me to be fast — that’s exactly why I’m here.',
+      'My first 5K took 31 minutes and 6 seconds and I cried behind the finish-line tent. Not because it hurt, but because I hadn’t known I was allowed to be proud of myself like that.',
+      'Then came the Tuesday run club. Then captaining it. Then a 1:47 half marathon that my group chat celebrated like an Olympic final. Nobody on this app needs me to be fast, and that’s exactly why I’m here.',
       'This May I’m running the BMO Vancouver Marathon. My first. The plan says 42.2 kilometres; the point is proving that the person from two years ago gets a comeback story too.',
     ],
     personalBests: [
@@ -798,13 +798,13 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     careerHighlights: [
       {
         title: '2026 First Half Half Marathon',
-        detail: 'First sub-1:50 — 1:47:38 (PB)',
+        detail: 'First sub-1:50, 1:47:38 (PB)',
         tone: 'secondary',
         images: ['1530143311094-34d807799e8f', '1452626038306-9aae5e071dd3'],
       },
       {
         title: '2025 Eastside 10K',
-        detail: 'Broke 50 minutes — 49:12 (PB)',
+        detail: 'Broke 50 minutes, 49:12 (PB)',
         tone: 'primary',
         images: ['1517637633369-e4cc28755e01', '1461897104016-0b3b00cc81ee'],
       },
@@ -812,7 +812,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     moreResults: [
       {
         title: '2024 My first 5K',
-        detail: '31:06 — and completely hooked',
+        detail: '31:06, and completely hooked',
         images: ['1594882645126-14020914d58d', '1490578474895-699cd4e2cf59'],
       },
     ],
@@ -821,7 +821,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'First Half Half Marathon',
         date: 'Sunday, February 8, 2026',
-        result: '1:47:38 (PB) — first sub-1:50',
+        result: '1:47:38 (PB), first sub-1:50',
         tone: 'secondary',
         links: [{ label: 'Sportstats Results', href: 'https://www.sportstats.ca' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1530143311094-34d807799e8f'],
@@ -829,7 +829,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Eastside 10K',
         date: 'Saturday, September 13, 2025',
-        result: '49:12 (PB) — first sub-50',
+        result: '49:12 (PB), first sub-50',
         tone: 'primary',
         links: [{ label: 'Official Results', href: 'https://www.sportstats.ca' }, { label: 'Run club recap post', href: 'https://www.instagram.com' }],
         images: ['1452626038306-9aae5e071dd3'],
@@ -837,7 +837,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Fall Classic 10K',
         date: 'Sunday, November 16, 2025',
-        result: '50:30 — negative split!',
+        result: '50:30, negative split!',
         tone: 'secondary',
         links: [{ label: 'Sportstats Results', href: 'https://www.sportstats.ca' }],
         images: ['1533560904424-a0c61dc306fc', '1483721310020-03333e577078'],
@@ -847,20 +847,20 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
       {
         name: 'Summerfast 10K',
         date: 'Jul 19, 2025',
-        result: '52:44 — first 10K',
+        result: '52:44, first 10K',
         images: ['1490578474895-699cd4e2cf59', '1594882645126-14020914d58d'],
       },
       {
-        name: 'My first 5K — Granville Island Turkey Trot',
+        name: 'My first 5K, Granville Island Turkey Trot',
         date: 'Oct 14, 2024',
-        result: '31:06 — cried at the finish',
+        result: '31:06, cried at the finish',
         images: ['1596727147705-61a532a659bd'],
       },
     ],
     moreRacesLabel: 'See more races (the early days)',
     roadmapTitle: 'The First Marathon',
     roadmap: [
-      { name: 'BMO Vancouver Marathon — my first 42.2', date: 'May 3, 2026' },
+      { name: 'BMO Vancouver Marathon, my first 42.2', date: 'May 3, 2026' },
       { name: 'Summerfast 10K', date: 'July 18, 2026' },
       { name: 'Eastside 10K (sub-48 attempt)', date: 'September 12, 2026' },
     ],
@@ -883,7 +883,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         title: 'The first finish line',
         icon: 'heart',
         tone: 'tertiary',
-        body: '31:06 at my first 5K — and tears behind the finish-line tent. I hadn’t known I was allowed to be that proud of myself.',
+        body: '31:06 at my first 5K, and tears behind the finish-line tent. I hadn’t known I was allowed to be that proud of myself.',
       },
       {
         era: '2024 – 2025',
@@ -891,7 +891,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         icon: 'groups',
         tone: 'primary',
         image: '1490578474895-699cd4e2cf59',
-        body: 'I joined the run club for accountability and stayed for the people. Now I captain it — 40 runners, rain or shine, every Tuesday.',
+        body: 'I joined the run club for accountability and stayed for the people. Now I captain it: 40 runners, rain or shine, every Tuesday.',
       },
       {
         era: '2026',
@@ -936,14 +936,14 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     followers: '640',
     disciplineLabel: 'Road & gravel · Everyday rider',
     arcSubtitle:
-      'From a dusty garage bike to her first gran fondo — the chapters behind the rider, in her own words.',
+      'From a dusty garage bike to her first gran fondo. The chapters behind the rider, in her own words.',
     storyIntro:
       'Year-round bike commuter, weekend club rider, and proudly not a racer. Two years ago my bike hung untouched in the garage. This fall I’m riding my first 100 km gran fondo…',
     storyBody: [
-      'I’m Naomi. For years my bike hung in the garage under a film of dust — a good intention I never quite kept. Two years ago a coworker dragged me out on a slow Saturday loop, and something clicked at the coffee stop. I’ve barely stopped pedalling since.',
-      'I’m not fast and I don’t race. I ride to work most days — rain, snow, the works — and I ride for headspace on the weekends. My commute is eleven kilometres of thinking time bookending every day, and it’s become the part I protect most.',
+      'I’m Naomi. For years my bike hung in the garage under a film of dust, a good intention I never quite kept. Two years ago a coworker dragged me out on a slow Saturday loop, and something clicked at the coffee stop. I’ve barely stopped pedalling since.',
+      'I’m not fast and I don’t race. I ride to work most days, through rain and snow and all of it, and I ride for headspace on the weekends. My commute is eleven kilometres of thinking time bookending every day, and it’s become the part I protect most.',
       'This year I found a Saturday-morning community club that waits at the top of every hill for the last rider. That’s the whole culture I want more people to see: no dropping, no ego, just coffee and kilometres. I went from the person getting waited for to the one who waits.',
-      'My big goal is my first 100-kilometre gran fondo this fall. Not to place — just to finish, and to show every dusty-garage-bike person out there that the door is open. Come ride.',
+      'My big goal is my first 100-kilometre gran fondo this fall. Not to place, just to finish, and to show every dusty-garage-bike person out there that the door is open. Come ride.',
     ],
     personalBests: [
       { label: 'Longest ride', value: '82 km' },
@@ -953,14 +953,14 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     ],
     careerHighlights: [
       {
-        title: '2026 Tour de Grand — 60 km route',
-        detail: 'My first organized ride — finished grinning',
+        title: '2026 Tour de Grand, 60 km route',
+        detail: 'My first organized ride, finished grinning',
         tone: 'secondary',
         images: ['1571008887538-b36bb32f4571', '1461896836934-ffe607ba8211'],
       },
       {
         title: '2025 Bike Month Challenge',
-        detail: 'Commuted every workday in June — 22 days car-free',
+        detail: 'Commuted every workday in June, 22 days car-free',
         tone: 'primary',
         images: ['1540539234-c14a20fb7c7b', '1461897104016-0b3b00cc81ee'],
       },
@@ -968,37 +968,37 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     highlightsHeading: 'Ride Highlights',
     moreResults: [
       {
-        title: '2025 Paris to Ancaster — 40 km Fun Route',
+        title: '2025 Paris to Ancaster, 40 km Fun Route',
         detail: 'Survived the mud and loved every minute',
         images: ['1508973379184-7517410fb0bc', '1530143311094-34d807799e8f'],
       },
       {
         title: '2024 First 50 km ride',
-        detail: 'Longest ride at the time — cried a little at the coffee stop',
+        detail: 'Longest ride at the time, cried a little at the coffee stop',
         images: ['1483721310020-03333e577078', '1596727147705-61a532a659bd'],
       },
     ],
     moreResultsLabel: 'See more rides',
     previousRaces: [
       {
-        name: 'Tour de Grand — 60 km route',
+        name: 'Tour de Grand, 60 km route',
         date: 'Sunday, June 7, 2026',
-        result: 'Finished — 2:48 rolling, all smiles',
+        result: 'Finished, 2:48 rolling, all smiles',
         tone: 'secondary',
         links: [{ label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1540539234-c14a20fb7c7b'],
       },
       {
-        name: 'Saturday Community Club — Dundas loop',
+        name: 'Saturday Community Club, Dundas loop',
         date: 'Most Saturdays',
         result: 'No-drop, 44 km with the crew',
         tone: 'primary',
         images: ['1483721310020-03333e577078'],
       },
       {
-        name: 'Paris to Ancaster — 40 km Fun Route',
+        name: 'Paris to Ancaster, 40 km Fun Route',
         date: 'Sunday, April 27, 2025',
-        result: 'Finished — muddy and delighted',
+        result: 'Finished, muddy and delighted',
         tone: 'secondary',
         links: [{ label: 'Event Info', href: 'https://paristoancaster.com' }, { label: 'Strava Activity', href: 'https://www.strava.com' }],
         images: ['1571008887538-b36bb32f4571', '1461897104016-0b3b00cc81ee'],
@@ -1022,7 +1022,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
     moreRacesLabel: 'See more rides (the early days)',
     roadmapTitle: 'The Road to My First 100',
     roadmap: [
-      { name: 'Tour de Grand — 100 km gran fondo (my first)', date: 'September 13, 2026' },
+      { name: 'Tour de Grand, 100 km gran fondo (my first)', date: 'September 13, 2026' },
       { name: 'Fall-colours bikepacking overnighter', date: 'October 2026' },
       { name: 'Keep the car-free commute streak alive', date: 'All winter' },
     ],
@@ -1038,7 +1038,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         title: 'The garage bike',
         icon: 'book',
         tone: 'secondary',
-        body: 'A good intention gathering dust — a bike I bought and barely rode for years, telling myself I’d start “once things calmed down.”',
+        body: 'A good intention gathering dust: a bike I bought and barely rode for years, telling myself I’d start “once things calmed down.”',
       },
       {
         era: '2024',
@@ -1053,7 +1053,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         icon: 'history',
         tone: 'primary',
         image: '1571008887538-b36bb32f4571',
-        body: 'I started commuting by bike — rain, snow, all of it. Eleven kilometres of thinking time became the part of my day I protect most.',
+        body: 'I started commuting by bike through rain, snow, all of it. Eleven kilometres of thinking time became the part of my day I protect most.',
       },
       {
         era: '2025',
@@ -1068,7 +1068,7 @@ export const athleteProfiles: Record<string, RichAthleteProfile> = {
         icon: 'flag',
         tone: 'primary',
         current: true,
-        body: 'A 100 km gran fondo this fall. Not to place — just to finish, and to hold the door open for every dusty-garage-bike person out there.',
+        body: 'A 100 km gran fondo this fall. Not to place, just to finish, and to hold the door open for every dusty-garage-bike person out there.',
       },
     ],
     instagramPosts: [

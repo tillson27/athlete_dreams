@@ -14,7 +14,7 @@ export function BackingTeaserSection() {
           </h2>
           <p className="mx-auto max-w-2xl leading-relaxed text-on-surface-variant md:text-lg">
             We&rsquo;re launching story-first, with crowdfunding coming next. You&rsquo;ll be able
-            to fund a specific race, trip, gear purchase, or training block — chip in one-time or
+            to fund a specific race, trip, gear purchase, or training block. Chip in one-time or
             back an athlete&rsquo;s whole season, and see exactly where every dollar lands. Athletes
             keep their supporters updated with post-event recaps, so crowdfunding here feels less
             like a donation and more like being part of the team.
@@ -31,7 +31,7 @@ export function BackingTeaserSection() {
                 See where every dollar goes
               </h4>
               <p className="text-on-surface-variant">
-                Every campaign is an itemized season — race entries, travel, coaching, gear. Back
+                Every campaign is an itemized season: race entries, travel, coaching, gear. Back
                 the exact line you want, and athletes prove each expense with{' '}
                 <strong className="font-bold text-on-surface">receipts</strong> and post-event
                 updates. No black box, no guessing.
@@ -86,7 +86,7 @@ export function BackingTeaserSection() {
               Until then, follow the journey.
             </h4>
             <p className="leading-relaxed text-white/80 md:text-lg">
-              The runners you follow today are the ones you&rsquo;ll be able to back tomorrow —
+              The runners you follow today are the ones you&rsquo;ll be able to back tomorrow,
               and they&rsquo;ll see you in their corner from day one.
             </p>
             <Link

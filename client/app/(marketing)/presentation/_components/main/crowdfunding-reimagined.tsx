@@ -12,7 +12,7 @@ const pillars = [
   {
     icon: <Users className="h-5 w-5" />,
     title: 'A shared journey',
-    body: "Backers are not donors. They are roadmap partners — live training feeds, performance roadmaps, raw grind content build an unbreakable bond.",
+    body: "Backers are not donors. They are roadmap partners. Live training feeds, performance roadmaps, and raw grind content build an unbreakable bond.",
     bullet: 'Real-time impact sync',
     tone: 'secondary' as const,
   },

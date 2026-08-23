@@ -6,13 +6,13 @@ import { Badge } from '@/components/ui/Badge';
 export const metadata: Metadata = {
   title: 'Brand Hub',
   description:
-    'Discover athletes who fit your brand values, sponsor specific events, or sign full season deals — without paying an agent in the middle.',
+    'Discover athletes who fit your brand values, sponsor specific events, or sign full season deals, without paying an agent in the middle.',
 };
 
 const valueProps = [
   {
     title: 'Search by values, not vanity metrics',
-    body: 'Filter by sport, region, and the values athletes told us matter — adaptive sport, Indigenous representation, mental health, women in sport, climate action.',
+    body: 'Filter by sport, region, and the values athletes told us matter: adaptive sport, Indigenous representation, mental health, women in sport, climate action.',
   },
   {
     title: 'Sponsor at the level that fits',
@@ -20,7 +20,7 @@ const valueProps = [
   },
   {
     title: 'See the receipts',
-    body: 'Athletes post post-event updates with photos and results. You see where your dollars landed — for your marketing team and for your finance team.',
+    body: 'Athletes post post-event updates with photos and results. You see where your dollars landed, for your marketing team and for your finance team.',
   },
   {
     title: 'No agency middle-man',
@@ -28,11 +28,13 @@ const valueProps = [
   },
 ];
 
+// Labels only. The Brand Hub is not built yet, so this panel shows what it will
+// track rather than invented figures.
 const dashboardPreview = [
-  { label: 'Active Sponsorships', value: '12', delta: '+3 this quarter' },
-  { label: 'Athletes in Pipeline', value: '38', delta: 'Across 6 sports' },
-  { label: 'Total Investment', value: '$184K', delta: 'YTD' },
-  { label: 'Content Output', value: '247', delta: 'Posts shipped' },
+  { label: 'Active sponsorships', delta: 'By athlete and by event' },
+  { label: 'Athletes in pipeline', delta: 'Sourced, shortlisted, signed' },
+  { label: 'Committed spend', delta: 'Per campaign line' },
+  { label: 'Deliverables shipped', delta: 'With post-event receipts' },
 ];
 
 export default function BrandsPage() {
@@ -46,7 +48,7 @@ export default function BrandsPage() {
               Sponsor athletes who fit your story.
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-on-surface-variant">
-              ARC is a working directory of athletes with sourced accomplishments, current campaigns, and stated values. Find the athlete you want to back — and skip the agent gauntlet.
+              ARC is a working directory of athletes with sourced accomplishments, current campaigns, and stated values. Find the athlete you want to back, and skip the agent gauntlet.
             </p>
             <div className="flex flex-wrap gap-3">
               <LinkButton href="/athletes" tone="primary" size="lg">
@@ -62,8 +64,12 @@ export default function BrandsPage() {
             <div className="card-lift rounded-card border border-outline-variant bg-surface-container-lowest p-6">
               <div className="flex items-center justify-between border-b border-outline-variant pb-4">
                 <span className="font-display text-lg font-bold">Brand Hub</span>
-                <Badge tone="success">Live</Badge>
+                <Badge tone="soft">In development</Badge>
               </div>
+              <p className="mt-4 text-sm text-on-surface-variant">
+                A single view of the athletes you back and what they delivered. Here is what it will
+                track:
+              </p>
               <div className="mt-5 grid grid-cols-2 gap-4">
                 {dashboardPreview.map((stat) => (
                   <div
@@ -71,16 +77,19 @@ export default function BrandsPage() {
                     className="rounded-card bg-surface-container-low p-4 ring-1 ring-inset ring-outline-variant/60"
                   >
                     <p className="label-bold text-on-surface-variant">{stat.label}</p>
-                    <p className="mt-2 font-display text-2xl font-extrabold text-on-surface">
-                      {stat.value}
-                    </p>
-                    <p className="mt-1 text-xs text-on-surface-variant">{stat.delta}</p>
+                    <p
+                      aria-hidden="true"
+                      className="mt-2 h-6 w-16 rounded-pill bg-surface-container-high"
+                    />
+                    <p className="mt-2 text-xs text-on-surface-variant">{stat.delta}</p>
                   </div>
                 ))}
               </div>
               <div className="mt-5 rounded-card bg-secondary p-4 text-white">
-                <p className="label-bold text-white/75">Avg. brand-to-athlete reply</p>
-                <p className="mt-1 font-display text-2xl font-extrabold">48 hours</p>
+                <p className="label-bold text-white/75">Until it ships</p>
+                <p className="mt-1 text-sm text-white/90">
+                  Email us a brief and we will reply within 48 hours.
+                </p>
               </div>
             </div>
           </div>
@@ -113,7 +122,7 @@ export default function BrandsPage() {
                 Tell us what you&rsquo;re looking for.
               </h2>
               <p className="max-w-xl text-base leading-relaxed text-white/85">
-                Sport, region, demographic, value alignment, budget. We&rsquo;ll send a shortlist of athletes whose profiles fit — within 48 hours, with no contract required.
+                Sport, region, demographic, value alignment, budget. We&rsquo;ll send a shortlist of athletes whose profiles fit, within 48 hours and with no contract required.
               </p>
               <div className="flex flex-wrap gap-3">
                 <LinkButton href="/about#contact" tone="inverse" size="lg">
@@ -131,7 +140,7 @@ export default function BrandsPage() {
             </div>
             <ul className="space-y-3 text-sm text-white/90">
               {[
-                'Match on values, sport, and audience — not follower count.',
+                'Match on values, sport, and audience, not follower count.',
                 'Single-event sponsorships from $500. Season deals scoped per athlete.',
                 'Full handoff once the contract is signed. You own the relationship.',
               ].map((item) => (

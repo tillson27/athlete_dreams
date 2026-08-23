@@ -17,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { athleteSlug } = await params;
   const athlete = findMockAthlete(athleteSlug);
-  return { title: `Manage — ${athlete?.fullName ?? nameFromSlug(athleteSlug)}` };
+  return { title: `Manage ${athlete?.fullName ?? nameFromSlug(athleteSlug)}` };
 }
 
 export default async function ManageProfilePage({

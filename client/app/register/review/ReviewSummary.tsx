@@ -113,7 +113,7 @@ export function ReviewSummary() {
                     ))}
                   </div>
                 ) : (
-                  <Empty>Pick a few values — or write your own — in Step 3.</Empty>
+                  <Empty>Pick a few values, or write your own, in Step 3.</Empty>
                 )}
               </div>
               <div>
