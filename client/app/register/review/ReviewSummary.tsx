@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { ProfilePreview } from '../_components/ProfilePreview';
@@ -47,9 +48,25 @@ export function ReviewSummary() {
         {/* Left: review */}
         <div className="space-y-6 lg:col-span-8">
           <ReviewCard icon="person" title="Basics" editHref="/register/personal-basics?from=review">
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-              <Detail label="Name" value={profile.name} />
-              <Detail label="Location" value={profile.location} />
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+              {profile.heroPhoto ? (
+                <Image
+                  src={profile.heroPhoto}
+                  alt=""
+                  width={320}
+                  height={224}
+                  className="h-28 w-full shrink-0 rounded-lg object-cover sm:w-40"
+                  unoptimized={profile.heroPhoto.startsWith('data:')}
+                />
+              ) : (
+                <div className="flex h-28 w-full shrink-0 items-center justify-center rounded-lg border border-dashed border-outline-variant text-xs italic text-on-surface-variant/60 sm:w-40">
+                  No hero photo
+                </div>
+              )}
+              <div className="grid flex-1 grid-cols-1 gap-8 md:grid-cols-2">
+                <Detail label="Name" value={profile.name} />
+                <Detail label="Location" value={profile.location} />
+              </div>
             </div>
           </ReviewCard>
 
@@ -57,7 +74,7 @@ export function ReviewSummary() {
             {profile.bio ? (
               <p className="leading-relaxed text-on-surface">{profile.bio}</p>
             ) : (
-              <Empty>Add a few lines about your running in Step 1.</Empty>
+              <Empty>Answer the story questions in Step 1 to draft this.</Empty>
             )}
           </ReviewCard>
 
@@ -96,7 +113,7 @@ export function ReviewSummary() {
                     ))}
                   </div>
                 ) : (
-                  <Empty>Pick a few values in Step 3.</Empty>
+                  <Empty>Pick a few values — or write your own — in Step 3.</Empty>
                 )}
               </div>
               <div>

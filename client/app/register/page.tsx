@@ -19,32 +19,32 @@ const steps: {
     number: '1',
     icon: 'person',
     title: '1. Personal Basics',
-    body: 'Tell us who you are. This stage includes your bio, location, and the high-impact profile photography that will represent your brand to potential backers.',
+    body: 'Your name, your city, and a hero photo for the top of your page. Then four short questions — what got you into running, what you’re chasing, the hard part, who’s in your corner — draft your story for you, in your own words to edit.',
   },
   {
     number: '2',
     icon: 'medal',
     title: '2. Athletics & Achievements',
-    body: 'Define your performance stats. List your career highlights, current rankings, and specific athletic goals. This data forms the transparency backbone of your funding request.',
+    body: 'Add the personal bests you want people to see. Career highlights and previous races are optional — add what you have now. Any result you link to its official page shows a Results link on your profile.',
   },
   {
     number: '3',
     icon: 'sync',
     title: '3. Values & Voice',
-    body: 'Choose the values that drive you and add a tagline in your own words. This helps backers understand the person behind the athlete.',
+    body: 'Pick the values that drive you, or write your own in your own words, and add a tagline. This is how backers understand the person behind the athlete.',
   },
   {
     number: '4',
     icon: 'fact-check',
     title: '4. Review & Publish',
-    body: 'The final sprint. Review your funding targets, breakdown of fund usage, and launch your "Epic." Any race you link to its official results links straight to them.',
+    body: 'Give the profile a last look, then publish. You get a public page with a link you can put in your Instagram bio — and you can keep editing it after it’s live.',
   },
 ];
 
 const bottomNav: { icon: IconName; label: string; active?: boolean }[] = [
   { icon: 'person', label: 'Profile' },
-  { icon: 'medal', label: 'Stats' },
-  { icon: 'sync', label: 'Social' },
+  { icon: 'medal', label: 'Results' },
+  { icon: 'sync', label: 'Values' },
   { icon: 'fact-check', label: 'Review', active: true },
 ];
 
@@ -60,8 +60,8 @@ export default function OnboardingGuidePage() {
             How to Build <span className="text-primary-container">Your Epic</span>
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-on-surface-variant">
-            The path to professional funding begins here. Complete these four steps to launch your
-            transparent crowdfunding campaign.
+            Four steps to a public athlete page — your story, your results, and the values you run
+            by. You can keep editing it after it goes live.
           </p>
         </section>
 
@@ -141,7 +141,7 @@ export default function OnboardingGuidePage() {
           >
             Get Started
           </Link>
-          <p className="mt-4 text-xs text-on-surface-variant">Estimated time: 15 minutes</p>
+          <p className="mt-4 text-xs text-on-surface-variant">Estimated time: 10 minutes</p>
         </section>
       </main>
 

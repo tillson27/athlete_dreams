@@ -5,6 +5,7 @@ import type { AthletePayout, AthleteStripeStatus } from 'fad-common';
 import { fetchStripeStatus, startStripeOnboarding } from '@/lib/api';
 import { formatCents } from '@/lib/format';
 import { Icon } from '@/components/ui/Icon';
+import { ComingSoonLabel } from '@/components/ui/ComingSoonLabel';
 
 type CardState =
   | { kind: 'loading' }
@@ -203,7 +204,10 @@ function CardShell({
         <div className="flex items-start gap-3">
           {icon ? <Icon name={icon} className={`mt-0.5 h-6 w-6 shrink-0 ${toneClass}`} /> : null}
           <div>
-            <h2 className="font-display text-xl font-bold text-on-surface">{title}</h2>
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <h2 className="font-display text-xl font-bold text-on-surface">{title}</h2>
+              <ComingSoonLabel />
+            </div>
             {body ? <p className="mt-1 text-sm text-on-surface-variant">{body}</p> : null}
           </div>
         </div>

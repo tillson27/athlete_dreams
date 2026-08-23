@@ -250,6 +250,20 @@ html, body {
   }
 }
 
+/* Paced sign-up: each question pane arrives on its own. */
+@keyframes signup-pane-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.signup-pane {
+  animation: signup-pane-in 0.28s cubic-bezier(0.22, 0.68, 0.16, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .signup-pane {
+    animation: none;
+  }
+}
+
 /* Publish celebration confetti — brief, one-shot fall on the "You're live" moment. */
 @keyframes arc-confetti-fall {
   0% {

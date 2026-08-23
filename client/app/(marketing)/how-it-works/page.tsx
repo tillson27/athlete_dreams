@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const athleteSteps = [
   {
     title: 'Build your profile',
-    body: 'Your story, photos, personal bests, and the values you run by. About 15 minutes from sign-up to a live profile.',
+    body: 'Your story, photos, personal bests, and the values you run by. About 10 minutes from sign-up to a live profile.',
   },
   {
     title: 'Back it up',

@@ -7,6 +7,7 @@ import { formatCents } from '@/lib/format';
 import { profileUrl } from '@/lib/profileUrl';
 import { ArrowGlyph } from '@/components/ui/Button';
 import { FollowButton } from '@/components/site/FollowButton';
+import { ComingSoonLabel } from '@/components/ui/ComingSoonLabel';
 import { ShareCard, type ShareResume } from './ShareCard';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { unsplashPhoto } from '@/lib/unsplash';
@@ -129,15 +130,25 @@ export function AthleteProfile({
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
             <div className="flex items-center gap-4">
               <span className="label-bold text-white/80">{profile.handle}</span>
-              <span className="hidden h-1 w-1 rounded-full bg-white/40 sm:block" />
-              <p className="text-white/70">
-                <span className="font-display text-lg font-bold text-white">
-                  {profile.followers}
-                </span>{' '}
-                <span className="label-bold">followers</span>
-              </p>
+              {/* The count is not yet derived from the real follow graph, so it
+                  renders only when a value exists rather than leaving a blank
+                  where a number belongs. */}
+              {profile.followers ? (
+                <>
+                  <span className="hidden h-1 w-1 rounded-full bg-white/40 sm:block" />
+                  <p className="text-white/70">
+                    <span className="font-display text-lg font-bold text-white">
+                      {profile.followers}
+                    </span>{' '}
+                    <span className="label-bold">followers</span>
+                  </p>
+                </>
+              ) : null}
             </div>
-            <FollowButton slug={athlete.athleteSlug} variant="hero" />
+            <span className="inline-flex items-center gap-2">
+              <FollowButton slug={athlete.athleteSlug} variant="hero" />
+              <ComingSoonLabel tone="on-image" />
+            </span>
           </div>
         </div>
       </section>
@@ -402,22 +413,30 @@ export function AthleteProfile({
             {/* Community */}
             <div className="card-lift order-6 space-y-4 rounded-card border border-surface-container bg-surface-container-lowest p-5 md:p-6 md:order-none">
               <CardHeading icon="groups">Community</CardHeading>
-              <div className={`grid gap-4 ${profile.supportEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                <div>
-                  <p className="font-display text-3xl font-bold text-on-surface">
-                    {profile.followers}
-                  </p>
-                  <p className="label-bold text-on-surface-variant">Followers</p>
+              {profile.followers || profile.supportEnabled ? (
+                <div
+                  className={`grid gap-4 ${
+                    profile.followers && profile.supportEnabled ? 'grid-cols-2' : 'grid-cols-1'
+                  }`}
+                >
+                  {profile.followers ? (
+                    <div>
+                      <p className="font-display text-3xl font-bold text-on-surface">
+                        {profile.followers}
+                      </p>
+                      <p className="label-bold text-on-surface-variant">Followers</p>
+                    </div>
+                  ) : null}
+                  {profile.supportEnabled ? (
+                    <div>
+                      <p className="font-display text-3xl font-bold text-on-surface">
+                        {supportersCount}
+                      </p>
+                      <p className="label-bold text-on-surface-variant">Backers</p>
+                    </div>
+                  ) : null}
                 </div>
-                {profile.supportEnabled ? (
-                  <div>
-                    <p className="font-display text-3xl font-bold text-on-surface">
-                      {supportersCount}
-                    </p>
-                    <p className="label-bold text-on-surface-variant">Backers</p>
-                  </div>
-                ) : null}
-              </div>
+              ) : null}
               <FollowButton slug={athlete.athleteSlug} variant="block" />
             </div>
 

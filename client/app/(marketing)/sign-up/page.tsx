@@ -15,8 +15,8 @@ export default function SignUpPage() {
           Tell your story.
         </h1>
         <p className="mt-2 text-sm text-on-surface-variant">
-          Build your athlete profile in about 15 minutes — your story, your results, and the
-          values you run by. Bring people along for the journey.
+          Three quick questions to start. Then you build your profile in about 10 minutes — your
+          story, your results, and the values you run by.
         </p>
         <Suspense>
           <SignUpForm />

@@ -279,12 +279,12 @@
 ## Step 10 - Guided, paced account creation
 
 ### Metadata
-**Status:** Incomplete
+**Status:** Complete
 **Prereqs:** 1
 **Size:** medium
 **Owner:** ai
-**Completed At:**
-**Completion Notes:**
+**Completed At:** 2026-08-23
+**Completion Notes:** `SignUpForm` now paces its three fields one pane at a time inside one `<form>` with one `signUp()` call, progress dots reusing the wizard's visual language, a Back control, Enter-to-advance (field-only, so the dots and Back stay keyboard-live), and a name-echo card. Email validity comes from the input's own constraint validation; `safeAuthDestination`, `passwordIsStrong`, `PasswordStrengthMeter`, and `toAuthErrorView` (including the "sign in instead" link) are unchanged. Added `.signup-pane` with a `prefers-reduced-motion` override in `client/styles/globals.css`. Validated via `$frontend-review` (`/frontend-review`) and `$ci` (`/ci`); left uncommitted per `$step-loop-no-commit` (`/step-loop-no-commit`).
 
 ### Context
 
@@ -337,9 +337,9 @@
 - Verify: sign up end to end in `api` mode → lands on `/register/personal-basics` with the name pre-filled (Step 1); repeat with `?next=/register/review`; repeat with an already-registered email and confirm the error and sign-in link; tab through every pane; run with reduced motion on.
 
 ### Step checklist
-- [ ] Step-specific tasks complete
-- [ ] `$frontend-review` (`/frontend-review`) run
-- [ ] `$ci` (`/ci`) run
-- [ ] Fix any issues caused by `$ci` (`/ci`)
-- [ ] Step metadata updated in the steps doc and the steps guide index
-- [ ] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)
+- [x] Step-specific tasks complete
+- [x] `$frontend-review` (`/frontend-review`) run
+- [x] `$ci` (`/ci`) run
+- [x] Fix any issues caused by `$ci` (`/ci`)
+- [x] Step metadata updated in the steps doc and the steps guide index
+- [x] Ask user for next action (commit, continue, etc.) (**OVERRIDE:** When executing the step within the `$step-loop` (`/step-loop`) skill, do **NOT** ask the user for next action. **ALWAYS** commit the fully completed step. **GOAL**: One commit per step.)

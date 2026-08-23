@@ -46,10 +46,10 @@ Do not start a step until all the **Prereqs:** for that step are completed.
 | 7 | Fix: edit a saved previous race in place, photos included | Complete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-6-10.md` |
 | 8 | Fix: stop discarding the career-highlight date (full stack) | Complete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-6-10.md` |
 | 9 | Extend inline editing to career highlights and roadmap | Complete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-6-10.md` |
-| 10 | Guided, paced account creation | Incomplete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-6-10.md` |
-| 11 | "Coming soon" labels on Follow and Stripe payouts | Incomplete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-11-13.md` |
-| 12 | Realign the onboarding guide page and review summary | Incomplete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-11-13.md` |
-| 13 | Final validation & cleanup (required, always last) | Incomplete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-11-13.md` |
+| 10 | Guided, paced account creation | Complete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-6-10.md` |
+| 11 | "Coming soon" labels on Follow and Stripe payouts | Complete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-11-13.md` |
+| 12 | Realign the onboarding guide page and review summary | Complete | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-11-13.md` |
+| 13 | Final validation & cleanup (required, always last) | Complete — runtime walkthrough pending | ai | `.ai/tasks/2026-08-22/onboarding-ux-overhaul/onboarding-ux-overhaul-steps-11-13.md` |
 
 ---
 

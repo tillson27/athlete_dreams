@@ -403,7 +403,7 @@ export default function ForAthletesPage() {
               Your story deserves more than a finish time.
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-white/70">
-              Build your ARC profile in about 15 minutes — free while we’re in pilot.
+              Build your ARC profile in about 10 minutes — free while we’re in pilot.
             </p>
             <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
               <Link
