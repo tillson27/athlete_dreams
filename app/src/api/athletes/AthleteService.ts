@@ -242,9 +242,6 @@ function assertPublishable(athlete: AthleteProfileWithRelations): void {
   if (!athlete.storyIntro || athlete.storyIntro.trim().length === 0) {
     missing.push('storyIntro');
   }
-  if (athlete.personalBests.length === 0) {
-    missing.push('personalBests');
-  }
   if (missing.length > 0) {
     throw new ValidationError('Profile is missing required content to publish', { missing });
   }

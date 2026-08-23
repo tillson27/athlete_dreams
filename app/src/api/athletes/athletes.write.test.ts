@@ -210,7 +210,7 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
   describe('POST /v1/athletes/me/publish', () => {
     it('lists exactly the missing content when the guard fails', async () => {
       const fixture = await createFixtureAthlete({
-        suffix: 'publish-missing-all',
+        suffix: 'publish-missing-story',
         disciplineLabel: null,
         storyIntro: null,
         withPersonalBest: false,
@@ -223,8 +223,7 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       expect(response.status).toBe(422);
       expect(response.body.error.code).toBe('validation_error');
       const missing = response.body.error.details.missing as string[];
-      expect(missing).toEqual(expect.arrayContaining(['storyIntro', 'personalBests']));
-      expect(missing).toHaveLength(2);
+      expect(missing).toEqual(['storyIntro']);
 
       const stillUnpublished = await prisma.athleteProfile.findUniqueOrThrow({
         where: { id: fixture.athleteId },
@@ -232,12 +231,12 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       expect(stillUnpublished.publishedAt).toBeNull();
     });
 
-    it('publishes without a discipline when required story and results exist', async () => {
+    it('publishes without a discipline or personal best when required story exists', async () => {
       const fixture = await createFixtureAthlete({
         suffix: 'publish-no-discipline',
         disciplineLabel: null,
         storyIntro: 'Ready to race.',
-        withPersonalBest: true,
+        withPersonalBest: false,
       });
 
       const response = await request(app)

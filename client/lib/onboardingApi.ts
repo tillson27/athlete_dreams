@@ -35,7 +35,7 @@ import { hasStoryAnswers } from './storyDraft';
 // wording stay directly verifiable against a running API.
 //
 // Field mapping (wizard field -> API field), faithful to the seed semantics and
-// the publish guard (`storyIntro` + >=1 personal best):
+// the publish guard (`storyIntro`):
 //   name         -> athleteSlug (slugified, 409-retried) + fullName
 //   location     -> hometown
 //   bio ("story")-> storyBody (paragraph array; the long narrative)
@@ -304,7 +304,6 @@ export async function publishDraft(): Promise<void> {
 // Maps the publish-guard 422 keys to a plain checklist sentence apiece.
 const PUBLISH_MISSING_SENTENCES: Record<string, string> = {
   storyIntro: 'Step 3 - Values & Voice: add your tagline',
-  personalBests: 'Step 2 - Athletics & Achievements: add at least one personal best',
 };
 
 export function toPublishChecklist(details: unknown): string[] {

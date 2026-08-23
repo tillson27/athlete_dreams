@@ -67,8 +67,8 @@ export function AthleticsForm() {
               Step 2: Athletics &amp; Achievements
             </h2>
             <p className="text-lg text-tertiary">
-              Add a few personal bests. They show up as the highlights on your profile. You can add
-              more later.
+              Add the personal bests you want supporters to see. You can skip this for now and add
+              them later.
             </p>
           </div>
 
@@ -76,8 +76,8 @@ export function AthleticsForm() {
             <div className="flex flex-wrap items-center gap-3">
               <Icon name="trophy" className="h-6 w-6 shrink-0 text-primary sm:h-7 sm:w-7" />
               <h3 className="font-display text-xl font-bold text-on-surface sm:text-2xl">Personal bests</h3>
-              <span className="label-bold rounded-pill bg-error/10 px-2.5 py-1 text-xs text-error md:ml-auto">
-                Required to publish
+              <span className="label-bold rounded-pill bg-primary-container/20 px-2.5 py-1 text-xs text-primary md:ml-auto">
+                Optional
               </span>
             </div>
 

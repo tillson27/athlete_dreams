@@ -365,7 +365,7 @@ export function PublishPanel() {
         )}
       </button>
       <p className="text-center text-xs text-on-surface-variant">
-        Publish when your tagline and first personal best are ready; the link stays editable.
+        Publish when your tagline is ready; your profile stays editable.
       </p>
     </div>
   );

@@ -52,6 +52,10 @@ export function AthleteProfile({
   const peerNoun = isCyclist ? 'Riders' : 'Runners';
   const sportNoun = isCyclist ? 'cycling' : 'running';
   const supportersCount = profile.supporterCount ?? 0;
+  const hasPersonalBests = profile.personalBests.length > 0;
+  const tabs = hasPersonalBests
+    ? profileTabs
+    : profileTabs.filter((tab) => tab.href !== '#results');
   // Donate target: the first ACTIVE campaign carrying a real id (api mode only —
   // mock campaigns have no id, so the CTAs fall back to the /support teaser).
   const donateCampaignId = athlete.campaigns.find(
@@ -155,7 +159,7 @@ export function AthleteProfile({
 
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
         {/* IN-PAGE TAB NAV (mobile) */}
-        <ProfileTabNav tabs={profileTabs} />
+        <ProfileTabNav tabs={tabs} />
 
         {/* QUICK ACTIONS (desktop — mobile uses the sticky bottom bar) */}
         <section className="relative z-10 -mt-10 hidden md:block">
@@ -299,21 +303,22 @@ export function AthleteProfile({
               </div>
             </article>
 
-            {/* Personal Bests */}
-            <div
-              id="results"
-              className="card-lift order-3 scroll-mt-32 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none"
-            >
-              <CardHeading icon="timer">Personal Bests</CardHeading>
-              <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-                {profile.personalBests.map((best) => (
-                  <div key={best.label} className="rounded-input bg-surface-container-low p-4">
-                    <p className="label-bold text-on-surface-variant">{best.label}</p>
-                    <p className="font-display text-xl font-bold text-on-surface">{best.value}</p>
-                  </div>
-                ))}
+            {hasPersonalBests ? (
+              <div
+                id="results"
+                className="card-lift order-3 scroll-mt-32 rounded-card bg-surface-container-lowest p-5 sm:p-6 md:p-8 md:order-none"
+              >
+                <CardHeading icon="timer">Personal Bests</CardHeading>
+                <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+                  {profile.personalBests.map((best) => (
+                    <div key={best.label} className="rounded-input bg-surface-container-low p-4">
+                      <p className="label-bold text-on-surface-variant">{best.label}</p>
+                      <p className="font-display text-xl font-bold text-on-surface">{best.value}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
 
             {/* Power Profile — cycling-only */}
             {profile.powerProfile ? (
