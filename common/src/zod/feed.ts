@@ -11,7 +11,7 @@ export const feedCategorySchema = z.enum(['race', 'training', 'milestone']);
 export type FeedCategory = z.infer<typeof feedCategorySchema>;
 
 // Public API contract: a derived community-feed card. `feedItemId` is
-// `<athleteSlug>-<kind>-<sourceId>` and `isVerified` is true when the source
+// `<athleteSlug>-<category>-<sourceId>` and `isVerified` is true when the source
 // result carries a `resultUrl` (see context §9 example shape). `photoUrl` is a
 // media reference (absolute URL or bare ref) or null; clients compose a display
 // URL from a bare ref.

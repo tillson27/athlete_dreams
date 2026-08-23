@@ -192,7 +192,7 @@ export const updateAthleteProfileRequestSchema = z
     socialInstagramHandle: z.string().max(60).optional(),
     socialTwitterHandle: z.string().max(60).optional(),
     socialStravaUrl: z.string().url().optional(),
-    heroMediaUrl: mediaRefSchema.optional(),
+    heroMediaUrl: mediaRefSchema.nullable().optional(),
   })
   .strict();
 

@@ -284,17 +284,15 @@ function toMergedPresentation(
   };
 }
 
-// Story and core values ride the same PATCH. `storyIntro` is only sent when the
-// athlete typed one, because the publish guard treats an empty tagline as
-// "unpublishable" and a blank PATCH would silently un-publish a live profile.
+// Story and core values ride the same PATCH. `storyIntro` is sent even when
+// blank so clearing the tagline in the editor clears it on the server too.
 function toStoryAndValuesPatch(edits: AthleteEdits): UpdateAthleteProfileRequest {
   const patch: UpdateAthleteProfileRequest = {
     coreValues: edits.coreValues
       .filter((value) => value.title.trim() && value.body.trim())
       .map((value) => ({ title: value.title.trim(), body: value.body.trim() })),
   };
-  const storyIntro = edits.storyIntro.trim();
-  if (storyIntro) patch.storyIntro = storyIntro;
+  patch.storyIntro = edits.storyIntro.trim();
   patch.storyBody = edits.storyBody
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())

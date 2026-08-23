@@ -49,6 +49,7 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
     suffix: string;
     disciplineLabel?: string | null;
     storyIntro?: string | null;
+    heroMediaUrl?: string | null;
     withPersonalBest?: boolean;
     publishedAt?: Date | null;
   }): Promise<FixtureAthlete> {
@@ -66,6 +67,7 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
         countryCode: 'CA',
         values: ['Grit'],
         storyIntro: overrides.storyIntro ?? null,
+        heroMediaUrl: overrides.heroMediaUrl ?? null,
         publishedAt: overrides.publishedAt ?? null,
       },
     });
@@ -178,6 +180,30 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       const otherRead = await request(app).get(`/v1/athletes/${other.athleteSlug}`);
       expect(otherRead.status).toBe(200);
       expect(otherRead.body.data.fullName).toBe('Fixture Athlete');
+    });
+
+    it('clears profile fields that the client sends as empty or null', async () => {
+      const fixture = await createFixtureAthlete({
+        suffix: 'patch-clear-fields',
+        storyIntro: 'Existing tagline',
+        heroMediaUrl: 'https://example.com/hero.jpg',
+        publishedAt: new Date(),
+      });
+
+      const patch = await request(app)
+        .patch('/v1/athletes/me')
+        .set('authorization', `Bearer ${fixture.accessToken}`)
+        .send({ storyIntro: '', heroMediaUrl: null });
+
+      expect(patch.status).toBe(200);
+      const parsed = athleteProfileSchema.parse(patch.body.data);
+      expect(parsed.storyIntro).toBe('');
+      expect(parsed.heroMediaUrl).toBeNull();
+
+      const read = await request(app).get(`/v1/athletes/${fixture.athleteSlug}`);
+      expect(read.status).toBe(200);
+      expect(read.body.data.storyIntro).toBe('');
+      expect(read.body.data.heroMediaUrl).toBeNull();
     });
   });
 

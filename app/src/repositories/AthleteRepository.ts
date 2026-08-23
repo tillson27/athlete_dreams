@@ -91,7 +91,7 @@ export interface AthleteProfilePatch {
   socialInstagramHandle?: string;
   socialTwitterHandle?: string;
   socialStravaUrl?: string;
-  heroMediaUrl?: string;
+  heroMediaUrl?: string | null;
 }
 
 export interface HighlightInput {

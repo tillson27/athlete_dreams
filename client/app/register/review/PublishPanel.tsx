@@ -355,7 +355,7 @@ export function PublishPanel() {
         ) : publishBlockedByAccount ? (
           <>
             <Icon name="lock" className="h-6 w-6" />
-            Verify email to publish
+            {sessionReady ? 'Sign in to publish' : 'Checking account...'}
           </>
         ) : (
           <>

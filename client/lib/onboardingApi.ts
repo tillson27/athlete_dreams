@@ -100,7 +100,12 @@ export function toStep1Patch(
   if (hometown) patch.hometown = hometown;
   const storyBody = paragraphsFromBio(profile.bio);
   if (storyBody.length > 0) patch.storyBody = storyBody;
-  if (profile.heroPhoto?.trim()) patch.heroMediaUrl = profile.heroPhoto.trim();
+  const heroPhoto = profile.heroPhoto?.trim();
+  if (heroPhoto) {
+    patch.heroMediaUrl = heroPhoto;
+  } else if (existing?.heroMediaUrl) {
+    patch.heroMediaUrl = null;
+  }
   if (hasStoryAnswers(profile.storyAnswers) || hasStoredStoryAnswers(existing)) {
     patch.presentation = {
       ...(existing?.presentation ?? {}),
@@ -116,8 +121,7 @@ export function toStep3Patch(profile: OnboardingProfile): UpdateAthleteProfileRe
   const patch: UpdateAthleteProfileRequest = {
     values: profile.values.filter((value) => value.trim().length > 0),
   };
-  const storyIntro = profile.mission.trim();
-  if (storyIntro) patch.storyIntro = storyIntro;
+  patch.storyIntro = profile.mission.trim();
   return patch;
 }
 
