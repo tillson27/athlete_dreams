@@ -7,7 +7,12 @@ import { Badge } from '@/components/ui/Badge';
 import { findMockAthlete, type MockAthlete } from '@/lib/mockAthletes';
 import { findAthleteProfile } from '@/lib/athleteProfiles';
 import { useDirectoryAthletes } from '@/lib/dataSource';
-import { athleteRouteFromPath, type AthleteRoute } from '@/lib/profileUrl';
+import {
+  athleteManageHref,
+  athleteProfileHref,
+  athleteRouteFromPath,
+  type AthleteRoute,
+} from '@/lib/profileUrl';
 import { nameFromSlug } from '@/lib/slugify';
 import { unsplashPhoto } from '@/lib/unsplash';
 import { AthleteProfileHydrator } from './[athleteSlug]/AthleteProfileHydrator';
@@ -44,7 +49,21 @@ export function AthleteDirectory() {
     const params = new URLSearchParams(window.location.search);
     const initialPage = Number.parseInt(params.get('page') ?? '1', 10);
 
-    setRuntimeRoute(athleteRouteFromPath(window.location.pathname, params));
+    const route = athleteRouteFromPath(window.location.pathname, params);
+    setRuntimeRoute(route);
+    // A legacy `?profile=`/`?manage=` link still resolves, but swap the address
+    // bar to the canonical path form so anything shared onward from here carries
+    // it. The filter-sync effect below bails while `runtimeRoute` is set, so it
+    // cannot overwrite this.
+    if (route && (params.get('profile') || params.get('manage'))) {
+      window.history.replaceState(
+        null,
+        '',
+        route.kind === 'manage'
+          ? athleteManageHref(route.athleteSlug)
+          : athleteProfileHref(route.athleteSlug)
+      );
+    }
     setFilters({
       country: countryFromParam(params.get('country')),
       search: params.get('search') ?? '',

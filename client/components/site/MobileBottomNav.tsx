@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { athleteRouteFromPath } from '@/lib/profileUrl';
 
 // Mobile-only bottom nav. Matches the wireframe's icon language using
 // inline SVGs so we don't need the Material Symbols web font.
@@ -55,9 +56,32 @@ const items: Array<{
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  // Profile pages have their own sticky action bar; two stacked bars is too much chrome.
-  if (/^\/athletes\/[^/]+$/.test(pathname)) return null;
+  const searchParams = useSearchParams();
+  // Profile pages have their own sticky action bar; two stacked bars is too much
+  // chrome, and this nav would paint over the SHARE button. Route matching goes
+  // through the shared helper so `/athletes/<slug>` and `/athletes?profile=<slug>`
+  // cannot drift apart again. The manage page keeps its nav.
+  const athleteRoute = athleteRouteFromPath(pathname, searchParams);
+  if (athleteRoute?.kind === 'profile') return null;
 
+  return <NavBar />;
+}
+
+// Public API contract: the Suspense fallback for `MobileBottomNav`, which reads
+// `useSearchParams` and is therefore excluded from the static prerender.
+// Under `output: 'export'` a single `/athletes.html` serves `/athletes`,
+// `/athletes?profile=<slug>` and (via the CloudFront rewrite) `/athletes/<slug>`,
+// so only the browser can tell whether that page is a profile. Every other route
+// is unambiguous from the path alone — prerender the nav there rather than
+// letting it pop in after hydration on every page of the site.
+export function MobileBottomNavFallback() {
+  const pathname = usePathname();
+  if (pathname?.startsWith('/athletes')) return null;
+
+  return <NavBar />;
+}
+
+function NavBar() {
   return (
     <nav
       aria-label="Mobile primary"

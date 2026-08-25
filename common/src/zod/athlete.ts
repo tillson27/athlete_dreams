@@ -66,9 +66,19 @@ export const athleteRoadmapItemSchema = z.object({
 
 export type AthleteRoadmapItem = z.infer<typeof athleteRoadmapItemSchema>;
 
+// Exported because the client mirrors core value titles back into the legacy
+// `values` array, and has to apply the same truncation to recognise an already
+// mirrored title rather than treating it as a second, distinct value.
+export const ATHLETE_VALUE_MAX_LENGTH = 40;
+export const ATHLETE_VALUES_MAX = 8;
+export const ATHLETE_CORE_VALUES_MAX = 12;
+
+// `body` is the optional "what it means to you" prose; a title-only core value is
+// valid. `.default('')` keeps the inferred output type `string` so consumers never
+// need a null-check.
 export const athleteCoreValueSchema = z.object({
   title: z.string().min(1).max(120),
-  body: z.string().min(1).max(2000),
+  body: z.string().max(2000).default(''),
 });
 
 export type AthleteCoreValue = z.infer<typeof athleteCoreValueSchema>;
@@ -109,7 +119,7 @@ export const athleteProfileSchema = z.object({
   secondarySports: z.array(sportSchema),
   hometown: z.string().max(120).nullable(),
   countryCode: z.string().length(2).nullable(),
-  values: z.array(z.string().max(40)),
+  values: z.array(z.string().max(ATHLETE_VALUE_MAX_LENGTH)),
   coreValues: z.array(athleteCoreValueSchema).optional(),
   storyIntro: z.string().max(2000).nullable().optional(),
   storyBody: z.array(z.string().max(6000)).optional(),
@@ -167,7 +177,7 @@ export const createAthleteProfileRequestSchema = z
     bio: z.string().max(4000).optional(),
     hometown: z.string().max(120).optional(),
     countryCode: z.string().length(2).optional(),
-    values: z.array(z.string().max(40)).max(8).optional(),
+    values: z.array(z.string().max(ATHLETE_VALUE_MAX_LENGTH)).max(ATHLETE_VALUES_MAX).optional(),
   })
   .strict();
 
@@ -184,8 +194,8 @@ export const updateAthleteProfileRequestSchema = z
     hometown: z.string().max(120).optional(),
     countryCode: z.string().length(2).optional(),
     secondarySports: z.array(sportSchema).max(8).optional(),
-    values: z.array(z.string().max(40)).max(8).optional(),
-    coreValues: z.array(athleteCoreValueSchema).max(12).optional(),
+    values: z.array(z.string().max(ATHLETE_VALUE_MAX_LENGTH)).max(ATHLETE_VALUES_MAX).optional(),
+    coreValues: z.array(athleteCoreValueSchema).max(ATHLETE_CORE_VALUES_MAX).optional(),
     storyIntro: z.string().max(2000).optional(),
     storyBody: z.array(z.string().max(6000)).max(20).optional(),
     presentation: z.record(z.unknown()).optional(),

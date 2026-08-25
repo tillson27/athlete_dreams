@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ATHLETE_VALUE_MAX_LENGTH } from 'fad-common';
 import type { MockAthlete } from '@/lib/mockAthletes';
 import type { RichAthleteProfile } from '@/lib/athleteProfiles';
 import { deriveEdits } from '@/lib/athleteEdits';
@@ -62,6 +63,19 @@ export function AthleteProfile({
     (campaign) => campaign.campaignStatus === 'ACTIVE' && campaign.campaignId
   )?.campaignId;
   const editDefaults = deriveEdits(profile);
+  // Onboarding `values` and editor `coreValues` are two stores for one idea;
+  // show every value the athlete has without duplicating a title across both.
+  // `values` entries are capped at 40 chars, so a longer core value title also
+  // has to match on its truncated form.
+  const coreValueTitles = new Set(
+    profile.coreValues.flatMap((value) => [
+      value.title.trim().toLowerCase(),
+      value.title.trim().slice(0, ATHLETE_VALUE_MAX_LENGTH).toLowerCase(),
+    ])
+  );
+  const unmatchedValues = athlete.values.filter(
+    (value) => value.trim() && !coreValueTitles.has(value.trim().toLowerCase())
+  );
   const hasTrainingSnapshot = Boolean(
     profile.training.weeklyKm ||
       profile.training.weeklyTime ||
@@ -379,11 +393,11 @@ export function AthleteProfile({
               />
             </section>
 
-            {/* Core Values — onboarding captures bare value words, the manage
-                editor adds the "what it means to me" line, so render whichever
-                the athlete has rather than an empty card. */}
-            {profile.coreValues.length > 0 || athlete.values.length > 0 ? (
-              <div className="card-lift order-11 rounded-card bg-inverse-surface p-5 text-white sm:p-6 md:order-none md:p-8">
+            {/* Core Values — onboarding captures bare value words while the
+                manage editor adds the "what it means to me" line. Render the
+                union: saving one core value must never hide the rest. */}
+            {profile.coreValues.length > 0 || unmatchedValues.length > 0 ? (
+              <div className="card-lift order-11 space-y-4 rounded-card bg-inverse-surface p-5 text-white sm:p-6 md:order-none md:p-8">
                 <h3 className="mb-6 flex items-center gap-2 font-display text-xl font-bold text-primary-container">
                   <Icon name="diamond" className="h-6 w-6" />
                   Core Values
@@ -393,13 +407,14 @@ export function AthleteProfile({
                     {profile.coreValues.map((value) => (
                       <div key={value.title} className="rounded-input border border-white/15 p-4">
                         <p className="label-bold mb-1 text-primary-container">{value.title}</p>
-                        <p className="text-xs text-white/70">{value.body}</p>
+                        {value.body ? <p className="text-xs text-white/70">{value.body}</p> : null}
                       </div>
                     ))}
                   </div>
-                ) : (
+                ) : null}
+                {unmatchedValues.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {athlete.values.map((value) => (
+                    {unmatchedValues.map((value) => (
                       <span
                         key={value}
                         className="rounded-pill border border-white/15 px-3 py-1.5 text-sm font-semibold text-primary-container"
@@ -408,7 +423,7 @@ export function AthleteProfile({
                       </span>
                     ))}
                   </div>
-                )}
+                ) : null}
               </div>
             ) : null}
           </div>

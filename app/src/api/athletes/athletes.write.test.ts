@@ -167,6 +167,32 @@ describe.skipIf(!shouldRunDatabaseTests)('Athlete write path (database)', () => 
       expect(read.body.data.disciplineLabel).toBe('Road Marathon');
     });
 
+    it('persists a core value that has a title but no body', async () => {
+      const fixture = await createFixtureAthlete({
+        suffix: 'patch-title-only-value',
+        publishedAt: new Date(),
+      });
+
+      const patch = await request(app)
+        .patch('/v1/athletes/me')
+        .set('authorization', `Bearer ${fixture.accessToken}`)
+        .send({ coreValues: [{ title: 'Mental health' }, { title: 'Grit', body: '' }] });
+
+      expect(patch.status).toBe(200);
+      const parsed = athleteProfileSchema.parse(patch.body.data);
+      expect(parsed.coreValues).toEqual([
+        { title: 'Mental health', body: '' },
+        { title: 'Grit', body: '' },
+      ]);
+
+      const read = await request(app).get(`/v1/athletes/${fixture.athleteSlug}`);
+      expect(read.status).toBe(200);
+      expect(read.body.data.coreValues).toEqual([
+        { title: 'Mental health', body: '' },
+        { title: 'Grit', body: '' },
+      ]);
+    });
+
     it('only affects the caller profile, never another athlete', async () => {
       const owner = await createFixtureAthlete({ suffix: 'patch-owner', publishedAt: new Date() });
       const other = await createFixtureAthlete({ suffix: 'patch-other', publishedAt: new Date() });

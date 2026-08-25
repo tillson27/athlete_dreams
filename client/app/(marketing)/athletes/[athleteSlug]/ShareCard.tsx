@@ -43,6 +43,8 @@ export function ShareCard({
   const [open, setOpen] = useState(false);
   const [platform, setPlatform] = useState<PlatformKey>('instagram-story');
   const [imageTick, setImageTick] = useState(0);
+  const [canNativeShare, setCanNativeShare] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [highlightOn, setHighlightOn] = useState<boolean[]>(() =>
     resume.highlights.map((_, index) => index < 2),
   );
@@ -54,6 +56,14 @@ export function ShareCard({
   const slug = resume.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const current = PLATFORMS.find((entry) => entry.key === platform)!;
   const webIntent = platform === 'x' || platform === 'facebook' || platform === 'linkedin';
+  const absoluteUrl = resume.url.startsWith('http') ? resume.url : `https://${resume.url}`;
+  const shareText = `Back ${resume.name} on ARC. ${resume.tagline}.`;
+
+  // `navigator` does not exist during prerender, so detect in an effect — a
+  // render-time check would desync hydration.
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+  }, []);
 
   // Load the athlete photo once (crossOrigin so the canvas can export as PNG).
   useEffect(() => {
@@ -142,17 +152,56 @@ export function ShareCard({
   };
 
   const share = () => {
-    const url = resume.url.startsWith('http') ? resume.url : `https://${resume.url}`;
-    const text = `Back ${resume.name} on ARC. ${resume.tagline}.`;
     const enc = encodeURIComponent;
     if (platform === 'x') {
-      window.open(`https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(url)}`, '_blank', 'noopener');
+      window.open(`https://twitter.com/intent/tweet?text=${enc(shareText)}&url=${enc(absoluteUrl)}`, '_blank', 'noopener');
     } else if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, '_blank', 'noopener');
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${enc(absoluteUrl)}`, '_blank', 'noopener');
     } else if (platform === 'linkedin') {
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`, '_blank', 'noopener');
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${enc(absoluteUrl)}`, '_blank', 'noopener');
     } else {
       download();
+    }
+  };
+
+  // `toBlob` is callback-based, and a canvas tainted by a non-CORS photo host
+  // makes it throw — resolve `null` in both cases so sharing degrades to a link.
+  const toShareFile = (): Promise<File | null> =>
+    new Promise((resolve) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return resolve(null);
+      try {
+        canvas.toBlob((blob) => {
+          resolve(blob ? new File([blob], `${slug}-${platform}.png`, { type: 'image/png' }) : null);
+        }, 'image/png');
+      } catch {
+        resolve(null);
+      }
+    });
+
+  // Three tiers: image + link -> link only -> download. `AbortError` is the
+  // athlete dismissing the OS sheet, which is not a failure.
+  const nativeShare = async () => {
+    const file = await toShareFile();
+    try {
+      if (file && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: resume.name, text: shareText, url: absoluteUrl });
+        return;
+      }
+      await navigator.share({ title: resume.name, text: shareText, url: absoluteUrl });
+    } catch (error) {
+      if ((error as Error)?.name === 'AbortError') return;
+      download();
+    }
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(absoluteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable — link is still visible to copy manually */
     }
   };
 
@@ -271,29 +320,64 @@ export function ShareCard({
               />
             </div>
 
-            {/* Actions */}
+            {/* Actions — where the OS share sheet exists it carries the image and
+                the link to any app at once, so it becomes the primary action and
+                the per-platform web intent drops out rather than sitting beside
+                it as a redundant second path (client/AGENTS.md minimalism). */}
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              {canNativeShare ? (
+                <button
+                  type="button"
+                  onClick={nativeShare}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary transition-colors hover:bg-primary active:scale-95"
+                >
+                  <ShareGlyph />
+                  Share
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={download}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary transition-colors hover:bg-primary active:scale-95"
+                >
+                  <DownloadGlyph />
+                  Download image
+                </button>
+              )}
+              {canNativeShare ? (
+                <button
+                  type="button"
+                  onClick={download}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button border border-outline px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95"
+                >
+                  <DownloadGlyph />
+                  Download image
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={share}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button border border-outline px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95"
+                >
+                  <span className="h-4 w-4">{current.icon}</span>
+                  {webIntent ? `Share to ${current.label}` : `Open ${current.label}`}
+                </button>
+              )}
               <button
                 type="button"
-                onClick={download}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary transition-colors hover:bg-primary active:scale-95"
-              >
-                <DownloadGlyph />
-                Download image
-              </button>
-              <button
-                type="button"
-                onClick={share}
+                onClick={copyLink}
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-button border border-outline px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95"
               >
-                <span className="h-4 w-4">{current.icon}</span>
-                {webIntent ? `Share to ${current.label}` : `Open ${current.label}`}
+                <span className="h-4 w-4">{copied ? <CheckGlyph /> : <LinkGlyph />}</span>
+                {copied ? 'Copied' : 'Copy link'}
               </button>
             </div>
             <p className="mt-3 text-center text-xs text-on-surface-variant">
-              {webIntent
-                ? 'The composer opens with your link. Download the image and attach it to the post.'
-                : `${current.label} doesn't allow direct web posting. Download the image, then add it to your ${current.label} post.`}
+              {canNativeShare
+                ? 'Share sends the card and your link straight to any app on your phone.'
+                : webIntent
+                  ? 'The composer opens with your link. Download the image and attach it to the post.'
+                  : `${current.label} doesn't allow direct web posting. Download the image, then add it to your ${current.label} post.`}
             </p>
           </div>
         </div>
@@ -376,6 +460,14 @@ function CloseGlyph() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5">
       <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
+    </svg>
+  );
+}
+
+function LinkGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+      <path d="M10.6 13.4a1 1 0 0 1 0-1.4l1.4-1.4a1 1 0 0 1 1.4 1.4l-1.4 1.4a1 1 0 0 1-1.4 0Zm-3.4 4.8a4 4 0 0 1 0-5.66l2.83-2.83 1.41 1.42-2.82 2.82a2 2 0 0 0 2.83 2.83l2.82-2.83 1.42 1.42-2.83 2.83a4 4 0 0 1-5.66 0Zm4.24-9.9 2.83-2.83a4 4 0 1 1 5.66 5.66l-2.83 2.83-1.41-1.42 2.82-2.82a2 2 0 1 0-2.83-2.83L12.86 9.7 11.44 8.3Z" />
     </svg>
   );
 }

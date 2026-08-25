@@ -1,60 +1,29 @@
 // Single source for the public profile address so domain changes touch one file.
 export const PROFILE_HOST = 'athletearc.ca';
 
-type AthleteRoutePreference = 'auto' | 'static' | 'runtime';
 type SearchParamsReader = Pick<URLSearchParams, 'get'>;
 
 export type AthleteRoute = { kind: 'profile' | 'manage'; athleteSlug: string };
 
-function shouldUseRuntimeAthleteRoute(routePreference: AthleteRoutePreference): boolean {
-  if (routePreference === 'runtime') return true;
-  if (routePreference === 'static') return false;
-  // 'auto': the static export only pre-renders mock athlete pages; real athlete
-  // slugs must go through query-param routing on the /athletes page.
-  return process.env.NEXT_PUBLIC_DATA_SOURCE !== 'mock';
-}
-
-export function staticAthleteProfileHref(athleteSlug: string): string {
+// The path form is the only form the application generates. A hard load resolves
+// through the CloudFront `/athletes/<slug>` rewrite (`cdk/lib/web-stack.ts`), and
+// an in-app navigation to a slug the export never pre-rendered resolves through
+// `AthleteRouteFallback`.
+export function athleteProfileHref(athleteSlug: string): string {
   return `/athletes/${encodeURIComponent(athleteSlug)}`;
 }
 
-export function staticAthleteManageHref(athleteSlug: string): string {
-  return `${staticAthleteProfileHref(athleteSlug)}/manage`;
+export function athleteManageHref(athleteSlug: string): string {
+  return `${athleteProfileHref(athleteSlug)}/manage`;
 }
 
-export function runtimeAthleteProfileHref(athleteSlug: string): string {
-  return `/athletes?profile=${encodeURIComponent(athleteSlug)}`;
+export function profileUrl(athleteSlug: string): string {
+  return `${PROFILE_HOST}${athleteProfileHref(athleteSlug)}`;
 }
 
-export function runtimeAthleteManageHref(athleteSlug: string): string {
-  return `/athletes?manage=${encodeURIComponent(athleteSlug)}`;
-}
-
-export function athleteProfileHref(
-  athleteSlug: string,
-  routePreference: AthleteRoutePreference = 'auto'
-): string {
-  return shouldUseRuntimeAthleteRoute(routePreference)
-    ? runtimeAthleteProfileHref(athleteSlug)
-    : staticAthleteProfileHref(athleteSlug);
-}
-
-export function athleteManageHref(
-  athleteSlug: string,
-  routePreference: AthleteRoutePreference = 'auto'
-): string {
-  return shouldUseRuntimeAthleteRoute(routePreference)
-    ? runtimeAthleteManageHref(athleteSlug)
-    : staticAthleteManageHref(athleteSlug);
-}
-
-export function profileUrl(
-  athleteSlug: string,
-  routePreference: AthleteRoutePreference = 'auto'
-): string {
-  return `${PROFILE_HOST}${athleteProfileHref(athleteSlug, routePreference)}`;
-}
-
+// [STRICT] Keep reading `?profile=` and `?manage=` forever. The application stops
+// generating them, but links in that form are already posted publicly (the
+// athlete's Instagram card carries one); dropping the read breaks them for good.
 export function athleteRouteFromPath(
   pathname: string | null,
   searchParams?: SearchParamsReader | null

@@ -1,11 +1,14 @@
-import type {
-  AthleteProfile,
-  ReplacePersonalBestsRequest,
-  SetAthleteGalleryRequest,
-  SetAthleteHighlightsRequest,
-  SetAthleteRaceResultsRequest,
-  SetAthleteRoadmapRequest,
-  UpdateAthleteProfileRequest,
+import {
+  ATHLETE_CORE_VALUES_MAX,
+  ATHLETE_VALUE_MAX_LENGTH,
+  ATHLETE_VALUES_MAX,
+  type AthleteProfile,
+  type ReplacePersonalBestsRequest,
+  type SetAthleteGalleryRequest,
+  type SetAthleteHighlightsRequest,
+  type SetAthleteRaceResultsRequest,
+  type SetAthleteRoadmapRequest,
+  type UpdateAthleteProfileRequest,
 } from 'fad-common';
 import {
   ApiError,
@@ -113,12 +116,33 @@ function toEditPersonalBests(profile: AthleteProfile): EditPersonalBest[] {
   }));
 }
 
+// Onboarding writes bare value words to `values`; the editor owns `coreValues`.
+// Merge them on load so a signup-era value is editable and deletable here rather
+// than invisible and stuck.
 function toEditCoreValues(profile: AthleteProfile): EditCoreValue[] {
-  return (profile.coreValues ?? []).map((value) => ({
+  const stored = (profile.coreValues ?? []).map((value) => ({
     id: uid(),
     title: value.title,
-    body: value.body,
+    body: value.body ?? '',
   }));
+  // A stored title longer than `ATHLETE_VALUE_MAX_LENGTH` is truncated on its way
+  // into `values`, so match on the truncated form too or it bridges back as a
+  // duplicate row.
+  const seen = new Set(
+    stored.flatMap((value) => [
+      value.title.trim().toLowerCase(),
+      value.title.trim().slice(0, ATHLETE_VALUE_MAX_LENGTH).toLowerCase(),
+    ])
+  );
+  const bridged: EditCoreValue[] = [];
+  for (const value of profile.values ?? []) {
+    const title = value.trim();
+    const key = title.toLowerCase();
+    if (!title || seen.has(key)) continue;
+    seen.add(key);
+    bridged.push({ id: uid(), title, body: '' });
+  }
+  return [...stored, ...bridged].slice(0, ATHLETE_CORE_VALUES_MAX);
 }
 
 // Public API contract: the profile's current `presentation` blob, or an empty
@@ -158,6 +182,16 @@ export function profileToEdits(profile: AthleteProfile): AthleteEdits {
 
 // --- editor -> DTO (save) ---
 
+// Public API contract: a save blocked by something the athlete can fix in the
+// editor. Its `message` is athlete-facing copy and is shown verbatim in the save
+// error banner, unlike transport failures which get a generic sentence.
+export class ManageEditsValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ManageEditsValidationError';
+  }
+}
+
 function toHighlightsRequest(highlights: EditHighlight[]): SetAthleteHighlightsRequest {
   const invalidHighlight = highlights.find(
     (highlight) =>
@@ -168,7 +202,7 @@ function toHighlightsRequest(highlights: EditHighlight[]): SetAthleteHighlightsR
         highlight.photos.length > 0)
   );
   if (invalidHighlight) {
-    throw new Error('A saved highlight needs a title.');
+    throw new ManageEditsValidationError('A saved highlight needs a title.');
   }
   return {
     highlights: highlights
@@ -191,7 +225,7 @@ function toHighlightsRequest(highlights: EditHighlight[]): SetAthleteHighlightsR
 function toRacesRequest(races: EditRace[]): SetAthleteRaceResultsRequest {
   const invalidRace = races.find((race) => !race.name.trim());
   if (invalidRace) {
-    throw new Error('A saved race needs an event name.');
+    throw new ManageEditsValidationError('A saved race needs an event name.');
   }
   return {
     races: races
@@ -215,7 +249,7 @@ function toRacesRequest(races: EditRace[]): SetAthleteRaceResultsRequest {
 function toRoadmapRequest(roadmap: EditRoadmapItem[]): SetAthleteRoadmapRequest {
   const invalidRoadmapItem = roadmap.find((item) => !item.name.trim() || !item.date.trim());
   if (invalidRoadmapItem) {
-    throw new Error('A roadmap item needs both event name and date.');
+    throw new ManageEditsValidationError('A roadmap item needs both event name and date.');
   }
   return {
     roadmap: roadmap
@@ -287,10 +321,29 @@ function toMergedPresentation(
 // Story and core values ride the same PATCH. `storyIntro` is sent even when
 // blank so clearing the tagline in the editor clears it on the server too.
 function toStoryAndValuesPatch(edits: AthleteEdits): UpdateAthleteProfileRequest {
+  const untitledValue = edits.coreValues.find(
+    (value) => !value.title.trim() && value.body.trim()
+  );
+  if (untitledValue) {
+    throw new ManageEditsValidationError('A saved core value needs a title.');
+  }
+  const titledValues = edits.coreValues.filter((value) => value.title.trim());
+  if (titledValues.length > ATHLETE_CORE_VALUES_MAX) {
+    throw new ManageEditsValidationError(
+      `Keep it to ${ATHLETE_CORE_VALUES_MAX} core values — remove a few and save again.`
+    );
+  }
+  const titles = titledValues.map((value) => value.title.trim());
   const patch: UpdateAthleteProfileRequest = {
-    coreValues: edits.coreValues
-      .filter((value) => value.title.trim() && value.body.trim())
-      .map((value) => ({ title: value.title.trim(), body: value.body.trim() })),
+    coreValues: titledValues.map((value) => ({
+      title: value.title.trim(),
+      body: value.body.trim(),
+    })),
+    // `values` is rewritten from the surviving titles rather than left alone, so
+    // deleting a bridged value sticks instead of resurrecting on the next load.
+    // It is never emptied while titles remain: the dashboard completeness item
+    // and the publish-readiness gate both read `profile.values.length`.
+    values: titles.map((title) => title.slice(0, ATHLETE_VALUE_MAX_LENGTH)).slice(0, ATHLETE_VALUES_MAX),
   };
   patch.storyIntro = edits.storyIntro.trim();
   patch.storyBody = edits.storyBody
@@ -325,6 +378,9 @@ export async function saveEditsToApi(
 // One plain sentence for the editor's save error banner — never a raw payload or
 // code (Context §11, client/AGENTS.md minimalism).
 export function toManageSaveError(error: unknown): string {
+  if (error instanceof ManageEditsValidationError) {
+    return error.message;
+  }
   if (error instanceof ApiError && error.status === 401) {
     return 'Your session expired. Sign in again to save your changes.';
   }

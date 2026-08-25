@@ -362,13 +362,17 @@ function toGallery(media: MediaRelation[]): string[] {
 
 function toCoreValues(value: unknown): AthleteCoreValue[] {
   if (!Array.isArray(value)) return [];
-  return value.filter(
-    (entry): entry is AthleteCoreValue =>
-      typeof entry === 'object' &&
-      entry !== null &&
-      typeof (entry as { title?: unknown }).title === 'string' &&
-      typeof (entry as { body?: unknown }).body === 'string'
-  );
+  return value
+    .filter(
+      (entry): entry is { title: string; body?: unknown } =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        typeof (entry as { title?: unknown }).title === 'string'
+    )
+    .map((entry) => ({
+      title: entry.title,
+      body: typeof entry.body === 'string' ? entry.body : '',
+    }));
 }
 
 function toLinks(value: unknown): { label: string; href: string }[] {

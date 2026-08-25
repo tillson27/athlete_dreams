@@ -46,6 +46,27 @@ assert(functionCode.includes("uri === '/apple-icon'"));
 assert(functionCode.includes("uri === '/opengraph-image'"));
 assert(functionCode.includes("request.uri = staticRoutes[uri] ? uri + '.html' : '/404.html';"));
 
+// The path-form profile URL depends on this rewrite: `profileUrl.ts` generates
+// `/athletes/<slug>` hrefs, and every one of them 404s without it. Evaluate the
+// synthesized function rather than string-matching it, so the test proves the
+// routing that actually ships.
+const rewriteUri = buildUriRewriter(functionCode);
+assert.equal(rewriteUri('/athletes/maya-okafor'), '/athletes.html');
+assert.equal(rewriteUri('/athletes/maya-okafor/'), '/athletes.html');
+assert.equal(rewriteUri('/athletes/maya-okafor/manage'), '/athletes.html');
+assert.equal(rewriteUri('/athletes/maya-okafor/manage/'), '/athletes.html');
+assert.equal(rewriteUri('/athletes'), '/athletes.html');
+assert.equal(rewriteUri('/athletes/maya/okafor/extra'), '/404.html');
+assert.equal(rewriteUri('/'), '/');
+assert.equal(rewriteUri('/_next/static/chunk.js'), '/_next/static/chunk.js');
+
+function buildUriRewriter(source: string): (uri: string) => string {
+  const handler = new Function(`${source}; return handler;`)() as (event: {
+    request: { uri: string };
+  }) => { uri: string };
+  return (uri) => handler({ request: { uri } }).uri;
+}
+
 function singleResource(templateJson: Record<string, unknown>, type: string): Record<string, any> {
   const resources = resourcesOfType(templateJson, type);
   const values = Object.values(resources);
