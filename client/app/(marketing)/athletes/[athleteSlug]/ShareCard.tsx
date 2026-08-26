@@ -229,156 +229,171 @@ export function ShareCard({
 
       {open ? (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
           onClick={() => setOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Share athlete card"
         >
+          {/* `dvh` rather than `vh` so iOS Safari's collapsing toolbar cannot
+              push the pinned action row below the visual viewport. */}
           <div
-            className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-card bg-surface-container-lowest p-6 shadow-2xl md:p-8"
+            className="flex max-h-[88dvh] w-full max-w-3xl flex-col rounded-t-card bg-surface-container-lowest shadow-2xl sm:max-h-[92dvh] sm:rounded-card"
             onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Share athlete card"
           >
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
-                <h2 className="font-display text-2xl font-bold text-on-surface">
-                  Share {resume.name.split(' ')[0]}&rsquo;s card
-                </h2>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  A ready-to-post athlete résumé, sized for each platform.
-                </p>
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 md:p-8">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-display text-2xl font-bold text-on-surface">
+                    Share {resume.name.split(' ')[0]}&rsquo;s card
+                  </h2>
+                  <p className="mt-1 text-sm text-on-surface-variant">
+                    A ready-to-post athlete résumé, sized for each platform.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close"
+                  className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container"
+                >
+                  <CloseGlyph />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Close"
-                className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container"
-              >
-                <CloseGlyph />
-              </button>
-            </div>
 
-            {/* Platform selector */}
-            <div className="mb-6 flex flex-wrap gap-2">
-              {PLATFORMS.map((entry) => {
-                const active = entry.key === platform;
-                return (
-                  <button
-                    key={entry.key}
-                    type="button"
-                    onClick={() => setPlatform(entry.key)}
-                    className={`inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-bold transition-colors ${
-                      active
-                        ? 'bg-primary-container text-on-primary'
-                        : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
-                    }`}
-                  >
-                    <span className="h-4 w-4">{entry.icon}</span>
-                    {entry.label}
-                  </button>
-                );
-              })}
-            </div>
+              {/* Platform selector */}
+              <div className="mb-6 flex flex-wrap gap-2">
+                {PLATFORMS.map((entry) => {
+                  const active = entry.key === platform;
+                  return (
+                    <button
+                      key={entry.key}
+                      type="button"
+                      onClick={() => setPlatform(entry.key)}
+                      className={`inline-flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-bold transition-colors ${
+                        active
+                          ? 'bg-primary-container text-on-primary'
+                          : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
+                      }`}
+                    >
+                      <span className="h-4 w-4">{entry.icon}</span>
+                      {entry.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* What to include */}
-            <div className="mb-6 rounded-card border border-outline-variant bg-surface-container-low p-4">
-              <p className="label-bold mb-3 text-on-surface">Include on your card</p>
-              <div className="space-y-3">
-                <ToggleGroup
-                  title="Highlights"
-                  items={resume.highlights}
-                  on={highlightOn}
-                  onToggle={(index) =>
-                    setHighlightOn((prev) => prev.map((value, i) => (i === index ? !value : value)))
-                  }
-                />
-                <ToggleGroup
-                  title="Previous races"
-                  items={resume.previousRaces}
-                  on={raceOn}
-                  onToggle={(index) =>
-                    setRaceOn((prev) => prev.map((value, i) => (i === index ? !value : value)))
-                  }
-                />
-                <ToggleGroup
-                  title="Stats"
-                  items={resume.stats.map((stat) => `${stat.value} · ${stat.label}`)}
-                  on={statOn}
-                  onToggle={(index) =>
-                    setStatOn((prev) => prev.map((value, i) => (i === index ? !value : value)))
-                  }
+              {/* What to include */}
+              <div className="mb-6 rounded-card border border-outline-variant bg-surface-container-low p-4">
+                <p className="label-bold mb-3 text-on-surface">Include on your card</p>
+                <div className="space-y-3">
+                  <ToggleGroup
+                    title="Highlights"
+                    items={resume.highlights}
+                    on={highlightOn}
+                    onToggle={(index) =>
+                      setHighlightOn((prev) => prev.map((value, i) => (i === index ? !value : value)))
+                    }
+                  />
+                  <ToggleGroup
+                    title="Previous races"
+                    items={resume.previousRaces}
+                    on={raceOn}
+                    onToggle={(index) =>
+                      setRaceOn((prev) => prev.map((value, i) => (i === index ? !value : value)))
+                    }
+                  />
+                  <ToggleGroup
+                    title="Stats"
+                    items={resume.stats.map((stat) => `${stat.value} · ${stat.label}`)}
+                    on={statOn}
+                    onToggle={(index) =>
+                      setStatOn((prev) => prev.map((value, i) => (i === index ? !value : value)))
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="flex items-center justify-center rounded-card bg-surface-container p-4">
+                <canvas
+                  ref={canvasRef}
+                  className="max-h-[38vh] w-auto max-w-full rounded-lg shadow-lg sm:max-h-[52vh]"
+                  aria-label={`${resume.name} share card preview`}
                 />
               </div>
             </div>
 
-            {/* Preview */}
-            <div className="flex items-center justify-center rounded-card bg-surface-container p-4">
-              <canvas
-                ref={canvasRef}
-                className="max-h-[52vh] w-auto max-w-full rounded-lg shadow-lg"
-                aria-label={`${resume.name} share card preview`}
-              />
-            </div>
-
-            {/* Actions — where the OS share sheet exists it carries the image and
+            {/* Actions — pinned to the sheet rather than parked under the
+                toggles and preview, so the primary share is always in reach on
+                a phone. Where the OS share sheet exists it carries the image and
                 the link to any app at once, so it becomes the primary action and
                 the per-platform web intent drops out rather than sitting beside
-                it as a redundant second path (client/AGENTS.md minimalism). */}
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              {canNativeShare ? (
-                <button
-                  type="button"
-                  onClick={nativeShare}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary transition-colors hover:bg-primary active:scale-95"
-                >
-                  <ShareGlyph />
-                  Share
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={download}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary transition-colors hover:bg-primary active:scale-95"
-                >
-                  <DownloadGlyph />
-                  Download image
-                </button>
-              )}
-              {canNativeShare ? (
-                <button
-                  type="button"
-                  onClick={download}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button border border-outline px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95"
-                >
-                  <DownloadGlyph />
-                  Download image
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={share}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-button border border-outline px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95"
-                >
-                  <span className="h-4 w-4">{current.icon}</span>
-                  {webIntent ? `Share to ${current.label}` : `Open ${current.label}`}
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={copyLink}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-button border border-outline px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95"
-              >
-                <span className="h-4 w-4">{copied ? <CheckGlyph /> : <LinkGlyph />}</span>
-                {copied ? 'Copied' : 'Copy link'}
-              </button>
+                it as a redundant second path (client/AGENTS.md minimalism). The
+                two secondary actions pair up on one row on mobile; `sm:contents`
+                dissolves that wrapper so all three sit in a single row from sm up. */}
+            <div
+              className="border-t border-outline-variant px-5 pt-4 sm:px-6 md:px-8"
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+            >
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {canNativeShare ? (
+                  <button
+                    type="button"
+                    onClick={nativeShare}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary transition-colors hover:bg-primary active:scale-95"
+                  >
+                    <ShareGlyph />
+                    Share
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={download}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button bg-primary-container px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary transition-colors hover:bg-primary active:scale-95"
+                  >
+                    <DownloadGlyph />
+                    Download image
+                  </button>
+                )}
+                <div className="flex gap-3 sm:contents">
+                  {canNativeShare ? (
+                    <button
+                      type="button"
+                      onClick={download}
+                      className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button border border-outline px-4 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95 sm:px-6"
+                    >
+                      <DownloadGlyph />
+                      Download
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={share}
+                      className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button border border-outline px-4 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95 sm:px-6"
+                    >
+                      <span className="h-4 w-4">{current.icon}</span>
+                      {webIntent ? `Share to ${current.label}` : `Open ${current.label}`}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={copyLink}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-button border border-outline px-4 py-3 text-sm font-bold tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-low active:scale-95 sm:px-6"
+                  >
+                    <span className="h-4 w-4">{copied ? <CheckGlyph /> : <LinkGlyph />}</span>
+                    {copied ? 'Copied' : 'Copy link'}
+                  </button>
+                </div>
+              </div>
+              <p className="mt-3 text-center text-xs text-on-surface-variant">
+                {canNativeShare
+                  ? 'Share sends the card and your link straight to any app on your phone.'
+                  : webIntent
+                    ? 'The composer opens with your link. Download the image and attach it to the post.'
+                    : `${current.label} doesn't allow direct web posting. Download the image, then add it to your ${current.label} post.`}
+              </p>
             </div>
-            <p className="mt-3 text-center text-xs text-on-surface-variant">
-              {canNativeShare
-                ? 'Share sends the card and your link straight to any app on your phone.'
-                : webIntent
-                  ? 'The composer opens with your link. Download the image and attach it to the post.'
-                  : `${current.label} doesn't allow direct web posting. Download the image, then add it to your ${current.label} post.`}
-            </p>
           </div>
         </div>
       ) : null}

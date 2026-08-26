@@ -101,7 +101,7 @@ export function AthleteProfile({
   };
 
   return (
-    <div className="pb-40 md:pb-16">
+    <div className="pb-12 md:pb-16">
       {/* HERO */}
       <section className="relative h-[46vh] min-h-[360px] w-full overflow-hidden md:h-[70vh] md:min-h-0">
         {athlete.heroMediaUrl ? (
@@ -174,6 +174,10 @@ export function AthleteProfile({
       <div className="mx-auto w-full max-w-[var(--spacing-container-max)] px-5 md:px-16">
         {/* IN-PAGE TAB NAV (mobile) */}
         <ProfileTabNav tabs={tabs} />
+
+        {/* Owner edit entry (mobile) — the quick-actions row below is desktop-only,
+            which left an athlete on a phone with no route into their own editor. */}
+        <OwnerManageLink athleteSlug={athlete.athleteSlug} className="mt-4 w-full md:hidden" />
 
         {/* QUICK ACTIONS (desktop — mobile uses the sticky bottom bar) */}
         <section className="relative z-10 -mt-10 hidden md:block">
@@ -601,10 +605,12 @@ export function AthleteProfile({
         </section>
       </div>
 
-      {/* STICKY ACTION BAR (mobile) — sits above the site bottom nav */}
+      {/* STICKY ACTION BAR (mobile) — the site bottom nav hides itself on profile
+          routes, so this bar owns the bottom edge. Padding (not `bottom`) absorbs
+          the home-indicator inset so nothing scrolls through beneath the bar. */}
       <div
-        className="fixed inset-x-0 z-40 border-t border-outline-variant bg-surface-container-lowest/95 px-4 py-3 backdrop-blur md:hidden"
-        style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant bg-surface-container-lowest/95 px-4 pt-3 backdrop-blur md:hidden"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)' }}
       >
         <div className="mx-auto flex max-w-[var(--spacing-container-max)] items-center gap-3">
           {profile.supportEnabled ? (
@@ -614,13 +620,9 @@ export function AthleteProfile({
               className="flex min-h-12 flex-1 items-center justify-center whitespace-nowrap rounded-button bg-primary-container px-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95 sm:px-6"
             />
           ) : (
-            <button
-              type="button"
-              className="flex min-h-12 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-button bg-primary-container px-4 text-sm font-bold text-on-primary shadow-md transition-all hover:bg-primary active:scale-95 sm:px-6"
-            >
-              <Icon name="person-add" className="h-4 w-4" />
-              Follow {firstName}
-            </button>
+            <div className="flex-1">
+              <FollowButton slug={athlete.athleteSlug} variant="block" className="min-h-12" />
+            </div>
           )}
           <ShareCard resume={shareResume} compact />
         </div>

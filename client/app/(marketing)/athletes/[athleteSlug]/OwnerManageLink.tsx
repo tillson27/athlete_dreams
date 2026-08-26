@@ -9,7 +9,13 @@ import { athleteManageHref } from '@/lib/profileUrl';
 import { Icon } from '@/components/ui/Icon';
 
 // Edit-entry button shown only to the signed-in owner of this profile.
-export function OwnerManageLink({ athleteSlug }: { athleteSlug: string }) {
+export function OwnerManageLink({
+  athleteSlug,
+  className,
+}: {
+  athleteSlug: string;
+  className?: string;
+}) {
   const { session, ready } = useSession();
   const [ownedSlug, setOwnedSlug] = useState<string | null>(null);
 
@@ -37,7 +43,7 @@ export function OwnerManageLink({ athleteSlug }: { athleteSlug: string }) {
   return (
     <a
       href={athleteManageHref(athleteSlug)}
-      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold text-secondary transition-colors hover:bg-surface-container-low active:scale-95"
+      className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-outline px-8 py-4 text-sm font-bold text-secondary transition-colors hover:bg-surface-container-low active:scale-95 ${className ?? ''}`}
     >
       <Icon name="edit" className="h-4 w-4" />
       Athlete view
