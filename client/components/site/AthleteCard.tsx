@@ -5,12 +5,6 @@ import { formatSport } from '@/lib/format';
 import { athleteProfileHref } from '@/lib/profileUrl';
 import { Icon } from '@/components/ui/Icon';
 
-const LEVEL_LABEL: Record<MockAthlete['runnerLevel'], string> = {
-  ELITE: 'Pro & Elite',
-  COMPETITIVE: 'Competitive',
-  EVERYDAY: 'Everyday',
-};
-
 // Story-first directory row: photo-left, story-right. Leads with the athlete's
 // discipline, signature result, and story — never funding metrics.
 export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
@@ -36,11 +30,6 @@ export function AthleteRow({ athlete }: { athlete: MockAthlete }) {
             className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
           />
         ) : null}
-        <div className="absolute left-3 top-3 md:left-4 md:top-4">
-          <span className="inline-flex items-center rounded-pill bg-inverse-surface/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur md:px-3 md:text-xs">
-            {LEVEL_LABEL[athlete.runnerLevel]}
-          </span>
-        </div>
       </div>
       <div className="flex flex-1 flex-col justify-between gap-4 p-4 sm:p-5 md:gap-5 md:p-7">
         <div className="space-y-2 md:space-y-3">
