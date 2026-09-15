@@ -69,21 +69,39 @@ domains, and variables, but **cannot** disconnect a repo (`serviceDisconnect` �
 
 ## Open items needing the user
 
-1. **Click the verification link** sent to `tillson27+arcverify@gmail.com`
-   (Step 6c). Sent 2026-09-14 via Resend, `resendEmailId`
-   `49f0398a-7192-49b2-9c1a-9d13db633db9`.
-2. ~~Railway GitHub auto-deploy~~ — **RESOLVED 2026-09-14 by the user.**
-   `repoTriggers` is empty on `athlete_dreams`, verified via the API.
-3. **`APP_URL` is currently the workers.dev URL** for the 6c email test. It must
-   become `https://athletearc.ca` at cutover.
-4. **Rotate both tokens after the migration** — the Railway project token and two
-   Cloudflare tokens were pasted into an agent transcript. The first Cloudflare
-   token is unusable anyway and should just be deleted.
-5. **Add `athletearc.ca` as a Cloudflare zone** (Step 7b), then repoint
-   nameservers at the registrar. Zone creation can be done by the agent if the
-   token carries Account→Zone:Edit; the registrar change cannot.
+Everything the agent can do without these is done. Work is committed as
+`32ebf95` (local only — `AGENTS.md` forbids pushing).
+
+1. **Click the verification link** sent to `tillson27+arcverify@gmail.com`.
+   Confirmed still unclicked: `/v1/users/me` reports `emailVerifiedAt: None`.
+   Resend accepted it (`resendEmailId 49f0398a-7192-49b2-9c1a-9d13db633db9`), so
+   if it never arrives the fault is delivery, not the app.
+2. **Add `athletearc.ca` as a Cloudflare zone.** The agent **cannot** — the token
+   lacks `com.cloudflare.api.account.zone.create`. Either add the zone in the
+   dashboard, or reissue the token with **Account → Zone → Edit**.
+3. **Change nameservers at the registrar** to Cloudflare's. Registrar access is
+   outside any API token; this is user-only by nature.
+4. **Push `32ebf95`** if GitHub should be able to build the image. Until then the
+   committed-but-unpushed `app/Dockerfile` fix means a GitHub-sourced Railway
+   build still fails on the arm64-pinned esbuild COPY. Not load-bearing while
+   auto-deploy is off and deploys go through `railway up`.
+5. **Rotate the Railway project token and both Cloudflare tokens** afterwards —
+   all were pasted into an agent transcript. The first Cloudflare token is
+   unusable and should simply be deleted.
+
+### Ready and waiting
+
+`<scratchpad>/dns-verify.py` compares the Cloudflare zone against
+`~/arc-migration-backup-2026-09-13/route53-athletearc-backup.json` and exits
+non-zero if any of the 7 email-critical records is missing or altered. It
+normalises TXT quoting, trailing dots, and MX priority before comparing, and
+ignores the two `acm-validations.aws` CNAMEs (they die with the CloudFront
+cert). Run it the moment the zone exists, **before** nameservers change.
+
+Currently reports: `FAIL: zone athletearc.ca does not exist in Cloudflare yet`.
 
 ---
+
 
 
 ---
