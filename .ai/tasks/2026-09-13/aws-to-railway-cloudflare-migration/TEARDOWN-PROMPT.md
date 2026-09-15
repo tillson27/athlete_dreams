@@ -1,5 +1,10 @@
 # AWS teardown prompt
 
+> **⛔ PREREQUISITE — `DATA-MIGRATION-PROMPT.md` must be complete and verified
+> first.** The AWS database holds 23 real users and 19 athlete profiles that were
+> never ported. Destroying `Arc-prod-Data` removes the live source. Do not run
+> this until `athletearc.ca` serves the real athletes.
+
 Paste this into a fresh session once `athletearc.ca` has been stable on
 Cloudflare + Railway for ~24h. Everything needed is in the prompt or the docs
 it points at.
@@ -13,6 +18,10 @@ Read `MIGRATION-STATE.md` in that folder first — it is the live state of recor
 and supersedes anything stale in the steps docs.
 
 **Go/no-go gate — run these BEFORE destroying anything, and stop if any fail:**
+- `curl -s "https://athletearc.ca/v1/athletes?limit=50"` → must list the **real**
+  athletes (e.g. `liam-mcvarnock`, `nathaniel-ernst`) and **no** seed slugs
+  (`maya-okafor`, `emma-chen`). Seed data still showing = data migration not done
+  = **stop.**
 - `./scripts/route-sweep.sh https://athletearc.ca` → expect 39/39
 - `./scripts/smoke-test.sh https://athletearc.ca` → expect 13/13
 - Confirm the API is Railway, not AWS: sign in at

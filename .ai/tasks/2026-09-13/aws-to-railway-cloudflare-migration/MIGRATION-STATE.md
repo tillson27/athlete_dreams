@@ -9,6 +9,27 @@ Rolling record of what is actually true in the infrastructure right now, so work
 
 ---
 
+## ⛔ BLOCKER — read before any teardown
+
+**The AWS database was never ported and holds real production data.** Measured
+2026-09-15: **23 users, 19 athlete profiles (12 published)**, personal bests,
+media, race results, teams — real signups from 2026-08-16 through 2026-09-14.
+Zero donations and zero campaigns, so nothing financial is at risk.
+
+The task plan's line *"the user has explicitly accepted data loss"*
+(context doc line 49) is **SUPERSEDED**. On seeing what the data actually was,
+the user reversed that decision on 2026-09-15.
+
+**Live symptom:** `athletearc.ca` is serving 6 fictional seed athletes while the
+12 real published athletes are absent from the site.
+
+**Do `DATA-MIGRATION-PROMPT.md` first. `TEARDOWN-PROMPT.md` must not run until
+it is complete and verified** — destroying `Arc-prod-Data` removes the source.
+(An RDS final snapshot would still be taken, so data survives teardown in
+recoverable form, but restoring from it is far more work than migrating now.)
+
+---
+
 ## Resume point
 
 **DNS CUTOVER COMPLETE — 2026-09-15.** `athletearc.ca` and `www` are served by
@@ -38,7 +59,7 @@ not touched.
 > required. The CloudFront ALIAS target is `d2z7fyjadq4mtn.cloudfront.net`
 > (hosted zone `Z2FDTNDATAQYW2`).
 
-**Next: WAIT, then Step 8.** The plan requires the production domain to be
+**Next: DATA MIGRATION (see blocker above), then Step 8.** The plan requires the production domain to be
 stable for at least a full day before AWS teardown. AWS is still running and is
 the rollback target — reverting nameservers to the Route 53 values restores it.
 
