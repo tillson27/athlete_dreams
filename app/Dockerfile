@@ -1,19 +1,22 @@
 # syntax=docker/dockerfile:1
 
-# Multi-stage arm64 image for the FAD/ARC API (Graviton Fargate runtime).
+# Multi-stage image for the FAD/ARC API. Architecture-agnostic: both stages run
+# on the build platform, so `docker buildx build --platform linux/amd64` (what
+# Railway requires) and a native arm64 build both produce a correct image.
 #
 # Build context is the REPO ROOT because `fad-common` is a `file:../common`
 # workspace dependency of `app/`:
 #   docker build -f app/Dockerfile -t arc-api .
 #
 # argon2 is a native (glibc) addon, so this uses the Debian-based `slim`
-# images, not Alpine (musl) — avoids a from-source argon2 rebuild.
+# images, not Alpine (musl) — avoids a from-source argon2 rebuild. The base must
+# stay Debian-family for that reason.
 
 ARG NODE_IMAGE=node:22.22.2-bookworm-slim
 
 # ── Stage 1: build ──────────────────────────────────────────────────────────
-# Builds `common` (tsc), then `app` (prisma generate + tsc). Runs on arm64 so
-# the generated Prisma query engine matches the Graviton runtime.
+# Builds `common` (tsc), then `app` (prisma generate + tsc). Shares the runtime
+# stage's platform, so the generated Prisma query engine matches at runtime.
 FROM ${NODE_IMAGE} AS builder
 WORKDIR /repo
 
@@ -82,7 +85,9 @@ COPY --from=builder /repo/app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /repo/app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 COPY --from=builder /repo/app/node_modules/tsx ./node_modules/tsx
 COPY --from=builder /repo/app/node_modules/esbuild ./node_modules/esbuild
-COPY --from=builder /repo/app/node_modules/@esbuild/linux-arm64 ./node_modules/@esbuild/linux-arm64
+# Whole `@esbuild` scope, not a pinned platform package: npm installs only the
+# optional dep matching the build platform, so this stays architecture-agnostic.
+COPY --from=builder /repo/app/node_modules/@esbuild ./node_modules/@esbuild
 RUN ln -sf ../prisma/build/index.js node_modules/.bin/prisma \
   && ln -sf ../tsx/dist/cli.mjs node_modules/.bin/tsx
 

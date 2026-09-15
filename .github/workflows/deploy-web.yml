@@ -1,17 +1,17 @@
-name: Deploy Web (test)
+name: Deploy Web (Cloudflare Worker)
 
-# Builds the plain static export (no basePath) and publishes it to the WebStack
-# S3 bucket behind CloudFront, then invalidates the edge cache. The legacy
-# GitHub Pages workflow (deploy-client-pages.yml) is intentionally left untouched
-# until the DNS cutover (M7). AI authors this; the user owns the AWS side — the
-# `test` environment supplies the OIDC role, bucket, and distribution id (see
-# cdk/README.md).
+# Builds the plain static export (no basePath) and deploys the Worker, which
+# serves `client/out` as static assets and proxies `/v1/*` to Railway.
+#
+# There is no cache-invalidation step: Cloudflare versions static assets per
+# deployment, so the CloudFront `create-invalidation` this replaces has no
+# equivalent and is not needed.
 
 on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-web-test
+  group: deploy-web-prod
   cancel-in-progress: false
 
 permissions:
@@ -20,16 +20,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: test
-    permissions:
-      id-token: write
-      contents: read
-    env:
-      AWS_REGION: us-east-1
-      # Static export target (WebStack). Bucket name is deterministic; the
-      # distribution id is CloudFront-generated, so it must be set as a variable.
-      WEB_BUCKET: ${{ vars.WEB_BUCKET }}
-      CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+    environment: production
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -59,22 +50,18 @@ jobs:
           # treats only the literal `mock` as mock, so an unset variable deploys
           # in `api` mode against NEXT_PUBLIC_API_BASE_URL.
           NEXT_PUBLIC_DATA_SOURCE: ${{ vars.NEXT_PUBLIC_DATA_SOURCE }}
-          NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
+          # Absolute but same-origin: every request goes back through the Worker,
+          # which keeps CORS empty and the Stripe webhook host unchanged. Override
+          # the variable to the workers.dev URL when deploying a preview.
+          NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL || 'https://athletearc.ca' }}
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Sync static export to S3
-        run: |
-          set -euo pipefail
-          aws s3 sync client/out/ "s3://${WEB_BUCKET}" --delete
-
-      - name: Invalidate CloudFront cache
-        run: |
-          set -euo pipefail
-          aws cloudfront create-invalidation \
-            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
-            --paths '/*'
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # API_ORIGIN is the Railway public URL. It defaults to the value in
+          # wrangler.jsonc; set the variable to retarget a preview deployment.
+          command: >-
+            deploy
+            ${{ vars.RAILWAY_API_ORIGIN && format('--var API_ORIGIN:{0}', vars.RAILWAY_API_ORIGIN) || '' }}

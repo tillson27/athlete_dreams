@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "athlete-arc",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "client/out",
+    "binding": "ASSETS",
+    // Next.js static export emits `about.html` for `/about`, which is exactly
+    // what auto-trailing-slash resolves. This replaces the extensionless-path
+    // rewrite the retired CloudFront Function did by hand.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    // Scoped to the API paths only: Cloudflare serves static assets free and
+    // unlimited but bills Worker invocations, so `true` or `/*` here would turn
+    // every asset request into a billed one.
+    "run_worker_first": ["/v1/*"]
+  },
+  "vars": {
+    // The Railway public URL. Point this at the Railway preview deployment
+    // during bring-up and at the production service after the DNS cutover.
+    "API_ORIGIN": "https://athletedreams-production.up.railway.app"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

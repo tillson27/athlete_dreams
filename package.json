@@ -1,31 +1,34 @@
 {
   "name": "fad-network",
   "private": true,
-  "description": "Fund an Athlete's Dream (FAD) — the world's most transparent athlete funding network.",
+  "description": "Fund an Athlete's Dream (FAD) \u2014 the world's most transparent athlete funding network.",
   "scripts": {
     "=": "===============================<RUNTIME>================================",
     "dev": "npm run db:up && concurrently \"npm run dev --prefix app\" \"npm run dev --prefix client\"",
     "dev:client": "npm run dev --prefix client",
     "dev:app": "npm run dev --prefix app",
-    "deploy": "./scripts/deploy-prod.sh",
+    "deploy:api": "railway up",
+    "deploy:web": "npm run build:static --prefix client && wrangler deploy",
+    "railway:plan": "railway config plan",
+    "railway:apply": "railway config apply",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
     "db:migrate": "npm run migrate --prefix app",
     "db:seed": "npm run seed --prefix app",
     "db:setup": "npm run db:up && npm run db:migrate && npm run db:seed",
-
     "==": "==========================<BUILD & VALIDATION>==========================",
-    "build": "npm run script:rules:check && npm run script:sync:all && npm run build --prefix common && npm run build --prefix app && npm run build --prefix client && npm run build --prefix cdk",
-    "type-check": "npm run type-check --prefix common && npm run build --prefix common && npm run build-client --prefix app && npm run type-check --prefix app && npm run type-check --prefix client && npm run type-check --prefix cdk",
+    "build": "npm run script:rules:check && npm run script:sync:all && npm run build --prefix common && npm run build --prefix app && npm run build --prefix client",
+    "type-check": "npm run type-check --prefix common && npm run build --prefix common && npm run build-client --prefix app && npm run type-check --prefix app && npm run type-check --prefix client && npm run type-check:worker",
+    "type-check:worker": "tsc -p worker/tsconfig.json",
+    "worker:types": "wrangler types ./worker/worker-configuration.d.ts",
+    "worker:dev": "wrangler dev",
     "test": "npm run test --prefix app",
     "lint": "npm run lint --prefix app && npm run lint --prefix client",
     "lint:fix": "npm run lint:fix --prefix app && npm run lint:fix --prefix client",
-    "ci": "npm run build --prefix common && npm run type-check && npm run lint:fix && npm run build && npm run test && npm run test --prefix cdk && npm run synth:test --prefix cdk",
-
+    "ci": "npm run build --prefix common && npm run type-check && npm run lint:fix && npm run build && npm run test",
     "===": "==========================<WORKSPACE INSTALL>===========================",
-    "postinstall": "echo '\\nInstalling common...' && npm --prefix common install && echo '\\nInstalling app...' && npm --prefix app install && echo '\\nInstalling client...' && npm --prefix client install && echo '\\nInstalling cdk...' && npm --prefix cdk install",
-
+    "postinstall": "echo '\\nInstalling common...' && npm --prefix common install && echo '\\nInstalling app...' && npm --prefix app install && echo '\\nInstalling client...' && npm --prefix client install",
     "====": "==========================<REPO SYNC & CHECKS>==========================",
     "script:sync:all": "npm run script:agents:sync && npm run script:skills:sync && npm run script:skills:check",
     "script:agents:sync": "node scripts/sync-agents-instructions.js",
@@ -35,6 +38,9 @@
     "script:brand:mark": "node scripts/generate-brand-mark.js"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "railway": "^3.11.0",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.131.1"
   }
 }

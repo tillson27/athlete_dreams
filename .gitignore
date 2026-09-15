@@ -9,6 +9,8 @@
 client/out/
 **/.turbo/
 **/.vercel/
+# Wrangler local dev state (miniflare caches, local asset manifest).
+.wrangler/
 **/.parcel-cache/
 **/.cache/
 # Generated at container startup; do not commit.

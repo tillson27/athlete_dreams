@@ -1,0 +1,17 @@
+# Same-project rewrites the Workers static-asset router cannot express on its
+# own. Reproduces the retired CloudFront Function (cdk/lib/web-stack.ts).
+#
+# Targets are the CANONICAL extensionless paths, not the .html files. Pointing a
+# 200 rewrite at `/athletes.html` makes html_handling canonicalize the target and
+# emit a 307 to `/athletes`, which drops the slug from the address bar and breaks
+# every athlete deep link. Targeting `/athletes` rewrites in place, URL intact.
+#
+# /favicon.ico is first because splat rules above a literal rule cost a scan.
+
+# App Router emits the icon at /icon (client/app/icon.tsx), never /favicon.ico.
+/favicon.ico        /icon      200
+
+# Every athlete slug renders from the shared shell, which reads the slug from
+# the URL. The more specific /manage rule must stay above the bare slug rule.
+/athletes/*/manage  /athletes  200
+/athletes/*         /athletes  200
