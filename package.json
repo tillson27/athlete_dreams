@@ -8,7 +8,7 @@
     "dev:client": "npm run dev --prefix client",
     "dev:app": "npm run dev --prefix app",
     "deploy:api": "railway up",
-    "deploy:web": "npm run build:static --prefix client && wrangler deploy",
+    "deploy:web": "NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-https://athletearc.ca} npm run build:static --prefix client && wrangler deploy",
     "railway:plan": "railway config plan",
     "railway:apply": "railway config apply",
     "db:up": "docker compose up -d postgres",

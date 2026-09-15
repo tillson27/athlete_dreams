@@ -79,9 +79,42 @@ Railway's own GitHub integration can *also* auto-deploy the service on every pus
 | `deploy-api.yml` | `RAILWAY_TOKEN` | `RAILWAY_SERVICE` |
 | `deploy-web.yml` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | `NEXT_PUBLIC_API_BASE_URL` (defaults to `https://athletearc.ca`), `NEXT_PUBLIC_DATA_SOURCE`, `RAILWAY_API_ORIGIN` (overrides the Worker's `API_ORIGIN`, for preview deploys) |
 
-Both are `workflow_dispatch` only, matching the repo's existing deliberate-deploy convention. Locally, `npm run deploy:api` and `npm run deploy:web` do the same two things.
+Both are `workflow_dispatch` only, matching the repo's existing deliberate-deploy convention.
 
-**The seed is not automatic.** `npx prisma db seed` is run manually as a Railway one-off command on first bring-up. It uses upserts (`app/prisma/seed.ts`) and is safe to repeat, but it is deliberately not wired into the deploy path.
+> **[STRICT] Neither workflow is runnable until the secrets above exist.** As of
+> 2026-09-15 the repository has **no** Actions secrets and **no** Actions
+> variables, and the `production` environment has never been created — both
+> workflows fail at the credential step. The migration was performed entirely by
+> local CLI, so the Actions path has never executed. Set them with:
+>
+> ```bash
+> gh secret set RAILWAY_TOKEN          # Railway project or workspace token
+> gh secret set CLOUDFLARE_API_TOKEN   # scoped to Workers Scripts:Edit
+> gh secret set CLOUDFLARE_ACCOUNT_ID  # f7579c35ce9e565979eaf2de0187b568
+> gh variable set RAILWAY_SERVICE --body athlete_dreams
+> ```
+>
+> Add `--env production` to each if you create the environment first and want
+> them environment-scoped rather than repo-scoped.
+
+**Locally,** `npm run deploy:api` matches `deploy-api.yml`. `npm run deploy:web`
+matches `deploy-web.yml` **only because the script sets
+`NEXT_PUBLIC_API_BASE_URL` itself** — it defaults to `https://athletearc.ca` and
+honours the variable when already set, for preview deploys.
+
+> **[STRICT] Never run `npm run build:static` bare and deploy the result.**
+> `resolveBaseUrl` (`client/lib/api.ts:L129`) falls back to
+> `http://localhost:4000` when the variable is unset, and the value is baked into
+> the bundle at build time. A bundle built without it deploys a production site
+> whose client cannot reach the API. This was a live defect in `deploy:web`
+> until 2026-09-15.
+
+**[STRICT] Never run `prisma db seed` against Railway.** `app/prisma/seed.ts`
+creates six fictional athletes. Running it against the production database on
+2026-09-14 put them on the live site and hid the real athletes until the
+2026-09-15 data migration removed them. The seed is for local development only
+and is deliberately not wired into any deploy path. See
+`.ai/tasks/2026-09-13/aws-to-railway-cloudflare-migration/MIGRATION-STATE.md`.
 
 ---
 
@@ -164,3 +197,8 @@ The Worker must never read the request body — the Stripe webhook signature is 
 ## Client build variables
 
 The static export is built with `STATIC_EXPORT=true`. `NEXT_PUBLIC_API_BASE_URL` is set to `https://athletearc.ca` — absolute, because `resolveBaseUrl` (`client/lib/api.ts:L128-L137`) throws when the variable is set to an empty string, but pointing at the site origin keeps every request same-origin through the Worker.
+
+Both values are baked into the bundle at build time, so a bundle is only valid
+for the origin it was built against. Set `NEXT_PUBLIC_API_BASE_URL` explicitly
+for preview deploys; leaving it unset silently produces a localhost build — see
+the `[STRICT]` note under "Deploy workflow inputs".
