@@ -5,28 +5,66 @@ Rolling record of what is actually true in the infrastructure right now, so work
 - Context: `.ai/tasks/2026-09-13/aws-to-railway-cloudflare-migration/aws-to-railway-cloudflare-migration-context.md`
 - Steps guide: `.ai/tasks/2026-09-13/aws-to-railway-cloudflare-migration/aws-to-railway-cloudflare-migration-steps-guide.md`
 
-**Last updated:** 2026-09-14 (Railway live)
+**Last updated:** 2026-09-15 (data migration complete)
 
 ---
 
-## ⛔ BLOCKER — read before any teardown
+## ✅ DATA MIGRATION COMPLETE — 2026-09-15
 
-**The AWS database was never ported and holds real production data.** Measured
-2026-09-15: **23 users, 19 athlete profiles (12 published)**, personal bests,
-media, race results, teams — real signups from 2026-08-16 through 2026-09-14.
-Zero donations and zero campaigns, so nothing financial is at risk.
+The AWS production data now lives in Railway Postgres. `TEARDOWN-PROMPT.md` is
+cleared to run.
 
 The task plan's line *"the user has explicitly accepted data loss"*
-(context doc line 49) is **SUPERSEDED**. On seeing what the data actually was,
-the user reversed that decision on 2026-09-15.
+(context doc line 49) is **SUPERSEDED** — on seeing what the data actually was,
+the user reversed that decision on 2026-09-15 and the data was migrated instead.
 
-**Live symptom:** `athletearc.ca` is serving 6 fictional seed athletes while the
-12 real published athletes are absent from the site.
+**What ran:** `pg_dump` of AWS RDS → `DROP SCHEMA public CASCADE` on Railway →
+`pg_restore` → CSV re-insert of the two post-cutover profiles → API restart.
 
-**Do `DATA-MIGRATION-PROMPT.md` first. `TEARDOWN-PROMPT.md` must not run until
-it is complete and verified** — destroying `Arc-prod-Data` removes the source.
-(An RDS final snapshot would still be taken, so data survives teardown in
-recoverable form, but restoring from it is far more work than migrating now.)
+| Table | AWS (source) | Railway (before) | Railway (after) |
+|---|---|---|---|
+| users | 23 | 14 | **25** |
+| athlete_profiles | 19 | 8 | **21** |
+| — of which published | 12 | 8 | **14** |
+| athlete_media | 17 | 35 | **28** |
+| personal_bests | 27 | 28 | **31** |
+| athlete_race_results | 14 | 30 | **14** |
+| athlete_accomplishments | 7 | 24 | **8** |
+| athlete_events | 4 | 18 | **4** |
+| teams / team_memberships | 23 / 23 | 14 / 14 | **25 / 25** |
+| platform_role_assignments | 21 | 8 | **23** |
+| email_verification_tokens | 33 | 9 | **36** |
+| follows | 5 | 0 | **5** |
+| campaigns / donations | 0 / 0 | 5 / 0 | **0 / 0** |
+
+After = AWS + the two preserved profiles. The Railway "before" column was 6 seed
+fixtures plus those two profiles; the seed campaigns and inflated media/race
+counts were all fictional and are gone by design.
+
+**Preserved across the restore:** `joel-goullet` (created 2026-09-15 14:54 UTC)
+and `donny-marchuk`, with their users, teams, memberships, role assignments,
+email tokens, 11 media rows, 4 personal bests, and 1 accomplishment. Neither
+their emails nor their slugs collide with anything in the AWS data — verified by
+grep before the restore.
+
+**Deliberately not preserved:** the 6 seed athletes, 5 `@smoke.athletearc.ca`
+throwaways, and `tillson27+arcverify@gmail.com`. That last one was the old
+Railway-vs-AWS proof — see the replacement in `TEARDOWN-PROMPT.md`.
+
+**Verified after:** directory serves 14 real athletes with zero seed slugs;
+`route-sweep.sh` **39/39**; `smoke-test.sh` **13/13**; all 27 argon2id password
+hashes intact at uniform length; zero FK orphans; `_prisma_migrations` still the
+same 4 rows, so Prisma will not re-apply on the next deploy.
+
+**Backups** in `~/arc-migration-backup-2026-09-13/` (outside the repo):
+`aws-prod-arc.dump` (12 MB) + `.sql` (16 MB), `railway-before-migration.dump`
+(4.7 MB) + `.sql` (6.2 MB) — the rollback — and `keepers/` (the extracted CSVs).
+
+> **[STRICT] Never run `prisma db seed` against Railway.** That is what put the
+> fictional athletes into production in the first place.
+
+**Open cleanup:** two `@smoke.athletearc.ca` users created by the verification
+runs are still in production. Harmless, but they are not real signups.
 
 ---
 
@@ -59,9 +97,12 @@ not touched.
 > required. The CloudFront ALIAS target is `d2z7fyjadq4mtn.cloudfront.net`
 > (hosted zone `Z2FDTNDATAQYW2`).
 
-**Next: DATA MIGRATION (see blocker above), then Step 8.** The plan requires the production domain to be
-stable for at least a full day before AWS teardown. AWS is still running and is
-the rollback target — reverting nameservers to the Route 53 values restores it.
+**Next: Step 8 (AWS teardown) — see `TEARDOWN-PROMPT.md`.** The data migration
+above is done, so AWS is no longer load-bearing for data. The plan still requires
+the production domain to be stable for at least a full day before teardown. AWS
+is still running and is the rollback target — but note that rollback would now
+serve the AWS database's state as of 2026-09-15, missing anything written to
+Railway after the migration.
 
 ---
 
@@ -103,11 +144,27 @@ workers.dev origin and grep-confirmed to contain **no** reference to
 | Region | `us-east4-eqdc4a` (Virginia — matches the retired `us-east-1`) |
 | Postgres image | `ghcr.io/railwayapp-templates/postgres-ssl:17`, 5 GB volume at `/var/lib/postgresql/data` |
 
-**Verified:** all 4 Prisma migrations applied via the pre-deploy hook; seed run
-once (6 athletes, 5 campaigns, 30 race results, 24 personal bests);
+**Verified:** all 4 Prisma migrations applied via the pre-deploy hook;
 `scripts/smoke-test.sh` **13/13 PASS** against the Railway URL.
 
-The supplied Railway credential is a **project token**, not an account token.
+The database was seeded once on 2026-09-14 (6 athletes, 5 campaigns, 30 race
+results, 24 personal bests). That seed data was **removed on 2026-09-15** by the
+data migration and must never be re-applied — see the section at the top.
+
+**No public TCP proxy.** One existed at `thomas.proxy.rlwy.net:10726` for the
+migration and was deleted 2026-09-15; the handshake now fails. Reaching Postgres
+from a laptop again means creating a new proxy (`tcpProxyCreate`,
+`applicationPort: 5432`) and deleting it immediately afterwards.
+
+> **[STRICT] Two different Railway tokens are in play — check which one you have.**
+> The token used through 2026-09-14 authenticates with the `Project-Access-Token`
+> header. The token issued 2026-09-15 for the data migration authenticates with
+> `Authorization: Bearer` and returns **`Not Authorized` on every query** under
+> the `Project-Access-Token` header. Both fail `me {}`, so `whoami` cannot tell
+> them apart. If queries return `Not Authorized`, swap the header before
+> concluding the token is dead.
+
+The 2026-09-14 Railway credential is a **project token**, not an account token.
 It authenticates with the `Project-Access-Token` header (not `Authorization:
 Bearer`), and `railway whoami` fails by design. It can create services, volumes,
 domains, and variables, but **cannot** disconnect a repo (`serviceDisconnect` →

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Post-deploy smoke suite for the FAD/ARC API. Read-only against seeded data
+# Post-deploy smoke suite for the FAD/ARC API. Read-only against live data
 # except for one throwaway auth account (unique-suffixed email per run) and one
 # idempotent follow round-trip that unfollows itself. Depends only on curl + jq
 # (no runtime deps) so it runs anywhere the deploy runbook does
@@ -27,7 +27,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-SEEDED_SLUG="maya-okafor"
+REFERENCE_SLUG="cassandra-de-winter"
 CURL_MAX_TIME=30
 
 PASS_COUNT=0
@@ -86,26 +86,26 @@ check_health() {
 
 check_directory() {
   local resp status body item_count next_cursor off_level
-  resp="$(request GET "/v1/athletes?runnerLevel=ELITE&limit=2")"
+  resp="$(request GET "/v1/athletes?runnerLevel=EVERYDAY&limit=2")"
   status="$(http_status "${resp}")"
   body="$(http_body "${resp}")"
   if [[ "${status}" != "200" ]]; then
-    record "directory (?runnerLevel=ELITE)" FAIL "got HTTP ${status}"
+    record "directory (?runnerLevel=EVERYDAY)" FAIL "got HTTP ${status}"
     return
   fi
   item_count="$(printf '%s' "${body}" | jq -r '.data.items | length' 2>/dev/null)"
   if [[ -z "${item_count}" || "${item_count}" == "null" || "${item_count}" -lt 1 ]]; then
-    record "directory (?runnerLevel=ELITE)" FAIL "expected >=1 item, got '${item_count}'"
+    record "directory (?runnerLevel=EVERYDAY)" FAIL "expected >=1 item, got '${item_count}'"
     return
   fi
-  # Every returned athlete must actually match the ELITE filter.
+  # Every returned athlete must actually match the EVERYDAY filter.
   off_level="$(printf '%s' "${body}" \
-    | jq -r '[.data.items[] | select(.runnerLevel != "ELITE")] | length' 2>/dev/null)"
+    | jq -r '[.data.items[] | select(.runnerLevel != "EVERYDAY")] | length' 2>/dev/null)"
   if [[ "${off_level}" != "0" ]]; then
-    record "directory (?runnerLevel=ELITE)" FAIL "filter leaked ${off_level} non-ELITE item(s)"
+    record "directory (?runnerLevel=EVERYDAY)" FAIL "filter leaked ${off_level} non-EVERYDAY item(s)"
     return
   fi
-  record "directory (?runnerLevel=ELITE returns ${item_count} item(s))" PASS
+  record "directory (?runnerLevel=EVERYDAY returns ${item_count} item(s))" PASS
 
   next_cursor="$(printf '%s' "${body}" | jq -r '.data.nextCursor // empty' 2>/dev/null)"
   if [[ -z "${next_cursor}" ]]; then
@@ -113,7 +113,7 @@ check_directory() {
     return
   fi
   local page2 p2_status p2_count
-  page2="$(request GET "/v1/athletes?runnerLevel=ELITE&limit=2&cursor=${next_cursor}")"
+  page2="$(request GET "/v1/athletes?runnerLevel=EVERYDAY&limit=2&cursor=${next_cursor}")"
   p2_status="$(http_status "${page2}")"
   if [[ "${p2_status}" != "200" ]]; then
     record "directory cursor page" FAIL "page 2 got HTTP ${p2_status}"
@@ -127,23 +127,23 @@ check_directory() {
   record "directory cursor page (walked one page, ${p2_count} item(s))" PASS
 }
 
-# --- profile by seeded slug (rich fields present) ---------------------------
+# --- profile by reference slug (rich fields present) ------------------------
 
 check_profile() {
   local resp status body slug missing
-  resp="$(request GET "/v1/athletes/${SEEDED_SLUG}")"
+  resp="$(request GET "/v1/athletes/${REFERENCE_SLUG}")"
   status="$(http_status "${resp}")"
   body="$(http_body "${resp}")"
   if [[ "${status}" != "200" ]]; then
-    record "profile /${SEEDED_SLUG}" FAIL "got HTTP ${status}"
+    record "profile /${REFERENCE_SLUG}" FAIL "got HTTP ${status}"
     return
   fi
   slug="$(printf '%s' "${body}" | jq -r '.data.athleteSlug // empty' 2>/dev/null)"
-  if [[ "${slug}" != "${SEEDED_SLUG}" ]]; then
-    record "profile /${SEEDED_SLUG}" FAIL "athleteSlug mismatch ('${slug}')"
+  if [[ "${slug}" != "${REFERENCE_SLUG}" ]]; then
+    record "profile /${REFERENCE_SLUG}" FAIL "athleteSlug mismatch ('${slug}')"
     return
   fi
-  # Rich fields the nate profile page renders must be present and populated.
+  # Rich fields the athlete profile page renders must be present and populated.
   missing="$(printf '%s' "${body}" | jq -r '
     [
       (if (.data.personalBests   | type) == "array" and (.data.personalBests   | length) > 0 then empty else "personalBests"   end),
@@ -156,10 +156,10 @@ check_profile() {
     ] | join(",")
   ' 2>/dev/null)"
   if [[ -n "${missing}" ]]; then
-    record "profile /${SEEDED_SLUG} rich fields" FAIL "empty/absent: ${missing}"
+    record "profile /${REFERENCE_SLUG} rich fields" FAIL "empty/absent: ${missing}"
     return
   fi
-  record "profile /${SEEDED_SLUG} (rich fields present)" PASS
+  record "profile /${REFERENCE_SLUG} (rich fields present)" PASS
 }
 
 # --- community feed ---------------------------------------------------------
@@ -254,13 +254,13 @@ check_follow() {
     return
   fi
   local resp status contains
-  resp="$(request POST "/v1/athletes/${SEEDED_SLUG}/follow" "" "${ACCESS_TOKEN}")"
+  resp="$(request POST "/v1/athletes/${REFERENCE_SLUG}/follow" "" "${ACCESS_TOKEN}")"
   status="$(http_status "${resp}")"
   if [[ "${status}" != "200" && "${status}" != "201" && "${status}" != "204" ]]; then
-    record "follow ${SEEDED_SLUG}" FAIL "got HTTP ${status}"
+    record "follow ${REFERENCE_SLUG}" FAIL "got HTTP ${status}"
     return
   fi
-  record "follow ${SEEDED_SLUG} (${status})" PASS
+  record "follow ${REFERENCE_SLUG} (${status})" PASS
 
   resp="$(request GET "/v1/users/me/follows" "" "${ACCESS_TOKEN}")"
   status="$(http_status "${resp}")"
@@ -269,21 +269,21 @@ check_follow() {
     return
   fi
   contains="$(http_body "${resp}" \
-    | jq -r --arg slug "${SEEDED_SLUG}" \
+    | jq -r --arg slug "${REFERENCE_SLUG}" \
         '[.data.items[]? | select(.athleteSlug == $slug)] | length' 2>/dev/null)"
   if [[ "${contains}" != "1" ]]; then
-    record "follow list contains ${SEEDED_SLUG}" FAIL "found ${contains} match(es)"
+    record "follow list contains ${REFERENCE_SLUG}" FAIL "found ${contains} match(es)"
     return
   fi
-  record "follow list contains ${SEEDED_SLUG}" PASS
+  record "follow list contains ${REFERENCE_SLUG}" PASS
 
-  resp="$(request DELETE "/v1/athletes/${SEEDED_SLUG}/follow" "" "${ACCESS_TOKEN}")"
+  resp="$(request DELETE "/v1/athletes/${REFERENCE_SLUG}/follow" "" "${ACCESS_TOKEN}")"
   status="$(http_status "${resp}")"
   if [[ "${status}" != "200" && "${status}" != "204" ]]; then
-    record "unfollow ${SEEDED_SLUG}" FAIL "got HTTP ${status}"
+    record "unfollow ${REFERENCE_SLUG}" FAIL "got HTTP ${status}"
     return
   fi
-  record "unfollow ${SEEDED_SLUG} (${status})" PASS
+  record "unfollow ${REFERENCE_SLUG} (${status})" PASS
 }
 
 # --- run --------------------------------------------------------------------

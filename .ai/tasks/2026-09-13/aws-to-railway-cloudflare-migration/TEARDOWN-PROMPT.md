@@ -1,9 +1,9 @@
 # AWS teardown prompt
 
-> **⛔ PREREQUISITE — `DATA-MIGRATION-PROMPT.md` must be complete and verified
-> first.** The AWS database holds 23 real users and 19 athlete profiles that were
-> never ported. Destroying `Arc-prod-Data` removes the live source. Do not run
-> this until `athletearc.ca` serves the real athletes.
+> **✅ PREREQUISITE CLEARED — `DATA-MIGRATION-PROMPT.md` completed and verified
+> 2026-09-15.** The AWS data now lives in Railway Postgres: 25 users, 21 athlete
+> profiles, 14 published. `athletearc.ca` serves the real athletes and no seed
+> fixtures. The AWS database is no longer the only copy.
 
 Paste this into a fresh session once `athletearc.ca` has been stable on
 Cloudflare + Railway for ~24h. Everything needed is in the prompt or the docs
@@ -18,18 +18,24 @@ Read `MIGRATION-STATE.md` in that folder first — it is the live state of recor
 and supersedes anything stale in the steps docs.
 
 **Go/no-go gate — run these BEFORE destroying anything, and stop if any fail:**
-- `curl -s "https://athletearc.ca/v1/athletes?limit=50"` → must list the **real**
-  athletes (e.g. `liam-mcvarnock`, `nathaniel-ernst`) and **no** seed slugs
-  (`maya-okafor`, `emma-chen`). Seed data still showing = data migration not done
-  = **stop.**
+- `curl -s "https://athletearc.ca/v1/athletes?limit=50"` → must list **14**
+  athletes including `liam-mcvarnock` and `nathaniel-ernst`, and **no** seed
+  slugs (`maya-okafor`, `emma-chen`). Seed data showing = the database was
+  re-seeded = **stop.**
 - `./scripts/route-sweep.sh https://athletearc.ca` → expect 39/39
 - `./scripts/smoke-test.sh https://athletearc.ca` → expect 13/13
-- Confirm the API is Railway, not AWS: sign in at
-  `https://athletearc.ca/v1/auth/sign-in` as `tillson27+arcverify@gmail.com`
-  (password in the migration notes) and confirm `/v1/users/me` returns
-  `emailVerifiedAt 2026-09-15T01:50:35Z`. That account exists only in Railway
-  Postgres. If it 401s, traffic is still hitting AWS — **do not tear down.**
+- Confirm the API is Railway, not AWS:
+  `curl -s -o /dev/null -w '%{http_code}' https://athletearc.ca/v1/athletes/joel-goullet`
+  → must be **200**. `joel-goullet` and `donny-marchuk` were created after the
+  cutover and have never existed in the AWS database (verified by grep against
+  `~/arc-migration-backup-2026-09-13/aws-prod-arc.sql`: zero hits). A 404 means
+  traffic is hitting AWS — **do not tear down.**
 - `dig +short NS athletearc.ca @1.1.1.1` → must be `*.ns.cloudflare.com`
+
+> **Do not use `tillson27+arcverify@gmail.com` as the Railway-vs-AWS proof.**
+> That account lived only in Railway's pre-migration state and was deliberately
+> dropped by the 2026-09-15 restore. Signing in as it now fails, which would
+> look like an AWS-traffic failure and abort a teardown that should proceed.
 
 **This is the point of no return.** Once the stacks are gone, reverting
 nameservers no longer restores service. Report the gate results before proceeding.

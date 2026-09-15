@@ -71,8 +71,8 @@ check /register/athletics/ 307
 # Every athlete slug renders the shared shell, which reads the slug from the
 # URL. A 307 here would strip the slug and break the profile page.
 printf '\nathlete slug rewrites (must be 200, never a redirect)\n'
-check /athletes/maya-okafor 200 'Discover Runners'
-check /athletes/maya-okafor/manage 200 'Discover Runners'
+check /athletes/cassandra-de-winter 200 'Discover Runners'
+check /athletes/cassandra-de-winter/manage 200 'Discover Runners'
 check /athletes/not-a-real-slug-check 200 'Discover Runners'
 check /athletes/not-a-real-slug-check/manage 200 'Discover Runners'
 

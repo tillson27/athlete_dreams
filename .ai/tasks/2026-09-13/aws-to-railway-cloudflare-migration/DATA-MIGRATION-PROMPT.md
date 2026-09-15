@@ -1,7 +1,14 @@
 # Data migration prompt — AWS RDS → Railway Postgres
 
-**Run this BEFORE `TEARDOWN-PROMPT.md`.** The AWS database holds real production
-data that was never ported during the infrastructure cutover.
+> **✅ DONE — executed and verified 2026-09-15.** Kept as the record of what ran.
+> Results, final row counts, and the backup inventory are in `MIGRATION-STATE.md`.
+> `TEARDOWN-PROMPT.md` is now cleared to run.
+>
+> **Two corrections found during execution**, in case this is ever replayed:
+> - Columns are Prisma camelCase and must be double-quoted: `"athleteSlug"`
+>   (not `slug`), `"publishedAt"` (not `published_at`), `"athleteId"`, `"userId"`.
+> - The published-athlete list contains both `nate-ernst` and `nathaniel-ernst`.
+>   Possibly one person twice — migrated as-is, not deduplicated.
 
 ---
 
