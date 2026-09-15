@@ -11,11 +11,21 @@ Rolling record of what is actually true in the infrastructure right now, so work
 
 ## Resume point
 
-**Steps 1–5 are complete on the Railway side. The API is live and verified.**
-Nothing is committed — the run is under `$step-loop-no-commit`.
+**DNS CUTOVER COMPLETE — 2026-09-15.** `athletearc.ca` and `www` are served by
+the Cloudflare Worker, with `/v1/*` proxied to Railway. Verified 52/52 against
+the production domain (`route-sweep.sh` 39/39, `smoke-test.sh` 13/13).
 
-**Blocked on:** the user clicking the verification email link (Step 6c). That is
-the only outstanding item before DNS cutover.
+**Proof the API is Railway and not the old AWS stack:** signing in at
+`https://athletearc.ca/v1/auth/sign-in` as `tillson27+arcverify@gmail.com`
+succeeds and returns `emailVerifiedAt 2026-09-15T01:50:35Z`. That account was
+created through the workers.dev preview against Railway Postgres and has never
+existed in the AWS database. Edge headers confirm `server: cloudflare` + `cf-ray`.
+
+**Next: WAIT, then Step 8.** The plan requires the production domain to be
+stable for at least a full day before AWS teardown. AWS is still running and is
+the rollback target — reverting nameservers to the Route 53 values restores it.
+
+---
 
 ---
 
@@ -69,38 +79,15 @@ domains, and variables, but **cannot** disconnect a repo (`serviceDisconnect` �
 
 ## Open items needing the user
 
-Everything the agent can do without these is done. Work is committed as
-`32ebf95` (local only — `AGENTS.md` forbids pushing).
-
-1. **Click the verification link** sent to `tillson27+arcverify@gmail.com`.
-   Confirmed still unclicked: `/v1/users/me` reports `emailVerifiedAt: None`.
-   Resend accepted it (`resendEmailId 49f0398a-7192-49b2-9c1a-9d13db633db9`), so
-   if it never arrives the fault is delivery, not the app.
-2. **Add `athletearc.ca` as a Cloudflare zone.** The agent **cannot** — the token
-   lacks `com.cloudflare.api.account.zone.create`. Either add the zone in the
-   dashboard, or reissue the token with **Account → Zone → Edit**.
-3. **Change nameservers at the registrar** to Cloudflare's. Registrar access is
-   outside any API token; this is user-only by nature.
-4. **Push `32ebf95`** if GitHub should be able to build the image. Until then the
-   committed-but-unpushed `app/Dockerfile` fix means a GitHub-sourced Railway
-   build still fails on the arm64-pinned esbuild COPY. Not load-bearing while
-   auto-deploy is off and deploys go through `railway up`.
-5. **Rotate the Railway project token and both Cloudflare tokens** afterwards —
-   all were pasted into an agent transcript. The first Cloudflare token is
-   unusable and should simply be deleted.
-
-### Ready and waiting
-
-`<scratchpad>/dns-verify.py` compares the Cloudflare zone against
-`~/arc-migration-backup-2026-09-13/route53-athletearc-backup.json` and exits
-non-zero if any of the 7 email-critical records is missing or altered. It
-normalises TXT quoting, trailing dots, and MX priority before comparing, and
-ignores the two `acm-validations.aws` CNAMEs (they die with the CloudFront
-cert). Run it the moment the zone exists, **before** nameservers change.
-
-Currently reports: `FAIL: zone athletearc.ca does not exist in Cloudflare yet`.
+1. **Wait ~24h of stable production**, then authorise the AWS prod teardown.
+2. **Push the commits** so GitHub can build the image. Local-only today.
+3. **Rotate credentials** — the Railway project token and three Cloudflare tokens
+   were pasted into an agent transcript. Delete the two dead Cloudflare tokens.
+4. **Keep the Route 53 hosted zone.** It is the rollback path and costs $0.50/mo.
+   Explicitly excluded from the Step 8 sweep.
 
 ---
+
 
 
 
@@ -184,7 +171,22 @@ Both were syntax-checked; `route-sweep.sh` passed 37/37 against `wrangler dev` l
    `volumeAttachments` as `null`. Use `database(name, "postgres", { image })` to
    pin the image, express the volume as a standalone `volume()` resource, and
    **never run `railway config apply` until `plan` reports zero changes.**
-7. **Never read the request body in the Worker.** Raw-body passthrough was proven byte-for-byte (identical SHA-256, 98-byte non-ASCII payload). Since the Stripe test is dropped, this local proof is the only thing standing behind webhook correctness.
+7. **Cloudflare's zone scan cannot import Route 53 ALIAS records.** It resolves
+   them and writes literal CloudFront IPs instead — 24 A/AAAA records here. The
+   site still works, so this fails silently, but it is still AWS-served off IPs
+   CloudFront rotates. They also block Worker custom domains with error 100117;
+   all 24 must be deleted first.
+8. **A `pending` Cloudflare zone serves `100::` for proxied records.** Worker
+   custom domains create a proxied AAAA at `100::`, and Cloudflare only swaps in
+   its anycast edge IPs once the zone is **active**. Call
+   `PUT /zones/<id>/activation_check` as soon as the registrar delegation is
+   live rather than waiting for Cloudflare to notice, or there is a window where
+   the apex resolves to an unroutable address.
+9. **A new hostname's TLS cert lags DNS by minutes.** Both the workers.dev
+   subdomain and the apex first failed with
+   `sslv3 alert handshake failure` / HTTP 000. That is cert provisioning, not a
+   fault. Never debug the Worker on a 000.
+10. **Never read the request body in the Worker.** Raw-body passthrough was proven byte-for-byte (identical SHA-256, 98-byte non-ASCII payload). Since the Stripe test is dropped, this local proof is the only thing standing behind webhook correctness.
 
 ---
 
