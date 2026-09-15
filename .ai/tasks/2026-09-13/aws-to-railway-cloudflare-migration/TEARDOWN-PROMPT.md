@@ -52,7 +52,14 @@ Already done on 2026-09-14, skip: all four `Arc-test-*` stacks, the
 `arc-test-api` ECR repo, and three orphaned test log groups.
 
 **[STRICT] Do NOT delete the Route 53 hosted zone `Z09125813QDW7R0WM4HV`.** It
-costs $0.50/mo and is the DNS rollback path. Leave it.
+costs $0.50/mo and is part of the DNS rollback path. Leave it.
+
+Note: its apex/`www` A/AAAA records now point at **Cloudflare's edge IPs**, not
+CloudFront, so rollback requires both restoring
+`~/arc-migration-backup-2026-09-13/r53-rollback-to-cloudfront.json` and reverting
+the registrar nameservers. Deleting `Arc-prod-Web` destroys the CloudFront
+distribution that rollback target refers to — which is exactly why the go/no-go
+gate above must pass first.
 
 **Finish by:** re-running the verification queries in Step 8h, reporting
 month-to-date AWS cost by service via Cost Explorer, updating Step 8 metadata +

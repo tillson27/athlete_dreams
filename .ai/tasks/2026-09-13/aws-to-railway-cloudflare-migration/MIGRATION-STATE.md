@@ -21,6 +21,23 @@ succeeds and returns `emailVerifiedAt 2026-09-15T01:50:35Z`. That account was
 created through the workers.dev preview against Railway Postgres and has never
 existed in the AWS database. Edge headers confirm `server: cloudflare` + `cf-ray`.
 
+**Route 53 repointed 2026-09-15** (user-approved). The apex and `www` A/AAAA
+records were changed from the CloudFront ALIAS to plain records holding
+Cloudflare's edge IPs (`104.21.71.20`, `172.67.142.70`, and the two
+`2606:4700:30xx::` addresses), TTL 60. Resolvers still caching the old AWS
+nameservers therefore also reach the new stack, which closed the window where
+sign-ups could land in the retired AWS database. Mail records in Route 53 were
+not touched.
+
+> **[STRICT] Rollback is now TWO steps, not one.** Reverting nameservers alone no
+> longer restores AWS, because Route 53 now points at Cloudflare too. To roll
+> back: apply
+> `~/arc-migration-backup-2026-09-13/r53-rollback-to-cloudfront.json` via
+> `aws route53 change-resource-record-sets --hosted-zone-id Z09125813QDW7R0WM4HV`
+> **and** revert the registrar nameservers to the four `awsdns` values. Both are
+> required. The CloudFront ALIAS target is `d2z7fyjadq4mtn.cloudfront.net`
+> (hosted zone `Z2FDTNDATAQYW2`).
+
 **Next: WAIT, then Step 8.** The plan requires the production domain to be
 stable for at least a full day before AWS teardown. AWS is still running and is
 the rollback target — reverting nameservers to the Route 53 values restores it.
